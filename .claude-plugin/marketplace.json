@@ -5,7 +5,7 @@
     "email": "mppise@gmail.com"
   },
   "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "plugins": [
     {
       "name": "spec-gantry",

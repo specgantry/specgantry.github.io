@@ -22,8 +22,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Plugin manifest file
+# Plugin manifest files
 MANIFEST_FILE=".claude-plugin/plugin.json"
+MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 
 # Functions
 log_info() {
@@ -142,22 +143,24 @@ release() {
   fi
 
   # Update version in manifest
-  log_info "Updating version in $MANIFEST_FILE"
+  log_info "Updating version in $MANIFEST_FILE and $MARKETPLACE_FILE"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
+    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
   else
     # Linux
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
+    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
   fi
 
   log_success "Version updated to $version"
 
   # Commit
   log_info "Creating commit"
-  git add "$MANIFEST_FILE"
+  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE"
   git commit -m "Release v$version"
   log_success "Commit created"
 

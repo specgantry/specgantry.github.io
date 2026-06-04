@@ -20,7 +20,9 @@
       "Bash(chmod +x /Users/mangeshpise/Code/SpecGantry/release.sh)",
       "Bash(./release.sh --help)",
       "Bash(./release.sh *)",
-      "Bash(xargs ls -lh)"
+      "Bash(xargs ls -lh)",
+      "Bash(git checkout *)",
+      "WebSearch"
     ]
   }
 }

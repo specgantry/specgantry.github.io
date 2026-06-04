@@ -1,0 +1,32 @@
+{
+  "name": "spec-gantry",
+  "owner": {
+    "name": "Mangesh Pise",
+    "email": "mppise@gmail.com"
+  },
+  "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
+  "version": "1.0.3",
+  "plugins": [
+    {
+      "name": "spec-gantry",
+      "source": ".",
+      "displayName": "SpecGantry",
+      "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
+      "version": "1.0.3",
+      "author": {
+        "name": "Mangesh Pise",
+        "email": "mppise@gmail.com"
+      },
+      "homepage": "https://specgantry.github.io",
+      "repository": "https://github.com/specgantry/specgantry.github.io",
+      "license": "Apache-2.0",
+      "keywords": [
+        "sdlc",
+        "pipeline",
+        "architecture",
+        "deployment",
+        "code-generation"
+      ]
+    }
+  ]
+}

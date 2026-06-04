@@ -1,24 +1,48 @@
+---
+layout: docs
+title: Skills Guide
+description: All 5 skills and 7 agents — what they do, when to use them, and how they interact.
+prev_page: "How It Works"
+prev_page_url: "/docs/how-it-works"
+next_page: "Architecture"
+next_page_url: "/docs/architecture"
+---
+
 # SpecGantry Skills Guide
 
-All 5 skills and how to use them.
+All 5 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
-## Overview
+## Skills Overview
 
-| Skill | Entry Point | For | Role |
-|-------|-------------|-----|------|
-| **spec-gantry** | `/spec-gantry` | Main dashboard | Both |
-| **start-project** | `/start-project` | New project setup | Team Lead |
-| **bugfix** | `/bugfix` | Quick bug fixes | Developer |
-| **reverse-engineer** | `/reverse-engineer` | Analyze existing code | Team Lead |
-| **update-pricing** | `/update-pricing` | Token cost tracking | Team Lead |
+| Skill | Command | Role | Purpose |
+|-------|---------|------|---------|
+| **spec-gantry** | `/spec-gantry` | Both | Main dashboard and entry point |
+| **start-project** | `/start-project` | Team Lead | New project initialization |
+| **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
+| **bugfix** | `/bugfix` | Developer | Log and manage bugs |
+| **update-pricing** | `/update-pricing` | Team Lead | Token cost configuration |
 
 ---
 
-## 1. spec-gantry
+## Video: Skills in Action
 
-**The main dashboard and entry point.**
+<div class="video-placeholder">
+  <div class="video-placeholder-inner">
+    <div class="video-icon">▶</div>
+    <div class="video-text">
+      <strong>SpecGantry Skills Walkthrough</strong>
+      <span>Coming soon — a demonstration of each skill in a real project workflow.</span>
+    </div>
+  </div>
+</div>
+
+---
+
+## 1. spec-gantry {#spec-gantry}
+
+**The main dashboard and your only entry point for daily work.**
 
 ```
 /spec-gantry
@@ -26,135 +50,115 @@ All 5 skills and how to use them.
 
 ### What It Does
 
-- Reads all project state from disk
-- Renders the current pipeline dashboard
-- Shows the next action(s) based on your role
-- Accepts menu commands: `[A]rchitecture`, `[B]acklog`, `[P]roject`, `[X]it`
+Every invocation:
+1. Reads `.claude/local-state.yaml` — your role and current feature
+2. Reads `specs/project-state.yaml` — project metadata, backlog, phase gates
+3. Reads all `specs/features/*/state.yaml` — feature progress
+4. Renders the full dashboard
+5. Presents contextual next actions
+6. Accepts menu commands
 
-### When to Use It
-
-Every time you start a session. It's your single entry point to the system.
-
-### Example Workflow
+### The Dashboard
 
 ```
-Day 1:
-  /spec-gantry → [1] Start a new project
-               → Runs /start-project
+** My App **  |  A project vision summary from ideation
+────────────────────────────────────────────────────────────────────
+📊 Progress      [2/6 features complete]
+👤 Role          Developer
+────────────────────────────────────────────────────────────────────
 
-Day 2:
-  /spec-gantry → [1] Answer ideation questions
-               → Resumes ideation from where you left off
+⚠ 1 feature spec awaiting developer review — FEATURE-004
 
-Day 3:
-  /spec-gantry → [1] Define architecture
-               → Runs architecture agent
+📋 Feature Pipeline Board
 
-Day 4:
-  /spec-gantry → [1] Continue building Feature-001
-               → Resumes dev where you left off
+  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   ~$0.43
+  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   ~$0.28
+  Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
+  Export PDF      ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
+  
+⚡ Actions
+
+  [1] Continue writing the spec for Notifications
+  [2] Pick up Export PDF and start the feature spec
+  [3] See what this project has cost so far
+
+  [A]rchitecture  e[X]it
 ```
 
-### Features
+### Menu Commands
 
-- **Session safe** — Always picks up where you left off
-- **Role aware** — Shows different actions for Team Leads vs Developers
-- **Cost visible** — Shows spend breakdown
-- **Menu-driven** — Keyboard shortcuts for quick navigation
+| Command | Who | What it does |
+|---------|-----|-------------|
+| `[A]rchitecture` | Both (read-only for Dev) | View the full architecture spec and open questions |
+| `[B]acklog` | Team Lead only | Full backlog management — prioritize, assign, defer, reassign |
+| `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project name/vision |
+| `e[X]it` | Both | Exit SpecGantry, return to normal Claude Code |
+
+### Automatic Invocation
+
+`/spec-gantry` calls other skills automatically based on state:
+- Detects no project → runs `/start-project`
+- Detects source files but no spec → offers `/reverse-engineer`
+- Detects an existing project → sets role and shows dashboard
+
+### Session Resume
+
+Because all state is on disk, every `/spec-gantry` invocation is idempotent. Run it at the start of every session — it picks up exactly where you left off.
 
 ---
 
-## 2. start-project
+## 2. start-project {#start-project}
 
-**Set up a new project from scratch.**
+**Initialize a new project from scratch.**
 
 ```
 /start-project
 ```
 
-**Normally called automatically by `/spec-gantry`** when no project exists.
+*Usually called automatically by `/spec-gantry` when no project exists.*
 
 ### What It Does
 
 Guides you through:
-- Project name and vision
-- Platform/language/framework
-- Team structure
-- Key non-functional requirements
+- Project name and one-paragraph vision
+- Target platform, language, and framework
+- Team structure (Team Lead + developers, or solo)
+- Key non-functional requirements (performance, security, compliance)
 
 Creates:
-- `specs/project-state.yaml`
-- `specs/ideation-artifact.md`
+- `specs/project-state.yaml` — with project metadata and empty phase gates
+- `specs/ideation-artifact.md` — skeleton ready for the ideation agent
 
-### Example
+### Example Interaction
 
 ```
 📋 Project Setup
 
-What's the name of your project?
-> MyApp
+What's the name of this project?
+> Acme Platform
 
-What problem does it solve?
-> Helps teams manage AI-assisted development workflows
+Describe what it does in 3–5 sentences. What problem does it solve? Who are the users?
+> A B2B SaaS platform that helps small teams manage their AI-assisted development
+  workflow. Team leads define architecture, developers build to spec.
 
-[... more questions ...]
+Target platform and primary language?
+> Node.js / TypeScript, deployed to AWS
 
-✅ Project created! Next: run /spec-gantry
+Team structure?
+> 1 tech lead + 3 developers
+
+✅ Project created. Next: run /spec-gantry to begin ideation.
 ```
 
-### When to Use It
+### When to Use It Directly
 
-- Creating a brand new project
-- If you manually deleted `specs/` and need to restart
-- To add an additional project (advanced use case)
+- Manually, on a fresh project (though `/spec-gantry` calls it automatically)
+- After deleting `specs/` to start a project over
+- To initialize a second project in an advanced setup
 
 ---
 
-## 3. bugfix
-
-**Quick fixes for bugs discovered during development.**
-
-```
-/bugfix
-```
-
-### What It Does
-
-Lets you:
-- Log a bug (without stopping feature development)
-- Document what's wrong and how to reproduce it
-- Assign it a BUGFIX-NNN identifier
-- Defer it for later or fix it immediately
-
-**Bugfixes stay separate from the feature backlog until:**
-- Team Lead reviews and approves
-- Developer marks it as "graduate to feature" (convert to regular feature)
-
-### Example
-
-```
-Found a bug during Feature-001 development?
-
-[1] Log it as a bugfix
-    (stays separate, can fix later)
-
-[2] Fix it now
-    (pause feature dev, fix bug, resume)
-
-[3] Escalate to Team Lead
-    (needs immediate attention)
-```
-
-### When to Use It
-
-- Bug found during feature development
-- Small bug that doesn't block the feature
-- Bug in another feature you're not assigned to
-- Architecture issue discovered mid-development
-
----
-
-## 4. reverse-engineer
+## 3. reverse-engineer {#reverse-engineer}
 
 **Analyze existing code and generate a project spec.**
 
@@ -162,53 +166,110 @@ Found a bug during Feature-001 development?
 /reverse-engineer
 ```
 
-**Normally called automatically by `/spec-gantry`** when you open an existing codebase.
+*Usually called automatically by `/spec-gantry` when source files are found but no spec exists.*
 
 ### What It Does
 
-Analyzes:
-- File structure
-- Dependencies and imports
-- Architecture patterns
-- Database schema (if detectable)
-- API endpoints (if REST/GraphQL)
+Scans:
+- Directory structure and file layout
+- File types, languages, and frameworks
+- Package dependencies
+- Database schemas (if detectable)
+- API endpoints (REST, GraphQL, etc.)
 
-Generates:
-- Initial `specs/project-state.yaml`
-- Proposed `specs/architecture-spec.md`
-- Candidate feature backlog
+Proposes:
+- Architecture spec (`specs/architecture-spec.md`)
+- Domain taxonomy
+- Feature backlog
 
-### Example
+### Example Output
 
 ```
 Found existing codebase. Analyzing...
 
-📁 Structure: Monorepo with services/
-🛠️  Tech: Node.js + Express + PostgreSQL
-🗄️  DB: 8 tables detected
-🔗 APIs: 24 endpoints found
+📁 Structure: Monorepo (apps/, packages/, services/)
+🛠  Tech: TypeScript, Express, PostgreSQL, Redis
+🗄  DB: 12 tables detected
+🔗 APIs: 31 REST endpoints across 4 services
+📦 Key packages: passport, stripe, socket.io, bull
 
 Proposed architecture:
-- Auth Service
-- API Gateway
-- User Service
-- Billing Service
+  Domain        Description
+  ──────────────────────────────────────────────────
+  auth          Authentication, sessions, OAuth
+  billing       Stripe integration, plans, invoices
+  messaging     Real-time channels, notifications
+  core          User management, settings, admin
 
-Ready to review? [Y/n]
+Proposed feature backlog: 14 features
+
+Review the proposed architecture before confirming? [Y/n]
 ```
 
 ### When to Use It
 
-- Joining an existing project
-- Documenting undocumented code
-- Starting where another team left off
-- Preparing code for handoff
+- Joining an existing project that has no SpecGantry structure
+- Documenting undocumented code before a handoff
+- Adding SpecGantry discipline to a project already in production
+- Onboarding new team members by generating a structured spec
 
 ---
 
-## 5. update-pricing
+## 4. bugfix {#bugfix}
 
-**Configure and view token cost tracking.**
+**Log and manage bugs without disrupting feature development.**
+
+```
+/bugfix
+```
+
+### What It Does
+
+Bugs discovered during development often don't fit neatly into the current feature's scope. `/bugfix` lets you log them, decide their urgency, and keep moving.
+
+**Three paths:**
+
+```
+Found a bug during development?
+
+[1] Log it as a bugfix    — document it, fix later
+[2] Fix it now            — pause feature work, fix bug, resume
+[3] Escalate to Team Lead — needs immediate architectural attention
+```
+
+Logged bugs get a `BUGFIX-NNN` identifier and are attached to the project state. They can be:
+- Fixed immediately (pause feature work, return when done)
+- Deferred (logged, visible on Team Lead dashboard)
+- Graduated to a full feature by the Team Lead (`[P]roject → Graduate bugfix`)
+
+### Example
+
+```
+📋 Logging Bugfix
+
+Describe the bug:
+> The auth middleware returns 200 instead of 401 for expired tokens
+
+How to reproduce it?
+> Call any protected endpoint with a JWT that expired more than 24h ago
+
+Severity? [critical / high / medium / low]
+> high
+
+✅ Logged as BUGFIX-003
+   Visible to Team Lead on next dashboard load.
+   Options: [1] Fix now  [2] Defer for later
+```
+
+### Graduating Bugs to Features
+
+Sometimes a bug reveals that something was never properly spec'd. The Team Lead can use `[P]roject → Graduate bugfix` to promote a BUGFIX entry to a full FEATURE with its own spec phase, domain assignment, and backlog position.
+
+---
+
+## 5. update-pricing {#update-pricing}
+
+**Configure token prices and view cost tracking.**
 
 ```
 /update-pricing
@@ -216,201 +277,134 @@ Ready to review? [Y/n]
 
 ### What It Does
 
-Manages:
-- Token prices for each Claude model
-- Cost breakdowns (by phase, feature, developer)
-- Historical pricing (for audits)
-- Cost alerts and budgets
-
-Updates:
-- `config/pricing-history.yaml`
-- Dashboard cost displays
+SpecGantry tracks token usage for every agent invocation. The cost calculation uses prices from `config/pricing-history.yaml`. This skill lets you update those prices when Claude's pricing changes, or when you need to reflect your organization's internal billing rates.
 
 ### Example
 
 ```
 💰 Token Pricing Configuration
 
-Current rates:
-  Claude Opus:  $3/$15 per 1K tokens
-  Claude Sonnet: $3/$15 per 1K tokens
-  Claude Haiku:  $0.80/$4 per 1K tokens
+Current rates (last updated: 2026-05-01):
+
+  Model                 Input (per 1M)   Output (per 1M)
+  ──────────────────────────────────────────────────────
+  claude-opus-4-8       $15.00           $75.00
+  claude-sonnet-4-6     $3.00            $15.00
+  claude-haiku-4-5      $0.80            $4.00
 
 Update rates? [Y/n]
   > Y
 
-Enter Opus input price: $3.00
-Enter Opus output price: $15.00
+Enter Sonnet 4.6 input price per 1M tokens:
+  > 3.00
 
-✅ Pricing updated
+✅ Pricing updated. New rates will apply to all future cost calculations.
+```
+
+### Project Cost Report
+
+The dashboard shows per-feature costs. Running `/update-pricing` also lets you view the full cost breakdown:
+
+```
+💰 Project Cost Breakdown
+
+  Phase               Tokens In   Tokens Out  Cost
+  ──────────────────────────────────────────────────────
+  Ideation            42,300      8,900       $0.26
+  Architecture        98,100      24,400      $0.66
+  FEATURE-001         31,200      9,800       $0.24
+  FEATURE-002         44,800      12,100      $0.32
+  FEATURE-003         28,900      7,600       $0.20
+  ──────────────────────────────────────────────────────
+  Total               245,300     62,800      $1.68
 ```
 
 ### When to Use It
 
-- Monthly when Claude pricing changes
-- To update for your region's pricing
-- To set internal cost limits
-- When billing to a client (accurate rates)
+- Monthly, when Claude releases new pricing
+- When billing AI costs to a client (accurate per-project cost)
+- When optimizing model selection (compare Haiku vs Sonnet costs)
+- At project completion, for cost reporting
 
 ---
 
-## Skill Invocation Rules
+## The 7 Agents
 
-### Automatic Invocation
+Skills call agents to do the actual work. Agents are invoked by the orchestrator — you never call them directly.
 
-These skills are called automatically:
-- `/start-project` — When `/spec-gantry` detects no project
-- `/reverse-engineer` — When `/spec-gantry` detects code in empty repo
+| Agent | Invoked By | Purpose |
+|-------|-----------|---------|
+| **orchestrator** | Skills | Routes phases, enforces gates, logs token usage |
+| **ideation-agent** | orchestrator | Guides project clarification, produces feasibility assessment |
+| **architecture-agent** | orchestrator | Designs system, produces guardrails and feature backlog |
+| **feature-spec-agent** | orchestrator | Guides 6-section spec, checks guardrail compliance |
+| **dev-agent** | orchestrator | Implements feature from spec, writes tests |
+| **test-agent** | dev-agent | Runs test suite, sets `overall_status` |
+| **deployment-agent** | orchestrator | Final verification, marks feature complete |
 
-### Manual Invocation
-
-You can call any skill directly:
-
-```
-/spec-gantry        ← Main dashboard (most common)
-/bugfix             ← Log or fix a bug
-/update-pricing     ← Adjust token costs
-```
-
-### From the Dashboard
-
-When you see:
-
-```
-[1] Answer ideation questions
-[2] Continue building Feature-A
-```
-
-Selecting `[1]` or `[2]` automatically invokes the appropriate skill.
+The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent, and logs token usage after every invocation.
 
 ---
 
-## Skill Exit Behavior
+## Common Skill Workflows
 
-### `/spec-gantry`
-
-- Exits with `[X]it`
-- Saves state automatically
-- Returns you to normal Claude Code
-
-### `/start-project`
-
-- Completes and returns to `/spec-gantry`
-- Saves project state automatically
-- Next `/spec-gantry` continues from there
-
-### `/bugfix`
-
-- Logs bug and returns to `/spec-gantry`
-- Or fixes it and returns to `/spec-gantry`
-- Feature development can resume
-
-### `/reverse-engineer`
-
-- Analyzes code
-- Proposes architecture
-- Waits for approval
-- Returns to `/spec-gantry`
-
-### `/update-pricing`
-
-- Updates pricing config
-- Returns to `/spec-gantry`
-- Next cost calculations use new rates
-
----
-
-## State Management
-
-Every skill:
-1. Reads current state from `specs/` and `.claude/`
-2. Makes edits/additions based on your input
-3. Writes state to disk immediately
-4. Returns to entry point
-
-**This means:**
-- No unsaved work (everything saved to disk)
-- Network drops don't lose data
-- Context resets don't lose progress
-- Multiple sessions can coexist (different roles/features)
-
----
-
-## Combining Skills
-
-### Common Workflows
-
-**New team project:**
-```
-/spec-gantry
-  → [1] Start new project (/start-project runs)
-  → [1] Answer ideation questions
-  → [1] Define architecture (/architecture-agent runs)
-```
-
-**Joining existing project:**
-```
-/spec-gantry
-  → Detects project-state.yaml
-  → [1] Pick up Feature-X
-  → Starts feature spec
-```
-
-**Existing codebase, no spec:**
-```
-/spec-gantry
-  → Detects source files
-  → [1] Reverse-engineer (/reverse-engineer runs)
-  → Review proposed architecture
-  → Continue from there
-```
-
----
-
-## Troubleshooting Skills
-
-**Skill won't start?**
-- Ensure project root is open in Claude Code
-- Check `specs/` directory exists (or not, depending on phase)
-- Run `/spec-gantry` to validate state
-
-**Skills conflicting?**
-- Each skill reads current state first
-- Conflicts are detected and reported
-- Fix the conflict or revert changes
-
-**Lost progress?**
-- All state is in `specs/` folder
-- Check git history
-- Or manually restore from backups
-
----
-
-## Advanced: Direct Skill Calls
-
-Most users won't need this, but you can invoke agents directly for specific workflows.
-
-**Example:**
+### New Team Project
 
 ```
-/orchestrator → [manual entry point to agents]
+Team Lead:
+  /spec-gantry → [1] Start new project     (/start-project)
+              → Answer ideation questions   (ideation-agent)
+              → Define architecture         (architecture-agent)
+              → Commit specs/ to git
+
+Developers:
+  pull origin main
+  /spec-gantry → detects project-state.yaml → role: developer
+              → [1] Pick up FEATURE-XXX
+              → Write feature spec          (feature-spec-agent)
+              → Build                       (dev-agent + test-agent)
 ```
 
-This bypasses the dashboard and lets you:
-- Jump to a specific agent
-- Skip phases (not recommended)
-- Override state (advanced debugging)
+### Existing Codebase
 
-Requires understanding the state file format.
+```
+Team Lead:
+  /spec-gantry → detects source files
+              → [1] Reverse-engineer        (/reverse-engineer)
+              → Review proposed architecture
+              → Refine and confirm
+              → Commit specs/ to git
+```
+
+### Bug Found During Development
+
+```
+Developer:
+  /bugfix → [1] Log as bugfix              (BUGFIX-003 created)
+          → Continue feature development
+
+Team Lead:
+  /spec-gantry → [P]roject → Graduate bugfix
+              → BUGFIX-003 becomes FEATURE-009
+```
 
 ---
 
 ## Next Steps
 
-- [**Getting Started**](../getting-started/) — Installation & first run
-- [**How It Works**](../how-it-works/) — Full pipeline explanation
-- [**FAQ**](../faq/) — Common questions
-
----
-
-**You're ready to use SpecGantry skills!** 🚀
+<div class="next-steps-grid">
+  <a href="/docs/architecture" class="next-step-card">
+    <div class="next-step-icon">🏗️</div>
+    <div>
+      <strong>Technical Architecture</strong>
+      <span>State machine, data model, design decisions, and how to extend SpecGantry.</span>
+    </div>
+  </a>
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon">❓</div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Answers to common questions about installation, roles, the pipeline, and troubleshooting.</span>
+    </div>
+  </a>
+</div>

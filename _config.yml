@@ -6,10 +6,8 @@ description: AI-assisted SDLC pipeline for Claude Code
 url: https://specgantry.github.io
 baseurl: ""
 
-# Theme
-remote_theme: pages-themes/minimal@v0.2.0
+# Theme — fully custom layouts (no remote theme)
 plugins:
-  - jekyll-remote-theme
   - jekyll-seo-tag
 
 # Markdown processor
@@ -18,44 +16,41 @@ kramdown:
   input: GFM
   hard_wrap: false
 
+# Page defaults by path
+defaults:
+  - scope:
+      path: "docs"
+    values:
+      layout: docs
+  - scope:
+      path: "blog"
+    values:
+      layout: docs
+
 # Exclude files from build
 exclude:
   - .git
   - .github
-  - node_modules
-  - scripts
-  - package.json
   - LICENSE
   - NOTICE
   - SECURITY.md
   - CONTRIBUTING.md
-  - DISTRIBUTION.md
-  - DISTRIBUTION-QUICKSTART.md
-  - DISTRIBUTION-SUMMARY.md
-  - DISTRIBUTION-STATUS.txt
-  - FIRST-RELEASE.md
-  - PLUGIN-STRUCTURE.md
-  - DISTRIBUTION-CHECKLIST.md
   - .claude
   - .claude-plugin
   - agents
   - config
   - skills
-  - index.ts
-  - .pluginignore
+  - release.sh
 
 # Keep files from being processed but not excluded
 keep_files:
-  - skills
-  - agents
-  - config
 
 # Layout
-layout: default
+layout: landing
 
 # Author
 author: Mangesh Pise
-github: https://github.com/specgantry/specgantry.github.io
+github: https://github.com/mppise
 
 # Logo
 logo: /assets/icon.png

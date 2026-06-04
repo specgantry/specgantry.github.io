@@ -121,44 +121,39 @@ validate_version() {
 }
 
 sync_marketplace_from_plugin() {
-  log_info "Syncing marketplace.json from plugin.json"
+  log_info "Syncing marketplace.json plugins[] from plugin.json"
 
-  # Read plugin.json and generate marketplace.json
+  # Update only the plugins[] array in marketplace.json, preserving all
+  # top-level marketplace fields (name, owner, description, etc.)
   node -e "
     const fs = require('fs');
     const plugin = JSON.parse(fs.readFileSync('$MANIFEST_FILE', 'utf8'));
+    const marketplace = JSON.parse(fs.readFileSync('$MARKETPLACE_FILE', 'utf8'));
 
-    const marketplace = {
-      name: plugin.name,
-      owner: plugin.author,
-      description: plugin.description,
-      version: plugin.version,
-      plugins: [
-        {
-          name: plugin.name,
-          source: {
-            source: 'github',
-            'repo': 'specgantry/specgantry.github.io'
-          },
-          displayName: plugin.displayName,
-          description: plugin.description,
-          version: plugin.version,
-          author: plugin.author,
-          homepage: plugin.homepage,
-          repository: plugin.repository,
-          license: plugin.license,
-          keywords: plugin.keywords,
-          engines: plugin.engines,
-          skills: plugin.skills || [],
-          agents: plugin.agents || []
-        }
-      ]
-    };
+    marketplace.plugins = [
+      {
+        name: plugin.name,
+        source: {
+          source: 'github',
+          repo: 'specgantry/specgantry.github.io'
+        },
+        displayName: plugin.displayName,
+        description: plugin.description,
+        version: plugin.version,
+        author: plugin.author,
+        homepage: plugin.homepage,
+        repository: plugin.repository,
+        license: plugin.license,
+        keywords: plugin.keywords,
+        skills: plugin.skills || [],
+        agents: plugin.agents || []
+      }
+    ];
 
     fs.writeFileSync('$MARKETPLACE_FILE', JSON.stringify(marketplace, null, 2) + '\n');
   "
 
-  log_success "marketplace.json synced"
+  log_success "marketplace.json plugins[] synced"
 }
 
 release() {

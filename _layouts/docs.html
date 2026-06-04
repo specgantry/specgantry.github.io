@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} — {% endif %}SpecGantry Docs</title>
+  <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}SpecGantry documentation — AI-assisted SDLC pipeline for Claude Code.{% endif %}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <link rel="icon" type="image/png" href="{{ '/assets/icon.png' | relative_url }}">
+</head>
+<body class="docs-body">
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="{{ '/' | relative_url }}" class="nav-logo">
+        <span class="logo-mark">SG</span>
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="{{ '/docs' | relative_url }}" class="docs-breadcrumb-link">Docs</a>
+        {% if page.title and page.title != "SpecGantry Documentation" %}
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">{{ page.title }}</span>
+        {% endif %}
+      </div>
+      <nav class="docs-topnav-right">
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <a href="{{ '/blog' | relative_url }}">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="{{ '/docs/getting-started' | relative_url }}" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="{{ '/docs' | relative_url }}" class="sidebar-link {% if page.url == '/docs/' or page.url == '/docs/index.html' %}sidebar-link-active{% endif %}">
+            Overview
+          </a>
+          <a href="{{ '/docs/getting-started' | relative_url }}" class="sidebar-link {% if page.url contains '/getting-started' %}sidebar-link-active{% endif %}">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="{{ '/docs/how-it-works' | relative_url }}" class="sidebar-link {% if page.url contains '/how-it-works' %}sidebar-link-active{% endif %}">
+            How It Works
+          </a>
+          <a href="{{ '/docs/how-it-works' | relative_url }}#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="{{ '/docs/how-it-works' | relative_url }}#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="{{ '/docs/how-it-works' | relative_url }}#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="{{ '/docs/how-it-works' | relative_url }}#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills &amp; Agents</div>
+          <a href="{{ '/docs/skills' | relative_url }}" class="sidebar-link {% if page.url contains '/skills' %}sidebar-link-active{% endif %}">
+            Skills Guide
+          </a>
+          <a href="{{ '/docs/skills' | relative_url }}#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="{{ '/docs/skills' | relative_url }}#start-project" class="sidebar-link sidebar-sublink">/start-project</a>
+          <a href="{{ '/docs/skills' | relative_url }}#reverse-engineer" class="sidebar-link sidebar-sublink">/reverse-engineer</a>
+          <a href="{{ '/docs/skills' | relative_url }}#bugfix" class="sidebar-link sidebar-sublink">/bugfix</a>
+          <a href="{{ '/docs/skills' | relative_url }}#update-pricing" class="sidebar-link sidebar-sublink">/update-pricing</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="{{ '/docs/architecture' | relative_url }}" class="sidebar-link {% if page.url contains '/architecture' %}sidebar-link-active{% endif %}">
+            Architecture
+          </a>
+          <a href="{{ '/docs/faq' | relative_url }}" class="sidebar-link {% if page.url contains '/faq' %}sidebar-link-active{% endif %}">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="{{ '/blog' | relative_url }}" class="sidebar-link {% if page.url contains '/blog' %}sidebar-link-active{% endif %}">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin install https://github.com/specgantry/specgantry.github.io</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        {{ content }}
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          {% if page.prev_page %}
+            <a href="{{ page.prev_page_url | relative_url }}" class="page-nav-link">
+              <span class="page-nav-dir">← Previous</span>
+              <span class="page-nav-label">{{ page.prev_page }}</span>
+            </a>
+          {% endif %}
+        </div>
+        <div class="page-nav-next">
+          {% if page.next_page %}
+            <a href="{{ page.next_page_url | relative_url }}" class="page-nav-link">
+              <span class="page-nav-dir">Next →</span>
+              <span class="page-nav-label">{{ page.next_page }}</span>
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

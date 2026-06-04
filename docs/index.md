@@ -1,98 +1,93 @@
+---
+layout: docs
+title: SpecGantry Documentation
+description: Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.
+next_page: "Getting Started"
+next_page_url: "/docs/getting-started"
+---
+
 # SpecGantry Documentation
 
-**AI-assisted SDLC pipeline for Claude Code**
+**AI-assisted SDLC pipeline for Claude Code.** Enforces structured development from ideation through deployment — specs before code, architecture as guardrails, role-based ownership, full token cost transparency.
 
-Enforces structured development from ideation through deployment — specs before code, architecture as guardrails, role-based ownership, and full token cost transparency.
-
----
-
-## Core Concepts
-
-### The Problem
-
-AI coding assistants are fast. That speed is also their biggest risk.
-
-It's easy to start building before:
-- The problem is fully understood
-- The architecture is agreed upon
-- Someone has written down what "done" looks like
-
-The result: code that solves the wrong problem, or the right problem in a way that doesn't fit the rest of the system.
-
-### The Solution
-
-SpecGantry enforces the process your team **already knows** it should follow — but usually skips under pressure.
-
-**It puts structure around Claude Code without being rigid.**
+<div class="info">
+  <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
+</div>
 
 ---
 
-## How It Works (30 seconds)
+## What Is SpecGantry?
+
+SpecGantry is a Claude Code plugin that wraps your AI coding workflow in a structured SDLC pipeline. It enforces the process your team already knows it should follow — but usually skips under pressure.
+
+The core idea is simple: **no code without a spec, no spec without an architecture**. Every phase transition is gated by the filesystem. Claude Code cannot proceed without the previous artifact existing on disk.
 
 ```
 PROJECT LEVEL (Team Lead/Architect)
-  1. Ideation        → Clarify the problem & align stakeholders
-  2. Architecture    → Design the system & generate the backlog
+  1. Ideation        → Clarify goals, validate the problem
+  2. Architecture    → Define tech stack, system design, guardrails
 
-  ── Team Lead commits → developers join ──
+  ── Commit → Team joins ──
 
 FEATURE LEVEL (Developers)
-  3. Spec            → Write detailed feature specification
-  4. Build           → Implement against the spec
-  5. Tests & Deploy  → Verify & release
+  3. Feature Spec    → Write precise, implementation-ready spec
+  4. Build           → Implement against the spec, write tests
+  5. Deploy          → Verify and release to production
 
-Each phase has gates. You can't proceed without completing the previous one.
+Each phase has gates. You cannot proceed without completing the previous one.
 ```
 
 ---
 
-## Key Features
+## Documentation Sections
 
-### 🔒 Specs Before Code — Enforced
-
-No developer can start coding until a feature spec exists, has been reviewed against architectural guardrails, and has been explicitly approved. The gate is hard: Claude Code won't proceed without it.
-
-### 🏗️ Architecture as a Living Guardrail
-
-The Team Lead/Architect runs a guided session that produces an architecture spec — tech stack, system boundaries, API contracts, data model, non-functional requirements. Every feature spec written afterwards is automatically checked against it. Violations are flagged before a line of code is written.
-
-### 👥 Role-Based Pipeline Ownership
-
-- **Team Lead/Architect** owns the project — ideation, architecture, deployment
-- **Developers** own features — spec, implementation, tests
-- Each role sees only what's relevant to them
-- Nobody can accidentally perform actions outside their lane
-
-### 🔄 Resumable, Session-Safe Progress
-
-Every phase writes to disk after each question or section. If a session is interrupted — network drop, context reset, end of day — the next `/spec-gantry` picks up exactly where it left off. No work is lost.
-
-### 💰 Token Cost Visibility
-
-Every agent invocation logs model, input tokens, and output tokens. The dashboard gives a running breakdown by phase, feature, and total project spend — so you always know what AI-assisted development is actually costing.
+<div class="doc-nav-cards">
+  <a href="/docs/getting-started" class="doc-nav-card">
+    <div class="doc-nav-icon">🚀</div>
+    <div>
+      <div class="doc-nav-title">Getting Started</div>
+      <div class="doc-nav-desc">Install the plugin and run your first session in under 5 minutes.</div>
+    </div>
+  </a>
+  <a href="/docs/how-it-works" class="doc-nav-card">
+    <div class="doc-nav-icon">⚙️</div>
+    <div>
+      <div class="doc-nav-title">How It Works</div>
+      <div class="doc-nav-desc">Detailed breakdown of all five phases, roles, gates, and cost tracking.</div>
+    </div>
+  </a>
+  <a href="/docs/skills" class="doc-nav-card">
+    <div class="doc-nav-icon">🛠️</div>
+    <div>
+      <div class="doc-nav-title">Skills Guide</div>
+      <div class="doc-nav-desc">All 5 skills and 7 agents — what they do, when to use them, how they interact.</div>
+    </div>
+  </a>
+  <a href="/docs/architecture" class="doc-nav-card">
+    <div class="doc-nav-icon">🏗️</div>
+    <div>
+      <div class="doc-nav-title">Architecture</div>
+      <div class="doc-nav-desc">Design philosophy, state machine, data model, and extension points.</div>
+    </div>
+  </a>
+  <a href="/docs/faq" class="doc-nav-card">
+    <div class="doc-nav-icon">❓</div>
+    <div>
+      <div class="doc-nav-title">FAQ</div>
+      <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, costs, and troubleshooting.</div>
+    </div>
+  </a>
+</div>
 
 ---
 
-## Navigation
-
-| Section | For |
-|---------|-----|
-| [**Getting Started**](getting-started/) | Installation & first steps |
-| [**How It Works**](how-it-works/) | Detailed pipeline explanation |
-| [**Skills Guide**](skills/) | All 5 skills & their workflows |
-| [**Architecture**](architecture/) | Design decisions & technical details |
-| [**FAQ**](faq/) | Common questions & troubleshooting |
-
----
-
-## Installation (90 seconds)
+## Quick Install
 
 ```bash
-# Install from GitHub
 claude plugin install https://github.com/specgantry/specgantry.github.io
 ```
 
-Then open a project in Claude Code and run:
+Then in any Claude Code project:
 
 ```
 /spec-gantry
@@ -102,46 +97,49 @@ The dashboard guides you from there.
 
 ---
 
-## Who It's For
+## Key Concepts
 
-**Team Leads & Architects** who want their team to follow a consistent process without enforcing it manually through code review friction.
+### Phase Gates
 
-**Developers** who want clear, scoped specs before they start building — and a structured handoff when they're done.
+Every phase transition in SpecGantry requires a gate check. Gates read two sources of truth:
+1. The phase flag in `state.yaml` (set by the agent on completion)
+2. The artifact file on disk (e.g. `ideation-artifact.md`, `feature-spec.md`)
 
-**Solo developers** who want to impose discipline on their own AI-assisted workflow and avoid the trap of building fast in the wrong direction.
+Both must agree. An agent that sets a flag without producing the artifact fails the gate. An artifact without a flag fails the gate. This prevents partial or stale state from advancing the pipeline.
+
+### Architecture as Guardrails
+
+When the Team Lead defines the architecture, every decision becomes an enforceable guardrail. During the Feature Spec phase, the feature-spec agent reads `architecture-spec.md` and checks every API contract, data model reference, and layer boundary. Violations are hard blockers — they prevent the spec from completing until resolved.
+
+### YAML-Based State
+
+All project state lives in plain-text YAML files under `specs/`. This means:
+- **Human-readable** — you can inspect and understand state without tooling
+- **Git-friendly** — diffs are meaningful, history is preserved
+- **Session-safe** — state written after every question means no work is lost on context reset
 
 ---
 
-## Why SpecGantry Matters
+## Who Should Use SpecGantry?
 
-Speed without structure leads to:
-- Code solving the wrong problem
-- Architecture violations discovered too late
-- Refactoring during code review
-- Frustrated developers and architects
-- Wasted token spend on rework
-
-SpecGantry prevents all of this by enforcing the process **before code is written**, not after.
+| Role | Use Case |
+|------|----------|
+| **Team Lead / Architect** | Enforce consistent process across the team without policing code review |
+| **Developer** | Always have a clear, approved spec before building |
+| **Solo Developer** | Discipline your own AI workflow, avoid "build fast in the wrong direction" |
+| **Engineering Manager** | Token cost visibility and audit trail for AI-assisted development |
 
 ---
 
 ## Under the Hood
 
-- **5 Skills** — Orchestration entry point + 4 specialized workflows
-- **6 Agents** — Ideation, Architecture, Feature Spec, Dev, Test, Deployment
-- **YAML-based state** — Full session resumption from disk
-- **Zero external dependencies** — Runs entirely within Claude Code
-- **Full token tracking** — Transparent cost reporting
+| Component | Count | What they do |
+|-----------|-------|-------------|
+| **Skills** | 5 | Entry points: dashboard, setup, bugfix, analysis, pricing |
+| **Agents** | 7 | Specialists: ideation, architecture, spec, dev, test, deployment, orchestrator |
+| **State files** | Per project | YAML artifacts, Markdown outputs |
+| **Dependencies** | 0 | Runs entirely within Claude Code |
 
 ---
 
-## Next Steps
-
-- **First time?** Start with [Getting Started](getting-started/)
-- **Want details?** See [How It Works](how-it-works/)
-- **Joining a team?** Check [Skills Guide](skills/)
-- **Questions?** Browse [FAQ](faq/)
-
----
-
-**[Repository](https://github.com/specgantry/specgantry.github.io) • [Issues](https://github.com/specgantry/specgantry.github.io/issues)**
+**Ready to begin?** → [Installation & First Steps →](/docs/getting-started)

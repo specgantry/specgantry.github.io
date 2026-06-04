@@ -1,30 +1,36 @@
+---
+layout: docs
+title: Architecture
+description: SpecGantry's design philosophy, state machine, data model, and extension points.
+prev_page: "Skills Guide"
+prev_page_url: "/docs/skills"
+next_page: "FAQ"
+next_page_url: "/docs/faq"
+---
+
 # SpecGantry Architecture
 
-Design decisions, system boundaries, and technical implementation.
+Design philosophy, state machine, data model, security model, and how to extend SpecGantry.
 
 ---
 
 ## Design Philosophy
 
-SpecGantry is built around **three core principles:**
+SpecGantry is built on three principles that were non-negotiable from the start.
 
 ### 1. Structure Before Code
 
-The system enforces that specs, architecture, and planning happen **before** development begins. This is not advisory — it's a hard gate in the pipeline.
+The system enforces that specs, architecture, and planning happen **before** development begins. This is not advisory — it is a hard gate enforced at the filesystem level. The orchestrator verifies that artifact files exist on disk AND that phase flags are set. Both must agree.
 
-**Implementation:** Phase gates in state machine prevent code without prior spec approval.
+The intent: make it impossible to skip a phase, not just inconvenient.
 
 ### 2. Session Safety by Default
 
-Every phase writes state to disk immediately. If a session is interrupted, the next invocation picks up exactly where it left off. Zero data loss by design.
-
-**Implementation:** YAML-based state files in `specs/` directory, updated after every question/section.
+Every phase writes state to disk immediately after each question or section is answered. If a session is interrupted for any reason — network drop, context reset, end of day, even a crash — the next invocation picks up at the next unanswered question. Zero data loss is a design requirement, not a nice-to-have.
 
 ### 3. Role-Based Access Control
 
-Team Leads and Developers have different views and permissions. Role determines what they can see and do.
-
-**Implementation:** State machine checks role before allowing actions.
+Team Leads and Developers have fundamentally different views and permissions. The orchestrator enforces this: it will not invoke project-level agents for a `role: dev` user, and will not write to `project-state.yaml` from a developer context. Role confusion is a common failure mode in collaborative AI workflows — SpecGantry eliminates it by design.
 
 ---
 
@@ -32,121 +38,149 @@ Team Leads and Developers have different views and permissions. Role determines 
 
 ```
 Claude Code (IDE)
-    ↓
+    │
+    ▼
 SpecGantry Plugin
     ├── skills/
-    │   ├── spec-gantry              (Dashboard & orchestrator)
-    │   ├── start-project            (New project setup)
-    │   ├── bugfix                   (Bug logging)
-    │   ├── reverse-engineer         (Code analysis)
-    │   └── update-pricing           (Cost tracking)
+    │   ├── spec-gantry/SKILL.md          Dashboard, entry point
+    │   ├── start-project/SKILL.md        New project setup
+    │   ├── bugfix/SKILL.md               Bug logging
+    │   ├── reverse-engineer/SKILL.md     Code analysis
+    │   └── update-pricing/SKILL.md       Cost configuration
     │
     └── agents/
-        ├── orchestrator.md          (Coordinates phases)
-        ├── ideation-agent.md        (Project clarification)
-        ├── architecture-agent.md    (System design)
-        ├── feature-spec-agent.md    (Feature specs)
-        ├── dev-agent.md             (Development)
-        └── test-agent.md            (Testing)
+        ├── orchestrator.md               Phase routing, gate enforcement
+        ├── ideation/ideation-agent.md    Project clarification
+        ├── architecture/architecture-agent.md  System design
+        ├── feature-spec/feature-spec-agent.md  Feature specs
+        ├── development/dev-agent.md      Code implementation
+        ├── development/test-agent.md     Test execution
+        └── deployment/deployment-agent.md  Release verification
 
-        ↓
-    Project Directory
-        ├── specs/
-        │   ├── project-state.yaml
-        │   ├── ideation-artifact.md
-        │   ├── architecture-spec.md
-        │   └── features/
-        │       └── FEATURE-XXX/
-        │           ├── state.yaml
-        │           ├── spec.md
-        │           └── dev-artifact.md
-        │
-        └── .claude/
-            └── local-state.yaml
+Project Directory
+    ├── specs/
+    │   ├── project-state.yaml
+    │   ├── ideation-artifact.md
+    │   ├── architecture-spec.md
+    │   └── features/FEATURE-XXX/
+    │       ├── state.yaml
+    │       ├── feature-spec.md
+    │       └── dev-artifact.yaml
+    └── .claude/
+        └── local-state.yaml
 ```
 
 ---
 
 ## State Machine
 
-SpecGantry operates as a finite state machine with the following states:
+SpecGantry operates as a finite state machine at two levels.
+
+### Project-Level States
 
 ```
-┌─────────────┐
-│   INIT      │ No project detected
-└──────┬──────┘
-       │ /start-project
-       ↓
-┌─────────────────┐
-│   IDEATION      │ Answering project questions
-└──────┬──────────┘
-       │ Ideation complete
-       ↓
+┌───────────────┐
+│  INIT         │  No project detected
+└───────┬───────┘
+        │ /start-project
+        ▼
+┌───────────────┐
+│  IDEATION     │  Answering project questions
+└───────┬───────┘
+        │ Ideation complete (recommendation: proceed)
+        ▼
 ┌──────────────────┐
-│   ARCHITECTURE   │ Defining tech stack & system design
-└──────┬───────────┘
-       │ Architecture complete
-       ↓
+│  ARCHITECTURE    │  Defining system design and guardrails
+└───────┬──────────┘
+        │ Architecture complete, backlog populated
+        ▼
 ┌──────────────────┐
-│   BACKLOG_READY  │ Features created, ready to assign
-└──────┬───────────┘
-       │ Developer assigned to feature
-       ↓
+│  BACKLOG_READY   │  Features exist, developers can claim them
+└──────────────────┘
+```
+
+### Feature-Level States
+
+```
+┌──────────────┐
+│  PENDING     │  In backlog, not yet claimed
+└──────┬───────┘
+       │ Developer picks up feature
+       ▼
 ┌──────────────────┐
-│   FEATURE_SPEC   │ Writing feature specification
+│  SPEC_IN_PROG    │  Writing feature spec
 └──────┬───────────┘
-       │ Spec approved by Team Lead
-       ↓
-┌────────────────┐
-│   BUILD        │ Implementing feature
-└──────┬─────────┘
-       │ Build complete, tests pass
-       ↓
-┌────────────────┐
-│   DEPLOY       │ Ready for production
-└────────────────┘
+       │ All 6 sections complete, zero violations
+       ▼
+┌──────────────────┐
+│  SPEC_REVIEWED   │  Developer self-reviewed, ready to build
+└──────┬───────────┘
+       │ Dependency gate + contract gate both pass
+       ▼
+┌──────────────────┐
+│  BUILD           │  Implementing feature
+└──────┬───────────┘
+       │ Tests pass (overall_status: pass)
+       ▼
+┌──────────────────┐
+│  READY_TO_DEPLOY │  Awaiting Team Lead deployment
+└──────┬───────────┘
+       │ Deployment agent verifies and completes
+       ▼
+┌──────────────────┐
+│  COMPLETE        │  Deployed, done
+└──────────────────┘
 ```
 
 ---
 
 ## Data Model
 
-### Project State (`specs/project-state.yaml`)
+### `specs/project-state.yaml`
 
 ```yaml
 project:
   name: "My Application"
-  vision: "Solve X problem for Y users"
+  vision: "Solve X for Y users"
   created_at: 2026-01-15
   team_lead: "alice"
+
+phase_gates:
+  ideation_complete: true
+  architecture_complete: true
+
+ideation_recommendation: proceed  # proceed | clarify | escalate
+ideation_blockers: []
+
+architecture_open_questions: []
+
+domains:
+  - name: auth
+    description: "Authentication, sessions, OAuth, permissions"
+  - name: core
+    description: "User management, settings, core entities"
 
 backlog:
   - id: "FEATURE-001"
     title: "User authentication"
-    status: complete
+    domain: "auth"
     assignee: "bob"
-    size: medium
-    dependencies: []
-  
-  - id: "FEATURE-002"
-    title: "Payment processing"
-    status: in_progress
-    assignee: "bob"
-    size: large
-    dependencies:
-      - "FEATURE-001"
+    status: complete         # pending | in_progress | complete | deferred | abandoned
+    phase: deploy            # ideation | spec | build | deploy
+    size: medium             # small | medium | large
+    depends_on: []
+    deployment_status: complete
 
-architecture_open_questions: []
 token_usage:
-  ideation:
-    input_tokens: 45000
-    output_tokens: 12000
-  architecture:
-    input_tokens: 87000
-    output_tokens: 23000
+  - phase: ideation
+    agent: ideation-agent
+    model: claude-haiku-4-5-20251001
+    date: 2026-01-15
+    input_tokens: 42300
+    output_tokens: 8900
 ```
 
-### Feature State (`specs/features/FEATURE-XXX/state.yaml`)
+### `specs/features/FEATURE-XXX/state.yaml`
 
 ```yaml
 feature:
@@ -154,249 +188,98 @@ feature:
   title: "User authentication"
   domain: "auth"
   assignee: "bob"
-  
-status:
-  spec_started: true
-  spec_complete: true
-  spec_reviewed: true
-  dev_complete: true
-  tests_passing: true
-  deployment_status: complete
-  
+
+phase_gates:
+  feature_spec_complete: false
+  spec_reviewed: false
+  dev_complete: false
+  tests_passing: false
+
 metrics:
-  complexity: "medium"
+  size: medium
   estimated_tokens: 50000
-  actual_tokens: 48000
+  actual_tokens: 0
 
 timestamps:
   created: 2026-01-16
-  spec_approved: 2026-01-17
-  deploy_complete: 2026-01-19
+  spec_started: 2026-01-16
+  spec_approved: null
+  deploy_complete: null
+
+blockers: []
+
+token_usage:
+  - phase: feature_spec
+    agent: feature-spec-agent
+    model: claude-sonnet-4-6
+    date: 2026-01-16
+    input_tokens: 12450
+    output_tokens: 3820
 ```
 
-### Local State (`.claude/local-state.yaml`)
+### `.claude/local-state.yaml`
 
 ```yaml
-role: "developer"
-current_feature: "FEATURE-001"
+role: developer           # tl | developer
+current_feature: FEATURE-001
 last_session: 2026-01-19T14:30:00Z
 ```
 
 ---
 
-## Skill Architecture
+## The Orchestrator
 
-### spec-gantry (Main Dashboard)
-
-**Responsibility:** Orchestrate the user experience.
-
-**Workflow:**
-1. Read all state files
-2. Calculate current phase and next actions
-3. Render dashboard
-4. Wait for user input
-5. Invoke appropriate agent
-6. Loop back to step 1
-
-**Entry point:** `/spec-gantry`
-
----
-
-### start-project
-
-**Responsibility:** New project initialization.
-
-**Questions asked:**
-- Project name & vision
-- Platform/language/framework
-- Key non-functional requirements
-- Team structure
-
-**Output:** Initializes `specs/project-state.yaml`
-
----
-
-### reverse-engineer
-
-**Responsibility:** Analyze existing code and suggest structure.
-
-**Process:**
-1. Scan directory structure
-2. Identify file types and languages
-3. Detect frameworks and patterns
-4. Propose tech stack
-5. Generate initial architecture
-6. Create candidate features
-
-**Output:** Proposed `architecture-spec.md` for review
-
----
-
-### bugfix
-
-**Responsibility:** Log and manage bugs outside normal feature pipeline.
-
-**Workflow:**
-1. User describes bug
-2. Log with BUGFIX-NNN ID
-3. Attach to project state
-4. Can be fixed immediately or deferred
-5. Can be "graduated" to regular feature
-
----
-
-### update-pricing
-
-**Responsibility:** Manage token cost tracking.
-
-**Functionality:**
-- Update model prices
-- View cost breakdowns
-- Set budget alerts
-- Generate cost reports
-
----
-
-## Agent Architecture
-
-### orchestrator
-
-**Purpose:** Coordinates skill invocations and state transitions.
+The orchestrator is the single choke point for all phase transitions. Skills invoke it; it routes to agents. No agent can be invoked except through the orchestrator.
 
 **Responsibilities:**
-- Read state
-- Determine current phase
-- Decide next action
-- Invoke appropriate agent
-- Update state
+1. **Gate enforcement** — reads filesystem and flags, both must agree
+2. **Agent routing** — dispatches to the correct agent for phase and role
+3. **Token logging** — appends usage entry after every agent invocation
+4. **State updates** — writes phase gate transitions after confirmed completion
+5. **Role enforcement** — refuses project-level operations for `role: dev`
 
----
-
-### ideation-agent
-
-**Purpose:** Guide project clarification.
-
-**Process:**
-1. Ask clarifying questions
-2. Capture stakeholder input
-3. Document assumptions
-4. Identify constraints
-5. Write ideation artifact
-
-**Output:** `specs/ideation-artifact.md`
-
----
-
-### architecture-agent
-
-**Purpose:** Design system and decompose into features.
-
-**Process:**
-1. Review ideation artifact
-2. Ask architecture questions
-3. Document tech decisions
-4. Define system boundaries
-5. Create feature candidates
-6. Generate backlog
-
-**Output:** `specs/architecture-spec.md` + backlog
-
----
-
-### feature-spec-agent
-
-**Purpose:** Write detailed feature specifications.
-
-**Process:**
-1. Load feature outline from backlog
-2. Guide spec writing (requirements, APIs, tests)
-3. Validate against architecture
-4. Check completeness
-5. Support self-review
-
-**Output:** `specs/features/FEATURE-XXX/spec.md`
-
----
-
-### dev-agent
-
-**Purpose:** Guide feature implementation.
-
-**Process:**
-1. Load feature spec
-2. Review existing architecture
-3. Suggest implementation approach
-4. Provide code guidance
-5. Track progress
-6. Verify against spec
-
-**Output:** Source code + notes in `dev-artifact.md`
-
----
-
-### test-agent
-
-**Purpose:** Guide testing and deployment verification.
-
-**Process:**
-1. Review test requirements from spec
-2. Guide test writing
-3. Verify all tests pass
-4. Check acceptance criteria
-5. Clear for deployment
-
-**Output:** Passing tests + verification notes
-
----
-
-## State Persistence
-
-### Why YAML for State?
-
-- **Human-readable** — Can inspect/edit manually if needed
-- **Git-friendly** — Diffs are clear
-- **Lossless** — No serialization issues
-- **Language-agnostic** — Any tool can read it
-
-### Where State Lives
+**Gate failure format:**
 
 ```
-specs/
-  ├── project-state.yaml          ← Project-level metadata
-  ├── ideation-artifact.md        ← Ideation output
-  ├── architecture-spec.md        ← Architecture output
-  └── features/
-      └── FEATURE-001/
-          ├── state.yaml          ← Feature-level metadata
-          ├── spec.md             ← Feature specification
-          └── dev-artifact.md     ← Dev implementation notes
+✗ Gate check failed: feature_spec → build
+
+  Required                                    Status
+  ──────────────────────────────────────────────────
+  feature-spec.md exists                   →  ✓
+  All 6 sections present                   →  ✓
+  ## Guardrail Compliance section present  →  ✓
+  Zero VIOLATION: markers                  →  ✗
+  spec_reviewed: true                      →  ✗
+
+  Action: Resolve the VIOLATION in section 2 (API Contract).
+  Then self-review the spec.
+
+  Run /spec-gantry to return to the dashboard.
 ```
-
-### Persistence Model
-
-**After each user input:**
-1. Update relevant state file
-2. Write to disk
-3. Validate YAML
-4. Return to checkpoint
-
-**Result:** If interrupted, next session picks up at next question.
 
 ---
 
-## Cost Tracking
+## State Persistence Model
 
-Every agent tracks:
-- Model used (Opus, Sonnet, Haiku)
-- Input tokens
-- Output tokens
-- Timestamp
+### Why YAML?
 
-**Aggregation:**
-- By phase (ideation, architecture, feature, dev, test)
-- By feature (cost-per-feature breakdown)
-- By team member (cost-per-developer)
-- Total project cost
+- **Human-readable** — inspectable without tooling; editable as a recovery step
+- **Git-friendly** — meaningful diffs, clean history
+- **Language-agnostic** — no SDK required to read or write
+- **Lossless** — no serialization surprises
+
+### Write-After-Every-Answer
+
+Agents follow a strict pattern:
+
+1. Read the artifact file; find first incomplete section
+2. Ask the question for that section
+3. Receive the answer
+4. Replace the placeholder with the answer
+5. **Write the file to disk**
+6. Move to the next section
+
+This means the artifact on disk always reflects the most recent complete answer. No buffering, no batch writes at the end of a session.
 
 ---
 
@@ -404,81 +287,116 @@ Every agent tracks:
 
 ### Role-Based Access
 
-**Team Lead can:**
-- View all features
-- Approve specs
-- Deploy features
-- Modify backlog
-- View all costs
+| Action | Team Lead | Developer |
+|--------|-----------|-----------|
+| Run ideation | ✅ | ❌ |
+| Run architecture | ✅ | ❌ |
+| Write to project-state.yaml | ✅ | ❌ |
+| View architecture spec | ✅ | ✅ (read-only) |
+| Write feature spec | ✅ | ✅ |
+| Approve feature spec | ✅ | ❌ |
+| Build feature | ✅ | ✅ |
+| Deploy | ✅ | ❌ |
+| View all costs | ✅ | ❌ |
 
-**Developer can:**
-- See their assigned features
-- View architecture (read-only)
-- Write specs
-- Implement and test
-- Request approval
+### Secrets Handling
 
-### File Permissions
+The dev agent enforces a hard rule: **no secrets or credentials in source code**. 
 
-State files are plain text in the project repo. Security relies on:
-- Git access controls
-- Repository permissions
-- Team trust
-- Code review process
+The feature-spec template requires that section 6 (Non-Functional Considerations) lists every secret, API key, and credential by its environment variable name. The dev agent reads this list and refuses to write any literal credential value to a file.
 
----
+If a violation is detected:
 
-## Scalability
-
-### Single File Limitations
-
-State files are stored per-feature:
 ```
-features/FEATURE-001/state.yaml
-features/FEATURE-002/state.yaml
-...
+✗ Secrets violation: attempted to hardcode Stripe secret key in src/services/billing.js
+
+  This value must be read from environment variable STRIPE_SECRET_KEY.
+  Declared env vars for this feature: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+
+  Fix: use process.env.STRIPE_SECRET_KEY. Do not proceed until resolved.
 ```
-
-**This scales well for:**
-- Up to ~100 features per project
-- Multiple parallel features (different developers)
-- Feature reordering and reassignment
-
-**If you hit limits:**
-- Archive old features
-- Start a new project phase
-- Contact support
-
----
-
-## Extension Points
-
-SpecGantry is designed to be extended:
-
-1. **Custom agents** — Add domain-specific guidance
-2. **Custom skills** — Add workflow steps
-3. **Custom phases** — Extend beyond standard pipeline
-4. **Custom validation** — Add architecture checks
-
-See [Contributing](../../CONTRIBUTING.md) for details.
 
 ---
 
 ## Performance Characteristics
 
-- **Dashboard render:** <1 second (reads all state)
-- **State update:** <100ms (writes one file)
-- **Phase transition:** <500ms (orchestrator + state update)
-- **Agent invocation:** Depends on model (typically 1–5 minutes)
+| Operation | Typical Time |
+|-----------|-------------|
+| Dashboard render | < 1 second |
+| State update (single file write) | < 100ms |
+| Phase transition (orchestrator + state update) | < 500ms |
+| Agent invocation (model-dependent) | 30 seconds to 5 minutes |
+
+The bottleneck is always the model invocation. State operations are negligible.
+
+---
+
+## Scalability
+
+SpecGantry scales well for:
+- Up to ~100 features per project
+- Multiple parallel developers (different features, different branches)
+- Feature reordering and reassignment
+- Multiple team members with separate `local-state.yaml` files
+
+Each feature has its own directory under `specs/features/`, so parallel work is naturally isolated.
+
+---
+
+## Extension Points
+
+SpecGantry is open source and designed to be extended.
+
+### Custom Agents
+
+Add domain-specific agents by creating a new `.md` file under `agents/` with the standard frontmatter:
+
+```yaml
+---
+name: security-review-agent
+description: Performs security review of feature spec before approving build
+model: claude-sonnet-4-6
+tools: Read, Write
+---
+```
+
+### Custom Skills
+
+Add workflow steps by creating a `SKILL.md` under `skills/[name]/`. The orchestrator can be extended to invoke your skill at specific phase transitions.
+
+### Custom Validation
+
+Add custom guardrail patterns to `architecture-spec.md → ## Guardrails`. The feature-spec agent enforces all guardrails in that section — adding new ones requires no code changes.
+
+### Custom Phase Pipeline
+
+The phase ordering and gate conditions are in `orchestrator.md`. Advanced users can modify them to add phases (e.g., a security review phase between spec and build) or change role requirements.
+
+---
+
+## Contributing
+
+SpecGantry is open source under Apache 2.0. See [CONTRIBUTING.md](https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md) for details.
+
+Issues and PRs welcome: [github.com/specgantry/specgantry.github.io](https://github.com/specgantry/specgantry.github.io)
 
 ---
 
 ## Next Steps
 
-- [**Getting Started**](../getting-started/) — Install & first run
-- [**How It Works**](../how-it-works/) — Pipeline details
-- [**Contributing**](../../CONTRIBUTING.md) — Extend SpecGantry
-
----
-
-**Questions?** Open an issue on [GitHub](https://github.com/specgantry/specgantry.github.io/issues)
+<div class="next-steps-grid">
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon">❓</div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Answers to common questions about installation, roles, pipeline phases, costs, and troubleshooting.</span>
+    </div>
+  </a>
+  <a href="/docs/getting-started" class="next-step-card">
+    <div class="next-step-icon">🚀</div>
+    <div>
+      <strong>Getting Started</strong>
+      <span>Install and run your first session in under 5 minutes.</span>
+    </div>
+  </a>
+</div>

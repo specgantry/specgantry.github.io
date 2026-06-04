@@ -24,5 +24,4 @@
     "engines": {
         "claude-code": ">=1.0.0"
     },
-    "downloadUrl": "https://github.com/specgantry/specgantry.github.io/releases/download/latest/spec-gantry.zip"
 }

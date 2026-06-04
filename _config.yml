@@ -1,0 +1,62 @@
+# Jekyll configuration for SpecGantry documentation site
+# Hosted at https://specgantry.github.io
+
+title: SpecGantry
+description: AI-assisted SDLC pipeline for Claude Code
+url: https://specgantry.github.io
+baseurl: ""
+
+# Theme
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+
+# Markdown processor
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Exclude files from build
+exclude:
+  - .git
+  - .github
+  - node_modules
+  - scripts
+  - package.json
+  - LICENSE
+  - NOTICE
+  - SECURITY.md
+  - CONTRIBUTING.md
+  - DISTRIBUTION.md
+  - DISTRIBUTION-QUICKSTART.md
+  - DISTRIBUTION-SUMMARY.md
+  - DISTRIBUTION-STATUS.txt
+  - FIRST-RELEASE.md
+  - PLUGIN-STRUCTURE.md
+  - DISTRIBUTION-CHECKLIST.md
+  - .claude
+  - .claude-plugin
+  - agents
+  - config
+  - skills
+  - index.ts
+  - .pluginignore
+
+# Keep files from being processed but not excluded
+keep_files:
+  - skills
+  - agents
+  - config
+
+# Layout
+layout: default
+
+# Author
+author: Mangesh Pise
+github: https://github.com/specgantry/specgantry.github.io
+
+# Logo
+logo: /assets/icon.png
+

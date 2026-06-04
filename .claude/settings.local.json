@@ -8,7 +8,10 @@
       "Bash(git push *)",
       "Bash(curl -s https://raw.githubusercontent.com/specgantry/specgantry.github.io/main/marketplace.json)",
       "Bash(chmod +x scripts/*.js)",
-      "Bash(node scripts/build.js)"
+      "Bash(node scripts/build.js)",
+      "Bash(cat)",
+      "Bash(chmod +x /tmp/verify-distribution.sh)",
+      "Bash(/tmp/verify-distribution.sh)"
     ]
   }
 }

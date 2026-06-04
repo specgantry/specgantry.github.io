@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} — {% endif %}SpecGantry</title>
+  <meta name="description" content="AI-assisted SDLC pipeline for Claude Code — enforces specs before code, architecture as guardrails, role-based ownership, and token cost visibility.">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  {% if site.github.is_project_page %}
+    <link rel="stylesheet" href="{{ site.github.repository_url }}/raw/main/assets/style.css">
+  {% endif %}
+  
+  <link rel="icon" type="image/png" href="{{ '/assets/icon.png' | relative_url }}">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      {% if site.logo %}
+        <a href="{{ '/' | relative_url }}" class="logo-link">
+          <img src="{{ site.logo | relative_url }}" alt="SpecGantry" class="logo">
+        </a>
+      {% endif %}
+      
+      <h1>
+        <a href="{{ '/' | relative_url }}" style="border: none;">SpecGantry</a>
+      </h1>
+      
+      <p class="subtitle" style="color: #666; margin: 0.5em 0 0 0;">
+        AI-assisted SDLC pipeline for Claude Code
+      </p>
+      
+      <nav class="nav">
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <a href="{{ '/docs/getting-started' | relative_url }}">Getting Started</a>
+        <a href="{{ '/docs/how-it-works' | relative_url }}">How It Works</a>
+        <a href="{{ '/docs/skills' | relative_url }}">Skills</a>
+        <a href="{{ '/docs/architecture' | relative_url }}">Architecture</a>
+        <a href="{{ '/docs/faq' | relative_url }}">FAQ</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width: 1000px; margin: 0 auto; padding: 2em 1em;">
+    {{ content }}
+  </main>
+
+  <footer class="footer">
+    <p>
+      Made with ❤️ for Claude Code • 
+      <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> •
+      <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> •
+      <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+    </p>
+    <p style="font-size: 0.85em; margin-top: 1em; color: #999;">
+      SpecGantry © 2026 — Apache 2.0 License
+    </p>
+  </footer>
+
+  <style>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1em;
+    }
+    
+    main.container {
+      margin: 2em auto;
+    }
+  </style>
+</body>
+</html>

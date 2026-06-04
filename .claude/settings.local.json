@@ -16,7 +16,10 @@
       "Bash(./deploy.sh --help)",
       "Bash(./deploy.sh *)",
       "Bash(git rm *)",
-      "Bash(unzip -l spec-gantry.zip)"
+      "Bash(unzip -l spec-gantry.zip)",
+      "Bash(chmod +x /Users/mangeshpise/Code/SpecGantry/release.sh)",
+      "Bash(./release.sh --help)",
+      "Bash(./release.sh *)"
     ]
   }
 }

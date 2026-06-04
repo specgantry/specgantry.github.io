@@ -69,11 +69,12 @@ EXAMPLES:
   ./release.sh v1.0.0       (release v1.0.0 specifically)
 
 PROCESS:
-  1. Updates version in .claude-plugin/plugin.json
-  2. Commits change
-  3. Tags release in git
-  4. Pushes to GitHub
-  5. Release page created automatically
+  1. Stages any uncommitted changes
+  2. Updates version in .claude-plugin/plugin.json
+  3. Commits all changes
+  4. Tags release in git
+  5. Pushes commits and tags to GitHub
+  6. Release page created automatically
 
 For more info, visit: https://github.com/specgantry/specgantry.github.io
 EOF
@@ -129,9 +130,10 @@ release() {
     log_error "Must be on 'main' branch. Currently on: $branch"
   fi
 
-  # Check for uncommitted changes
+  # Check for uncommitted changes and stage them
   if ! git diff-index --quiet HEAD --; then
-    log_error "Uncommitted changes detected. Commit or stash them first."
+    log_warning "Uncommitted changes detected. Including in release commit."
+    git add -A
   fi
 
   # Check if tag exists

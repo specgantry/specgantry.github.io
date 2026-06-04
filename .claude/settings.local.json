@@ -11,7 +11,11 @@
       "Bash(node scripts/build.js)",
       "Bash(cat)",
       "Bash(chmod +x /tmp/verify-distribution.sh)",
-      "Bash(/tmp/verify-distribution.sh)"
+      "Bash(/tmp/verify-distribution.sh)",
+      "Bash(chmod +x /Users/mangeshpise/Code/SpecGantry/deploy.sh)",
+      "Bash(./deploy.sh --help)",
+      "Bash(./deploy.sh *)",
+      "Bash(git rm *)"
     ]
   }
 }

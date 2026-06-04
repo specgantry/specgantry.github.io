@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
   "main": "index.ts",
-  "scripts": {
-    "build": "node scripts/build.js",
-    "release": "node scripts/release.js",
-    "package": "zip -r spec-gantry.zip . -x '.git/*' '.gitignore' 'node_modules/*' '.DS_Store' '*.log' '.env*' '.pluginignore' 'PLUGIN-STRUCTURE.md' 'scripts/*' 'docs/*' 'README.md' '.claude/*'"
-  },
   "keywords": [
     "sdlc",
     "pipeline",

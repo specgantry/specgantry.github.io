@@ -1,0 +1,10 @@
+
+# Build artifacts
+spec-gantry.zip
+*.zip
+
+# OS files
+.DS_Store
+*.log
+.env
+.env.local

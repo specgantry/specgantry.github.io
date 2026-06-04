@@ -25,7 +25,6 @@
         "code-generation"
       ],
       "icon": "https://raw.githubusercontent.com/specgantry/specgantry.github.io/main/.claude-plugin/assets/icon.png",
-      "downloadUrl": "https://github.com/specgantry/specgantry.github.io/releases/download/v1.0.0/spec-gantry.zip",
       "engines": {
         "claude-code": ">=1.0.0"
       }

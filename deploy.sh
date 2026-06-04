@@ -141,15 +141,18 @@ build_package() {
   # Remove old package if it exists
   rm -f spec-gantry.zip
 
-  # Create the package with ONLY plugin files
-  # Excludes: icon.png (4MB, optional), .pluginignore (not needed)
+  # Create the package with plugin files + open source docs
   zip -r spec-gantry.zip \
     .claude-plugin/plugin.json \
     agents/ \
     skills/ \
     config/ \
     index.ts \
-    marketplace.json > /dev/null 2>&1
+    marketplace.json \
+    LICENSE \
+    NOTICE \
+    CONTRIBUTING.md \
+    SECURITY.md > /dev/null 2>&1
 
   local size=$(du -h spec-gantry.zip | cut -f1)
   log_success "Package created: spec-gantry.zip ($size)"

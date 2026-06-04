@@ -49,14 +49,14 @@
           <a href="{{ '/docs' | relative_url }}" class="sidebar-link {% if page.url == '/docs/' or page.url == '/docs/index.html' %}sidebar-link-active{% endif %}">
             Overview
           </a>
-          <a href="{{ '/docs/getting-started' | relative_url }}" class="sidebar-link {% if page.url contains '/getting-started' %}sidebar-link-active{% endif %}">
+          <a href="{{ '/docs/getting-started' | relative_url }}" class="sidebar-link {% if page.url == '/docs/getting-started/' or page.url == '/docs/getting-started/index.html' %}sidebar-link-active{% endif %}">
             Installation
           </a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">The Pipeline</div>
-          <a href="{{ '/docs/how-it-works' | relative_url }}" class="sidebar-link {% if page.url contains '/how-it-works' %}sidebar-link-active{% endif %}">
+          <a href="{{ '/docs/how-it-works' | relative_url }}" class="sidebar-link {% if page.url == '/docs/how-it-works/' or page.url == '/docs/how-it-works/index.html' %}sidebar-link-active{% endif %}">
             How It Works
           </a>
           <a href="{{ '/docs/how-it-works' | relative_url }}#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
@@ -67,7 +67,7 @@
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Skills &amp; Agents</div>
-          <a href="{{ '/docs/skills' | relative_url }}" class="sidebar-link {% if page.url contains '/skills' %}sidebar-link-active{% endif %}">
+          <a href="{{ '/docs/skills' | relative_url }}" class="sidebar-link {% if page.url == '/docs/skills/' or page.url == '/docs/skills/index.html' %}sidebar-link-active{% endif %}">
             Skills Guide
           </a>
           <a href="{{ '/docs/skills' | relative_url }}#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
@@ -79,17 +79,17 @@
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
-          <a href="{{ '/docs/architecture' | relative_url }}" class="sidebar-link {% if page.url contains '/architecture' %}sidebar-link-active{% endif %}">
+          <a href="{{ '/docs/architecture' | relative_url }}" class="sidebar-link {% if page.url == '/docs/architecture/' or page.url == '/docs/architecture/index.html' %}sidebar-link-active{% endif %}">
             Architecture
           </a>
-          <a href="{{ '/docs/faq' | relative_url }}" class="sidebar-link {% if page.url contains '/faq' %}sidebar-link-active{% endif %}">
+          <a href="{{ '/docs/faq' | relative_url }}" class="sidebar-link {% if page.url == '/docs/faq/' or page.url == '/docs/faq/index.html' %}sidebar-link-active{% endif %}">
             FAQ
           </a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Community</div>
-          <a href="{{ '/blog' | relative_url }}" class="sidebar-link {% if page.url contains '/blog' %}sidebar-link-active{% endif %}">Blog</a>
+          <a href="{{ '/blog' | relative_url }}" class="sidebar-link {% if page.url == '/blog/' or page.url == '/blog/index.html' %}sidebar-link-active{% endif %}">Blog</a>
           <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
           <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
         </div>

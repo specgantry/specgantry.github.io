@@ -10,7 +10,7 @@
         "url": "https://github.com/mppise"
     },
     "license": "Apache-2.0",
-    "repository": "https://github.com/specgantry/specgantry.github.io",
+    "repository": "https://github.com/specgantry/specgantry.github.io.git",
     "homepage": "https://specgantry.github.io",
     "documentation": "https://specgantry.github.io",
     "keywords": [

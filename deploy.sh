@@ -103,13 +103,11 @@ validate_plugin() {
     ".claude-plugin/plugin.json"
     "marketplace.json"
     "index.ts"
-    ".claude-plugin/assets/icon.png"
   )
 
   local required_dirs=(
     "skills"
     "agents"
-    "docs"
   )
 
   for file in "${required_files[@]}"; do
@@ -143,24 +141,15 @@ build_package() {
   # Remove old package if it exists
   rm -f spec-gantry.zip
 
-  # Create the package
-  zip -r spec-gantry.zip . \
-    -x '.git/*' \
-    '.gitignore' \
-    'node_modules/*' \
-    '.DS_Store' \
-    '*.log' \
-    '.env*' \
-    '.github/*' \
-    'deploy.sh' \
-    'README.md' \
-    'CONTRIBUTING.md' \
-    'SECURITY.md' \
-    'LICENSE' \
-    'NOTICE' \
-    '.claude/*' \
-    'docs/*' \
-    '.pluginignore' > /dev/null 2>&1
+  # Create the package with ONLY plugin files
+  # Excludes: icon.png (4MB, optional), .pluginignore (not needed)
+  zip -r spec-gantry.zip \
+    .claude-plugin/plugin.json \
+    agents/ \
+    skills/ \
+    config/ \
+    index.ts \
+    marketplace.json > /dev/null 2>&1
 
   local size=$(du -h spec-gantry.zip | cut -f1)
   log_success "Package created: spec-gantry.zip ($size)"

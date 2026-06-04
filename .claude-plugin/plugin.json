@@ -22,7 +22,7 @@
     ],
     "icon": ".claude-plugin/assets/icon.png",
     "engines": {
-        "claude-code": ">=1.0.0"
+        "claude-code": ">=2.0.0"
     },
     "skills": "skills"
 }

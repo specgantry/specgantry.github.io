@@ -22,9 +22,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Plugin manifest files
+# Plugin manifest file
 MANIFEST_FILE=".claude-plugin/plugin.json"
-MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 
 # Functions
 log_info() {
@@ -120,42 +119,6 @@ validate_version() {
   fi
 }
 
-sync_marketplace_from_plugin() {
-  log_info "Syncing marketplace.json plugins[] from plugin.json"
-
-  # Update only the plugins[] array in marketplace.json, preserving all
-  # top-level marketplace fields (name, owner, description, etc.)
-  node -e "
-    const fs = require('fs');
-    const plugin = JSON.parse(fs.readFileSync('$MANIFEST_FILE', 'utf8'));
-    const marketplace = JSON.parse(fs.readFileSync('$MARKETPLACE_FILE', 'utf8'));
-
-    marketplace.plugins = [
-      {
-        name: plugin.name,
-        source: {
-          source: 'github',
-          repo: 'specgantry/specgantry.github.io'
-        },
-        displayName: plugin.displayName,
-        description: plugin.description,
-        version: plugin.version,
-        author: plugin.author,
-        homepage: plugin.homepage,
-        repository: plugin.repository,
-        license: plugin.license,
-        keywords: plugin.keywords,
-        skills: plugin.skills || [],
-        agents: plugin.agents || []
-      }
-    ];
-
-    fs.writeFileSync('$MARKETPLACE_FILE', JSON.stringify(marketplace, null, 2) + '\n');
-  "
-
-  log_success "marketplace.json plugins[] synced"
-}
-
 release() {
   local version=$1
 
@@ -192,12 +155,9 @@ release() {
 
   log_success "Version updated to $version"
 
-  # Auto-generate marketplace.json from plugin.json
-  sync_marketplace_from_plugin
-
   # Commit
   log_info "Creating commit"
-  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE"
+  git add "$MANIFEST_FILE"
   git commit -m "Release v$version"
   log_success "Commit created"
 

@@ -1,8 +1,17 @@
----
-layout: landing
-title: SpecGantry — AI-Assisted SDLC Pipeline for Claude Code
-permalink: /
----
+# SpecGantry
 
-<!-- Landing page content is rendered via _layouts/landing.html -->
-<!-- All sections are defined in the layout itself for full design control -->
+AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.
+
+## Install
+
+```bash
+claude plugin install https://github.com/specgantry/specgantry.github.io
+```
+
+## Website
+
+https://specgantry.github.io
+
+## License
+
+Apache 2.0

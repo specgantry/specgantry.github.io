@@ -34,22 +34,7 @@ defaults:
       layout: docs
 
 # Exclude files from build
-exclude:
-  - .git
-  - .github
-  - LICENSE
-  - NOTICE
-  - SECURITY.md
-  - CONTRIBUTING.md
-  - .claude
-  - .claude-plugin
-  - agents
-  - config
-  - skills
-  - release.sh
-
-# Keep files from being processed but not excluded
-keep_files:
+exclude: []
 
 # Author
 author: Mangesh Pise
@@ -57,4 +42,3 @@ github: https://github.com/mppise
 
 # Logo
 logo: /assets/icon.png
-

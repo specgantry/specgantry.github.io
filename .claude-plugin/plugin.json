@@ -5,16 +5,21 @@
     "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
     "author": {
         "name": "Mangesh Pise",
-        "email": "mppise@gmail.com"
+        "email": "mppise@gmail.com",
+        "url": "https://github.com/mppise"
     },
     "license": "Apache-2.0",
     "repository": "https://github.com/specgantry/specgantry.github.io",
-    "homepage": "https://github.com/specgantry/specgantry.github.io",
+    "homepage": "https://specgantry.github.io",
     "keywords": [
         "sdlc",
         "pipeline",
         "architecture",
         "deployment",
         "code-generation"
-    ]
+    ],
+    "icon": ".claude-plugin/assets/icon.png",
+    "engines": {
+        "claude-code": ">=1.0.0"
+    }
 }

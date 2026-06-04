@@ -1,0 +1,20 @@
+# spec-gantry pricing history
+# Records known Anthropic model rates by effective date.
+# Add a new entry when rates change — old entries are preserved for historical cost accuracy.
+# Updated by /update-pricing. Committed to the plugin repo so all team members share it.
+#
+# Cost calculation is performed by option 3 in /spec-gantry — this file is passed as
+# context to an LLM alongside the project token log. The LLM does the math.
+
+history:
+  - effective: 2025-07-01
+    models:
+      claude-haiku-4-5:
+        input_per_1m: 0.80
+        output_per_1m: 4.00
+      claude-sonnet-4-6:
+        input_per_1m: 3.00
+        output_per_1m: 15.00
+      claude-opus-4-8:
+        input_per_1m: 15.00
+        output_per_1m: 75.00

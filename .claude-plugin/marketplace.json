@@ -6,14 +6,14 @@
     "url": "https://github.com/mppise"
   },
   "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "plugins": [
     {
       "name": "spec-gantry",
       "source": "./",
       "displayName": "SpecGantry",
       "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-      "version": "1.0.9",
+      "version": "1.1.0",
       "author": {
         "name": "Mangesh Pise",
         "email": "mppise@gmail.com",
@@ -29,9 +29,6 @@
         "deployment",
         "code-generation"
       ],
-      "engines": {
-        "claude-code": ">=2.0.0"
-      },
       "skills": [
         {
           "name": "spec-gantry",

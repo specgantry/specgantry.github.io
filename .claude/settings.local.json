@@ -23,7 +23,9 @@
       "Bash(xargs ls -lh)",
       "Bash(git checkout *)",
       "WebSearch",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(ssh -T git@github.com)"
     ]
   }
 }

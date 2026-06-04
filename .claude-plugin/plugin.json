@@ -1,4 +1,5 @@
 {
+    "id": "spec-gantry",
     "name": "spec-gantry",
     "displayName": "SpecGantry",
     "version": "1.0.0",
@@ -11,6 +12,7 @@
     "license": "Apache-2.0",
     "repository": "https://github.com/specgantry/specgantry.github.io",
     "homepage": "https://specgantry.github.io",
+    "documentation": "https://specgantry.github.io",
     "keywords": [
         "sdlc",
         "pipeline",
@@ -21,5 +23,6 @@
     "icon": ".claude-plugin/assets/icon.png",
     "engines": {
         "claude-code": ">=1.0.0"
-    }
+    },
+    "downloadUrl": "https://github.com/specgantry/specgantry.github.io/releases/download/latest/spec-gantry.zip"
 }

@@ -120,6 +120,44 @@ validate_version() {
   fi
 }
 
+sync_marketplace_from_plugin() {
+  log_info "Syncing marketplace.json from plugin.json"
+
+  # Read plugin.json and generate marketplace.json
+  node -e "
+    const fs = require('fs');
+    const plugin = JSON.parse(fs.readFileSync('$MANIFEST_FILE', 'utf8'));
+
+    const marketplace = {
+      name: plugin.name,
+      owner: plugin.author,
+      description: plugin.description,
+      version: plugin.version,
+      plugins: [
+        {
+          name: plugin.name,
+          source: './',
+          displayName: plugin.displayName,
+          description: plugin.description,
+          version: plugin.version,
+          author: plugin.author,
+          homepage: plugin.homepage,
+          repository: plugin.repository,
+          license: plugin.license,
+          keywords: plugin.keywords,
+          engines: plugin.engines,
+          skills: plugin.skills || [],
+          agents: plugin.agents || []
+        }
+      ]
+    };
+
+    fs.writeFileSync('$MARKETPLACE_FILE', JSON.stringify(marketplace, null, 2) + '\n');
+  "
+
+  log_success "marketplace.json synced"
+}
+
 release() {
   local version=$1
 
@@ -143,20 +181,21 @@ release() {
   fi
 
   # Update version in manifest
-  log_info "Updating version in $MANIFEST_FILE and $MARKETPLACE_FILE"
+  log_info "Updating version in $MANIFEST_FILE"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
-    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
   else
     # Linux
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
-    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
   fi
 
   log_success "Version updated to $version"
+
+  # Auto-generate marketplace.json from plugin.json
+  sync_marketplace_from_plugin
 
   # Commit
   log_info "Creating commit"

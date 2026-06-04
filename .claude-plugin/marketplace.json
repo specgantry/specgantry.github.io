@@ -2,23 +2,25 @@
   "name": "spec-gantry",
   "owner": {
     "name": "Mangesh Pise",
-    "email": "mppise@gmail.com"
+    "email": "mppise@gmail.com",
+    "url": "https://github.com/mppise"
   },
   "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "plugins": [
     {
       "name": "spec-gantry",
       "source": "./",
       "displayName": "SpecGantry",
       "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "author": {
         "name": "Mangesh Pise",
-        "email": "mppise@gmail.com"
+        "email": "mppise@gmail.com",
+        "url": "https://github.com/mppise"
       },
       "homepage": "https://specgantry.github.io",
-      "repository": "https://github.com/specgantry/specgantry.github.io",
+      "repository": "https://github.com/specgantry/specgantry.github.io.git",
       "license": "Apache-2.0",
       "keywords": [
         "sdlc",
@@ -29,7 +31,59 @@
       ],
       "engines": {
         "claude-code": ">=2.0.0"
-      }
+      },
+      "skills": [
+        {
+          "name": "spec-gantry",
+          "path": "../skills/spec-gantry/SKILL.md"
+        },
+        {
+          "name": "start-project",
+          "path": "../skills/start-project/SKILL.md"
+        },
+        {
+          "name": "bugfix",
+          "path": "../skills/bugfix/SKILL.md"
+        },
+        {
+          "name": "reverse-engineer",
+          "path": "../skills/reverse-engineer/SKILL.md"
+        },
+        {
+          "name": "update-pricing",
+          "path": "../skills/update-pricing/SKILL.md"
+        }
+      ],
+      "agents": [
+        {
+          "name": "orchestrator",
+          "path": "../agents/orchestrator.md"
+        },
+        {
+          "name": "ideation-agent",
+          "path": "../agents/ideation/ideation-agent.md"
+        },
+        {
+          "name": "feature-spec-agent",
+          "path": "../agents/feature-spec/feature-spec-agent.md"
+        },
+        {
+          "name": "architecture-agent",
+          "path": "../agents/architecture/architecture-agent.md"
+        },
+        {
+          "name": "dev-agent",
+          "path": "../agents/development/dev-agent.md"
+        },
+        {
+          "name": "test-agent",
+          "path": "../agents/development/test-agent.md"
+        },
+        {
+          "name": "deployment-agent",
+          "path": "../agents/deployment/deployment-agent.md"
+        }
+      ]
     }
   ]
 }

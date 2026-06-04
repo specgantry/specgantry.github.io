@@ -22,7 +22,8 @@
       "Bash(./release.sh *)",
       "Bash(xargs ls -lh)",
       "Bash(git checkout *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(node *)"
     ]
   }
 }

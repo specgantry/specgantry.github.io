@@ -59,10 +59,15 @@ WORKFLOW:
   3. Run deploy script:
      ./deploy.sh v1.0.0
 
-  4. GitHub Actions automatically:
-     - Creates spec-gantry.zip package
-     - Publishes GitHub Release
-     - Makes it available for installation
+  4. Script automatically:
+     - Creates spec-gantry.zip package (44 KB)
+     - Creates git tag v1.0.0
+     - Pushes tag to GitHub
+
+  5. GitHub automatically:
+     - Creates Release on GitHub Releases page
+     - Rebuilds documentation site
+     - Makes plugin available for installation
 
 OPTIONS:
   --help           Show this help message

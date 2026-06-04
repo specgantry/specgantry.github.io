@@ -136,7 +136,7 @@ sync_marketplace_from_plugin() {
       plugins: [
         {
           name: plugin.name,
-          source: './',
+          source: 'https://github.com/specgantry/specgantry.github.io.git',
           displayName: plugin.displayName,
           description: plugin.description,
           version: plugin.version,

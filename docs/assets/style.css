@@ -83,20 +83,12 @@ img { max-width: 100%; height: auto; }
 }
 .nav-logo:hover { text-decoration: none; }
 
-.logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--blue-600), var(--blue-800));
-  color: #fff;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: -0.5px;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  box-shadow: var(--shadow-blue);
+  object-fit: contain;
 }
 
 .logo-text {

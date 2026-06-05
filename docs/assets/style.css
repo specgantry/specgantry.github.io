@@ -1157,6 +1157,47 @@ img { max-width: 100%; height: auto; }
   font-size: 0.9rem;
 }
 
+.install-update {
+  background: rgba(59,130,246,.08);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  max-width: 680px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.update-label {
+  color: var(--slate-400);
+  font-weight: 500;
+}
+
+.update-cmd {
+  background: rgba(59,130,246,.15);
+  border: 1px solid rgba(59,130,246,.3);
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: var(--blue-300);
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.update-link {
+  color: var(--blue-300);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.update-link:hover {
+  color: var(--blue-200);
+  text-decoration: underline;
+}
+
 .install-actions {
   display: flex;
   align-items: center;

@@ -97,6 +97,22 @@ Then in any Claude Code project:
 
 The dashboard guides you from there.
 
+### Keep SpecGantry Updated
+
+Update to the latest version anytime:
+
+```bash
+claude plugin marketplace update spec-gantry
+```
+
+Or from within Claude Code:
+
+```
+/plugin marketplace update spec-gantry
+```
+
+See [FAQ → Installation](/docs/faq#how-do-i-update-specgantry) for more update options.
+
 ---
 
 ## Key Concepts

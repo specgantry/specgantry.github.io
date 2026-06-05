@@ -21,6 +21,30 @@ Then open any project in Claude Code and run:
 /spec-gantry
 ```
 
+## Update
+
+If you already have SpecGantry installed, update to the latest version:
+
+**Option 1 — Terminal:**
+```bash
+claude plugin marketplace update spec-gantry
+```
+
+**Option 2 — From within Claude Code:**
+```
+/plugin marketplace update spec-gantry
+```
+
+**Option 3 — Direct plugin update (alternative):**
+```bash
+claude plugin update spec-gantry@spec-gantry
+```
+
+Or from within Claude Code:
+```
+/plugin update spec-gantry@spec-gantry
+```
+
 ## Documentation
 
 https://specgantry.github.io

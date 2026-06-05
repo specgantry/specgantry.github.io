@@ -45,6 +45,41 @@ Claude Code will:
 
 ---
 
+## Updating SpecGantry
+
+If you already have SpecGantry installed, keep it up to date with the latest features and fixes.
+
+**Option 1 — From the marketplace (recommended):**
+
+In your terminal:
+```bash
+claude plugin marketplace update spec-gantry
+```
+
+Or from within Claude Code:
+```
+/plugin marketplace update spec-gantry
+```
+
+**Option 2 — Direct plugin update:**
+
+In your terminal:
+```bash
+claude plugin update spec-gantry@spec-gantry
+```
+
+Or from within Claude Code:
+```
+/plugin update spec-gantry@spec-gantry
+```
+
+Check the current version anytime:
+```bash
+claude plugin list
+```
+
+---
+
 ## Step 2 — Open Your Project
 
 ```

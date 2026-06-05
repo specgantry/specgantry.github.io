@@ -41,6 +41,42 @@ Not required. SpecGantry saves state as plain text files in `specs/` — git is 
 - Version history of your architecture and specs
 - Recovery from accidental file deletion
 
+### How do I update SpecGantry?
+
+If you already have SpecGantry installed, update to the latest version using one of these commands:
+
+**Option 1 — From the marketplace (recommended):**
+```bash
+claude plugin marketplace update spec-gantry
+```
+
+Or from within Claude Code:
+```
+/plugin marketplace update spec-gantry
+```
+
+**Option 2 — Direct plugin update:**
+```bash
+claude plugin update spec-gantry@spec-gantry
+```
+
+Or from within Claude Code:
+```
+/plugin update spec-gantry@spec-gantry
+```
+
+Check your current version anytime:
+```bash
+claude plugin list
+```
+
+### What's the difference between `plugin marketplace update` and `plugin update`?
+
+- **`claude plugin marketplace update spec-gantry`** — Updates from the registered marketplace (recommended). Safe, verifies the plugin structure, and keeps you on the latest stable release.
+- **`claude plugin update spec-gantry@spec-gantry`** — Direct plugin update. Also works but bypasses the marketplace verification step.
+
+Both achieve the same result — use whichever is more convenient.
+
 ---
 
 ## Getting Started

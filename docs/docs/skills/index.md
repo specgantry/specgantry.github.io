@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 6 skills and 7 agents — what they do, when to use them, and how they interact.
+description: All 7 skills and 7 agents — what they do, when to use them, and how they interact.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Architecture"
@@ -10,7 +10,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-All 6 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
+All 7 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
@@ -22,7 +22,8 @@ All 6 skills and their associated agents — what they do, when to invoke them, 
 | **start-project** | `/start-project` | Team Lead | New project initialization |
 | **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
 | **bugfix** | `/bugfix` | Developer | Log and manage bugs |
-| **track-cost** | `[C]ost` from menu | Both | View token costs by phase and feature |
+| **track-cost** | `[C]ost` from menu | Both | View costs at any stage of development |
+| **Automatic cost tracking** | Built-in | Both | Logs token usage at every phase automatically |
 | **update-pricing** | `/update-pricing` | Team Lead | Token price configuration |
 
 ---
@@ -271,7 +272,7 @@ Sometimes a bug reveals that something was never properly spec'd. The Team Lead 
 
 ## 5. track-cost {#track-cost}
 
-**View total project costs and per-feature cost breakdown.**
+**Check project costs at any stage—automatic logging throughout all phases.**
 
 ```
 [C]ost (from /spec-gantry menu)
@@ -279,13 +280,13 @@ Sometimes a bug reveals that something was never properly spec'd. The Team Lead 
 
 ### What It Does
 
-SpecGantry logs token usage for every agent invocation automatically. This skill aggregates all token logs and calculates costs using your configured pricing rates.
+SpecGantry logs token usage for every agent invocation automatically across **all phases**: ideation, architecture, spec-writing, development, testing, and deployment. This skill aggregates those logs and calculates costs in real-time using your configured pricing rates.
 
-**Displays:**
+**Call it anytime to see:**
 - Current pricing effective date
 - Project-level costs (ideation, architecture, deployment)
 - Per-feature costs (by feature and by phase within each feature)
-- Total project cost (sum of all phases and features)
+- Total project cost so far (accumulating as work progresses)
 
 ### Example Output
 
@@ -331,11 +332,45 @@ The report shows:
 
 ### When to Use It
 
-- **Monthly cost reviews** — understand where AI spending went
-- **Client billing** — per-project cost breakdown for accurate invoicing
+- **During ideation** — see how much the clarification phase cost
+- **After architecture** — understand architecture design costs before committing to it
+- **Mid-feature development** — check if a feature is spending more than expected, adjust scope if needed
+- **Sprint reviews** — show stakeholders the AI investment per feature
+- **Monthly budget checks** — never let costs surprise you; check anytime
+- **Client billing** — per-project, per-phase cost breakdown for accurate invoicing
 - **Model optimization** — see where Haiku vs Sonnet would have a cost impact
-- **Project completion** — final cost report for project retrospectives
-- **Budget tracking** — monitor cumulative spend across ongoing projects
+
+This is the real advantage: **costs are never hidden**. You have visibility at every stage of development.
+
+---
+
+## 6. Automatic Cost Tracking Throughout Development {#automatic-cost-tracking}
+
+**Every phase logs costs automatically. You control when you look at them.**
+
+### How It Works
+
+The orchestrator logs token usage after every agent invocation—automatically, no configuration needed:
+
+- **Ideation phase** — tokens logged when ideation-agent runs
+- **Architecture phase** — tokens logged when architecture-agent runs
+- **Feature spec phase** — tokens logged when feature-spec-agent runs
+- **Development phase** — tokens logged when dev-agent and test-agent run
+- **Deployment phase** — tokens logged when deployment-agent runs
+
+All logs are stored in:
+- `specs/project-state.yaml` — project-level costs (ideation, architecture, deployment)
+- `specs/features/FEATURE-XXX/state.yaml` — per-feature costs (spec, dev, tests)
+
+### Why This Matters
+
+You never have to wonder what something cost. Call `/track-cost` anytime:
+- **After completing ideation** — "How much did clarification cost?"
+- **Mid-feature** — "Is this feature running over budget?"
+- **End of sprint** — "What's the cost per feature?"
+- **Project conclusion** — "What was the total AI investment?"
+
+The data is always there, always current, always accurate.
 
 ---
 

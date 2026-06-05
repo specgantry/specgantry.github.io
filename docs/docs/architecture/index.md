@@ -34,44 +34,6 @@ Team Leads and Developers have fundamentally different views and permissions. Th
 
 ---
 
-## System Architecture
-
-```
-Claude Code (IDE)
-    │
-    ▼
-SpecGantry Plugin
-    ├── skills/
-    │   ├── spec-gantry/SKILL.md          Dashboard, entry point
-    │   ├── start-project/SKILL.md        New project setup
-    │   ├── bugfix/SKILL.md               Bug logging
-    │   ├── reverse-engineer/SKILL.md     Code analysis
-    │   └── update-pricing/SKILL.md       Cost configuration
-    │
-    └── agents/
-        ├── orchestrator.md               Phase routing, gate enforcement
-        ├── ideation/ideation-agent.md    Project clarification
-        ├── architecture/architecture-agent.md  System design
-        ├── feature-spec/feature-spec-agent.md  Feature specs
-        ├── development/dev-agent.md      Code implementation
-        ├── development/test-agent.md     Test execution
-        └── deployment/deployment-agent.md  Release verification
-
-Project Directory
-    ├── specs/
-    │   ├── project-state.yaml
-    │   ├── ideation-artifact.md
-    │   ├── architecture-spec.md
-    │   └── features/FEATURE-XXX/
-    │       ├── state.yaml
-    │       ├── feature-spec.md
-    │       └── dev-artifact.yaml
-    └── .claude/
-        └── local-state.yaml
-```
-
----
-
 ## State Machine
 
 SpecGantry operates as a finite state machine at two levels.

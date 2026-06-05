@@ -26,6 +26,7 @@ NC='\033[0m'
 MANIFEST_FILE=".claude-plugin/plugin.json"
 MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 LANDING_PAGE="docs/_layouts/landing.html"
+GETTING_STARTED="docs/docs/getting-started/index.md"
 
 # Functions
 log_info() {
@@ -143,25 +144,27 @@ release() {
     log_error "Tag v$version already exists"
   fi
 
-  # Update version in both manifests and landing page
-  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, and $LANDING_PAGE"
+  # Update version in both manifests and docs pages
+  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, and $GETTING_STARTED"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$LANDING_PAGE"
+    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$GETTING_STARTED"
   else
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$LANDING_PAGE"
+    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$GETTING_STARTED"
   fi
 
   log_success "Version updated to $version"
 
   # Commit
   log_info "Creating commit"
-  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE"
+  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE" "$GETTING_STARTED"
   git commit -m "Release v$version"
   log_success "Commit created"
 
@@ -186,7 +189,7 @@ release() {
   echo ""
   echo "Release page: https://github.com/specgantry/specgantry.github.io/releases/tag/v$version"
   echo "Website: https://specgantry.github.io"
-  echo "Install: claude plugin install https://github.com/specgantry/specgantry.github.io"
+  echo "Install: claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry"
 }
 
 # Main

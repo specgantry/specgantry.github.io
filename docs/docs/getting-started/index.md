@@ -26,17 +26,18 @@ Everything you need to install SpecGantry and complete your first session.
 
 ## Step 1 — Install the Plugin
 
-Run this in any Claude Code session:
+Run these in your terminal:
 
 ```bash
-claude plugin install https://github.com/specgantry/specgantry.github.io
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
 ```
 
 Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
 - Register 5 skills and 7 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.1.4`
+- Confirm with: `✓ Plugin installed: SpecGantry v1.2.1`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -80,7 +81,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.1.4 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.2.1 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]

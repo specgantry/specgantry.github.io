@@ -6,7 +6,8 @@ AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideatio
 
 **Option 1 — Direct install (terminal):**
 ```bash
-claude plugin install https://github.com/specgantry/specgantry.github.io
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
 ```
 
 **Option 2 — From within Claude Code:**

@@ -14,13 +14,14 @@ prev_page_url: "/docs/architecture"
 
 ### Plugin won't install — "Not found in marketplace"
 
-SpecGantry is installed directly from GitHub, not a marketplace:
+You need to register the SpecGantry marketplace first, then install:
 
 ```bash
-claude plugin install https://github.com/specgantry/specgantry.github.io
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
 ```
 
-The `claude plugin install <name>` form (without a URL) searches only the official marketplace. SpecGantry uses the URL form.
+The `claude plugin install <github-url>` form does not work — `install` resolves names against registered marketplaces only.
 
 ### Where does the plugin install?
 
@@ -277,7 +278,8 @@ Reinstall:
 
 ```bash
 claude plugin uninstall spec-gantry
-claude plugin install https://github.com/specgantry/specgantry.github.io
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
 ```
 
 ---

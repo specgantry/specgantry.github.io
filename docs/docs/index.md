@@ -85,7 +85,8 @@ Each phase has gates. You cannot proceed without completing the previous one.
 ## Quick Install
 
 ```bash
-claude plugin install https://github.com/specgantry/specgantry.github.io
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
 ```
 
 Then in any Claude Code project:

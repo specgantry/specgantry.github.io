@@ -24,6 +24,7 @@
       "homepage": "https://specgantry.github.io",
       "repository": "https://github.com/specgantry/specgantry.github.io",
       "license": "Apache-2.0",
+      "category": "productivity",
       "keywords": [
         "sdlc",
         "pipeline",

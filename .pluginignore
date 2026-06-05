@@ -1,0 +1,6 @@
+# Exclude website files — only plugin assets (skills/, agents/, config/, .claude-plugin/) are needed
+docs/
+.git/
+.github/
+.DS_Store
+*.log

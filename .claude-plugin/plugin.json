@@ -1,5 +1,4 @@
 {
-    "id": "spec-gantry",
     "name": "spec-gantry",
     "displayName": "SpecGantry",
     "version": "1.1.7",
@@ -19,5 +18,5 @@
         "deployment",
         "code-generation"
     ],
-    "icon": ".claude-plugin/assets/icon.png"
+    "icon": "./.claude-plugin/assets/icon.png"
 }

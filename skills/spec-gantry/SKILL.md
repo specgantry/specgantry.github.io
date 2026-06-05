@@ -125,10 +125,10 @@ Collect every applicable action from the candidates below, in priority order. As
 After the numbered actions, render the utility command bar on a single line:
 
 ```
-  [A]rchitecture  [B]acklog  [P]roject  e[X]it
+  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
 ```
 
-DEV sees `[A]` and `[X]` only — `[B]` and `[P]` require Team Lead/Architect.
+DEV sees `[A]`, `[C]`, and `[X]` — `[B]` and `[P]` require Team Lead/Architect.
 
 ---
 
@@ -208,6 +208,10 @@ If `specs/project-state.yaml → architecture_open_questions` is non-empty, disp
 ### [B] — Backlog (Team Lead/Architect only)
 Display full backlog table with status, domain, assignee, size, dependencies.
 Offer options to reorder features, defer a feature, or go back.
+
+### [C] — Cost (any role)
+Invoke `/track-cost` to display a comprehensive cost breakdown by feature and phase.
+The skill reads pricing history and all token usage from the project and feature state files, then calculates and displays the total cost and per-feature costs.
 
 ### [P] — Project (Team Lead/Architect only)
 Offer sub-options: add a feature to the backlog, defer a feature, reassign a feature, graduate a bugfix, edit project name or vision, or go back.

@@ -3,8 +3,8 @@
 # Add a new entry when rates change — old entries are preserved for historical cost accuracy.
 # Updated by /update-pricing. Committed to the plugin repo so all team members share it.
 #
-# Cost calculation is performed by option 3 in /spec-gantry — this file is passed as
-# context to an LLM alongside the project token log. The LLM does the math.
+# Cost calculation is performed by /track-cost skill when user selects [C]ost from the menu.
+# This file provides the pricing rates needed to calculate costs from token usage data.
 
 history:
   - effective: 2025-07-01

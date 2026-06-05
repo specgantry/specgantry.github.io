@@ -11,6 +11,7 @@ baseurl: ""
 theme: minima
 plugins:
   - jekyll-seo-tag
+  - jekyll-sitemap
 
 # Markdown processor
 markdown: kramdown

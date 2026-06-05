@@ -1,7 +1,7 @@
 ---
 name: start-project
 description: Team Lead/Architect first-run setup for SpecGantry. Initialises project state and kicks off the ideation phase.
-allowed-tools: Write, Read, Bash
+allowed-tools: Write, Read, Bash, Agent
 ---
 
 # Start Project

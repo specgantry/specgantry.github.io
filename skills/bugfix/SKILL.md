@@ -1,7 +1,7 @@
 ---
 name: bugfix
 description: Emergency fast-track for SpecGantry. Bypasses ideation, architecture, and the backlog — goes straight to development with the phase gate still enforced at deployment.
-allowed-tools: Write, Read, Bash
+allowed-tools: Write, Read, Bash, Glob, Grep, Agent
 ---
 
 # Bug Fix Fast-Track

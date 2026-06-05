@@ -1,7 +1,7 @@
 ---
 name: spec-gantry
 description: Main dashboard and single entry point for SpecGantry. Enforces the SDLC pipeline — from ideation through deployment — with phase gates at every transition.
-allowed-tools: Read, Write, Bash, Grep
+allowed-tools: Read, Write, Bash, Grep, Glob, Agent, Skill
 ---
 
 # spec-gantry Main Dashboard

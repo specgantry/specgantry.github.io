@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% if page.title %}{{ page.title }} — {% endif %}SpecGantry Docs</title>
   <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}SpecGantry documentation — AI-assisted SDLC pipeline for Claude Code.{% endif %}">
+  <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}SpecGantry Docs{% endif %}">
+  <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}SpecGantry documentation — AI-assisted SDLC pipeline for Claude Code.{% endif %}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}SpecGantry Docs{% endif %}">
+  <meta name="twitter:description" content="{% if page.description %}{{ page.description }}{% else %}SpecGantry documentation — AI-assisted SDLC pipeline for Claude Code.{% endif %}">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
   <link rel="icon" href="{{ '/assets/logo/favicon.ico' | relative_url }}">

@@ -25,6 +25,7 @@ NC='\033[0m'
 # Plugin manifest files
 MANIFEST_FILE=".claude-plugin/plugin.json"
 MARKETPLACE_FILE=".claude-plugin/marketplace.json"
+LANDING_PAGE="docs/_layouts/landing.html"
 
 # Functions
 log_info() {
@@ -142,23 +143,25 @@ release() {
     log_error "Tag v$version already exists"
   fi
 
-  # Update version in both manifests
-  log_info "Updating version in $MANIFEST_FILE and $MARKETPLACE_FILE"
+  # Update version in both manifests and landing page
+  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, and $LANDING_PAGE"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
+    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$LANDING_PAGE"
   else
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
+    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$LANDING_PAGE"
   fi
 
   log_success "Version updated to $version"
 
   # Commit
   log_info "Creating commit"
-  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE"
+  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE"
   git commit -m "Release v$version"
   log_success "Commit created"
 

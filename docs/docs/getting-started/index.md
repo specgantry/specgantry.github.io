@@ -36,7 +36,7 @@ claude plugin install spec-gantry
 Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
-- Register 5 skills and 7 agents
+- Register 6 skills and 7 agents
 - Confirm with: `✓ Plugin installed: SpecGantry v1.2.2`
 
 <div class="success">

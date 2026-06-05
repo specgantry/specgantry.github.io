@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 7 skills and 7 agents — what they do, when to use them, and how they interact.
+description: All 6 skills and 7 agents — what they do, when to use them, and how they interact.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Architecture"
@@ -10,7 +10,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-All 7 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
+All 6 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
@@ -22,8 +22,7 @@ All 7 skills and their associated agents — what they do, when to invoke them, 
 | **start-project** | `/start-project` | Team Lead | New project initialization |
 | **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
 | **bugfix** | `/bugfix` | Developer | Log and manage bugs |
-| **track-cost** | `[C]ost` from menu | Both | View costs at any stage of development |
-| **Automatic cost tracking** | Built-in | Both | Logs token usage at every phase automatically |
+| **track-cost** | `/track-cost` | Both | View costs at any stage of development |
 | **update-pricing** | `/update-pricing` | Team Lead | Token price configuration |
 
 ---
@@ -275,8 +274,10 @@ Sometimes a bug reveals that something was never properly spec'd. The Team Lead 
 **Check project costs at any stage—automatic logging throughout all phases.**
 
 ```
-[C]ost (from /spec-gantry menu)
+/track-cost
 ```
+
+Or select `[C]ost` from the `/spec-gantry` menu.
 
 ### What It Does
 
@@ -320,6 +321,12 @@ FEATURE-001: User Auth
 
 ### How to Use It
 
+**Option 1: Direct command**
+```
+/track-cost
+```
+
+**Option 2: From the dashboard menu**
 1. Run `/spec-gantry`
 2. Select `[C]ost` from the menu
 3. View the full cost breakdown

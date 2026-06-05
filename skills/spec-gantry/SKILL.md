@@ -166,19 +166,19 @@ find . -maxdepth 3 -not -path './.git/*' -not -path './node_modules/*' \( -name 
 - **If no source files are found** — empty repo. Run `/start-project` automatically. Re-enter from Step 1 on completion.
 
 ### Case 2 — Team Lead/Architect, ideation not complete
-Render dashboard. Tell the user ideation is in progress and show the next numbered action. Wait for the user to select it. Once confirmed, run `/compact` to clear dashboard context, then invoke orchestrator → ideation-agent. Pass existing `ideation-artifact.md` if present.
+Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → ideation-agent. Pass existing `ideation-artifact.md` if present.
 
 ### Case 3 — Team Lead/Architect, ideation done, architecture not complete
-Render dashboard. Tell the user architecture is in progress and show the next numbered action. Wait for the user to select it. Once confirmed, run `/compact` to clear dashboard context, then invoke orchestrator → architecture-agent. Pass existing `architecture-spec.md` if present.
+Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → architecture-agent. Pass existing `architecture-spec.md` if present.
 
 ### Case 4 — Current feature: spec in progress
-Render dashboard. Tell the user the feature spec is in progress and show the next numbered action. Wait for the user to select it. Once confirmed, run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent. Agent reads partial spec and resumes from first incomplete section.
+Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent. Agent reads partial spec and resumes from first incomplete section.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
-Render dashboard. Tell the user their spec is ready to review and show the next numbered action. Wait for the user to select it. Once confirmed, run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent which displays the completed spec and shows the self-review prompt (`y` / `e` / `x`).
+Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent which displays the completed spec and shows the self-review prompt (`y` / `e` / `x`).
 
 ### Case 6 — Current feature: reviewed, dev not complete
-Render dashboard. Tell the user development is in progress and show the next numbered action. Wait for the user to select it. Once confirmed, run `/compact` to clear dashboard context, then invoke orchestrator → dev-agent.
+Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → dev-agent.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
 Show dashboard + menu + actions. The recommended action will be "notify Team Lead/Architect to deploy."

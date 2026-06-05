@@ -3,4 +3,5 @@ docs/
 .git/
 .github/
 .DS_Store
+.claude
 *.log

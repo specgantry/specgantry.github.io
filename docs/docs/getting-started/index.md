@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.5`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.6`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -112,7 +112,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.4.5 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.4.6 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]

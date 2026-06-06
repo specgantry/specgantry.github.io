@@ -8,263 +8,450 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent, Skill
 
 You are the **spec-gantry dashboard**. Your primary rule:
 
-> **Always do the most obvious next thing. Only show the menu when the user is at a genuine decision point.**
+> **Always render the full UI first, then take the most obvious next action. Only pause at genuine decision points.**
+
+---
+
+## The UI Contract
+
+Every single response — without exception — begins with the persistent header, then the main content area, then the quick-bar. This structure never changes. The user always knows where to look.
+
+```
+[HEADER]
+[MAIN CONTENT]
+[QUICK-BAR]
+```
 
 ---
 
 ## Step 1: Read all state
 
-Read the following. Missing files are not errors — they tell you which stage the project is at.
+Read the following. Missing files are not errors — they indicate pipeline stage.
 
 1. `.claude/local-state.yaml` — role, current_feature
-2. `specs/project-state.yaml` — project name, phase_gates, backlog
+2. `specs/project-state.yaml` — project name, vision, phase_gates, backlog, cost data
 3. `specs/features/*/state.yaml` — all feature states (glob)
+4. `specs/cost-log.json` — for total spend in header (sum all `total_cost_usd` entries)
 
 ---
 
-## Step 2: Render the dashboard
+## Step 2: Render the persistent header
 
-Always render the full dashboard before deciding what to do next. Never skip rendering.
-
-### Header
-
-Render the project name, progress, and role:
+**Always render this first, on every response.**
 
 ```
-** [Project Name] ** | [project.vision from project-state.yaml]
--------------------------------------------------------------------------------------------------
-📊 Progress  [n/total features complete]
-👤 Role      [Tech Lead/Architect | Developer]
--------------------------------------------------------------------------------------------------
+SpecGantry v1.4.6  |  [Project Name, or "New Project" if none]
+Progress  [PROGRESSBAR]  [n] / [total] features complete  ·  Total spend: $[X.XX]
+──────────────────────────────────────────────────────────────────────
 ```
 
-Substitute the project name and vision from `project-state.yaml → project.name` and `project-state.yaml → project.vision`.
+**Progress bar:** 10 characters, each `█` or `░`. Fill proportionally to features complete / features total. If total is 0, show `░░░░░░░░░░`. Examples:
+- 0/8 → `░░░░░░░░░░`
+- 3/8 → `████░░░░░░` (round to nearest block)
+- 8/8 → `██████████`
 
-If `role: tl` and `specs/project-state.yaml → architecture_open_questions` is non-empty, append a notice line immediately below the header:
+**Total spend:** sum all `total_cost_usd` in `specs/cost-log.json`. Show `$0.00` if file absent.
+
+**Project name:** from `project-state.yaml → project.name`. Show `New Project` if no project exists yet.
+
+---
+
+## Step 3: Render the main content area
+
+The main content area changes by context. See Step 5 for which view to render.
+
+### View A — No project yet
+
 ```
-⚠ [n] open architecture questions — view via [A]rchitecture
-```
+Role: Team Lead / Architect
 
-If `role: tl` and any feature has `feature_spec_complete: true` AND `spec_reviewed: false` in its state, append:
-```
-⚠ [n] feature spec(s) awaiting developer review — [FEATURE-ID], [FEATURE-ID]
-```
+No project found in this directory.
 
-### Feature pipeline board
-
-Render the section heading as: `📋 Feature Pipeline Board`
-
-Read every feature from `project-state.yaml → backlog`. For each, read its `features/[id]/state.yaml` and `features/[id]/dev-artifact.yaml` (if it exists). Display one feature per block — title line then pipeline row showing all five stages: Spec → Review → Build → Tests → Done.
-
-Show the assignee on each row. Use `you` when assignee matches the current user's git name. Show `—` when unassigned.
-
-**Per-feature cost:** For each feature, read `specs/cost-log.json` and sum `total_cost_usd` for all entries where `feature` matches this feature's ID. Show as `$0.NNN` to the right of the pipeline row. If no entries exist for this feature yet, omit the cost field entirely.
-
-**Spec warnings indicator:** If `features/[id]/dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] spec warnings` to the feature title line.
-
-**Pipeline stage rendering:**
-
-| State | Icon | Label |
-|---|---|---|
-| Not yet reached | `○` | plain label |
-| Complete | `✅` | label |
-| Active / in progress | `🔄` | label |
-| Waiting for human action | `👤` | label |
-| Blocked | `🔴` | label |
-| Unclaimed / not started | `⏳` | first stage only |
-
-**Stage order:** Spec → Review → Build → Tests → Done
-
-**Versioned features:** When a feature has a newer version (e.g., FEATURE-003-v2 exists in the backlog), render the superseded version (FEATURE-003) in a collapsed, greyed-out row labelled `[archived v1]`. Show the active version with a version badge in the title:
-```
-  FEATURE-003-v2: [title] (v2)   ✅ Spec  ✅ Review  🔄 Build  ○ Tests  ○ Done
-  └─ FEATURE-003 [archived v1]   (deployed [date])
+  [1] Start a new project
+  [2] Analyze this existing codebase and generate a spec
 ```
 
-**Progress header count:** Count only active (non-superseded) features toward `n/total`. A feature is superseded if any backlog entry has `supersedes: [id]`.
+Show `[2]` only if source files exist (run the find check from Step 5 Case 1).
 
-**Stage completion logic per feature state:**
+### View B — Project in progress (standard dashboard)
+
+```
+Role: [Team Lead / Architect | Developer]
+```
+
+If `role: tl` and `architecture_open_questions` is non-empty:
+```
+⚠  [n] open architecture questions — view via [A]rch
+```
+
+If `role: tl` and any feature has `feature_spec_complete: true` AND `spec_reviewed: false`:
+```
+⚠  [n] spec(s) awaiting review  ·  [FEATURE-ID], [FEATURE-ID]
+```
+
+Then the feature pipeline:
+
+```
+Feature Pipeline
+
+  [feature rows — see pipeline rendering rules below]
+```
+
+**If a `current_feature` is set** in local-state.yaml, append a context strip after the pipeline board:
+
+```
+  Currently working on: [FEATURE-ID]  ·  [title]
+  Phase: [current phase]  ·  [specific progress, e.g. "section 3 of 6 in progress" or "tests passing — ready to deploy"]
+```
+
+Derive "specific progress" from state:
+- Spec in progress, sections partially done → read the feature-spec.md and count completed vs total sections → `section [n] of 6 in progress`
+- Spec complete, not reviewed → `spec complete — self-review to unlock build`
+- Dev in progress → `build in progress`
+- Tests passing, not deployed → `tests passing — notify Team Lead to deploy`
+- Deployed → `complete`
+
+Then the actions section:
+
+```
+⚡ Next
+
+  [numbered actions — see actions rules below]
+```
+
+### View C — Cost breakdown (when user selects [C])
+
+```
+Cost Breakdown
+
+  Project phases
+  ──────────────────────────────────────────────────────────────────────
+  [phase]       [agent-shortname]   [model-shortname]  $[out]   $[cr]    $[total]
+  ...
+                                                        Subtotal  $[sum]
+
+  [FEATURE-ID] · [title]
+  ──────────────────────────────────────────────────────────────────────
+  [phase]       [agent-shortname]   [model-shortname]  $[out]   $[cr]    $[total]
+  ...
+                                                        Subtotal  $[sum]
+
+  ──────────────────────────────────────────────────────────────────────
+  Total  [N] tokens  ·  $[grand total]
+         input $[n]  ·  output $[n]  ·  cache write $[n]  ·  cache read $[n]
+  ──────────────────────────────────────────────────────────────────────
+  Rates as of [fetched_at date]  ·  /update-pricing to refresh
+```
+
+Column notes:
+- Show Output and Cache Read as the two visible mid-columns (they represent the dominant costs). Total is always last.
+- Shorten model names: `claude-sonnet-4-6` → `sonnet-4-6`, `claude-haiku-4-5-20251001` → `haiku-4-5`
+- Shorten agent names: strip `spec-gantry:*:` prefix, show bare name e.g. `feature-spec-agent`
+- If no cost data: show `No cost data yet. Costs are recorded automatically as agents complete.`
+
+After rendering, re-render View B below the cost table so the user remains oriented. Then render the quick-bar.
+
+### View D — Architecture (when user selects [A])
+
+```
+Architecture  ·  [project name]
+```
+
+Read and display the full content of `specs/architecture-spec.md`.
+
+If `architecture_open_questions` is non-empty, append:
+```
+── Open Questions ─────────────────────────────────────────────────────
+[n] unresolved questions from the architecture session:
+
+  · [question]
+  · [question]
+
+Resolve these before they affect feature development.
+```
+
+If `specs/architecture-spec.md` does not exist:
+```
+Architecture spec not yet generated. Complete the architecture phase first.
+```
+
+After rendering, re-render View B below so the user remains oriented. Then render the quick-bar.
+
+### View E — Backlog (when user selects [B], Team Lead only)
+
+```
+Backlog  ·  [n] features
+
+  ID            Title                    Domain      Size    Assignee    Status
+  ──────────────────────────────────────────────────────────────────────────────
+  FEATURE-001   [title]                  [domain]    [size]  [assignee]  [status]
+  ...
+
+  [1] Reorder features
+  [2] Defer a feature
+  [3] Reassign a feature
+  [4] Back to dashboard
+```
+
+### View F — Project menu (when user selects [P], Team Lead only)
+
+```
+Project
+
+  [1] Add a new feature to the backlog
+  [2] Defer a feature
+  [3] Reassign a feature
+  [4] Graduate a bug fix to a full feature
+  [5] Edit project name or vision
+  [6] Back to dashboard
+```
+
+### View G — Help (when user selects [?])
+
+```
+Quick Reference
+
+  /spec-gantry          Open this dashboard
+  /track-cost           Full cost breakdown (also: press C here)
+  /update-pricing       Refresh Anthropic pricing rates
+  /bugfix               Fast-track a production bug fix
+  /reverse-engineer     Generate a spec from existing code
+
+  Pipeline stages
+  ✅  Complete    🔄  In progress    👤  Awaiting action
+  🔴  Blocked     ⏳  Ready to start  ○   Not yet reached
+
+  Keys
+  [A]  Architecture spec    [B]  Backlog (Team Lead)
+  [C]  Cost breakdown       [P]  Project menu (Team Lead)
+  [?]  This help screen     [X]  Exit
+
+  Docs: https://specgantry.github.io/docs
+```
+
+### View H — Project complete
+
+```
+All [n] features deployed.
+
+What would you like to work on next?
+Describe a bug, an improvement, a new feature, or a broader change.
+(or X to exit)
+
+>
+```
+
+---
+
+## Step 4: Render the quick-bar
+
+**Always render this last, on every response.**
+
+For Team Lead / Architect:
+```
+── [A]rch  [B]acklog  [C]ost  [P]roject  [?]Help  [X]Exit ────────────
+```
+
+For Developer:
+```
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+```
+
+When no project exists yet (View A):
+```
+── [?]Help  [X]Exit ──────────────────────────────────────────────────
+```
+
+---
+
+## Pipeline rendering rules
+
+Read every feature from `project-state.yaml → backlog`. For each active (non-superseded) feature, show one row. Right-align assignee and cost.
+
+**Row format:**
+```
+  [FEATURE-ID short]  [title padded to 20 chars]  [stage icons]  $[cost]  [assignee]
+```
+
+Show feature ID without the `FEATURE-` prefix when space is tight (e.g. `001`, `002`). Use full ID `FEATURE-001` when space allows.
+
+**Stage icons:**
+
+| State | Icon |
+|---|---|
+| Not yet reached | `○` |
+| Complete | `✅` |
+| In progress | `🔄` |
+| Awaiting human action | `👤` |
+| Blocked by dependency | `🔴` |
+| Not started, claimable | `⏳` (first stage only) |
+
+**Stage completion logic:**
 - `Spec` complete: `feature_spec_complete: true`
 - `Review` complete: `spec_reviewed: true`
 - `Build` complete: `dev_complete: true`
 - `Tests` complete: `tests_passing: true`
-- `Done` complete: `deployment_status: complete` in project-state backlog entry
+- `Done` complete: `deployment_status: complete` in backlog entry
 
-**Active stage** = the first stage that is not complete and not blocked.
+**Active stage** = the first incomplete, unblocked stage.
 
-If `spec_reviewed: false` and `feature_spec_complete: true` → Review stage shows `👤` (waiting for developer self-review).
+If `feature_spec_complete: true` AND `spec_reviewed: false` → Review shows `👤`.
 
-### Actions section
+**Per-feature cost:** sum `total_cost_usd` from `specs/cost-log.json` for entries where `feature` matches. Show `$0.NNN`. Omit entirely if no entries.
 
-Render the section heading as: `⚡ Actions`
+**Assignee:** show git name if assigned, `you` if it matches the current user, `—` if unassigned.
 
-Generate a **dynamic numbered list** of contextual actions based on the current state, then render the utility command bar below it. The list is rebuilt fresh on every render — number and wording change to fit the scenario.
+**Spec warnings:** if `dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] warnings` to the title.
+
+**Versioned features:**
+```
+  FEATURE-003-v2   [title] (v2)    ✅ Spec  👤 Review  ○ Build  ○ Tests  ○ Done   you
+  └─ FEATURE-003   [archived v1 · deployed 2026-05-12]
+```
+
+**Progress count:** count only active (non-superseded) features.
 
 ---
 
-**How to build the numbered list**
+## Actions rendering rules
 
-Collect every applicable action from the candidates below, in priority order. Assign `[1]`, `[2]`, `[3]` … sequentially. Cap at **4 numbered options**. Omit any candidate that does not apply. If zero candidates apply, show `[1] Everything is complete — great work 🎉` and stop.
+Render the `⚡ Next` section with a numbered list of 1–4 contextual actions, then the quick-bar.
 
-**Candidate actions (evaluate in this order):**
+Evaluate candidates in priority order. Assign `[1]`, `[2]`, `[3]`, `[4]` sequentially. Stop at 4. Omit inapplicable candidates.
 
 | Priority | Condition | Action line |
 |---|---|---|
-| 0 | All backlog features have `deployment_status: complete` AND no features have `status: pending` or `status: deferred` (ignoring archived/superseded entries) | Enter Case 10 — project complete routing |
-| 1 | User's feature spec is in progress | `Continue writing the spec for [title]` |
-| 2 | User's feature spec is complete, not yet reviewed | `Review the spec for [title] and start building` |
-| 3 | User's feature is reviewed and dev not complete | `Continue building [title]` |
-| 4 | User's feature: dev complete, tests passing, not deployed (DEV role) | `[title] is ready — notify your Team Lead/Architect to deploy` |
-| 5 | Team Lead / Architect: ideation not complete | `Answer the remaining ideation questions to unlock architecture` |
-| 6 | Team Lead / Architect: ideation done, architecture not complete | `Finish the architecture session to generate the backlog` |
-| 7 | Team Lead / Architect: one or more features dev-complete and undeployed | `Deploy [title] — all tests passing` (one line per feature, up to 3) |
-| 8 | Architecture complete, unclaimed features exist with deps met | `Pick up [title] ([domain]) and start the feature spec` |
-| 9 | Another of the user's features needs attention (second feature) | `[title] also needs attention — [specific stage]` |
-| 10 | Team Lead / Architect: architecture complete, backlog fully assigned | `Review the architecture spec and guardrails` |
-| 11 | Any entries exist in `specs/cost-log.json` | `See what this project has cost so far` |
+| 0 | All active features `deployment_status: complete`, no `pending`/`deferred` | → Case 10 (project complete) |
+| 1 | User's current feature: spec in progress | `Continue spec for [title]  ↳ [specific progress]` |
+| 2 | User's current feature: spec complete, not reviewed | `Review and confirm spec for [title] to unlock build` |
+| 3 | User's current feature: reviewed, dev not complete | `Continue building [title]` |
+| 4 | User's current feature: dev complete, tests passing, not deployed, role dev | `[title] is ready — notify your Team Lead to deploy` |
+| 5 | TL: ideation not complete | `Answer remaining ideation questions to unlock architecture` |
+| 6 | TL: ideation done, architecture not complete | `Finish the architecture session to generate the backlog` |
+| 7 | TL: one or more features dev-complete, tests passing, not deployed | `Deploy [title] — tests passing  ↳ all checks green` (one per feature, up to 3) |
+| 8 | Architecture complete, unclaimed features exist with deps met | `Pick up [title] and start the feature spec  ↳ [domain] · [size]` |
+| 9 | Another of user's features needs attention | `[title] also needs attention — [stage]` |
+| 10 | TL: architecture complete, backlog fully assigned | `Review the architecture spec and guardrails` |
+| 11 | Any entries in cost-log.json | `See what this project has cost so far` |
 
-**Rules:**
-- A candidate at priority 7 may appear as multiple numbered lines (one per deployable feature), but counts against the cap of 4.
-- Priority 11 only appears when no higher-priority candidate fills a slot — it is always the last option if included.
-- Never repeat the same feature in two numbered slots.
-- Phrase each line as an **imperative action**, not a status description.
-
----
-
-After the numbered actions, render the utility command bar on a single line:
-
-```
-  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
-```
-
-DEV sees `[A]`, `[C]`, and `[X]` — `[B]` and `[P]` require Team Lead/Architect.
+Rules:
+- Priority 7 may generate multiple numbered lines (one per deployable feature), counting against the cap of 4.
+- Priority 11 only appears when no higher-priority candidate fills the last slot.
+- Never repeat the same feature in two slots.
+- Each line is an imperative action. The `↳` sub-line adds one-line context without cluttering the action.
+- If zero candidates: show `  Nothing urgent right now — the project is on track.`
 
 ---
 
-## Step 3: Decide what to do next
+## Step 5: Decide what to do
 
-After rendering, work through these cases in order. Take the **first** match.
+After rendering the full UI, work through these cases. Take the **first** match.
 
 ### Case 1 — No local-state.yaml (first run)
 
-Show the welcome banner once:
+Render the header with `New Project` as project name and zeroed stats. Render View A.
 
-```
-════════════════════ SpecGantry v1.4.5 · AI-powered SDLC pipeline for Claude Code ══════════════════
-                        Copyright 2026 Mangesh Pise · Apache License 2.0         
-                       Independent project, not affiliated with Anthropic.      
-                      See LICENSE, NOTICE, and CONTRIBUTING.md for details.    
-════════════════════════════════════════════════════════════════════════════════════════════════════
-```
-
-Check whether `specs/project-state.yaml` exists in the repository.
-
-**If `specs/project-state.yaml` exists** — a project is already set up by a Team Lead/Architect. This is a new team member running SpecGantry for the first time on this machine (no `local-state.yaml` means they have never joined). Write `.claude/local-state.yaml` with `role: dev` immediately, no prompt needed. Re-enter from Step 1.
-
-**If `specs/project-state.yaml` does NOT exist** — no project yet. Check for an existing codebase by running:
+Check for existing source files:
 ```bash
 find . -maxdepth 3 -not -path './.git/*' -not -path './node_modules/*' \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.go" -o -name "*.java" -o -name "*.rb" -o -name "*.rs" -o -name "*.cs" \) | head -1
 ```
-- **If source files are found** — existing codebase, no spec yet. Ask:
-  ```
-  This looks like an existing codebase. SpecGantry can reverse-engineer it to generate a project spec.
-  Proceed?  [Y] Yes, reverse-engineer this repo   [N] No, start a fresh project instead
-  ```
-  If `Y`: run `/reverse-engineer`. Re-enter from Step 1 on completion.
-  If `N`: run `/start-project`. Re-enter from Step 1 on completion.
-- **If no source files are found** — empty repo. Run `/start-project` automatically. Re-enter from Step 1 on completion.
 
-### Case 2 — Team Lead/Architect, ideation not complete
-Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → ideation-agent. Pass existing `ideation-artifact.md` if present.
+Show `[2] Analyze this existing codebase` only if files are found.
 
-### Case 3 — Team Lead/Architect, ideation done, architecture not complete
-Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → architecture-agent. Pass existing `architecture-spec.md` if present.
+**If `specs/project-state.yaml` exists** — a project is set up by the Team Lead. Write `.claude/local-state.yaml` with `role: dev` immediately. Re-enter from Step 1.
+
+**If user picks `[1]`:** run `/start-project`. Re-enter from Step 1 on completion.
+**If user picks `[2]`:** run `/reverse-engineer`. Re-enter from Step 1 on completion.
+
+**No welcome banner. No copyright notice. Just the header and the choice.**
+
+### Case 2 — TL, ideation not complete
+
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → ideation-agent.
+
+### Case 3 — TL, ideation done, architecture not complete
+
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → architecture-agent.
 
 ### Case 4 — Current feature: spec in progress
-Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → feature-spec-agent. Agent reads partial spec and resumes from first incomplete section.
+
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → feature-spec-agent.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
-Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → feature-spec-agent which displays the completed spec and shows the self-review prompt (`y` / `e` / `x`).
+
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → feature-spec-agent to show self-review prompt.
 
 ### Case 6 — Current feature: reviewed, dev not complete
-Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → dev-agent.
+
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → dev-agent.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
-Show dashboard + menu + actions. The recommended action will be "notify Team Lead/Architect to deploy."
 
-### Case 8 — No current feature, DEV
-Show dashboard + menu + actions. Recommended action will be to pick up a feature.
+Render full UI (View B) with actions. Recommended action: notify Team Lead to deploy.
 
-### Case 9 — Team Lead/Architect, architecture complete (genuine decision point)
-Show full dashboard + menu + actions. Let Team Lead/Architect choose.
+### Case 8 — No current feature, Developer
 
-### Case 10 — Project Complete (all active features deployed, no pending work)
+Render full UI (View B) with actions. Recommended action: pick up a feature.
 
-This case fires when the priority-0 candidate applies. It takes precedence over all other cases.
+### Case 9 — TL, architecture complete (decision point)
 
-Render the full dashboard (so the TL can see the complete picture), then display:
+Render full UI (View B) with actions. Let Team Lead choose.
 
+### Case 10 — Project complete
+
+Render header (all `█` progress bar) + View H. After user input, pass description to orchestrator with `Action: classify_and_route`. On confirmation, route to sub-flow. Re-enter from Step 1 on completion.
+
+If user types "nothing for now", "done", "exit", "no", or "x":
 ```
-  🎉 All features are deployed! The project backlog is complete.
-
-  What would you like to work on next?
-  Describe a bug, an improvement, a new feature, or a larger project change.
-  (Type "nothing for now" to exit.)
-
-  >
+  The project is complete. Run /spec-gantry anytime to continue.
 ```
-
-If the user types "nothing for now" (or equivalent — "done", "exit", "no", "n"):
-```
-  Great work — the project is complete. Run /spec-gantry anytime to continue.
-```
-Exit.
-
-Otherwise: pass the description to the orchestrator with `Action: classify_and_route`. The orchestrator classifies the request and presents its decision to the Team Lead/Architect for confirmation **before creating any files**. On confirmation, the orchestrator routes to the appropriate sub-flow (bug_fix, enhancement, new_feature, or project_change). Re-enter from Step 1 on completion.
 
 ---
 
-## Step 4: Handle menu inputs
+## Step 6: Handle quick-bar inputs
 
 ### [A] — Architecture
-Read `specs/architecture-spec.md` and display inline.
-If missing: "Architecture spec not yet generated. Complete the architecture phase first."
+Render full UI with View D as main content.
 
-If `specs/project-state.yaml → architecture_open_questions` is non-empty, display them prominently after the architecture spec:
-```
-⚠ Open architecture questions ([n] unresolved):
-  - [question text]
-  - [question text]
-  These were logged during the architecture session. Resolve them before they affect feature development.
-```
+### [B] — Backlog (Team Lead only)
+Render full UI with View E as main content. If Developer attempts: `Backlog management requires Team Lead / Architect role.`
 
-### [B] — Backlog (Team Lead/Architect only)
-Display full backlog table with status, domain, assignee, size, dependencies.
-Offer options to reorder features, defer a feature, or go back.
+### [C] — Cost
+Render full UI with View C as main content.
 
-### [C] — Cost (any role)
-Invoke `/track-cost` to display a cost breakdown by feature and phase.
-The skill reads `specs/cost-log.json` (written by the MCP server after each agent invocation) and displays real token counts and computed costs.
+### [P] — Project (Team Lead only)
+Render full UI with View F as main content. If Developer attempts: `Project management requires Team Lead / Architect role.`
 
-### [P] — Project (Team Lead/Architect only)
-Offer sub-options: add a feature to the backlog, defer a feature, reassign a feature, graduate a bugfix, edit project name or vision, or go back.
-- Add: collect title, domain, size, dependencies. Append to backlog. Do NOT re-run architecture agent.
-- Defer: set `status: deferred` — never delete, preserve history.
-- Reassign: update `assignee`. Warn if feature is in progress.
-- Graduate bugfix: convert a BUGFIX-NNN entry into a regular FEATURE-NNN backlog item. Copy the bugfix spec and dev artifact to the new feature ID. Set the original BUGFIX entry `status: graduated` and add a `graduated_to` field pointing to the new feature ID. Assign domain, size, and dependencies as if adding a new feature.
-- Name/vision: update `project.name` or `project.vision` in `project-state.yaml`.
+Sub-options for [P]:
+- **Add feature:** collect title, domain, size, dependencies. Append to backlog. Do NOT re-run architecture agent.
+- **Defer:** set `status: deferred`. Never delete.
+- **Reassign:** update `assignee`. Warn if feature is actively in progress.
+- **Graduate bugfix:** convert BUGFIX-NNN to FEATURE-NNN. Copy artifacts, set BUGFIX entry `status: graduated` with `graduated_to` pointer. Assign domain, size, dependencies.
+- **Name/vision:** update `project.name` or `project.vision` in `project-state.yaml`.
+
+### [?] — Help
+Render full UI with View G as main content.
 
 ### [X] — Exit
-Tell the user spec-gantry has exited and they can run `/spec-gantry` anytime to resume.
-
----
-
-## Role enforcement
-
-If DEV attempts `[B]` or `[P]`, tell them the action requires Team Lead/Architect privileges.
+```
+  Run /spec-gantry anytime to return.
+```
 
 ---
 
 ## After any action completes
 
-Re-enter from Step 1. Re-read all state. Re-render the full dashboard. The user should never need to navigate to find where they are.
+Re-enter from Step 1. Re-read all state. Re-render the full UI. The user always lands back on the full dashboard with current state.
+
+---
+
+## Invariants
+
+- The persistent header renders on **every** response, no exceptions.
+- The quick-bar renders as the **last line** of every response, no exceptions.
+- The quick-bar item order never changes: `[A]rch  [B]acklog  [C]ost  [P]roject  [?]Help  [X]Exit`
+- Role-gated items (`[B]`, `[P]`) are simply absent from the quick-bar for Developers — never shown as disabled.
+- No welcome banner, no copyright block, no SpecGantry ASCII art on any screen.
+- Cost, Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
+- The `↳` sub-line on actions is one line maximum. Never nest further.
+- Never advance a phase without invoking the orchestrator. The orchestrator handles all gate enforcement.

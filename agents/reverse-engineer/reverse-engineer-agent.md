@@ -46,7 +46,7 @@ Group signals into **candidate features**. Each feature should represent a coher
 ### 1e. Assess completion state per feature
 For each candidate feature, estimate:
 - `feature_spec_complete`: true (features in a shipped codebase are assumed spec-complete)
-- `spec_approved`: true
+- `spec_reviewed`: true (same assumption — existing code was reviewed before shipping)
 - `dev_complete`: true if there is substantive implementation code
 - `tests_passing`: true if there are tests for this area (grep for test files)
 - `deployment_status`: `complete` if the feature appears fully integrated
@@ -189,7 +189,7 @@ backlog:
     domain: "[domain]"
     size: [xs|s|m|l|xl]
     assignee: null
-    dependencies: []
+    depends_on: []
     status: complete
     deployment_status: complete
   # ... one entry per feature

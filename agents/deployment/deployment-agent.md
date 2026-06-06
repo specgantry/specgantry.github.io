@@ -71,6 +71,16 @@ Rules for generating the script:
 - Do not invent steps not grounded in the spec or implementation artifact
 - Keep it short — a single focused script, not a runbook
 
+## Validate deployment script
+
+After writing `deploy.sh`, run:
+```bash
+bash -n specs/features/[feature_id]/deploy.sh
+```
+
+- If syntax check passes: proceed to update project-state.yaml
+- If syntax check fails: display the error, do NOT mark deployment ready, set `deployment_status: blocked` with blocker `"deploy.sh failed syntax check: [error]"`. Surface the script and the error to the user for manual correction.
+
 ## Update project-state.yaml
 
 If both hard checks pass:

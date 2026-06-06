@@ -84,7 +84,7 @@ Append to `.gitignore` (create if it doesn't exist):
   ✓ local-state.yaml written  (role: Team Lead/Architect — gitignored)
   ✓ project-state.yaml written  (commit this to git)
 
-  Starting ideation phase...
+  Starting ideation...
 ```
 
 ## Hand off to orchestrator
@@ -93,7 +93,7 @@ Invoke the orchestrator with:
 - Action: start ideation
 - Vision statement (pass through to ideation-agent)
 
-The orchestrator will invoke the ideation-agent. After ideation completes and the architecture phase finishes, remind the Team Lead/Architect:
+After ideation and architecture complete, remind the Team Lead/Architect:
 
 ```
   Next steps for the team:

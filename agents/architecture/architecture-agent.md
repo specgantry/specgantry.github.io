@@ -281,4 +281,13 @@ When invoked with an existing `architecture-spec.md` and a new requirement (from
 6. If new domains are needed, append them to `project-state.yaml → domains`
 7. Set `phase_gates.architecture_complete: true` (it was already true — amendment preserves the gate)
 8. **Do not** re-run Steps 1–7 of the normal architecture flow. Amendment mode is focused and additive only.
-9. Append a token estimate block to your result (same format as Step 9 above).
+9. **Return token estimate (MANDATORY):** Append this block to your result before returning to the orchestrator:
+
+```
+---
+token_estimate:
+  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
+  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
+```
+
+Count every Read and every Write performed during the amendment, including architecture-spec.md, project-state.yaml, and any feature state files touched.

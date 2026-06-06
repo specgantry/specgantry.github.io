@@ -32,7 +32,9 @@ Classification rules:
 - Default to `project_change` if the description mentions infrastructure, auth, data model, or cross-feature concerns
 - If ambiguous between two classifications, pick the more restrictive one (`bug_fix > enhancement > new_feature > project_change`) and explain why
 
-Confirm with the Team Lead/Architect before creating any files:
+If `pre_classified` is set in the invocation (e.g. `bugfix` skill passes `pre_classified: bug_fix`), skip the confirmation prompt and route immediately to the matching sub-step.
+
+Otherwise, confirm with the Team Lead/Architect before creating any files:
 
 ```
   Classification: [type]
@@ -86,7 +88,10 @@ Write or update tests to cover the fixed behaviour.
 Hot path — architecture guardrails apply but feature spec gate is bypassed.
 ```
 
-Set `current_feature: [BUGFIX-ID]` in `local-state.yaml`. Then invoke dev-agent directly (hot_path: true skips the feature spec gate). Log tokens after dev-agent completes (see Step 3).
+Set `current_feature: [BUGFIX-ID]` in `local-state.yaml`. Then invoke dev-agent directly (hot_path: true skips the feature spec gate).
+- **Immediately after dev-agent returns: log tokens (Step 3) to `specs/features/[BUGFIX-ID]/state.yaml` with `scope: bug_fix`**
+- Invoke test-agent automatically
+- **Immediately after test-agent returns: log tokens (Step 3) to `specs/features/[BUGFIX-ID]/state.yaml`**
 
 ### enhancement route
 
@@ -142,21 +147,43 @@ Assess whether this feature requires architecture changes by checking:
 
 If architecture changes are needed:
 1. Invoke `ideation-agent` in focused mode (problem statement = the description; scope is limited to this one addition)
-2. After ideation gate passes, invoke `architecture-agent` in **amendment mode** (see architecture-agent.md)
-3. After architecture amendment gate passes, proceed to feature-spec
+2. **Immediately after ideation-agent returns: log tokens (Step 3) to `specs/project-state.yaml`**
+3. After ideation gate passes, invoke `architecture-agent` in **amendment mode** (see architecture-agent.md)
+4. **Immediately after architecture-agent returns: log tokens (Step 3) to `specs/project-state.yaml`**
+5. After architecture amendment gate passes, proceed to feature-spec
 
 If no architecture changes are needed:
 1. Skip directly to feature-spec
 
-Assign the next FEATURE-NNN ID. Add to backlog in `project-state.yaml`. Set `current_feature`. Invoke `feature-spec-agent`.
+Assign the next FEATURE-NNN ID. Add to backlog in `project-state.yaml`. Set `current_feature: FEATURE-NNN` in `local-state.yaml`.
+
+Create `specs/features/FEATURE-NNN/state.yaml`:
+
+```yaml
+id: FEATURE-NNN
+title: "[title]"
+domain: "[domain]"
+assignee: null
+phase_gates:
+  feature_spec_complete: false
+  spec_reviewed: false
+  dev_complete: false
+  tests_passing: false
+blockers: []
+token_usage: []
+```
+
+Invoke `feature-spec-agent`.
 
 ### project_change route
 
 This always goes through ideation and architecture:
 1. Invoke `ideation-agent` (problem statement = the description)
-2. After ideation gate passes, invoke `architecture-agent` in **amendment mode**
-3. After architecture amendment gate passes, all features with specs that touch the affected domains have `spec_reviewed` reset to `false` in their `state.yaml` — their developers must re-review before dev can proceed
-4. Any new features added by the architecture amendment follow the normal feature pipeline
+2. **Immediately after ideation-agent returns: log tokens (Step 3) to `specs/project-state.yaml`**
+3. After ideation gate passes, invoke `architecture-agent` in **amendment mode**
+4. **Immediately after architecture-agent returns: log tokens (Step 3) to `specs/project-state.yaml`**
+5. After architecture amendment gate passes, all features with specs that touch the affected domains have `spec_reviewed` reset to `false` in their `state.yaml` — their developers must re-review before dev can proceed
+6. Any new features added by the architecture amendment follow the normal feature pipeline
 
 ---
 
@@ -176,7 +203,10 @@ If `local-state.yaml` does not exist: this is a first run. Hand back to `/spec-g
 #### Reverse Engineer (Action: reverse_engineer)
 - Invoke `reverse-engineer-agent` with `project_name` and `release_label` from the skill
 - On completion: the agent has written all spec-gantry files including `specs/project-state.yaml`
-- Log tokens to `specs/project-state.yaml` under `token_usage` with `phase: reverse_engineer` (see Step 3)
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
+  - The agent writes `token_usage: []` (inline empty list) in `project-state.yaml`
+  - Use Edit to replace that exact line with the populated block (see Step 3 — "Where to log")
+  - If the token estimate block is missing from the agent result: warn the user and log zeroes — do not skip the entry
 - Hand back to `/spec-gantry`
 
 #### Ideation
@@ -337,11 +367,22 @@ token_estimate:
 
 After each agent invocation, scan the result text for this block. Parse `input` and `output` as integers. These are character-count-based estimates (chars / 4) — not exact API counts. Use the model family name from the table below (e.g., `sonnet`, `haiku`, `opus`).
 
-If the block is missing from the result: log a warning to the user ("token estimate missing from [agent] result — recording zeroes") and proceed with `input_tokens: 0, output_tokens: 0`. Do not halt.
+If the block is missing from the result: warn the user (`⚠ token estimate missing from [agent] result — recording zeroes`) and proceed with `input_tokens: 0, output_tokens: 0`. **Still write the token_usage entry.** Do not halt, do not skip the entry.
 
 ### Where to log
 
+Use the **Edit tool** to update the target state file. Do NOT use Write — it overwrites the entire file.
+
 **For project-level agents** (ideation, architecture, reverse-engineer, deployment) → `specs/project-state.yaml`:
+
+Read the file first. Locate the `token_usage:` line.
+
+- If it reads `token_usage: []` (inline empty list), replace that exact line:
+  - `old_string`: `token_usage: []`
+  - `new_string`: the full block below
+- If it already has entries (block-style list), find the last `output_tokens:` line under `token_usage` and append after it.
+
+New entry block to write (fill in actual values):
 ```yaml
 token_usage:
   - phase: [phase_name]
@@ -353,6 +394,9 @@ token_usage:
 ```
 
 **For feature-level agents** (feature-spec, dev, test) → `specs/features/[id]/state.yaml`:
+
+Same Edit approach: replace `token_usage: []` if empty, or append after the last `output_tokens:` line if entries already exist.
+
 ```yaml
 token_usage:
   - phase: [phase_name]

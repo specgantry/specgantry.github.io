@@ -139,14 +139,18 @@ Write the assessment and recommendation into the artifact:
 
 ## Step 5: Write completion flag
 
-Write to `specs/project-state.yaml`:
+Use the **Edit tool** to merge the following into `specs/project-state.yaml`. Do NOT use Write — it would overwrite the whole file.
+
+Find the `phase_gates:` block. Replace the existing `ideation_complete:` line:
+- `old_string`: `  ideation_complete: false`
+- `new_string`: `  ideation_complete: true`
+
+Then append `ideation_recommendation` after the `phase_gates` block by finding the last line of that block and appending below it:
 ```yaml
-phase_gates:
-  ideation_complete: true
 ideation_recommendation: [proceed | clarify | escalate]
 ```
 
-If recommendation is `clarify` or `escalate`, also write:
+If recommendation is `clarify` or `escalate`, also append:
 ```yaml
 ideation_blockers:
   - "[specific item to resolve]"

@@ -37,7 +37,7 @@ Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
 - Register 6 skills and 7 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.3.4`
+- Confirm with: `✓ Plugin installed: SpecGantry v1.3.5`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -116,7 +116,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.3.4 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.3.5 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]

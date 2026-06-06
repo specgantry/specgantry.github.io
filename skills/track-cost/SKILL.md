@@ -61,7 +61,7 @@ Use bash glob to find all feature state files:
 find specs/features -name state.yaml -type f
 ```
 
-For each file found, extract the `token_usage` array using the same fields as above.
+This includes both `FEATURE-*` and `BUGFIX-*` directories. For each file found, extract the `token_usage` array using the same fields as above. Track whether the path contains `BUGFIX-` so you can separate them in the report.
 
 ### Aggregate into a single list
 
@@ -168,13 +168,29 @@ Display as:
   Phase        Agent               Model                Input    Output   Total
   ──────────────────────────────────────────────────────────────────────────────
   [phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
-  [phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
   ...
                                                                 Subtotal: ~$[sum]
 
 [FEATURE-002]: [title]
   ...
 ```
+
+### Bug fix costs (if any)
+
+For any `BUGFIX-*` directories found under `specs/features/` that have token usage, display them in a separate section:
+
+```
+🐛 Bug Fix Costs
+
+[BUGFIX-001]: [title]
+  Phase        Agent               Model                Input    Output   Total
+  ──────────────────────────────────────────────────────────────────────────────
+  [phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
+  ...
+                                                                Subtotal: ~$[sum]
+```
+
+Include BUGFIX subtotals in the overall project total.
 
 ### Total project cost
 

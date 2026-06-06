@@ -31,14 +31,14 @@ Always render the full dashboard before deciding what to do next. Never skip ren
 Render the project name, progress, and role:
 
 ```
-** [Project Name] ** | [Project Vision from ideation-artifact]
+** [Project Name] ** | [project.vision from project-state.yaml]
 -------------------------------------------------------------------------------------------------
 📊 Progress  [n/total features complete]
 👤 Role      [Tech Lead/Architect | Developer]
 -------------------------------------------------------------------------------------------------
 ```
 
-Substitute the project name from `project-state.yaml → name`. Substitute `n` and `total` with the actual counts. Substitute the role with the current user's role.
+Substitute the project name and vision from `project-state.yaml → project.name` and `project-state.yaml → project.vision`.
 
 If `role: tl` and `specs/project-state.yaml → architecture_open_questions` is non-empty, append a notice line immediately below the header:
 ```
@@ -58,7 +58,7 @@ Read every feature from `project-state.yaml → backlog`. For each, read its `fe
 
 Show the assignee on each row. Use `you` when assignee matches the current user's git name. Show `—` when unassigned.
 
-**Per-feature cost:** Sum `input_tokens + output_tokens` from `features/[id]/state.yaml → token_usage`. Also include `features/[id]-v2/state.yaml` etc. for any versioned features — sum all versions. Compute estimated cost using current rates from `config/pricing-history.yaml` (use the most recent entry). Show as `~$0.NNN` to the right of the pipeline row (the `~` indicates this is a character-based estimate). If no token usage is logged yet, omit the cost field.
+**Per-feature cost:** For each feature, sum `input_tokens` and `output_tokens` separately from `features/[id]/state.yaml → token_usage`. Also include `features/[id]-v2/state.yaml` etc. for any versioned features — sum all versions. Compute estimated cost using the most recent entry from `config/pricing-history.yaml`, applying rates independently: `cost = (input_tokens / 1_000_000 * input_per_1m) + (output_tokens / 1_000_000 * output_per_1m)`. Show as `~$0.NNN` to the right of the pipeline row. If no token usage is logged yet, omit the cost field.
 
 **Spec warnings indicator:** If `features/[id]/dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] spec warnings` to the feature title line.
 
@@ -150,7 +150,7 @@ After rendering, work through these cases in order. Take the **first** match.
 Show the welcome banner once:
 
 ```
-════════════════════ SpecGantry v1.3.4 · AI-powered SDLC pipeline for Claude Code ══════════════════
+════════════════════ SpecGantry v1.3.5 · AI-powered SDLC pipeline for Claude Code ══════════════════
                         Copyright 2026 Mangesh Pise · Apache License 2.0         
                        Independent project, not affiliated with Anthropic.      
                       See LICENSE, NOTICE, and CONTRIBUTING.md for details.    
@@ -159,7 +159,7 @@ Show the welcome banner once:
 
 Check whether `specs/project-state.yaml` exists in the repository.
 
-**If `specs/project-state.yaml` exists** — a project is already set up. This user is a Developer (the Tech Lead created the project via `/start-project`). Write `.claude/local-state.yaml` with `role: dev` immediately, no prompt needed. Re-enter from Step 1.
+**If `specs/project-state.yaml` exists** — a project is already set up by a Team Lead/Architect. This is a new team member running SpecGantry for the first time on this machine (no `local-state.yaml` means they have never joined). Write `.claude/local-state.yaml` with `role: dev` immediately, no prompt needed. Re-enter from Step 1.
 
 **If `specs/project-state.yaml` does NOT exist** — no project yet. Check for an existing codebase by running:
 ```bash
@@ -175,19 +175,19 @@ find . -maxdepth 3 -not -path './.git/*' -not -path './node_modules/*' \( -name 
 - **If no source files are found** — empty repo. Run `/start-project` automatically. Re-enter from Step 1 on completion.
 
 ### Case 2 — Team Lead/Architect, ideation not complete
-Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → ideation-agent. Pass existing `ideation-artifact.md` if present.
+Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → ideation-agent. Pass existing `ideation-artifact.md` if present.
 
 ### Case 3 — Team Lead/Architect, ideation done, architecture not complete
-Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → architecture-agent. Pass existing `architecture-spec.md` if present.
+Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → architecture-agent. Pass existing `architecture-spec.md` if present.
 
 ### Case 4 — Current feature: spec in progress
-Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent. Agent reads partial spec and resumes from first incomplete section.
+Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → feature-spec-agent. Agent reads partial spec and resumes from first incomplete section.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
-Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → feature-spec-agent which displays the completed spec and shows the self-review prompt (`y` / `e` / `x`).
+Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → feature-spec-agent which displays the completed spec and shows the self-review prompt (`y` / `e` / `x`).
 
 ### Case 6 — Current feature: reviewed, dev not complete
-Render dashboard. This is the obvious next action — do not show a menu. Run `/compact` to clear dashboard context, then invoke orchestrator → dev-agent.
+Render dashboard. This is the obvious next action — do not show a menu. Invoke orchestrator → dev-agent.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
 Show dashboard + menu + actions. The recommended action will be "notify Team Lead/Architect to deploy."

@@ -6,9 +6,9 @@ allowed-tools: Write, Read, Bash, Glob, Grep, Agent
 
 # Bug Fix Fast-Track
 
-You are the **bugfix** skill. You are invoked directly by any developer for critical production bugs that cannot wait for the normal feature pipeline. You operate entirely outside the project backlog.
+You are the **bugfix** skill. You are invoked directly by any developer for critical production bugs that cannot wait for the normal feature pipeline.
 
-## Collect bug description
+## Step 1: Collect bug description
 
 ```
   Describe the bug (1–2 sentences):
@@ -19,70 +19,26 @@ You are the **bugfix** skill. You are invoked directly by any developer for crit
 
 Validation: non-empty. If empty: "Please describe the bug before proceeding."
 
-## Generate bugfix ID
+## Step 2: Confirm
 
-Check `specs/features/` for existing `BUGFIX-*` directories.
-Use the next sequential number: `BUGFIX-001`, `BUGFIX-002`, etc.
+```
+  Bug Fix Fast-Track
 
-## Set up files
+  Bug: [description]
 
-### Create feature directory
-```bash
-mkdir -p specs/features/[BUGFIX-ID]
+  This bypasses ideation and architecture — goes straight to development.
+  Architecture guardrails still apply. Tests are required before deployment.
+
+  [Y] Proceed    [N] Cancel
 ```
 
-### Write specs/features/[BUGFIX-ID]/state.yaml
-```yaml
-id: BUGFIX-001
-title: "[first 80 chars of bug description]"
-domain: bugfix
-scope: bug_fix
-hot_path: true
-assignee: [git config user.name]
-phase: development
-phase_gates:
-  feature_spec_complete: true
-  spec_reviewed: true
-  dev_complete: false
-  tests_passing: false
-blockers: []
-token_usage: []
-```
+If `[N]`: exit with "Cancelled."
 
-### Write specs/features/[BUGFIX-ID]/feature-spec.md
-```markdown
-# Bug Fix Spec — BUGFIX-001
+## Step 3: Hand off to orchestrator
 
-**Scope:** bug_fix
-**Hot path:** true
-**Author:** [git user name]
-**Date:** [YYYY-MM-DD]
+Invoke the orchestrator with:
+- Action: classify_and_route
+- pre_classified: bug_fix
+- Description: [bug description from Step 1]
 
-## Bug Description
-[full bug description]
-
-## Scope
-Fix the described bug with the minimal change required.
-Do not refactor surrounding code.
-Write or update tests to cover the fixed behaviour.
-
-## Guardrail Compliance
-Hot path — architecture guardrails apply but feature spec gate is bypassed.
-```
-
-### Update local-state.yaml
-Set `current_feature: [BUGFIX-ID]`.
-
-## Confirmation
-
-Tell the user the bug fix fast-track has been activated, show the BUGFIX ID and bug description, and confirm that tests are required before deployment. Then say you are analysing the codebase.
-
-## Hand off to orchestrator
-
-Invoke orchestrator with:
-- Feature ID: BUGFIX-001
-- Scope: bug_fix
-- hot_path: true
-- Action: start development (skip feature spec gate)
-
-The orchestrator invokes dev-agent directly.
+The orchestrator skips the classification prompt (pre_classified is set), creates the BUGFIX state files, invokes dev-agent directly (hot_path bypasses the feature spec gate), logs tokens after dev-agent and test-agent complete, and enforces the deployment gate.

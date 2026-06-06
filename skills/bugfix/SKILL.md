@@ -42,6 +42,7 @@ assignee: [git config user.name]
 phase: development
 phase_gates:
   feature_spec_complete: true
+  spec_reviewed: true
   dev_complete: false
   tests_passing: false
 blockers: []

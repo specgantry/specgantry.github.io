@@ -58,7 +58,7 @@ Read every feature from `project-state.yaml → backlog`. For each, read its `fe
 
 Show the assignee on each row. Use `you` when assignee matches the current user's git name. Show `—` when unassigned.
 
-**Per-feature cost:** Sum `input_tokens + output_tokens` from `features/[id]/state.yaml → token_usage`. Compute estimated cost using current rates from `config/pricing-history.yaml` (use the most recent entry). Show as `~$0.NNN` to the right of the pipeline row. If no token usage is logged yet, omit the cost field.
+**Per-feature cost:** Sum `input_tokens + output_tokens` from `features/[id]/state.yaml → token_usage`. Also include `features/[id]-v2/state.yaml` etc. for any versioned features — sum all versions. Compute estimated cost using current rates from `config/pricing-history.yaml` (use the most recent entry). Show as `~$0.NNN` to the right of the pipeline row. If no token usage is logged yet, omit the cost field.
 
 **Spec warnings indicator:** If `features/[id]/dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] spec warnings` to the feature title line.
 
@@ -74,6 +74,14 @@ Show the assignee on each row. Use `you` when assignee matches the current user'
 | Unclaimed / not started | `⏳` | first stage only |
 
 **Stage order:** Spec → Review → Build → Tests → Done
+
+**Versioned features:** When a feature has a newer version (e.g., FEATURE-003-v2 exists in the backlog), render the superseded version (FEATURE-003) in a collapsed, greyed-out row labelled `[archived v1]`. Show the active version with a version badge in the title:
+```
+  FEATURE-003-v2: [title] (v2)   ✅ Spec  ✅ Review  🔄 Build  ○ Tests  ○ Done
+  └─ FEATURE-003 [archived v1]   (deployed [date])
+```
+
+**Progress header count:** Count only active (non-superseded) features toward `n/total`. A feature is superseded if any backlog entry has `supersedes: [id]`.
 
 **Stage completion logic per feature state:**
 - `Spec` complete: `feature_spec_complete: true`
@@ -102,6 +110,7 @@ Collect every applicable action from the candidates below, in priority order. As
 
 | Priority | Condition | Action line |
 |---|---|---|
+| 0 | All backlog features have `deployment_status: complete` AND no features have `status: pending` or `status: deferred` (ignoring archived/superseded entries) | Enter Case 10 — project complete routing |
 | 1 | User's feature spec is in progress | `Continue writing the spec for [title]` |
 | 2 | User's feature spec is complete, not yet reviewed | `Review the spec for [title] and start building` |
 | 3 | User's feature is reviewed and dev not complete | `Continue building [title]` |
@@ -141,7 +150,7 @@ After rendering, work through these cases in order. Take the **first** match.
 Show the welcome banner once:
 
 ```
-════════════════════ SpecGantry v2.1.0 · AI-powered SDLC pipeline for Claude Code ══════════════════
+════════════════════ SpecGantry v2.2.0 · AI-powered SDLC pipeline for Claude Code ══════════════════
                         Copyright 2026 Mangesh Pise · Apache License 2.0         
                        Independent project, not affiliated with Anthropic.      
                       See LICENSE, NOTICE, and CONTRIBUTING.md for details.    
@@ -188,6 +197,30 @@ Show dashboard + menu + actions. Recommended action will be to pick up a feature
 
 ### Case 9 — Team Lead/Architect, architecture complete (genuine decision point)
 Show full dashboard + menu + actions. Let Team Lead/Architect choose.
+
+### Case 10 — Project Complete (all active features deployed, no pending work)
+
+This case fires when the priority-0 candidate applies. It takes precedence over all other cases.
+
+Render the full dashboard (so the TL can see the complete picture), then display:
+
+```
+  🎉 All features are deployed! The project backlog is complete.
+
+  What would you like to work on next?
+  Describe a bug, an improvement, a new feature, or a larger project change.
+  (Type "nothing for now" to exit.)
+
+  >
+```
+
+If the user types "nothing for now" (or equivalent — "done", "exit", "no", "n"):
+```
+  Great work — the project is complete. Run /spec-gantry anytime to continue.
+```
+Exit.
+
+Otherwise: pass the description to the orchestrator with `Action: classify_and_route`. The orchestrator classifies the request and presents its decision to the Team Lead/Architect for confirmation **before creating any files**. On confirmation, the orchestrator routes to the appropriate sub-flow (bug_fix, enhancement, new_feature, or project_change). Re-enter from Step 1 on completion.
 
 ---
 

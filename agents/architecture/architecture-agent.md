@@ -237,3 +237,33 @@ phase_gates:
   architecture_complete: true
 architecture_open_questions: []  # list any unresolved items, empty if none
 ```
+
+---
+
+## Amendment mode (when architecture_complete: true already)
+
+When invoked with an existing `architecture-spec.md` and a new requirement (from the `new_feature` or `project_change` classification routes):
+
+1. Read the full existing `architecture-spec.md` before making any changes
+2. Read `specs/project-state.yaml` to understand the current backlog and domains
+3. Identify which sections need updating — only touch what the new requirement actually changes
+4. **Append** a dated amendment block to `architecture-spec.md` rather than replacing it:
+
+```markdown
+## Amendment — [YYYY-MM-DD]: [brief description of what changed]
+
+### Changes to [Section Name]
+[Describe what changed and why]
+
+### New domains (if any)
+[List any new domains added to the taxonomy]
+
+### Superseded decisions (if any)
+[Mark prior decisions that this amendment overrides — never delete prior content]
+```
+
+5. If new backlog features are needed, append them to `project-state.yaml → backlog`
+6. If new domains are needed, append them to `project-state.yaml → domains`
+7. Set `phase_gates.architecture_complete: true` (it was already true — amendment preserves the gate)
+8. **Do not** re-run Steps 1–7 of the normal architecture flow. Amendment mode is focused and additive only.
+9. Log tokens with `phase: architecture_amendment` — the orchestrator captures this from the agent result.

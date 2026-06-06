@@ -18,6 +18,148 @@ You are the **spec-gantry orchestrator** — the enforcement backbone of the SDL
 
 ---
 
+## Step 0: Classification (only when Action = classify_and_route)
+
+When called with `Action: classify_and_route` and a free-text description from the Team Lead/Architect, classify the description into one of:
+
+1. **bug_fix** — something that worked before is now broken; fix is bounded to restoring prior behaviour
+2. **enhancement** — an existing feature needs to do more, work differently, or scale further
+3. **new_feature** — a net-new capability with no prior backlog entry
+4. **project_change** — cross-cutting, architectural, or affects multiple existing features structurally
+
+Classification rules:
+- Default to `enhancement` over `new_feature` when an existing backlog feature owns this domain
+- Default to `project_change` if the description mentions infrastructure, auth, data model, or cross-feature concerns
+- If ambiguous between two classifications, pick the more restrictive one (`bug_fix > enhancement > new_feature > project_change`) and explain why
+
+Confirm with the Team Lead/Architect before creating any files:
+
+```
+  Classification: [type]
+  Reason: [one sentence]
+
+  [Y] Proceed with this classification    [C] Change to: [other]    [N] Cancel
+```
+
+On `[N]`: exit. On `[C]`: re-classify with the chosen type. On `[Y]`: route to the appropriate sub-step below.
+
+### bug_fix route
+
+Create BUGFIX-NNN (next sequential ID under `specs/features/`). Write `state.yaml`:
+
+```yaml
+id: [BUGFIX-ID]
+title: "[first 80 chars of description]"
+domain: bugfix
+scope: bug_fix
+hot_path: true
+assignee: [git config user.name]
+phase: development
+phase_gates:
+  feature_spec_complete: true
+  spec_reviewed: true
+  dev_complete: false
+  tests_passing: false
+blockers: []
+token_usage: []
+```
+
+Write `feature-spec.md`:
+
+```markdown
+# Bug Fix Spec — [BUGFIX-ID]
+
+**Scope:** bug_fix
+**Hot path:** true
+**Author:** [git user name]
+**Date:** [YYYY-MM-DD]
+
+## Bug Description
+[full description]
+
+## Scope
+Fix the described bug with the minimal change required.
+Do not refactor surrounding code.
+Write or update tests to cover the fixed behaviour.
+
+## Guardrail Compliance
+Hot path — architecture guardrails apply but feature spec gate is bypassed.
+```
+
+Set `current_feature: [BUGFIX-ID]` in `local-state.yaml`. Then invoke dev-agent directly (hot_path: true skips the feature spec gate). Log tokens after dev-agent completes (see Step 3).
+
+### enhancement route
+
+Read `project-state.yaml` backlog. Identify which feature this enhancement targets — if ambiguous, ask the Team Lead/Architect to confirm. Call the target feature FEATURE-NNN.
+
+Archive current version artifacts inside the same directory:
+- Rename `specs/features/FEATURE-NNN/state.yaml` → `state-v1.yaml`
+- Rename `specs/features/FEATURE-NNN/feature-spec.md` → `feature-spec-v1.md`
+- Rename `specs/features/FEATURE-NNN/dev-artifact.yaml` → `dev-artifact-v1.yaml` (if it exists)
+- Rename `specs/features/FEATURE-NNN/deploy-artifact.md` → `deploy-artifact-v1.md` (if it exists)
+
+Create `specs/features/FEATURE-NNN-v2/` with a fresh `state.yaml`:
+
+```yaml
+id: FEATURE-NNN-v2
+title: "[original title] (v2)"
+domain: "[same domain as FEATURE-NNN]"
+assignee: null
+version: v2
+replaces: FEATURE-NNN
+superseded_by: null
+scope: enhancement
+phase_gates:
+  feature_spec_complete: false
+  spec_reviewed: false
+  dev_complete: false
+  tests_passing: false
+blockers: []
+token_usage: []
+```
+
+Add FEATURE-NNN-v2 to backlog in `project-state.yaml`:
+
+```yaml
+- id: FEATURE-NNN-v2
+  title: "[original title] (v2)"
+  domain: "[domain]"
+  size: [same as FEATURE-NNN]
+  assignee: null
+  status: pending
+  supersedes: FEATURE-NNN
+  depends_on: []
+```
+
+Set `current_feature: FEATURE-NNN-v2` in `local-state.yaml`. Invoke `feature-spec-agent` with the enhancement description pre-loaded as context.
+
+### new_feature route
+
+Assess whether this feature requires architecture changes by checking:
+- Does it introduce a new domain not in the existing taxonomy?
+- Does it add a new external dependency?
+- Does it introduce a cross-cutting concern (new auth scheme, new data residency requirement, etc.)?
+
+If architecture changes are needed:
+1. Invoke `ideation-agent` in focused mode (problem statement = the description; scope is limited to this one addition)
+2. After ideation gate passes, invoke `architecture-agent` in **amendment mode** (see architecture-agent.md)
+3. After architecture amendment gate passes, proceed to feature-spec
+
+If no architecture changes are needed:
+1. Skip directly to feature-spec
+
+Assign the next FEATURE-NNN ID. Add to backlog in `project-state.yaml`. Set `current_feature`. Invoke `feature-spec-agent`.
+
+### project_change route
+
+This always goes through ideation and architecture:
+1. Invoke `ideation-agent` (problem statement = the description)
+2. After ideation gate passes, invoke `architecture-agent` in **amendment mode**
+3. After architecture amendment gate passes, all features with specs that touch the affected domains have `spec_reviewed` reset to `false` in their `state.yaml` — their developers must re-review before dev can proceed
+4. Any new features added by the architecture amendment follow the normal feature pipeline
+
+---
+
 ## Step 1: Determine context
 
 Read `.claude/local-state.yaml` — extract `role` and `current_feature`.
@@ -30,6 +172,12 @@ If `local-state.yaml` does not exist: this is a first run. Hand back to `/spec-g
 ## Step 2: Route by phase
 
 ### PROJECT PHASES (Team Lead/Architect only — verify role = tl before proceeding)
+
+#### Reverse Engineer (Action: reverse_engineer)
+- Invoke `reverse-engineer-agent` with `project_name` and `release_label` from the skill
+- On completion: the agent has written all spec-gantry files including `specs/project-state.yaml`
+- Log tokens to `specs/project-state.yaml` under `token_usage` with `phase: reverse_engineer` (see Step 3)
+- Hand back to `/spec-gantry`
 
 #### Ideation
 - Invoke `ideation-agent`
@@ -185,7 +333,7 @@ Extract these values immediately.
 
 ### Where to log
 
-**For project-level agents** (ideation, architecture, deployment) → `specs/project-state.yaml`:
+**For project-level agents** (ideation, architecture, reverse-engineer, deployment) → `specs/project-state.yaml`:
 ```yaml
 token_usage:
   - phase: [phase_name]
@@ -201,6 +349,18 @@ token_usage:
 token_usage:
   - phase: [phase_name]
     agent: [agent_name]
+    model: [exact model id from agent result]
+    date: [YYYY-MM-DD]
+    input_tokens: [N]
+    output_tokens: [N]
+```
+
+**For bugfix dev-agent invocations**, add a `scope` field to distinguish bugfix spend from regular feature spend:
+```yaml
+token_usage:
+  - phase: development
+    agent: dev-agent
+    scope: bug_fix
     model: [exact model id from agent result]
     date: [YYYY-MM-DD]
     input_tokens: [N]
@@ -242,6 +402,7 @@ Do NOT advance to the next phase if tokens are not logged. If you are about to m
 
 - Never advance a phase without all gate checks passing
 - **Never skip token logging after an agent invocation — effort level does not override this requirement. Missing token logs = critical failure.**
+- `hot_path` bypasses the feature spec gate but never bypasses token logging. After dev-agent returns for a BUGFIX-* feature, log tokens to `specs/features/[BUGFIX-ID]/state.yaml` exactly as for any other feature, with `scope: bug_fix`.
 - Never write to `project-state.yaml` from a `role: dev` context — it is read-only for developers
 - Never invoke project-level agents (ideation, architecture, deployment) for a `role: dev` user
 - Gate checks read completion flags from state files — agents are the sole authority on their own completeness. The orchestrator also verifies the artifact file exists on disk as a secondary sanity check, but never re-inspects artifact content.

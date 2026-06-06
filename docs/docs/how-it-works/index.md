@@ -185,7 +185,7 @@ The Team Lead owns the project-level phases and has write access to `project-sta
 
 **What they do:**
 - Drive Ideation and Architecture sessions
-- Review and approve (or reject) feature specs
+- Monitor feature spec progress and flag concerns (resetting `spec_reviewed` if needed)
 - Manage the backlog — prioritize, assign, defer, reassign
 - Deploy completed features
 - View full cost breakdown by phase and developer
@@ -218,9 +218,9 @@ Developers own feature-level phases and cannot write to `project-state.yaml` (th
 - Architecture spec (read-only)
 
 **What they cannot do:**
-- Approve specs (only Team Lead)
-- Deploy (only Team Lead)
 - Modify the backlog
+- Deploy (only Team Lead)
+- Access `[B]acklog` and `[P]roject` menu options
 
 ---
 

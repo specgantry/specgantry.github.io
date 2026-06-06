@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 6 skills and 7 agents — what they do, when to use them, and how they interact.
+description: All 6 skills and 8 agents — what they do, when to use them, and how they interact.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Architecture"
@@ -121,35 +121,35 @@ Because all state is on disk, every `/spec-gantry` invocation is idempotent. Run
 
 ### What It Does
 
-Guides you through:
-- Project name and one-paragraph vision
-- Target platform, language, and framework
-- Team structure (Team Lead + developers, or solo)
-- Key non-functional requirements (performance, security, compliance)
+Guides you through three prompts:
+- **Project name** — short, used in dashboard headers (e.g. "Acme API Platform")
+- **Project vision** — 3–5 sentences: what problem it solves, who the users are, what success looks like
+- **Release label** — what you're calling the first release (default: v1.0)
 
 Creates:
-- `specs/project-state.yaml` — with project metadata and empty phase gates
-- `specs/ideation-artifact.md` — skeleton ready for the ideation agent
+- `specs/project-state.yaml` — project metadata, empty phase gates, and empty backlog
+- `.claude/local-state.yaml` — your role (`tl`) and session state (local only, gitignored)
+
+Then hands off to the ideation agent automatically.
 
 ### Example Interaction
 
 ```
-📋 Project Setup
+  Project name:
+  > Acme Platform
 
-What's the name of this project?
-> Acme Platform
+  Project vision (3–5 sentences):
+  > A B2B SaaS platform that helps small teams manage their AI-assisted
+    development workflow. Team leads define architecture; developers build to spec.
 
-Describe what it does in 3–5 sentences. What problem does it solve? Who are the users?
-> A B2B SaaS platform that helps small teams manage their AI-assisted development
-  workflow. Team leads define architecture, developers build to spec.
+  What are you calling the first release? (default: v1.0)
+  > v1.0
 
-Target platform and primary language?
-> Node.js / TypeScript, deployed to AWS
+  ✓ Project initialised: Acme Platform
+  ✓ local-state.yaml written  (role: Team Lead/Architect — gitignored)
+  ✓ project-state.yaml written  (commit this to git)
 
-Team structure?
-> 1 tech lead + 3 developers
-
-✅ Project created. Next: run /spec-gantry to begin ideation.
+  Starting ideation phase...
 ```
 
 ### When to Use It Directly
@@ -219,7 +219,7 @@ Review the proposed architecture before confirming? [Y/n]
 
 ## 4. bugfix {#bugfix}
 
-**Log and manage bugs without disrupting feature development.**
+**Emergency fast-track for critical bugs — skips the normal pipeline and goes straight to development.**
 
 ```
 /bugfix
@@ -227,41 +227,26 @@ Review the proposed architecture before confirming? [Y/n]
 
 ### What It Does
 
-Bugs discovered during development often don't fit neatly into the current feature's scope. `/bugfix` lets you log them, decide their urgency, and keep moving.
+`/bugfix` is an emergency path for production bugs that cannot wait for the normal feature spec cycle. It bypasses ideation, architecture, and spec review — while still enforcing the development gate (tests must pass before deployment).
 
-**Three paths:**
-
-```
-Found a bug during development?
-
-[1] Log it as a bugfix    — document it, fix later
-[2] Fix it now            — pause feature work, fix bug, resume
-[3] Escalate to Team Lead — needs immediate architectural attention
-```
-
-Logged bugs get a `BUGFIX-NNN` identifier and are attached to the project state. They can be:
-- Fixed immediately (pause feature work, return when done)
-- Deferred (logged, visible on Team Lead dashboard)
-- Graduated to a full feature by the Team Lead (`[P]roject → Graduate bugfix`)
-
-### Example
+1. You describe the bug (1–2 sentences)
+2. SpecGantry creates a `BUGFIX-NNN` directory with a pre-approved spec and sets it as your current feature
+3. The dev agent is invoked immediately — no spec phase to complete
 
 ```
-📋 Logging Bugfix
+  Describe the bug (1–2 sentences):
+  What is broken and what is the expected behaviour?
 
-Describe the bug:
-> The auth middleware returns 200 instead of 401 for expired tokens
+  Bug: > The auth middleware returns 200 instead of 401 for expired tokens
 
-How to reproduce it?
-> Call any protected endpoint with a JWT that expired more than 24h ago
+  ✓ Bug fix fast-track activated: BUGFIX-001
+  ✓ Hot path — architecture guardrails apply; feature spec gate bypassed
+  ✓ Tests required before deployment
 
-Severity? [critical / high / medium / low]
-> high
-
-✅ Logged as BUGFIX-003
-   Visible to Team Lead on next dashboard load.
-   Options: [1] Fix now  [2] Defer for later
+  Analysing codebase...
 ```
+
+Bugfix entries use the ID format `BUGFIX-NNN` and are separate from the main feature backlog.
 
 ### Graduating Bugs to Features
 
@@ -428,7 +413,7 @@ When you run `[C]ost` from the `/spec-gantry` menu, it reads the pricing rates f
 
 ---
 
-## The 7 Agents (unchanged)
+## The 8 Agents
 
 Skills call agents to do the actual work. Agents are invoked by the orchestrator — you never call them directly.
 
@@ -437,6 +422,7 @@ Skills call agents to do the actual work. Agents are invoked by the orchestrator
 | **orchestrator** | Skills | Routes phases, enforces gates, logs token usage |
 | **ideation-agent** | orchestrator | Guides project clarification, produces feasibility assessment |
 | **architecture-agent** | orchestrator | Designs system, produces guardrails and feature backlog |
+| **reverse-engineer-agent** | orchestrator | Analyses existing codebase, synthesises architecture spec and feature backlog |
 | **feature-spec-agent** | orchestrator | Guides 6-section spec, checks guardrail compliance |
 | **dev-agent** | orchestrator | Implements feature from spec, writes tests |
 | **test-agent** | dev-agent | Runs test suite, sets `overall_status` |
@@ -459,7 +445,7 @@ Team Lead:
 
 Developers:
   pull origin main
-  /spec-gantry → detects project-state.yaml → role: developer
+  /spec-gantry → detects project-state.yaml → role: dev
               → [1] Pick up FEATURE-XXX
               → Write feature spec          (feature-spec-agent)
               → Build                       (dev-agent + test-agent)

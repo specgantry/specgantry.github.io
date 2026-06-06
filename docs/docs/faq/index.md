@@ -125,7 +125,7 @@ Yes, read-only. Developers need the architecture spec context to write feature s
 
 ### Can a Team Lead build features?
 
-Technically yes — they can edit `.claude/local-state.yaml` to set `role: developer`. SpecGantry doesn't prevent this. But the tool is designed for clear role separation, and mixing roles loses many of the process guarantees.
+Technically yes — they can edit `.claude/local-state.yaml` to set `role: dev`. SpecGantry doesn't prevent this. But the tool is designed for clear role separation, and mixing roles loses many of the process guarantees.
 
 ### What if the Team Lead leaves?
 
@@ -280,7 +280,7 @@ The ideation agent defaults to `claude-haiku-4-5` (cheaper). Architecture, spec,
 
 Not automatically — SpecGantry doesn't interrupt mid-session if you hit a limit. But you can:
 1. Monitor the per-feature cost shown on the dashboard
-2. Run `/update-pricing` to view the full cost breakdown at any time
+2. Run `/track-cost` to view the full cost breakdown at any time
 3. Choose cheaper models for less critical phases
 
 ---

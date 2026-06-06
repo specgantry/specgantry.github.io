@@ -182,7 +182,7 @@ token_usage:
 ### `.claude/local-state.yaml`
 
 ```yaml
-role: developer           # tl | developer
+role: dev                 # tl | dev
 current_feature: FEATURE-001
 last_session: 2026-01-19T14:30:00Z
 ```
@@ -256,10 +256,10 @@ This means the artifact on disk always reflects the most recent complete answer.
 | Write to project-state.yaml | ✅ | ❌ |
 | View architecture spec | ✅ | ✅ (read-only) |
 | Write feature spec | ✅ | ✅ |
-| Approve feature spec | ✅ | ❌ |
+| Self-review feature spec | ✅ | ✅ |
 | Build feature | ✅ | ✅ |
 | Deploy | ✅ | ❌ |
-| View all costs | ✅ | ❌ |
+| View all costs | ✅ | ✅ |
 
 ### Secrets Handling
 

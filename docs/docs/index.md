@@ -61,7 +61,7 @@ Each phase has gates. You cannot proceed without completing the previous one.
     <div class="doc-nav-icon">🛠️</div>
     <div>
       <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">All 6 skills and 7 agents — what they do, when to use them, how they interact.</div>
+      <div class="doc-nav-desc">All 6 skills and 8 agents — what they do, when to use them, how they interact.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
@@ -154,7 +154,7 @@ All project state lives in plain-text YAML files under `specs/`. This means:
 | Component | Count | What they do |
 |-----------|-------|-------------|
 | **Skills** | 6 | Entry points: dashboard, setup, reverse-engineer, bugfix, track-cost, update-pricing |
-| **Agents** | 7 | Specialists: ideation, architecture, spec, dev, test, deployment, orchestrator |
+| **Agents** | 8 | Specialists: ideation, architecture, reverse-engineer, spec, dev, test, deployment, orchestrator |
 | **State files** | Per project | YAML artifacts, Markdown outputs |
 | **Dependencies** | 0 | Runs entirely within Claude Code |
 

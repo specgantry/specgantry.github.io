@@ -293,7 +293,7 @@ Or select `[C]ost` from the `/spec-gantry` menu.
 
 SpecGantry's `SubagentStop` hook captures exact token counts from Claude Code's session transcripts automatically when any SpecGantry agent finishes. This skill reads the stored data from `specs/cost-log.json` and renders a breakdown by phase, feature, and total.
 
-Unlike character-based estimates, token counts here are the actual values returned by the Anthropic API — including cache creation and cache read tokens, which are billed at different rates.
+Unlike character-based estimates, token counts here are the actual values returned by the Anthropic API — including cache write and cache read tokens, which are billed at different rates. The report shows all four cost components in separate columns so you can see exactly where spend is coming from.
 
 ### Example Output
 
@@ -303,25 +303,31 @@ Unlike character-based estimates, token counts here are the actual values return
 
 🏢 Project
 
-  Phase              Agent                    Model          Input      Output     Total
-  ──────────────────────────────────────────────────────────────────────────────────────
-  ideation           ideation-agent           haiku-4-5      $0.0000    $0.0000    $0.0000
-  architecture       architecture-agent       sonnet-4-6     $0.0001    $0.0001    $0.0001
-                                                             Subtotal:             $0.0001
+  Phase        Agent               Model        Input    Output   Cache W  Cache R  Total
+  ──────────────────────────────────────────────────────────────────────────────────────────
+  ideation     ideation-agent      haiku-4-5    $0.0000  $0.0000  $0.0001  $0.0000  $0.0001
+  architecture architecture-agent  sonnet-4-6   $0.0001  $0.0002  $0.0004  $0.0003  $0.0010
+                                                                   Subtotal:         $0.0011
 
 🎯 FEATURE-001: User Auth
 
-  Phase              Agent                    Model          Input      Output     Total
-  ──────────────────────────────────────────────────────────────────────────────────────
-  feature_spec       feature-spec-agent       sonnet-4-6     $0.0001    $0.0001    $0.0002
-  development        dev-agent                sonnet-4-6     $0.0002    $0.0001    $0.0003
-  test               test-agent               haiku-4-5      $0.0000    $0.0000    $0.0000
-                                                             Subtotal:             $0.0005
+  Phase        Agent               Model        Input    Output   Cache W  Cache R  Total
+  ──────────────────────────────────────────────────────────────────────────────────────────
+  feature_spec feature-spec-agent  sonnet-4-6   $0.0001  $0.0600  $0.1136  $0.2820  $0.4557
+  development  dev-agent           sonnet-4-6   $0.0003  $0.1062  $0.1401  $0.4618  $0.7084
+  test         test-agent          sonnet-4-6   $0.0003  $0.1122  $0.1454  $0.4910  $0.7489
+                                                                   Subtotal:         $1.9130
 
 ─────────────────────────────────────────────────────────────────────────────────
-💰 Total cost: $0.0006
-Rates last updated: 2026-06-06T10:30:00Z
+💰 Total tokens:  4,160,786 tokens
+               (input: 334 · output: 25,028 · cache write: 142,258 · cache read: 4,510,945)
+💰 Total cost:    $1.9141
+               (input: $0.0007 · output: $0.3786 · cache write: $0.3996 · cache read: $1.1348)
+─────────────────────────────────────────────────────────────────────────────────
+Rates last updated: 2026-06-06T17:39:51.291Z
 ```
+
+Cache write and cache read costs routinely dominate the total for long-running agents with large context windows. The four-column breakdown makes this visible rather than hiding it in the Total column.
 
 ### Debugging cost collection
 
@@ -337,7 +343,7 @@ For full detail on what the server is doing, set `SPEC_GANTRY_LOG_LEVEL=debug` i
 
 ## 6. update-pricing {#update-pricing}
 
-**Refresh pricing rates from anthropic.com/pricing.**
+**Refresh pricing rates from `platform.claude.com/docs/en/about-claude/pricing`.**
 
 ```
 /update-pricing
@@ -348,7 +354,7 @@ For full detail on what the server is doing, set `SPEC_GANTRY_LOG_LEVEL=debug` i
 The MCP server fetches current Anthropic rates at startup and caches them in the plugin directory. This skill forces a synchronous refresh and shows you the result.
 
 Run it when:
-- Claude's pricing has changed
+- Anthropic's pricing has changed
 - A cost entry shows `pricing_source: fallback` (live fetch failed previously)
 - You want to verify the rates being used
 
@@ -357,15 +363,37 @@ Run it when:
 ```
 ✓ Pricing updated
 
-  Rates as of 2026-06-06T10:30:00Z:
+  Rates as of 2026-06-06T17:39:51Z:
 
   Model                          Input / 1M tokens    Output / 1M tokens
   ──────────────────────────────────────────────────────────────────────
-  claude-haiku-4-5-20251001      $0.80                $4.00
+  claude-haiku-4-5-20251001      $1.00                $5.00
   claude-sonnet-4-6              $3.00                $15.00
-  claude-opus-4-8                $15.00               $75.00
+  claude-opus-4-8                $5.00                $25.00
+  claude-opus-4-7                $5.00                $25.00
 
-  Source: https://www.anthropic.com/pricing
+  Source: https://platform.claude.com/docs/en/about-claude/pricing
+
+  All future cost calculations will use these rates.
+  Cost entries already recorded are not retroactively updated.
+```
+
+### When the fetch fails
+
+If the pricing page is unreachable or its format has changed, the skill shows the current cached rates and their age:
+
+```
+✗ Pricing update failed: Could not parse pricing from page
+
+  The existing cached rates are still in use:
+
+  Last updated: 2026-06-06T17:39:51Z
+
+  Model                          Input / 1M tokens    Output / 1M tokens
+  ...
+
+  To retry, run /update-pricing again when you have network access.
+  To verify current rates manually: https://platform.claude.com/docs/en/about-claude/pricing
 ```
 
 ---

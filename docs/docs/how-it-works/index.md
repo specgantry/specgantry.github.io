@@ -274,10 +274,10 @@ Token counts are **exact API counts** — read directly from Claude Code's sessi
 
 All cost data is written to `specs/cost-log.json` in your project. This file is committed to git alongside other spec files so the whole team shares cost visibility.
 
-The dashboard shows per-feature cost inline next to each pipeline row. Run `/track-cost` for the full breakdown by phase and feature. Run `/update-pricing` to refresh the pricing rates from `anthropic.com/pricing`.
+The dashboard shows per-feature cost inline next to each pipeline row. Run `/track-cost` for the full breakdown by phase and feature — the report shows Input, Output, Cache Write, and Cache Read costs in separate columns, which matters because cache costs routinely dominate for agents with large context windows. Run `/update-pricing` to refresh the pricing rates.
 
 <div class="info">
-  <strong>Pricing:</strong> The MCP server fetches current rates from <code>anthropic.com/pricing</code> at startup and caches them locally. If the fetch fails, it falls back to bundled rates. Run <code>/update-pricing</code> anytime to force a refresh.
+  <strong>Pricing:</strong> The MCP server fetches current rates from <code>platform.claude.com/docs/en/about-claude/pricing</code> at startup and caches them locally. If the fetch fails, it falls back to bundled rates. Run <code>/update-pricing</code> anytime to force a refresh.
 </div>
 
 <div class="info">

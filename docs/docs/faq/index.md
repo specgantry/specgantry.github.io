@@ -266,17 +266,19 @@ This means token counts are real API counts — not character-based estimates. T
 
 ### Why are my costs higher than expected?
 
-Common causes:
-- **Large codebase for reverse-engineer** — the agent reads many files, which are passed as context
+The `/track-cost` report shows Input, Output, Cache Write, and Cache Read costs in separate columns — check those columns first. Cache write and cache read costs typically dominate for agents with large context windows, and if they were collapsed into a single Total column in older versions they could look surprising.
+
+Common causes for high totals:
+- **Large context windows** — each agent turn re-sends the full conversation history through the cache. Cache read tokens are cheap (10% of base input price) but add up at millions of tokens per run.
+- **Large codebase for reverse-engineer** — the agent reads many files, all passed as context
 - **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
-- **Long architecture sessions** — complex systems require more back-and-forth
-- **Cache creation** — the first call in a session pays more to write the prompt cache; subsequent calls are cheaper
+- **Cache creation** — the first call in a session pays a 1.25× premium to write the prompt cache; subsequent calls are cheaper
 
 The ideation agent uses `claude-haiku-4-5` (cheaper). Architecture, spec, and dev agents use `claude-sonnet-4-6`.
 
 ### How do I refresh the pricing rates?
 
-Run `/update-pricing`. The MCP server fetches current rates from `anthropic.com/pricing` and updates the local cache. If the page is unreachable, it shows the current cached rates and their age.
+Run `/update-pricing`. The MCP server fetches current rates from `platform.claude.com/docs/en/about-claude/pricing` and updates the local cache. If the page is unreachable, it shows the current cached rates and their age.
 
 ### Can I export a cost report?
 

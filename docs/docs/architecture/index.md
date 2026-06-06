@@ -136,25 +136,31 @@ backlog:
 
 ### `specs/cost-log.json`
 
-Flat append-only array written by the `spec-gantry-costs` MCP server after every agent invocation. Contains exact token counts from Claude Code's session transcripts and computed costs.
+Flat append-only array written by the `spec-gantry-costs` MCP server after every agent invocation. Contains exact token counts from Claude Code's session transcripts and computed costs broken down by token type.
 
 ```json
 [
   {
-    "phase": "ideation",
-    "agent": "ideation-agent",
-    "model": "claude-haiku-4-5-20251001",
-    "feature": null,
+    "phase": "feature_spec",
+    "agent": "spec-gantry:feature-spec:feature-spec-agent",
+    "model": "claude-sonnet-4-6",
+    "feature": "FEATURE-001",
     "date": "2026-06-06",
-    "input_tokens": 42300,
-    "output_tokens": 8900,
-    "cache_creation_tokens": 5200,
-    "cache_read_tokens": 18400,
-    "total_cost_usd": 0.000076112,
+    "input_tokens": 72,
+    "output_tokens": 3989,
+    "cache_creation_tokens": 30280,
+    "cache_read_tokens": 939905,
+    "input_cost_usd": 0.000216,
+    "output_cost_usd": 0.059835,
+    "cache_write_cost_usd": 0.11355,
+    "cache_read_cost_usd": 0.2819715,
+    "total_cost_usd": 0.4555725,
     "pricing_source": "live"
   }
 ]
 ```
+
+Each entry records all four cost components separately. Cache write (`cache_write_cost_usd`) and cache read (`cache_read_cost_usd`) costs are billed at different rates than base input tokens and routinely represent the majority of an agent's total cost. The `/track-cost` report displays all four columns so costs are transparent rather than opaque in a single Total figure.
 
 ### `specs/features/FEATURE-XXX/state.yaml`
 

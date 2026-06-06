@@ -63,11 +63,11 @@ Group entries:
 ```
 🏢 Project
 
-  Phase              Agent                    Model            Input      Output     Total
-  ────────────────────────────────────────────────────────────────────────────────────────
-  [phase]            [agent]                  [model]          $[i]       $[o]       $[t]
+  Phase              Agent                    Model            Input      Output     Cache W    Cache R    Total
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  [phase]            [agent]                  [model]          $[i]       $[o]       $[cw]      $[cr]      $[t]
   ...
-                                                               Subtotal:             $[sum]
+                                                                                     Subtotal:             $[sum]
 ```
 
 ### Per-feature costs (if any)
@@ -77,11 +77,11 @@ For each feature in the backlog order (read from `specs/project-state.yaml → b
 ```
 🎯 [FEATURE-001]: [title from backlog]
 
-  Phase              Agent                    Model            Input      Output     Total
-  ────────────────────────────────────────────────────────────────────────────────────────
-  [phase]            [agent]                  [model]          $[i]       $[o]       $[t]
+  Phase              Agent                    Model            Input      Output     Cache W    Cache R    Total
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  [phase]            [agent]                  [model]          $[i]       $[o]       $[cw]      $[cr]      $[t]
   ...
-                                                               Subtotal:             $[sum]
+                                                                                     Subtotal:             $[sum]
 ```
 
 ### Bug fix costs (if any)
@@ -90,16 +90,18 @@ For each feature in the backlog order (read from `specs/project-state.yaml → b
 🐛 Bug Fixes
 
   [BUGFIX-001]:
-    [phase]          [agent]                  [model]          $[i]       $[o]       $[t]
-                                                               Subtotal:             $[sum]
+    [phase]          [agent]                  [model]          $[i]       $[o]       $[cw]      $[cr]      $[t]
+                                                                                     Subtotal:             $[sum]
 ```
 
 ### Grand total
 
 ```
 ─────────────────────────────────────────────────────────────────────────────────
-💰 Total tokens:  [sum input_tokens + output_tokens + cache tokens] tokens
+💰 Total tokens:  [sum of all tokens] tokens
+               (input: [n] · output: [n] · cache write: [n] · cache read: [n])
 💰 Total cost:    $[grand total]
+               (input: $[n] · output: $[n] · cache write: $[n] · cache read: $[n])
 ─────────────────────────────────────────────────────────────────────────────────
 ```
 

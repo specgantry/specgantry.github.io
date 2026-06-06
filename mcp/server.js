@@ -36,16 +36,18 @@ const logError = (...a) => log('error', ...a);
 const logInfo  = (...a) => log('info',  ...a);
 const logDebug = (...a) => log('debug', ...a);
 
-// ─── Fallback pricing (training-knowledge rates, updated 2026-06) ────────────
-// These are used when live fetch from anthropic.com/pricing fails.
+// ─── Fallback pricing (rates as of 2026-06, from platform.claude.com/docs/en/about-claude/pricing) ────
+// These are used when live fetch from the pricing page fails.
 // Keys match the exact model IDs used in agent frontmatter.
 const FALLBACK_RATES = {
-  'claude-haiku-4-5-20251001': { input_per_1m: 0.80,  output_per_1m: 4.00,  cache_write_per_1m: 1.00,  cache_read_per_1m: 0.08  },
-  'claude-haiku-4-5':          { input_per_1m: 0.80,  output_per_1m: 4.00,  cache_write_per_1m: 1.00,  cache_read_per_1m: 0.08  },
+  'claude-haiku-4-5-20251001': { input_per_1m: 1.00,  output_per_1m: 5.00,  cache_write_per_1m: 1.25,  cache_read_per_1m: 0.10  },
+  'claude-haiku-4-5':          { input_per_1m: 1.00,  output_per_1m: 5.00,  cache_write_per_1m: 1.25,  cache_read_per_1m: 0.10  },
   'claude-sonnet-4-6':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75,  cache_read_per_1m: 0.30  },
   'claude-sonnet-4-5':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75,  cache_read_per_1m: 0.30  },
-  'claude-opus-4-8':           { input_per_1m: 15.00, output_per_1m: 75.00, cache_write_per_1m: 18.75, cache_read_per_1m: 1.50  },
-  'claude-opus-4-5':           { input_per_1m: 15.00, output_per_1m: 75.00, cache_write_per_1m: 18.75, cache_read_per_1m: 1.50  },
+  'claude-opus-4-8':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
+  'claude-opus-4-7':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
+  'claude-opus-4-6':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
+  'claude-opus-4-5':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
 };
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
@@ -53,7 +55,7 @@ const CLAUDE_HOME    = path.join(os.homedir(), '.claude');
 const PLUGIN_DIR     = path.dirname(__filename);
 const RATES_CACHE    = path.join(PLUGIN_DIR, 'rates-cache.json');
 const PROJECT_DIR    = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-const PRICING_URL    = 'https://www.anthropic.com/pricing';
+const PRICING_URL    = 'https://platform.claude.com/docs/en/about-claude/pricing';
 
 // ─── Slug derivation (matches Claude Code's convention) ──────────────────────
 // /Users/foo/myproject  →  -Users-foo-myproject  (Mac/Linux)
@@ -100,43 +102,62 @@ function fetchPricingPage() {
   });
 }
 
-// Parse dollar amounts from the Anthropic pricing page HTML.
-// The page renders prices as text like "$3.00" in proximity to model names.
+// Parse dollar amounts from the platform.claude.com pricing docs page.
+// The page renders a markdown table with columns:
+//   Model | Base Input Tokens | 5m Cache Writes | 1h Cache Writes | Cache Hits & Refreshes | Output Tokens
+// Example row: | Claude Opus 4.8 | $5 / MTok | $6.25 / MTok | $10 / MTok | $0.50 / MTok | $25 / MTok |
 // This is a best-effort parser; falls back gracefully on parse failure.
 function parsePricingHtml(html) {
   const rates = {};
 
-  // Map of patterns we look for → model ID
+  // Map of model name patterns (as they appear in the table) → canonical model ID.
+  // Most-specific patterns first to avoid Opus 4.5 matching Opus 4.8's row.
   const MODEL_PATTERNS = [
-    { pattern: /haiku.{0,30}4[-.]?5/i,  id: 'claude-haiku-4-5-20251001' },
-    { pattern: /sonnet.{0,30}4[-.]?6/i, id: 'claude-sonnet-4-6' },
-    { pattern: /sonnet.{0,30}4[-.]?5/i, id: 'claude-sonnet-4-5' },
-    { pattern: /opus.{0,30}4[-.]?8/i,   id: 'claude-opus-4-8' },
-    { pattern: /opus.{0,30}4[-.]?5/i,   id: 'claude-opus-4-5' },
+    { pattern: /Claude\s+Opus\s+4\.8\b/i,   id: 'claude-opus-4-8'  },
+    { pattern: /Claude\s+Opus\s+4\.7\b/i,   id: 'claude-opus-4-7'  },
+    { pattern: /Claude\s+Opus\s+4\.6\b/i,   id: 'claude-opus-4-6'  },
+    { pattern: /Claude\s+Opus\s+4\.5\b/i,   id: 'claude-opus-4-5'  },
+    { pattern: /Claude\s+Sonnet\s+4\.6\b/i, id: 'claude-sonnet-4-6' },
+    { pattern: /Claude\s+Sonnet\s+4\.5\b/i, id: 'claude-sonnet-4-5' },
+    { pattern: /Claude\s+Haiku\s+4\.5\b/i,  id: 'claude-haiku-4-5-20251001' },
   ];
 
-  // Extract price values near each model name.
-  // The page typically has input price before output price in DOM order.
+  const priceRe = /\$([\d]+(?:\.[\d]+)?)\s*\/\s*MTok/g;
+
   for (const { pattern, id } of MODEL_PATTERNS) {
-    const match = html.search(pattern);
-    if (match === -1) continue;
+    // The model name appears in nav links and multiple tables — scan all occurrences
+    // and use the first one that has enough $/MTok values in the following 500 chars.
+    const nameRe = new RegExp(pattern.source, 'gi');
+    let nameMatch;
+    let found = false;
+    while ((nameMatch = nameRe.exec(html)) !== null) {
+      const segment = html.slice(nameMatch.index, nameMatch.index + 500);
+      const prices = [];
+      let m;
+      priceRe.lastIndex = 0;
+      while ((m = priceRe.exec(segment)) !== null && prices.length < 5) {
+        prices.push(parseFloat(m[1]));
+      }
 
-    // Look for dollar amounts in a window after the model name
-    const window = html.slice(match, match + 2000);
-    const prices = [];
-    const priceRe = /\$\s*([\d]+(?:\.[\d]+)?)/g;
-    let m;
-    while ((m = priceRe.exec(window)) !== null && prices.length < 2) {
-      prices.push(parseFloat(m[1]));
-    }
-
-    if (prices.length >= 2) {
-      rates[id] = {
-        input_per_1m:       prices[0],
-        output_per_1m:      prices[1],
-        cache_write_per_1m: +(prices[0] * 1.25).toFixed(4),
-        cache_read_per_1m:  +(prices[0] * 0.10).toFixed(4),
-      };
+      if (prices.length >= 5) {
+        rates[id] = {
+          input_per_1m:       prices[0],
+          output_per_1m:      prices[4],
+          cache_write_per_1m: prices[1],  // 5-minute cache write
+          cache_read_per_1m:  prices[3],  // cache hit / refresh
+        };
+        found = true;
+        break;
+      } else if (prices.length >= 2) {
+        rates[id] = {
+          input_per_1m:       prices[0],
+          output_per_1m:      prices[prices.length - 1],
+          cache_write_per_1m: +(prices[0] * 1.25).toFixed(4),
+          cache_read_per_1m:  +(prices[0] * 0.10).toFixed(4),
+        };
+        found = true;
+        break;
+      }
     }
   }
 

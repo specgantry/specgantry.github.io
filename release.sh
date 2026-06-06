@@ -134,10 +134,9 @@ release() {
     log_error "Must be on 'main' branch. Currently on: $branch"
   fi
 
-  # Check for uncommitted changes and stage them
+  # Check for uncommitted changes — they'll be included in the release commit
   if ! git diff-index --quiet HEAD --; then
     log_warning "Uncommitted changes detected. Including in release commit."
-    git add -A
   fi
 
   # Check if tag exists
@@ -165,9 +164,9 @@ release() {
 
   log_success "Version updated to $version"
 
-  # Commit
+  # Commit — stage all changes (new files, modifications, deletions)
   log_info "Creating commit"
-  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE" "$GETTING_STARTED" "$SKILL_FILE"
+  git add -A .
   git commit -m "Release v$version"
   log_success "Commit created"
 

@@ -134,6 +134,28 @@ backlog:
     deployment_status: complete
 ```
 
+### `specs/cost-log.json`
+
+Flat append-only array written by the `spec-gantry-costs` MCP server after every agent invocation. Contains exact token counts from Claude Code's session transcripts and computed costs.
+
+```json
+[
+  {
+    "phase": "ideation",
+    "agent": "ideation-agent",
+    "model": "claude-haiku-4-5-20251001",
+    "feature": null,
+    "date": "2026-06-06",
+    "input_tokens": 42300,
+    "output_tokens": 8900,
+    "cache_creation_tokens": 5200,
+    "cache_read_tokens": 18400,
+    "total_cost_usd": 0.000076112,
+    "pricing_source": "live"
+  }
+]
+```
+
 ### `specs/features/FEATURE-XXX/state.yaml`
 
 ```yaml

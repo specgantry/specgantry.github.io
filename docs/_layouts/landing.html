@@ -60,7 +60,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v1.3.7 · Production Ready
+          Claude Code Plugin · v1.3.8 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -90,11 +90,11 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v1.3.7</div>
-            <div class="terminal-line output">✓ 5 skills loaded · 7 agents registered</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v1.3.8</div>
+            <div class="terminal-line output">✓ 6 skills loaded · 8 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">════════════════════════════════════════════════════</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v1.3.7</span> · AI-powered SDLC pipeline</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v1.3.8</span> · AI-powered SDLC pipeline</div>
             <div class="terminal-line output">════════════════════════════════════════════════════</div>
             <div class="terminal-line output"></div>
             <div class="terminal-line output"><span class="hl-yellow">📊 Progress</span> [0/8 features complete]</div>
@@ -345,7 +345,7 @@
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-num">5</div>
-            <div class="stat-label">Skills — Dashboard, setup, bugfix, analysis, pricing</div>
+            <div class="stat-label">Skills — Dashboard, setup, bugfix, analysis, cost tracking</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">7</div>
@@ -366,14 +366,14 @@
     <!-- ─── SKILLS QUICK OVERVIEW ─────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">4 Skills, 7 Agents</div>
+        <div class="section-label center">6 Skills, 8 Agents</div>
         <h2 class="center">Every workflow covered, from first idea to production</h2>
         <div class="skills-grid">
           <div class="skill-row">
             <code class="skill-cmd">/spec-gantry</code>
             <div class="skill-desc">
               <strong>Main Dashboard</strong> — Your entry point every session. Re-reads all state, renders the pipeline
-              board, and shows your next action. Role-aware, session-safe.
+              board with real per-feature costs, and shows your next action. Role-aware, session-safe.
             </div>
           </div>
           <div class="skill-row">
@@ -395,6 +395,20 @@
             <div class="skill-desc">
               <strong>Bug Tracking</strong> — Log bugs without disrupting feature development. Fix immediately or defer.
               Bugfixes can graduate to full features.
+            </div>
+          </div>
+          <div class="skill-row">
+            <code class="skill-cmd">/track-cost</code>
+            <div class="skill-desc">
+              <strong>Cost Tracking</strong> — View real token counts and costs per phase and feature.
+              Powered by the bundled MCP server that reads exact usage from Claude Code's session transcripts.
+            </div>
+          </div>
+          <div class="skill-row">
+            <code class="skill-cmd">/update-pricing</code>
+            <div class="skill-desc">
+              <strong>Refresh Pricing</strong> — Fetch current Anthropic model rates from anthropic.com/pricing
+              and update the local cache used for cost calculations.
             </div>
           </div>
         </div>

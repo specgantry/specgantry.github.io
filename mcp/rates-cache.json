@@ -1,0 +1,43 @@
+{
+  "fetched_at": "2026-06-06T00:00:00Z",
+  "source_url": "https://www.anthropic.com/pricing",
+  "_note": "Seeded with known rates. Auto-updated by the spec-gantry-costs MCP server on startup and via /update-pricing.",
+  "rates": {
+    "claude-haiku-4-5-20251001": {
+      "input_per_1m": 0.80,
+      "output_per_1m": 4.00,
+      "cache_write_per_1m": 1.00,
+      "cache_read_per_1m": 0.08
+    },
+    "claude-haiku-4-5": {
+      "input_per_1m": 0.80,
+      "output_per_1m": 4.00,
+      "cache_write_per_1m": 1.00,
+      "cache_read_per_1m": 0.08
+    },
+    "claude-sonnet-4-6": {
+      "input_per_1m": 3.00,
+      "output_per_1m": 15.00,
+      "cache_write_per_1m": 3.75,
+      "cache_read_per_1m": 0.30
+    },
+    "claude-sonnet-4-5": {
+      "input_per_1m": 3.00,
+      "output_per_1m": 15.00,
+      "cache_write_per_1m": 3.75,
+      "cache_read_per_1m": 0.30
+    },
+    "claude-opus-4-8": {
+      "input_per_1m": 15.00,
+      "output_per_1m": 75.00,
+      "cache_write_per_1m": 18.75,
+      "cache_read_per_1m": 1.50
+    },
+    "claude-opus-4-5": {
+      "input_per_1m": 15.00,
+      "output_per_1m": 75.00,
+      "cache_write_per_1m": 18.75,
+      "cache_read_per_1m": 1.50
+    }
+  }
+}

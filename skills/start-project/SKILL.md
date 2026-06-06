@@ -75,6 +75,12 @@ Append to `.gitignore` (create if it doesn't exist):
 .claude/local-state.yaml
 ```
 
+### Create specs/cost-log.json
+Write an empty JSON array:
+```json
+[]
+```
+
 ## Confirmation
 
 ```

@@ -250,6 +250,38 @@ For feature specs, if you complete 4 of 6 sections before a network drop, the ne
 
 ---
 
+## Cost Tracking {#cost-tracking}
+
+SpecGantry captures real token counts for every agent invocation using a local MCP server bundled with the plugin. After each agent completes, the orchestrator calls the MCP server, which reads the agent's session transcript from Claude Code's local JSONL files and extracts exact token counts from the API response data.
+
+```json
+{
+  "phase": "feature_spec",
+  "agent": "feature-spec-agent",
+  "model": "claude-sonnet-4-6",
+  "feature": "FEATURE-001",
+  "date": "2026-06-06",
+  "input_tokens": 12847,
+  "output_tokens": 3912,
+  "cache_creation_tokens": 4200,
+  "cache_read_tokens": 8100,
+  "total_cost_usd": 0.00007823,
+  "pricing_source": "live"
+}
+```
+
+Token counts are **exact API counts** — read directly from Claude Code's session transcripts, not estimated from character counts. Cache tokens (creation and read) are tracked separately since they are billed at different rates.
+
+All cost data is written to `specs/cost-log.json` in your project. This file is committed to git alongside other spec files so the whole team shares cost visibility.
+
+The dashboard shows per-feature cost inline next to each pipeline row. Run `/track-cost` for the full breakdown by phase and feature. Run `/update-pricing` to refresh the pricing rates from `anthropic.com/pricing`.
+
+<div class="info">
+  <strong>Pricing:</strong> The MCP server fetches current rates from <code>anthropic.com/pricing</code> at startup and caches them locally. If the fetch fails, it falls back to bundled rates. Run <code>/update-pricing</code> anytime to force a refresh.
+</div>
+
+---
+
 ## Feature Dependencies
 
 The architecture agent can declare dependencies between features:

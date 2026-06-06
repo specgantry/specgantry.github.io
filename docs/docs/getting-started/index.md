@@ -37,7 +37,7 @@ Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
 - Register 6 skills and 8 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.3.7`
+- Confirm with: `✓ Plugin installed: SpecGantry v1.3.8`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -116,7 +116,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.3.7 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.3.8 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]
@@ -244,8 +244,8 @@ Every `/spec-gantry` invocation re-reads all state and renders the full dashboar
 
 📋 Feature Pipeline Board
 
-  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   ~$0.43
-  Profile API     ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   ~$0.21
+  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   $0.43
+  Profile API     ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   $0.21
   Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
   Search          ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
 

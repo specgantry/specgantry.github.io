@@ -9,7 +9,7 @@ next_page_url: "/docs/getting-started"
 
 # SpecGantry Documentation
 
-**AI-assisted SDLC pipeline for Claude Code.** Enforces structured development from ideation through deployment — specs before code, architecture as guardrails, role-based ownership.
+**AI-assisted SDLC pipeline for Claude Code.** Enforces structured development from ideation through deployment — specs before code, architecture as guardrails, role-based ownership, and real token cost visibility.
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -54,14 +54,14 @@ Each phase has gates. You cannot proceed without completing the previous one.
     <div class="doc-nav-icon">⚙️</div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">Detailed breakdown of all five phases, roles, and gates.</div>
+      <div class="doc-nav-desc">Detailed breakdown of all five phases, roles, gates, and cost tracking.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon">🛠️</div>
     <div>
       <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">All 4 skills and 8 agents — what they do, when to use them, how they interact.</div>
+      <div class="doc-nav-desc">All 6 skills and 8 agents — what they do, when to use them, how they interact.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
@@ -75,7 +75,7 @@ Each phase has gates. You cannot proceed without completing the previous one.
     <div class="doc-nav-icon">❓</div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, costs, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -145,7 +145,7 @@ All project state lives in plain-text YAML files under `specs/`. This means:
 | **Team Lead / Architect** | Enforce consistent process across the team without policing code review |
 | **Developer** | Always have a clear, approved spec before building |
 | **Solo Developer** | Discipline your own AI workflow, avoid "build fast in the wrong direction" |
-| **Engineering Manager** | Audit trail and structured process for AI-assisted development |
+| **Engineering Manager** | Real token cost visibility and audit trail for AI-assisted development |
 
 ---
 
@@ -153,7 +153,7 @@ All project state lives in plain-text YAML files under `specs/`. This means:
 
 | Component | Count | What they do |
 |-----------|-------|-------------|
-| **Skills** | 4 | Entry points: dashboard, setup, reverse-engineer, bugfix |
+| **Skills** | 6 | Entry points: dashboard, setup, reverse-engineer, bugfix, track-cost, update-pricing |
 | **Agents** | 8 | Specialists: ideation, architecture, reverse-engineer, spec, dev, test, deployment, orchestrator |
 | **State files** | Per project | YAML artifacts, Markdown outputs |
 | **Dependencies** | 0 | Runs entirely within Claude Code |

@@ -58,6 +58,8 @@ Read every feature from `project-state.yaml → backlog`. For each, read its `fe
 
 Show the assignee on each row. Use `you` when assignee matches the current user's git name. Show `—` when unassigned.
 
+**Per-feature cost:** For each feature, read `specs/cost-log.json` and sum `total_cost_usd` for all entries where `feature` matches this feature's ID. Show as `$0.NNN` to the right of the pipeline row. If no entries exist for this feature yet, omit the cost field entirely.
+
 **Spec warnings indicator:** If `features/[id]/dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] spec warnings` to the feature title line.
 
 **Pipeline stage rendering:**
@@ -119,9 +121,11 @@ Collect every applicable action from the candidates below, in priority order. As
 | 8 | Architecture complete, unclaimed features exist with deps met | `Pick up [title] ([domain]) and start the feature spec` |
 | 9 | Another of the user's features needs attention (second feature) | `[title] also needs attention — [specific stage]` |
 | 10 | Team Lead / Architect: architecture complete, backlog fully assigned | `Review the architecture spec and guardrails` |
+| 11 | Any entries exist in `specs/cost-log.json` | `See what this project has cost so far` |
 
 **Rules:**
 - A candidate at priority 7 may appear as multiple numbered lines (one per deployable feature), but counts against the cap of 4.
+- Priority 11 only appears when no higher-priority candidate fills a slot — it is always the last option if included.
 - Never repeat the same feature in two numbered slots.
 - Phrase each line as an **imperative action**, not a status description.
 
@@ -130,10 +134,10 @@ Collect every applicable action from the candidates below, in priority order. As
 After the numbered actions, render the utility command bar on a single line:
 
 ```
-  [A]rchitecture  [B]acklog  [P]roject  e[X]it
+  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
 ```
 
-DEV sees `[A]` and `[X]` — `[B]` and `[P]` require Team Lead/Architect.
+DEV sees `[A]`, `[C]`, and `[X]` — `[B]` and `[P]` require Team Lead/Architect.
 
 ---
 
@@ -146,7 +150,7 @@ After rendering, work through these cases in order. Take the **first** match.
 Show the welcome banner once:
 
 ```
-════════════════════ SpecGantry v1.3.7 · AI-powered SDLC pipeline for Claude Code ══════════════════
+════════════════════ SpecGantry v1.3.8 · AI-powered SDLC pipeline for Claude Code ══════════════════
                         Copyright 2026 Mangesh Pise · Apache License 2.0         
                        Independent project, not affiliated with Anthropic.      
                       See LICENSE, NOTICE, and CONTRIBUTING.md for details.    
@@ -237,6 +241,10 @@ If `specs/project-state.yaml → architecture_open_questions` is non-empty, disp
 ### [B] — Backlog (Team Lead/Architect only)
 Display full backlog table with status, domain, assignee, size, dependencies.
 Offer options to reorder features, defer a feature, or go back.
+
+### [C] — Cost (any role)
+Invoke `/track-cost` to display a cost breakdown by feature and phase.
+The skill reads `specs/cost-log.json` (written by the MCP server after each agent invocation) and displays real token counts and computed costs.
 
 ### [P] — Project (Team Lead/Architect only)
 Offer sub-options: add a feature to the backlog, defer a feature, reassign a feature, graduate a bugfix, edit project name or vision, or go back.

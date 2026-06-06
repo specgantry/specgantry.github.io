@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 4 skills and 8 agents — what they do, when to use them, and how they interact.
+description: All 6 skills and 8 agents — what they do, when to use them, and how they interact.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Architecture"
@@ -10,7 +10,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-All 4 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
+All 6 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
@@ -22,6 +22,8 @@ All 4 skills and their associated agents — what they do, when to invoke them, 
 | **start-project** | `/start-project` | Team Lead | New project initialization |
 | **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
 | **bugfix** | `/bugfix` | Developer | Log and manage bugs |
+| **track-cost** | `/track-cost` | Both | View real token counts and costs |
+| **update-pricing** | `/update-pricing` | Both | Refresh pricing rates from anthropic.com |
 
 ---
 
@@ -70,8 +72,8 @@ Every invocation:
 
 📋 Feature Pipeline Board
 
-  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done
-  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done
+  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   $0.43
+  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   $0.28
   Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
   Export PDF      ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
   
@@ -79,8 +81,9 @@ Every invocation:
 
   [1] Continue writing the spec for Notifications
   [2] Pick up Export PDF and start the feature spec
+  [3] See what this project has cost so far
 
-  [A]rchitecture  [B]acklog  [P]roject  e[X]it
+  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
 ```
 
 ### Menu Commands
@@ -89,6 +92,7 @@ Every invocation:
 |---------|-----|-------------|
 | `[A]rchitecture` | Both (read-only for Dev) | View the full architecture spec and open questions |
 | `[B]acklog` | Team Lead only | Full backlog management — prioritize, assign, defer, reassign |
+| `[C]ost` | Both | Show cost breakdown from `specs/cost-log.json` |
 | `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project name/vision |
 | `e[X]it` | Both | Exit SpecGantry, return to normal Claude Code |
 
@@ -275,13 +279,94 @@ Sometimes a bug reveals that something was never properly spec'd. The Team Lead 
 
 ---
 
+## 5. track-cost {#track-cost}
+
+**View real token counts and costs for every agent invocation.**
+
+```
+/track-cost
+```
+
+Or select `[C]ost` from the `/spec-gantry` menu.
+
+### What It Does
+
+SpecGantry's local MCP server captures exact token counts from Claude Code's session transcripts after every agent invocation. This skill reads the stored data from `specs/cost-log.json` and renders a breakdown by phase, feature, and total.
+
+Unlike character-based estimates, token counts here are the actual values returned by the Anthropic API — including cache creation and cache read tokens, which are billed at different rates.
+
+### Example Output
+
+```
+📊 Cost Report
+─────────────────────────────────────────────────────────────────────────────────
+
+🏢 Project
+
+  Phase              Agent                    Model          Input      Output     Total
+  ──────────────────────────────────────────────────────────────────────────────────────
+  ideation           ideation-agent           haiku-4-5      $0.0000    $0.0000    $0.0000
+  architecture       architecture-agent       sonnet-4-6     $0.0001    $0.0001    $0.0001
+                                                             Subtotal:             $0.0001
+
+🎯 FEATURE-001: User Auth
+
+  Phase              Agent                    Model          Input      Output     Total
+  ──────────────────────────────────────────────────────────────────────────────────────
+  feature_spec       feature-spec-agent       sonnet-4-6     $0.0001    $0.0001    $0.0002
+  development        dev-agent                sonnet-4-6     $0.0002    $0.0001    $0.0003
+  test               test-agent               haiku-4-5      $0.0000    $0.0000    $0.0000
+                                                             Subtotal:             $0.0005
+
+─────────────────────────────────────────────────────────────────────────────────
+💰 Total cost: $0.0006
+Rates last updated: 2026-06-06T10:30:00Z
+```
+
+---
+
+## 6. update-pricing {#update-pricing}
+
+**Refresh pricing rates from anthropic.com/pricing.**
+
+```
+/update-pricing
+```
+
+### What It Does
+
+The MCP server fetches current Anthropic rates at startup and caches them in the plugin directory. This skill forces a synchronous refresh and shows you the result.
+
+Run it when:
+- Claude's pricing has changed
+- A cost entry shows `pricing_source: fallback` (live fetch failed previously)
+- You want to verify the rates being used
+
+### Example Output
+
+```
+✓ Pricing updated
+
+  Rates as of 2026-06-06T10:30:00Z:
+
+  Model                          Input / 1M tokens    Output / 1M tokens
+  ──────────────────────────────────────────────────────────────────────
+  claude-haiku-4-5-20251001      $0.80                $4.00
+  claude-sonnet-4-6              $3.00                $15.00
+  claude-opus-4-8                $15.00               $75.00
+
+  Source: https://www.anthropic.com/pricing
+```
+
+---
+
 ## The Agents
 
 Skills call agents to do the actual work. Agents are invoked by the orchestrator — you never call them directly.
 
 | Agent | Invoked By | Purpose |
 |-------|-----------|---------|
-| **orchestrator** | Skills | Routes phases, enforces gates, manages state transitions |
+| **orchestrator** | Skills | Routes phases, enforces gates, records cost after every agent invocation |
 | **ideation-agent** | orchestrator | Guides project clarification, produces feasibility assessment |
 | **architecture-agent** | orchestrator | Designs system, produces guardrails and feature backlog |
 | **reverse-engineer-agent** | orchestrator | Analyses existing codebase, synthesises architecture spec and feature backlog |
@@ -290,7 +375,7 @@ Skills call agents to do the actual work. Agents are invoked by the orchestrator
 | **test-agent** | orchestrator | Runs test suite, retries on failure to detect flaky tests, sets `overall_status` |
 | **deployment-agent** | orchestrator | Validates tests + dependencies, generates deploy.sh, marks feature complete |
 
-The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent.
+The orchestrator is the sole choke point for all phase transitions. After every agent returns, it calls the `spec-gantry-costs` MCP server to record exact token counts from the agent's session transcript.
 
 ---
 

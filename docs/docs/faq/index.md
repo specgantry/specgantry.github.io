@@ -256,6 +256,34 @@ Yes, from the spec phase: in the feature-spec agent, select `x` (Abandon) to ret
 
 ---
 
+## Costs and Tokens
+
+### How does cost tracking work?
+
+SpecGantry includes a local MCP server that runs alongside Claude Code. After each agent invocation, the orchestrator calls the MCP server, which reads the agent's session transcript from Claude Code's JSONL files and extracts exact token counts from the API response data. Costs are computed immediately using live pricing rates and stored in `specs/cost-log.json`.
+
+This means token counts are real API counts — not character-based estimates. The dashboard shows per-feature cost inline, and `/track-cost` gives the full breakdown.
+
+### Why are my costs higher than expected?
+
+Common causes:
+- **Large codebase for reverse-engineer** — the agent reads many files, which are passed as context
+- **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
+- **Long architecture sessions** — complex systems require more back-and-forth
+- **Cache creation** — the first call in a session pays more to write the prompt cache; subsequent calls are cheaper
+
+The ideation agent uses `claude-haiku-4-5` (cheaper). Architecture, spec, and dev agents use `claude-sonnet-4-6`.
+
+### How do I refresh the pricing rates?
+
+Run `/update-pricing`. The MCP server fetches current rates from `anthropic.com/pricing` and updates the local cache. If the page is unreachable, it shows the current cached rates and their age.
+
+### Can I export a cost report?
+
+Yes — `specs/cost-log.json` is plain JSON committed to git. It contains one entry per agent invocation with full token counts and costs. Any tool that can read JSON can aggregate or chart it.
+
+---
+
 ## Troubleshooting
 
 ### `/spec-gantry` shows wrong state

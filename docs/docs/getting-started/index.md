@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.6`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.7`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -111,63 +111,63 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.4.6 · AI-powered SDLC pipeline for Claude Code
-════════════════════════════════════════════════════════════════════════
+SpecGantry v1.4.7  |  New Project
+Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
+──────────────────────────────────────────────────────────────────────
+Role: Team Lead / Architect
 
-📊 Progress  [0/0 features]
-👤 Role      Team Lead / Architect
+No project found in this directory.
 
-No project spec found.
-
-⚡ Actions
   [1] Start a new project
-  [2] Reverse-engineer this existing codebase instead
+  [2] Analyze this existing codebase and generate a spec
 
-  e[X]it
+── [?]Help  [X]Exit ──────────────────────────────────────────────────
 ```
 
-Select `[1]`. You'll answer 5–8 questions about your project. Takes 10–15 minutes. SpecGantry creates:
-- `specs/project-state.yaml` — project metadata
-- `specs/ideation-artifact.md` — your project brief
+Select `[1]`. You'll answer a few questions about your project — name, vision, and release label. Takes about 5 minutes, then SpecGantry moves straight into ideation.
 
 ### Existing Codebase
 
 ```
-Found source code in this directory.
-SpecGantry can reverse-engineer it to generate an architecture spec.
+SpecGantry v1.4.7  |  New Project
+Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
+──────────────────────────────────────────────────────────────────────
+Role: Team Lead / Architect
 
-  [Y] Yes, analyze this codebase
-  [N] No, start a fresh project
+No project found in this directory.
+
+  [1] Start a new project
+  [2] Analyze this existing codebase and generate a spec
+
+── [?]Help  [X]Exit ──────────────────────────────────────────────────
 ```
 
-Select `[Y]` to have SpecGantry scan your files and propose an architecture. Takes 10–15 minutes.
+Select `[2]` to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written. Takes 10–15 minutes.
 
 ### Joining a Team
 
-If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it automatically:
+If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-════════════════════════════════════════════════════════════════════════
-  ** Acme Platform **
-════════════════════════════════════════════════════════════════════════
+SpecGantry v1.4.7  |  Acme Platform
+Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
+──────────────────────────────────────────────────────────────────────
+Role: Developer
 
-📊 Progress  [3/8 features complete]
-👤 Role      Developer
+Feature Pipeline
 
-📋 Feature Pipeline Board
+  001  Auth Module       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
+  002  Payment Gateway   ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.91  alice
+  003  Notifications     ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
-  Auth Module         ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done
-  Payment Gateway     ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done
-  Notifications       ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
+⚡ Next
 
-⚡ Actions
-  [1] Pick up Notifications and start the feature spec
+  [1] Pick up Notifications and start the feature spec  ↳ messaging · medium
 
-  [A]rchitecture  e[X]it
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
 ```
 
-You're set as Developer automatically. Pick a feature and start writing the spec.
+Pick a feature from the `⚡ Next` actions and the feature spec phase begins immediately.
 
 ---
 
@@ -226,29 +226,42 @@ project-root/
 
 ## The Dashboard Explained
 
-Every `/spec-gantry` invocation re-reads all state and renders the full dashboard:
+Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-** My App **  |  A platform for managing AI-assisted development
-────────────────────────────────────────────────────────────────
-📊 Progress      [2/6 features complete]
-👤 Role          Developer
-────────────────────────────────────────────────────────────────
+SpecGantry v1.4.7  |  My App
+Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
+──────────────────────────────────────────────────────────────────────
+Role: Developer
 
-📋 Feature Pipeline Board
+Feature Pipeline
 
-  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   $0.43
-  Profile API     ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   $0.21
-  Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
-  Search          ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
+  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
+  002  Profile API     ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.21
+  003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
+  004  Search          ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
-⚡ Actions
+  Currently working on: FEATURE-003  ·  Notifications
+  Phase: Feature Spec  ·  section 4 of 6 in progress
 
-  [1] Continue writing the spec for Notifications
-  [2] Pick up Search and start the feature spec
+⚡ Next
 
-  [A]rchitecture  e[X]it
+  [1] Continue spec for Notifications  ↳ section 4 of 6 in progress
+  [2] Pick up Search and start the feature spec  ↳ search · small
+
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
 ```
+
+**What each area shows:**
+
+| Area | Purpose |
+|------|---------|
+| Header line | Project name, version, overall progress, running total cost |
+| Role line | Your current role in this project |
+| Feature Pipeline | Every feature and its live status across all five stages |
+| Context strip | Where you are right now within your active feature |
+| ⚡ Next | The 1–4 most useful actions at this moment, with one-line context |
+| Quick-bar | Always-available commands — same position every time |
 
 **Pipeline stage icons:**
 
@@ -256,8 +269,8 @@ Every `/spec-gantry` invocation re-reads all state and renders the full dashboar
 |------|---------|
 | `✅` | Complete |
 | `🔄` | Active / in progress |
-| `👤` | Waiting for human action |
-| `🔴` | Blocked |
+| `👤` | Waiting for your action |
+| `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
 

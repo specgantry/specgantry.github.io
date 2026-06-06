@@ -54,39 +54,41 @@ Run this at the start of every session. SpecGantry reads your project state, det
 ### The Dashboard
 
 ```
-** My App **  |  A project vision summary from ideation
-────────────────────────────────────────────────────────────────────
-📊 Progress      [2/6 features complete]
-👤 Role          Developer
-────────────────────────────────────────────────────────────────────
+SpecGantry v1.4.6  |  My App
+Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
+──────────────────────────────────────────────────────────────────────
+Role: Developer
 
-⚠ 1 feature spec awaiting developer review — FEATURE-004
+⚠  1 spec awaiting review  ·  FEATURE-004
 
-📋 Feature Pipeline Board
+Feature Pipeline
 
-  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   $0.43
-  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   $0.28
-  Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
-  Export PDF      ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
-  
-⚡ Actions
+  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
+  002  Search API      ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.28
+  003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
+  004  Export PDF      ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
-  [1] Continue writing the spec for Notifications
-  [2] Pick up Export PDF and start the feature spec
-  [3] See what this project has cost so far
+  Currently working on: FEATURE-003  ·  Notifications
+  Phase: Feature Spec  ·  section 2 of 6 in progress
 
-  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
+⚡ Next
+
+  [1] Continue spec for Notifications  ↳ section 2 of 6 in progress
+  [2] Pick up Export PDF and start the feature spec  ↳ reporting · small
+
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
 ```
 
-### Menu Commands
+### Quick-bar Commands
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]rchitecture` | Both | View the architecture spec and any open design questions |
+| `[A]rch` | Both | View the architecture spec and any open design questions |
 | `[B]acklog` | Team Lead only | Manage the backlog — prioritize, assign, defer, reassign |
-| `[C]ost` | Both | Show cost breakdown for the project |
+| `[C]ost` | Both | Show cost breakdown inline |
 | `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project details |
-| `e[X]it` | Both | Exit SpecGantry, return to normal Claude Code |
+| `[?]Help` | Both | Quick reference — commands, icons, docs link |
+| `[X]Exit` | Both | Exit SpecGantry, return to normal Claude Code |
 
 ### Session Resume
 
@@ -250,33 +252,32 @@ Token counts are exact API values, not estimates. All four token categories are 
 ### Example Output
 
 ```
-📊 Cost Report
-─────────────────────────────────────────────────────────────────────────────────
+SpecGantry v1.4.6  |  My App
+Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
+──────────────────────────────────────────────────────────────────────
 
-🏢 Project
+Cost Breakdown
 
-  Phase        Agent               Model        Input    Output   Cache W  Cache R  Total
-  ──────────────────────────────────────────────────────────────────────────────────────────
-  ideation     ideation-agent      haiku-4-5    $0.0000  $0.0000  $0.0001  $0.0000  $0.0001
-  architecture architecture-agent  sonnet-4-6   $0.0001  $0.0002  $0.0004  $0.0003  $0.0010
-                                                                   Subtotal:         $0.0011
+  Project phases
+  ──────────────────────────────────────────────────────────────────────
+  ideation     ideation-agent      haiku-4-5    $0.0000  $0.0000  $0.0001
+  architecture architecture-agent  sonnet-4-6   $0.0002  $0.0003  $0.0010
+                                                          Subtotal  $0.0011
 
-🎯 FEATURE-001: User Auth
+  FEATURE-001 · User Auth
+  ──────────────────────────────────────────────────────────────────────
+  feature_spec  feature-spec-agent  sonnet-4-6  $0.0600  $0.2820  $0.4557
+  development   dev-agent           sonnet-4-6  $0.1062  $0.4618  $0.7084
+  test          test-agent          sonnet-4-6  $0.1122  $0.4910  $0.7489
+                                                          Subtotal  $1.9130
 
-  Phase        Agent               Model        Input    Output   Cache W  Cache R  Total
-  ──────────────────────────────────────────────────────────────────────────────────────────
-  feature_spec feature-spec-agent  sonnet-4-6   $0.0001  $0.0600  $0.1136  $0.2820  $0.4557
-  development  dev-agent           sonnet-4-6   $0.0003  $0.1062  $0.1401  $0.4618  $0.7084
-  test         test-agent          sonnet-4-6   $0.0003  $0.1122  $0.1454  $0.4910  $0.7489
-                                                                   Subtotal:         $1.9130
+  ──────────────────────────────────────────────────────────────────────
+  Total  4,160,786 tokens  ·  $1.91
+         input $0.00  ·  output $0.38  ·  cache write $0.40  ·  cache read $1.13
+  ──────────────────────────────────────────────────────────────────────
+  Rates as of 2026-06-06  ·  /update-pricing to refresh
 
-─────────────────────────────────────────────────────────────────────────────────
-💰 Total tokens:  4,160,786 tokens
-               (input: 334 · output: 25,028 · cache write: 142,258 · cache read: 4,510,945)
-💰 Total cost:    $1.9141
-               (input: $0.0007 · output: $0.3786 · cache write: $0.3996 · cache read: $1.1348)
-─────────────────────────────────────────────────────────────────────────────────
-Rates last updated: 2026-06-06T17:39:51.291Z
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
 ```
 
 ### If No Data Appears
@@ -300,21 +301,27 @@ SpecGantry maintains a local cache of Anthropic's current pricing rates. This sk
 ### Example Output
 
 ```
-✓ Pricing updated
+SpecGantry v1.4.6  |  My App
+Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
+──────────────────────────────────────────────────────────────────────
 
-  Rates as of 2026-06-06T17:39:51Z:
+Pricing
 
-  Model                          Input / 1M tokens    Output / 1M tokens
-  ──────────────────────────────────────────────────────────────────────
-  claude-haiku-4-5-20251001      $1.00                $5.00
-  claude-sonnet-4-6              $3.00                $15.00
-  claude-opus-4-8                $5.00                $25.00
-  claude-opus-4-7                $5.00                $25.00
+  ✓ Rates updated as of 2026-06-06T17:39:51Z
+
+  Model                     Input / 1M    Output / 1M
+  ──────────────────────────────────────────────────
+  haiku-4-5                 $1.00         $5.00
+  sonnet-4-6                $3.00         $15.00
+  opus-4-8                  $5.00         $25.00
+  opus-4-7                  $5.00         $25.00
 
   Source: https://platform.claude.com/docs/en/about-claude/pricing
 
-  All future cost calculations will use these rates.
-  Cost entries already recorded are not retroactively updated.
+  Future cost calculations will use these rates.
+  Entries already recorded are not retroactively updated.
+
+── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
 ```
 
 If the pricing page is temporarily unavailable, SpecGantry continues using the most recently cached rates and shows you when they were last updated. Re-run `/update-pricing` when connectivity is restored.

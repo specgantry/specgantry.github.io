@@ -37,7 +37,7 @@ Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
 - Register 6 skills and 8 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.3.6`
+- Confirm with: `✓ Plugin installed: SpecGantry v1.3.7`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -116,7 +116,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.3.6 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.3.7 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]
@@ -209,12 +209,12 @@ After SpecGantry runs, your project contains:
 ```
 project-root/
 ├── specs/
-│   ├── project-state.yaml          # Project metadata, backlog, token usage
+│   ├── project-state.yaml          # Project metadata and backlog
 │   ├── ideation-artifact.md        # Project vision & validated assumptions
 │   ├── architecture-spec.md        # Tech stack, system design, guardrails
 │   └── features/
 │       ├── FEATURE-001/
-│       │   ├── state.yaml          # Phase gates, metrics, token usage
+│       │   ├── state.yaml          # Phase gates and metrics
 │       │   ├── feature-spec.md     # Feature specification (6 sections)
 │       │   ├── dev-artifact.yaml   # Implementation notes, test results
 │       │   ├── deploy.sh           # Generated deployment script
@@ -282,7 +282,7 @@ Yes. Use `/reverse-engineer` to generate an architecture spec from your existing
 SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. Many solo developers find that the ideation questions alone clarify their thinking significantly.
 
 **"How much does it cost to run SpecGantry?"**  
-It depends on model choice and project size. Full ideation + architecture runs about $0.50–$2.00 with Sonnet. Track costs in the dashboard. See [Cost Tracking →](/docs/how-it-works#cost-tracking)
+It depends on model choice and project size. Full ideation + architecture runs about $0.50–$2.00 with Sonnet. You can monitor usage in the Anthropic console.
 
 ---
 
@@ -293,7 +293,7 @@ It depends on model choice and project size. Full ideation + architecture runs a
     <div class="next-step-icon">⚙️</div>
     <div>
       <strong>How It Works</strong>
-      <span>Understand all five phases, phase gates, roles, and cost tracking in detail.</span>
+      <span>Understand all five phases, phase gates, and roles in detail.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">

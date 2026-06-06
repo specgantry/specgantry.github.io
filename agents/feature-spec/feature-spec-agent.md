@@ -220,15 +220,3 @@ Ask which section to revise. Return to that section, revise, re-run gate check, 
 
 ---
 
-## Final step: Return token estimate
-
-Whether the spec was completed, edited, or abandoned, append the following block to your result before returning to the orchestrator:
-
-```
----
-token_estimate:
-  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
-  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
-```
-
-Count every Read and every Write you performed, including architecture-spec.md, state.yaml, and the feature-spec.md itself.

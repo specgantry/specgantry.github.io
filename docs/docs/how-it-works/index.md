@@ -250,36 +250,6 @@ For feature specs, if you complete 4 of 6 sections before a network drop, the ne
 
 ---
 
-## Cost Tracking {#cost-tracking}
-
-Every agent invocation logs:
-
-```yaml
-token_usage:
-  - phase: feature_spec
-    agent: feature-spec-agent
-    model: sonnet
-    date: 2026-06-04
-    input_tokens: 12450
-    output_tokens: 3820
-```
-
-Token counts are character-based estimates (chars ÷ 4), not exact API counts. All cost figures shown in reports carry a `~$` prefix to reflect this.
-
-**Project-level usage** is logged in `specs/project-state.yaml`. **Feature-level usage** is logged in `specs/features/[id]/state.yaml`.
-
-The dashboard computes:
-- **Per-feature cost** — shown next to each feature row (`~$0.NNN`)
-- **Total project cost** — running balance across all phases and features
-
-Pricing is configurable with `/update-pricing` — update when Claude pricing changes, or to match your organization's internal rates.
-
-<div class="info">
-  <strong>Optimize costs:</strong> Use <code>claude-haiku-4-5</code> for ideation (faster, cheaper) and <code>claude-sonnet-4-6</code> for architecture and feature spec (better quality for critical decisions). The default agents are already configured this way.
-</div>
-
----
-
 ## Feature Dependencies
 
 The architecture agent can declare dependencies between features:

@@ -129,15 +129,3 @@ Also write `specs/features/[feature_id]/deploy-artifact.md` with a minimal summa
 - Do not mark tests as passing — if `overall_status != pass`, hard block
 - Do not add sections beyond what is specified here
 
-## Token estimate
-
-After writing all artifacts, append this block to your result before returning to the orchestrator:
-
-```
----
-token_estimate:
-  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
-  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
-```
-
-Count every Read and every Write, including dev-artifact.yaml, feature-spec.md, project-state.yaml, deploy.sh, and deploy-artifact.md.

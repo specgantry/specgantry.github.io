@@ -132,14 +132,6 @@ backlog:
     size: medium             # small | medium | large
     depends_on: []
     deployment_status: complete
-
-token_usage:
-  - phase: ideation
-    agent: ideation-agent
-    model: haiku
-    date: 2026-01-15
-    input_tokens: 42300
-    output_tokens: 8900
 ```
 
 ### `specs/features/FEATURE-XXX/state.yaml`
@@ -159,8 +151,6 @@ phase_gates:
 
 metrics:
   size: medium
-  estimated_tokens: 50000
-  actual_tokens: 0
 
 timestamps:
   created: 2026-01-16
@@ -169,14 +159,6 @@ timestamps:
   deploy_complete: null
 
 blockers: []
-
-token_usage:
-  - phase: feature_spec
-    agent: feature-spec-agent
-    model: claude-sonnet-4-6
-    date: 2026-01-16
-    input_tokens: 12450
-    output_tokens: 3820
 ```
 
 ### `.claude/local-state.yaml`

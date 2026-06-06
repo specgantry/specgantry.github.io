@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 6 skills and 8 agents — what they do, when to use them, and how they interact.
+description: All 4 skills and 8 agents — what they do, when to use them, and how they interact.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Architecture"
@@ -10,7 +10,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-All 6 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
+All 4 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
@@ -22,8 +22,6 @@ All 6 skills and their associated agents — what they do, when to invoke them, 
 | **start-project** | `/start-project` | Team Lead | New project initialization |
 | **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
 | **bugfix** | `/bugfix` | Developer | Log and manage bugs |
-| **track-cost** | `/track-cost` | Both | View costs at any stage of development |
-| **update-pricing** | `/update-pricing` | Team Lead | Token price configuration |
 
 ---
 
@@ -72,8 +70,8 @@ Every invocation:
 
 📋 Feature Pipeline Board
 
-  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done   ~$0.43
-  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done   ~$0.28
+  User Auth       ✅ Spec → ✅ Review → ✅ Build → ✅ Tests → ✅ Done
+  Search API      ✅ Spec → ✅ Review → 🔄 Build → ○ Tests  → ○ Done
   Notifications   🔄 Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
   Export PDF      ⏳ Spec → ○ Review  → ○ Build  → ○ Tests  → ○ Done
   
@@ -81,9 +79,8 @@ Every invocation:
 
   [1] Continue writing the spec for Notifications
   [2] Pick up Export PDF and start the feature spec
-  [3] See what this project has cost so far
 
-  [A]rchitecture  [B]acklog  [C]ost  [P]roject  e[X]it
+  [A]rchitecture  [B]acklog  [P]roject  e[X]it
 ```
 
 ### Menu Commands
@@ -92,7 +89,6 @@ Every invocation:
 |---------|-----|-------------|
 | `[A]rchitecture` | Both (read-only for Dev) | View the full architecture spec and open questions |
 | `[B]acklog` | Team Lead only | Full backlog management — prioritize, assign, defer, reassign |
-| `[C]ost` | Both | Track project costs by phase and feature using token logs |
 | `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project name/vision |
 | `e[X]it` | Both | Exit SpecGantry, return to normal Claude Code |
 
@@ -279,173 +275,13 @@ Sometimes a bug reveals that something was never properly spec'd. The Team Lead 
 
 ---
 
-## 5. track-cost {#track-cost}
-
-**Check project costs at any stage—automatic logging throughout all phases.**
-
-```
-/track-cost
-```
-
-Or select `[C]ost` from the `/spec-gantry` menu.
-
-### What It Does
-
-SpecGantry logs token usage for every agent invocation automatically across **all phases**: ideation, architecture, spec-writing, development, testing, and deployment. This skill aggregates those logs and calculates costs in real-time using your configured pricing rates.
-
-**Call it anytime to see:**
-- Current pricing effective date
-- Project-level costs (ideation, architecture, deployment)
-- Per-feature costs (by feature and by phase within each feature)
-- Total project cost so far (accumulating as work progresses)
-
-### Example Output
-
-```
-📊 Cost Tracking Report
-─────────────────────────────────────────────────────────────────
-Pricing effective: 2026-06-01
-⚠ Token counts are character-based estimates (chars ÷ 4) — actual API spend may differ.
-
-🏢 Project-Level Costs
-
-Phase        Agent               Model    Input     Output    Total
-──────────────────────────────────────────────────────────────────────────────
-ideation     ideation-agent      haiku    ~$0.12    ~$0.14    ~$0.26
-architecture architecture-agent  sonnet   ~$0.44    ~$0.22    ~$0.66
-                                                    Subtotal: ~$0.92
-
-🎯 Per-Feature Costs
-
-FEATURE-001: User Auth
-  Phase    Agent               Model    Input     Output    Total
-  ──────────────────────────────────────────────────────────────────────────────
-  spec     feature-spec-agent  sonnet   ~$0.08    ~$0.16    ~$0.24
-  dev      dev-agent           sonnet   ~$0.18    ~$0.15    ~$0.33
-  tests    test-agent          haiku    ~$0.02    ~$0.01    ~$0.03
-                                                  Subtotal: ~$0.60
-
-──────────────────────────────────────────────────────────────────
-💰 Estimated Total Project Cost (all phases, all features): ~$1.52
-──────────────────────────────────────────────────────────────────
-```
-
-### How to Use It
-
-**Option 1: Direct command**
-```
-/track-cost
-```
-
-**Option 2: From the dashboard menu**
-1. Run `/spec-gantry`
-2. Select `[C]ost` from the menu
-3. View the full cost breakdown
-
-The report shows:
-- Exact token counts and calculated costs
-- Which agents and models consumed the most tokens
-- Per-feature cost tracking (useful for client billing)
-- Historical cost context (pricing effective date)
-
-### When to Use It
-
-- **During ideation** — see how much the clarification phase cost
-- **After architecture** — understand architecture design costs before committing to it
-- **Mid-feature development** — check if a feature is spending more than expected, adjust scope if needed
-- **Sprint reviews** — show stakeholders the AI investment per feature
-- **Monthly budget checks** — never let costs surprise you; check anytime
-- **Client billing** — per-project, per-phase cost breakdown for accurate invoicing
-- **Model optimization** — see where Haiku vs Sonnet would have a cost impact
-
-This is the real advantage: **costs are never hidden**. You have visibility at every stage of development.
-
----
-
-## 6. Automatic Cost Tracking Throughout Development {#automatic-cost-tracking}
-
-**Every phase logs costs automatically. You control when you look at them.**
-
-### How It Works
-
-The orchestrator logs token usage after every agent invocation—automatically, no configuration needed:
-
-- **Ideation phase** — tokens logged when ideation-agent runs
-- **Architecture phase** — tokens logged when architecture-agent runs
-- **Feature spec phase** — tokens logged when feature-spec-agent runs
-- **Development phase** — tokens logged when dev-agent and test-agent run
-- **Deployment phase** — tokens logged when deployment-agent runs
-
-All logs are stored in:
-- `specs/project-state.yaml` — project-level costs (ideation, architecture, deployment)
-- `specs/features/FEATURE-XXX/state.yaml` — per-feature costs (spec, dev, tests)
-
-### Why This Matters
-
-You never have to wonder what something cost. Call `/track-cost` anytime:
-- **After completing ideation** — "How much did clarification cost?"
-- **Mid-feature** — "Is this feature running over budget?"
-- **End of sprint** — "What's the cost per feature?"
-- **Project conclusion** — "What was the total AI investment?"
-
-The data is always there, always current, always accurate.
-
----
-
-## 7. update-pricing {#update-pricing}
-
-**Configure token prices for cost calculations.**
-
-```
-/update-pricing
-```
-
-### What It Does
-
-SpecGantry tracks token usage for every agent invocation. The cost calculation uses prices from `config/pricing-history.yaml`. This skill lets you update those prices when Claude's pricing changes, or when you need to reflect your organization's internal billing rates.
-
-### Example
-
-```
-💰 Token Pricing Configuration
-
-Current rates (last updated: 2026-05-01):
-
-  Model                 Input (per 1M)   Output (per 1M)
-  ──────────────────────────────────────────────────────
-  claude-opus-4-8       $15.00           $75.00
-  claude-sonnet-4-6     $3.00            $15.00
-  claude-haiku-4-5      $0.80            $4.00
-
-Update rates? [Y/n]
-  > Y
-
-Enter Sonnet 4.6 input price per 1M tokens:
-  > 3.00
-
-✅ Pricing updated. New rates will apply to all future cost calculations.
-```
-
-### Cost Calculation
-
-When you run `[C]ost` from the `/spec-gantry` menu, it reads the pricing rates from this configuration and calculates costs for all tracked token usage. Updating rates here automatically updates all future cost calculations.
-
-### When to Use It
-
-- Monthly, when Claude releases new pricing
-- When billing AI costs to a client (accurate per-project cost)
-- When optimizing model selection (compare Haiku vs Sonnet costs)
-- When reflecting your organization's internal AI billing rates
-
----
-
-## The 8 Agents
+## The Agents
 
 Skills call agents to do the actual work. Agents are invoked by the orchestrator — you never call them directly.
 
 | Agent | Invoked By | Purpose |
 |-------|-----------|---------|
-| **orchestrator** | Skills | Routes phases, enforces gates, logs token usage |
+| **orchestrator** | Skills | Routes phases, enforces gates, manages state transitions |
 | **ideation-agent** | orchestrator | Guides project clarification, produces feasibility assessment |
 | **architecture-agent** | orchestrator | Designs system, produces guardrails and feature backlog |
 | **reverse-engineer-agent** | orchestrator | Analyses existing codebase, synthesises architecture spec and feature backlog |
@@ -454,7 +290,7 @@ Skills call agents to do the actual work. Agents are invoked by the orchestrator
 | **test-agent** | orchestrator | Runs test suite, retries on failure to detect flaky tests, sets `overall_status` |
 | **deployment-agent** | orchestrator | Validates tests + dependencies, generates deploy.sh, marks feature complete |
 
-The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent, and logs token usage after every invocation.
+The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent.
 
 ---
 

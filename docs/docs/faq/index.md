@@ -256,43 +256,6 @@ Yes, from the spec phase: in the feature-spec agent, select `x` (Abandon) to ret
 
 ---
 
-## Costs and Tokens
-
-### How does cost tracking work?
-
-Every agent invocation appends a token usage entry to the relevant state file:
-
-```yaml
-token_usage:
-  - phase: feature_spec
-    agent: feature-spec-agent
-    model: sonnet
-    date: 2026-06-04
-    input_tokens: 12450
-    output_tokens: 3820
-```
-
-Note: token counts are character-based estimates (chars ÷ 4), not exact API counts. Costs shown with `~$` in reports reflect this. Run `/track-cost` for the full breakdown. Run `/update-pricing` to update pricing rates.
-
-### Why are my costs higher than expected?
-
-Common causes:
-- **Large codebase for reverse-engineer** — the agent reads many files
-- **Iterative spec revisions** — multiple rounds of spec editing accumulate tokens
-- **Using Opus for all phases** — Haiku is much cheaper for ideation, which is less demanding
-- **Long architecture sessions** — complex systems require more back-and-forth
-
-The ideation agent defaults to `claude-haiku-4-5` (cheaper). Architecture, spec, and dev agents use `claude-sonnet-4-6`. You can adjust by editing the agent frontmatter.
-
-### Can I set a spending limit?
-
-Not automatically — SpecGantry doesn't interrupt mid-session if you hit a limit. But you can:
-1. Monitor the per-feature cost shown on the dashboard
-2. Run `/track-cost` to view the full cost breakdown at any time
-3. Choose cheaper models for less critical phases
-
----
-
 ## Troubleshooting
 
 ### `/spec-gantry` shows wrong state
@@ -336,7 +299,7 @@ Yes. The `specs/` folder is plain text — commit it to git. Use `git diff`, `gi
 
 ### Can I export a cost report?
 
-Not as a built-in command. The data is in `project-state.yaml` and each feature's `state.yaml` under `token_usage`. You can write a script to aggregate and format it.
+SpecGantry doesn't have built-in cost tracking. Use the Anthropic console to monitor your API usage by project or time range.
 
 ### Can I extend SpecGantry with custom agents?
 

@@ -198,8 +198,6 @@ releases:
   - version: "[release label]"
     features: [list of feature IDs]
     status: in_progress
-
-token_usage: []
 ```
 
 ### Write specs/features/[id]/state.yaml (one per feature)
@@ -221,8 +219,6 @@ phase_gates:
 deployment_status: [complete|in_progress]
 
 notes: "Reverse-engineered from existing codebase by spec-gantry."
-
-token_usage: []
 ```
 
 ### Write .claude/local-state.yaml
@@ -247,18 +243,6 @@ Return to the orchestrator (your result is the return value, not a user-facing m
 - Count of features discovered
 - List of file paths written
 - Confirmation that all files were written successfully
-- Token estimate block (see below)
-
-Append this block at the end of your result:
-
-```
----
-token_estimate:
-  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
-  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
-```
-
-Count every Read and every Write you performed during the analysis and file generation steps.
 
 Then display to the user:
 

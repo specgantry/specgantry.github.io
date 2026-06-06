@@ -60,8 +60,6 @@ releases:
   - version: [release label]
     features: []
     status: in_progress
-
-token_usage: []
 ```
 
 ### Write local-state.yaml

@@ -92,15 +92,3 @@ After writing `dev-artifact.yaml`, the orchestrator will invoke test-agent autom
 - Do not touch `project-state.yaml` or other features' state files
 - If a guardrail conflict arises during implementation, stop and report it — do not work around it silently
 
-## Token estimate
-
-After writing `dev-artifact.yaml`, append this block to your result before returning to the orchestrator:
-
-```
----
-token_estimate:
-  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
-  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
-```
-
-Count every Read and every Write, including feature-spec.md, architecture-spec.md, source files read for context, source files written, and dev-artifact.yaml.

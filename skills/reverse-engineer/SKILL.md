@@ -36,4 +36,4 @@ Invoke the orchestrator with:
 - project_name: [value from Step 2, or blank to infer]
 - release_label: [value from Step 2, default v1.0]
 
-The orchestrator invokes `reverse-engineer-agent` to perform the full codebase analysis, synthesis, and file generation. It captures token metadata from the agent result and logs it to `specs/project-state.yaml` under `token_usage` with `phase: reverse_engineer`.
+The orchestrator invokes `reverse-engineer-agent` to perform the full codebase analysis, synthesis, and file generation.

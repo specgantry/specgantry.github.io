@@ -31,9 +31,9 @@ Store the effective date and all model rates locally:
 {
   effective: "YYYY-MM-DD",
   models: {
-    "claude-haiku-4-5": { input: X.XX, output: X.XX },
-    "claude-sonnet-4-6": { input: X.XX, output: X.XX },
-    "claude-opus-4-8": { input: X.XX, output: X.XX }
+    "haiku":  { input: X.XX, output: X.XX },
+    "sonnet": { input: X.XX, output: X.XX },
+    "opus":   { input: X.XX, output: X.XX }
   }
 }
 ```
@@ -49,7 +49,7 @@ Read `specs/project-state.yaml` if it exists.
 Extract `token_usage` array (may be empty). For each entry, extract:
 - `phase` (e.g. "ideation", "architecture", "deployment")
 - `agent` (e.g. "ideation-agent")
-- `model` (exact model ID, e.g. "claude-sonnet-4-6")
+- `model` (model family name, e.g. "sonnet", "haiku", "opus")
 - `date`
 - `input_tokens`
 - `output_tokens`
@@ -68,12 +68,37 @@ For each file found, extract the `token_usage` array using the same fields as ab
 Combine all entries (project + all features) into one list, preserving the original phase, agent, and feature context.
 
 If the combined list is empty:
+
+Check whether `specs/project-state.yaml → project.reverse_engineered` is `true`.
+
+If `reverse_engineered: true`:
 ```
-📊 Cost Tracking
+📊 Cost Tracking Report
+─────────────────────────────────────────────────────────────────
+
+Pricing effective: [date from Step 1]
+
+  No token usage recorded yet.
+
+  This project was reverse-engineered from an existing codebase. Token usage
+  will be recorded starting with your next development phase — ideation amendment,
+  architecture amendment, feature spec, or development work.
+
+  Run /spec-gantry to continue.
+```
+
+Otherwise:
+```
+📊 Cost Tracking Report
+─────────────────────────────────────────────────────────────────
+
+Pricing effective: [date from Step 1]
 
   No token usage logged yet. Cost tracking begins once agents complete their work.
-  
+
   Revisit this after completing ideation, architecture, or feature development phases.
+
+  Run /spec-gantry to continue.
 ```
 
 Return to `/spec-gantry` to show the menu again.
@@ -111,6 +136,7 @@ Display the report as follows:
 
 ```
 Pricing effective: [date from Step 1]
+⚠ Token counts are character-based estimates (chars ÷ 4) — actual API spend may differ.
 ```
 
 ### Project-level costs (if any)
@@ -120,10 +146,10 @@ Pricing effective: [date from Step 1]
 
 Phase        Agent               Model                Input    Output   Total
 ──────────────────────────────────────────────────────────────────────────────
-[phase]      [agent]             [model]              $[i]     $[o]     $[t]
-[phase]      [agent]             [model]              $[i]     $[o]     $[t]
+[phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
+[phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
 ...
-                                                                  Subtotal: $[sum]
+                                                              Subtotal: ~$[sum]
 ```
 
 ### Per-feature costs (if any)
@@ -141,10 +167,10 @@ Display as:
 [FEATURE-001]: [title]
   Phase        Agent               Model                Input    Output   Total
   ──────────────────────────────────────────────────────────────────────────────
-  [phase]      [agent]             [model]              $[i]     $[o]     $[t]
-  [phase]      [agent]             [model]              $[i]     $[o]     $[t]
+  [phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
+  [phase]      [agent]             [model]              ~$[i]    ~$[o]    ~$[t]
   ...
-                                                                  Subtotal: $[sum]
+                                                                Subtotal: ~$[sum]
 
 [FEATURE-002]: [title]
   ...
@@ -156,7 +182,7 @@ At the very end:
 
 ```
 ──────────────────────────────────────────────────────────────────
-💰 Total Project Cost (all phases, all features): $[total]
+💰 Estimated Total Project Cost (all phases, all features): ~$[total]
 ──────────────────────────────────────────────────────────────────
 ```
 
@@ -175,8 +201,7 @@ Run /spec-gantry to return to the dashboard.
 ## Invariants
 
 - **Never crash on missing files.** If a feature state file doesn't exist or is malformed, skip it and continue.
-- **Never approximate token counts or costs.** Use exact values from the state files.
 - **Never hardcode pricing rates.** Always read from `config/pricing-history.yaml`.
 - **Always use the most recent effective date** from the pricing history, even if it's in the past. This ensures all projects use the same rates for a given point in time.
 - **Always preserve feature and phase context** in the cost report so the user can trace costs back to specific work.
-- **Token counts come from the orchestrator and are canonical.** Do not recalculate or estimate based on agent output.
+- **Token counts are estimates** (character-based, chars ÷ 4). Always display with `~` prefix. Never present them as exact API billing figures.

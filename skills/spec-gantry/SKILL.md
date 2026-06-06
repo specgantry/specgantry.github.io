@@ -58,7 +58,7 @@ Read every feature from `project-state.yaml → backlog`. For each, read its `fe
 
 Show the assignee on each row. Use `you` when assignee matches the current user's git name. Show `—` when unassigned.
 
-**Per-feature cost:** Sum `input_tokens + output_tokens` from `features/[id]/state.yaml → token_usage`. Also include `features/[id]-v2/state.yaml` etc. for any versioned features — sum all versions. Compute estimated cost using current rates from `config/pricing-history.yaml` (use the most recent entry). Show as `~$0.NNN` to the right of the pipeline row. If no token usage is logged yet, omit the cost field.
+**Per-feature cost:** Sum `input_tokens + output_tokens` from `features/[id]/state.yaml → token_usage`. Also include `features/[id]-v2/state.yaml` etc. for any versioned features — sum all versions. Compute estimated cost using current rates from `config/pricing-history.yaml` (use the most recent entry). Show as `~$0.NNN` to the right of the pipeline row (the `~` indicates this is a character-based estimate). If no token usage is logged yet, omit the cost field.
 
 **Spec warnings indicator:** If `features/[id]/dev-artifact.yaml` exists and `warnings` is non-empty, append `⚠ [n] spec warnings` to the feature title line.
 

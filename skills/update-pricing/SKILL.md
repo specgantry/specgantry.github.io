@@ -33,22 +33,22 @@ If the most recent `effective` date is **different from** today's date, proceed 
 
 ## Step 3: Determine current rates
 
-Using your training knowledge of current Anthropic model pricing, state the rates for the models spec-gantry uses:
+Using your training knowledge of current Anthropic model pricing, state the rates for the three model families spec-gantry uses:
 
-- `claude-haiku-4-5`
-- `claude-sonnet-4-6`
-- `claude-opus-4-8`
+- `haiku`
+- `sonnet`
+- `opus`
 
 Present the rates to the user for confirmation before writing:
 
 ```
   Current rates (from model knowledge, as of [today]):
 
-  Model                  Input per 1M tokens    Output per 1M tokens
-  ────────────────────────────────────────────────────────────────────
-  claude-haiku-4-5       $[x.xx]                $[x.xx]
-  claude-sonnet-4-6      $[x.xx]                $[x.xx]
-  claude-opus-4-8        $[x.xx]                $[x.xx]
+  Model      Input per 1M tokens    Output per 1M tokens
+  ────────────────────────────────────────────────────────
+  haiku      $[x.xx]                $[x.xx]
+  sonnet     $[x.xx]                $[x.xx]
+  opus       $[x.xx]                $[x.xx]
 
   ⚠  These rates are from training data — verify at https://anthropic.com/pricing
      if precision matters for billing reconciliation.
@@ -68,7 +68,7 @@ Find the last `output_per_1m` line in the file (the very last value line of the 
 
 For example, if the file currently ends with:
 ```
-      claude-opus-4-8:
+      opus:
         input_per_1m: 15.00
         output_per_1m: 75.00
 ```
@@ -81,13 +81,13 @@ The new entry block to append (fill in today's date and confirmed rates):
 ```yaml
   - effective: [YYYY-MM-DD]
     models:
-      claude-haiku-4-5:
+      haiku:
         input_per_1m: [x.xx]
         output_per_1m: [x.xx]
-      claude-sonnet-4-6:
+      sonnet:
         input_per_1m: [x.xx]
         output_per_1m: [x.xx]
-      claude-opus-4-8:
+      opus:
         input_per_1m: [x.xx]
         output_per_1m: [x.xx]
 ```

@@ -181,6 +181,7 @@ If `local-state.yaml` does not exist: this is a first run. Hand back to `/spec-g
 
 #### Ideation
 - Invoke `ideation-agent`
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
 - On completion gate check:
   1. `specs/ideation-artifact.md` exists on disk
   2. `phase_gates.ideation_complete: true` in `project-state.yaml`
@@ -190,6 +191,7 @@ If `local-state.yaml` does not exist: this is a first run. Hand back to `/spec-g
 
 #### Architecture
 - Invoke `architecture-agent`
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
 - On completion gate check:
   1. `specs/architecture-spec.md` exists on disk
   2. `phase_gates.architecture_complete: true` in `project-state.yaml`
@@ -199,6 +201,7 @@ If `local-state.yaml` does not exist: this is a first run. Hand back to `/spec-g
 
 #### Deployment (per feature, incremental)
 - Invoke `deployment-agent` scoped to the target feature
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
 - On completion gate check:
   1. `specs/features/[id]/deploy-artifact.md` exists on disk
   2. `deployment_status: complete` OR `deployment_status: blocked` on the feature entry in `project-state.yaml`
@@ -292,6 +295,7 @@ Stop. Do not invoke dev-agent.
 - Read `specs/architecture-spec.md` — pass as context to `feature-spec-agent`
 - Run dependency gate (above) before invoking
 - Invoke `feature-spec-agent`
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
 - On completion gate check:
   1. `specs/features/[id]/feature-spec.md` exists
   2. Contains `## Scope`, `## Implementation Plan`, `## Guardrail Compliance` sections
@@ -304,6 +308,9 @@ Stop. Do not invoke dev-agent.
 #### Development
 - Run all three pre-conditions above (dependency gate, all-specs-reviewed gate, cross-feature contract gate) before invoking dev-agent
 - Invoke `dev-agent` with `feature-spec.md` and `architecture-spec.md` as context
+- **Immediately after the agent returns: log tokens (Step 3) before doing anything else**
+- Invoke `test-agent` automatically
+- **Immediately after test-agent returns: log tokens (Step 3) before doing anything else**
 - On completion gate check:
   1. `specs/features/[id]/dev-artifact.yaml` exists
   2. `overall_status: pass` (top-level field in dev-artifact.yaml)
@@ -319,17 +326,18 @@ Stop. Do not invoke dev-agent.
 
 ### Mechanism
 
-When you invoke an agent via the Agent tool, capture the result which includes token metadata:
+Every agent appends a token estimate block at the end of its result text:
+
 ```
-{
-  "result": "...",
-  "model": "claude-sonnet-4-6",
-  "input_tokens": N,
-  "output_tokens": N
-}
+---
+token_estimate:
+  input: 15000
+  output: 4200
 ```
 
-Extract these values immediately.
+After each agent invocation, scan the result text for this block. Parse `input` and `output` as integers. These are character-count-based estimates (chars / 4) — not exact API counts. Use the model family name from the table below (e.g., `sonnet`, `haiku`, `opus`).
+
+If the block is missing from the result: log a warning to the user ("token estimate missing from [agent] result — recording zeroes") and proceed with `input_tokens: 0, output_tokens: 0`. Do not halt.
 
 ### Where to log
 
@@ -338,10 +346,10 @@ Extract these values immediately.
 token_usage:
   - phase: [phase_name]
     agent: [agent_name]
-    model: [exact model id from agent result]
+    model: [model family name — sonnet, haiku, or opus]
     date: [YYYY-MM-DD]
-    input_tokens: [N]
-    output_tokens: [N]
+    input_tokens: [parsed input value]
+    output_tokens: [parsed output value]
 ```
 
 **For feature-level agents** (feature-spec, dev, test) → `specs/features/[id]/state.yaml`:
@@ -349,34 +357,41 @@ token_usage:
 token_usage:
   - phase: [phase_name]
     agent: [agent_name]
-    model: [exact model id from agent result]
+    model: [model family name — sonnet, haiku, or opus]
     date: [YYYY-MM-DD]
-    input_tokens: [N]
-    output_tokens: [N]
+    input_tokens: [parsed input value]
+    output_tokens: [parsed output value]
 ```
 
-**For bugfix dev-agent invocations**, add a `scope` field to distinguish bugfix spend from regular feature spend:
+**For bugfix dev-agent invocations**, add a `scope` field:
 ```yaml
 token_usage:
   - phase: development
     agent: dev-agent
     scope: bug_fix
-    model: [exact model id from agent result]
+    model: [model family name — sonnet, haiku, or opus]
     date: [YYYY-MM-DD]
-    input_tokens: [N]
-    output_tokens: [N]
+    input_tokens: [parsed input value]
+    output_tokens: [parsed output value]
 ```
 
-### Requirements
+### Model names by agent
 
-- Use exact model ID from agent result (never hardcode or guess)
-- Always separate input and output counts (never aggregate)
-- Never round, estimate, or approximate token counts
-- If token counts are missing from the agent result, this is a critical error — halt and report it to the user before advancing
+Log the model family name — not the exact version ID.
+
+| Agent | Model |
+|---|---|
+| ideation-agent | haiku |
+| architecture-agent | sonnet |
+| reverse-engineer-agent | sonnet |
+| feature-spec-agent | sonnet |
+| dev-agent | sonnet |
+| test-agent | haiku |
+| deployment-agent | sonnet |
 
 ### Enforcement
 
-Do NOT advance to the next phase if tokens are not logged. If you are about to mark a phase complete without logging tokens, STOP and surface this as a blocking issue to the user.
+Do NOT advance to the next phase if token logging has not been attempted. Log zeroes rather than skip. If you are about to mark a phase complete without attempting token logging, STOP and surface this as a blocking issue to the user.
 
 ---
 
@@ -401,7 +416,7 @@ Do NOT advance to the next phase if tokens are not logged. If you are about to m
 ## Invariants — never violate these
 
 - Never advance a phase without all gate checks passing
-- **Never skip token logging after an agent invocation — effort level does not override this requirement. Missing token logs = critical failure.**
+- **Never skip token logging after an agent invocation — log zeroes if the estimate block is missing, but always write the entry.**
 - `hot_path` bypasses the feature spec gate but never bypasses token logging. After dev-agent returns for a BUGFIX-* feature, log tokens to `specs/features/[BUGFIX-ID]/state.yaml` exactly as for any other feature, with `scope: bug_fix`.
 - Never write to `project-state.yaml` from a `role: dev` context — it is read-only for developers
 - Never invoke project-level agents (ideation, architecture, deployment) for a `role: dev` user

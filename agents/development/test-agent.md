@@ -112,3 +112,16 @@ phase_gates:
 - Do not modify source files
 - If tests error out (crash, not just fail), treat as fail
 - Flaky tests are warnings, not blockers — but always record them
+
+## Token estimate
+
+After writing all state files, append this block to your result before returning to the orchestrator:
+
+```
+---
+token_estimate:
+  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
+  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
+```
+
+Count every Read and every Write, including dev-artifact.yaml (read and written), feature-spec.md, and state.yaml.

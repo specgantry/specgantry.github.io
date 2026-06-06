@@ -151,3 +151,18 @@ If recommendation is `clarify` or `escalate`, also write:
 ideation_blockers:
   - "[specific item to resolve]"
 ```
+
+---
+
+## Step 6: Return token estimate
+
+After all file writes are complete, append the following block to your result (the final text you return to the orchestrator):
+
+```
+---
+token_estimate:
+  input: [sum of character lengths of all files you read, divided by 4, rounded to nearest integer]
+  output: [sum of character lengths of all files you wrote, divided by 4, rounded to nearest integer]
+```
+
+Count every Read and every Write you performed. Include prompt text read from question files, artifact files written, and the project-state.yaml update.

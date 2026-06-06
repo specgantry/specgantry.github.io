@@ -2,7 +2,7 @@
 name: orchestrator
 description: Routes tasks through SDLC phases, enforces phase gates, and manages state transitions. The single choke point for all phase transitions — no phase can advance without passing through here.
 model: claude-sonnet-4-6
-tools: Read, Write, Bash, Glob, Grep, mcp__spec-gantry-costs__record_agent_cost
+tools: Read, Write, Bash, Glob, Grep, Agent, mcp__spec-gantry-costs__record_agent_cost
 ---
 
 # spec-gantry Orchestrator

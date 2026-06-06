@@ -11,6 +11,31 @@ const os   = require('os');
 const https = require('https');
 const http  = require('http');
 
+// ─── Logging ──────────────────────────────────────────────────────────────────
+// All log output goes to stderr AND to PROJECT_DIR/logs/spec-gantry-costs.log.
+// The log file is easy to find and tail; stderr is for Claude Code's MCP viewer.
+// Set SPEC_GANTRY_LOG_LEVEL env var to control verbosity:
+//   error  — failures only (silent on success)
+//   info   — key lifecycle events: startup, pricing fetch result, cost recorded (default)
+//   debug  — full detail: resolved paths, token counts, every tool call in/out
+const LEVELS = { error: 0, info: 1, debug: 2 };
+const LOG_LEVEL = LEVELS[process.env.SPEC_GANTRY_LOG_LEVEL] ?? LEVELS.info;
+const LOG_FILE  = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), 'logs', 'spec-gantry-costs.log');
+
+// Ensure log directory exists (best-effort — never throw)
+try { fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true }); } catch { /* ignore */ }
+
+function log(level, ...args) {
+  if (LEVELS[level] > LOG_LEVEL) return;
+  const prefix = { error: '[sg-costs ERROR]', info: '[sg-costs]', debug: '[sg-costs DEBUG]' }[level];
+  const line = `${new Date().toISOString()} ${prefix} ${args.join(' ')}\n`;
+  process.stderr.write(line);
+  try { fs.appendFileSync(LOG_FILE, line); } catch { /* non-fatal */ }
+}
+const logError = (...a) => log('error', ...a);
+const logInfo  = (...a) => log('info',  ...a);
+const logDebug = (...a) => log('debug', ...a);
+
 // ─── Fallback pricing (training-knowledge rates, updated 2026-06) ────────────
 // These are used when live fetch from anthropic.com/pricing fails.
 // Keys match the exact model IDs used in agent frontmatter.
@@ -120,14 +145,18 @@ function parsePricingHtml(html) {
 
 async function refreshPricing() {
   try {
+    logDebug('Fetching pricing from', PRICING_URL);
     const html  = await fetchPricingPage();
     const rates = parsePricingHtml(html);
     if (!rates) throw new Error('Could not parse pricing from page');
 
     const entry = { fetched_at: new Date().toISOString(), source_url: PRICING_URL, rates };
     atomicWriteJson(RATES_CACHE, entry);
+    logInfo('Pricing refreshed —', Object.keys(rates).length, 'models cached at', RATES_CACHE);
+    logDebug('Rates:', JSON.stringify(rates));
     return { ok: true, rates, fetched_at: entry.fetched_at };
   } catch (err) {
+    logError('Pricing fetch failed:', err.message, '— using fallback rates');
     return { ok: false, error: err.message, fallback_used: true };
   }
 }
@@ -191,12 +220,9 @@ function appendCostLog(entry) {
 function resolveAgentFromToolUseId(toolUseId) {
   const slug    = projectSlug(PROJECT_DIR);
   const projDir = path.join(CLAUDE_HOME, 'projects', slug);
-
-  let sessionId = null;
-  let sessionSubagentDir = null;
+  logDebug('Resolving toolUseId', toolUseId, 'in', projDir);
 
   try {
-    // Find all session directories (UUID-named dirs that contain a subagents/ folder)
     const entries = fs.readdirSync(projDir);
     const sessionDirs = entries
       .filter(e => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(e))
@@ -209,30 +235,33 @@ function resolveAgentFromToolUseId(toolUseId) {
         return null;
       })
       .filter(Boolean)
-      .sort((a, b) => b.mtime - a.mtime); // most recent first
+      .sort((a, b) => b.mtime - a.mtime);
 
-    // Search session dirs from newest to oldest for the matching toolUseId
+    logDebug('Searching', sessionDirs.length, 'session dir(s) for toolUseId');
+
     for (const sess of sessionDirs) {
       const subDir = path.join(projDir, sess.id, 'subagents');
       try {
         const files = fs.readdirSync(subDir).filter(f => f.endsWith('.meta.json'));
+        logDebug('Session', sess.id, '—', files.length, 'subagent(s)');
         for (const f of files) {
           try {
             const meta = JSON.parse(fs.readFileSync(path.join(subDir, f), 'utf8'));
             if (meta.toolUseId === toolUseId) {
-              // filename is agent-[agentId].meta.json
               const agentId = f.replace(/^agent-/, '').replace(/\.meta\.json$/, '');
-              sessionId = sess.id;
-              sessionSubagentDir = subDir;
-              return { agentId, sessionId, subagentDir: subDir };
+              logDebug('Matched:', f, '→ agentId', agentId, 'in session', sess.id);
+              return { agentId, sessionId: sess.id, subagentDir: subDir };
             }
           } catch { /* malformed meta, skip */ }
         }
       } catch { /* subagents dir may not exist */ }
     }
-  } catch { /* project dir not found */ }
+  } catch (err) {
+    logError('resolveAgentFromToolUseId failed:', err.message);
+  }
 
-  return null; // not found
+  logDebug('toolUseId not found:', toolUseId);
+  return null;
 }
 
 // ─── Session detection ────────────────────────────────────────────────────────
@@ -265,17 +294,21 @@ function detectCurrentSession() {
         fs.mkdirSync(path.dirname(marker), { recursive: true });
         fs.writeFileSync(marker, sessionId, 'utf8');
       } catch { /* non-fatal */ }
+      logDebug('Current session:', sessionId);
       return sessionId;
     }
   } catch { /* project dir may not exist yet */ }
+  logDebug('No session directory found for project slug:', projectSlug(PROJECT_DIR));
   return null;
 }
 
 // ─── Tool: record_agent_cost ──────────────────────────────────────────────────
 async function toolRecordAgentCost(args) {
   const { toolUseId, phase, model, feature = null } = args;
+  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, feature }));
 
   if (!toolUseId || !phase || !model) {
+    logError('record_agent_cost: missing required fields');
     return { ok: false, error: 'Missing required fields: toolUseId, phase, model' };
   }
 
@@ -283,15 +316,18 @@ async function toolRecordAgentCost(args) {
   // Retry once after 500ms in case Claude Code hasn't flushed the .meta.json yet.
   let resolved = resolveAgentFromToolUseId(toolUseId);
   if (!resolved) {
+    logDebug('toolUseId not found on first attempt, retrying after 500ms');
     await new Promise(r => setTimeout(r, 500));
     resolved = resolveAgentFromToolUseId(toolUseId);
   }
   if (!resolved) {
+    logError('record_agent_cost: could not resolve toolUseId', toolUseId);
     return { ok: false, error: `Could not find subagent for toolUseId: ${toolUseId}` };
   }
 
   const { agentId, sessionId, subagentDir } = resolved;
   const subagentFile = path.join(subagentDir, `agent-${agentId}.jsonl`);
+  logDebug('Reading transcript:', subagentFile);
 
   // Sum token usage across all assistant messages in the subagent transcript
   const lines = fs.readFileSync(subagentFile, 'utf8').split('\n').filter(Boolean);
@@ -337,7 +373,12 @@ async function toolRecordAgentCost(args) {
     pricing_source,
   };
 
+  logDebug('Token counts — input:', input_tokens, 'output:', output_tokens,
+           'cache_write:', cache_creation_tokens, 'cache_read:', cache_read_tokens);
+  logDebug('Pricing source:', pricing_source, '— total_cost_usd:', total_cost_usd);
+
   appendCostLog(entry);
+  logInfo(`Cost recorded: ${phase}${feature ? ' / ' + feature : ''} — ${input_tokens + output_tokens} tokens — $${total_cost_usd} (${pricing_source})`);
 
   return { ok: true, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost_usd };
 }
@@ -382,8 +423,10 @@ function sendError(id, code, message) {
 
 async function handleRequest(req) {
   const { id, method, params } = req;
+  logDebug('→', method, id !== undefined ? `(id=${id})` : '(notification)');
 
   if (method === 'initialize') {
+    logInfo('MCP client connected');
     return sendResponse(id, {
       protocolVersion: '2024-11-05',
       capabilities: { tools: {} },
@@ -405,11 +448,16 @@ async function handleRequest(req) {
     const toolName = params && params.name;
     const toolArgs = (params && params.arguments) || {};
     const tool = TOOLS[toolName];
-    if (!tool) return sendError(id, -32601, `Unknown tool: ${toolName}`);
+    if (!tool) {
+      logError('Unknown tool:', toolName);
+      return sendError(id, -32601, `Unknown tool: ${toolName}`);
+    }
     try {
       const result = await tool.handler(toolArgs);
+      logDebug('←', toolName, JSON.stringify(result));
       return sendResponse(id, { content: [{ type: 'text', text: JSON.stringify(result) }] });
     } catch (err) {
+      logError(toolName, 'threw:', err.message);
       return sendError(id, -32603, err.message);
     }
   }
@@ -420,11 +468,14 @@ async function handleRequest(req) {
 
 // ─── Startup ──────────────────────────────────────────────────────────────────
 (async function main() {
-  // Detect current session and write marker file
-  detectCurrentSession();
+  logInfo(`Starting spec-gantry-costs MCP server (log level: ${process.env.SPEC_GANTRY_LOG_LEVEL || 'info'})`);
+  logInfo('Log file:', LOG_FILE);
+  logDebug('PROJECT_DIR:', PROJECT_DIR);
+  logDebug('CLAUDE_HOME:', CLAUDE_HOME);
+  logDebug('PLUGIN_DIR:', PLUGIN_DIR);
 
-  // Attempt background pricing refresh (don't block startup)
-  refreshPricing().catch(() => {/* non-fatal */});
+  detectCurrentSession();
+  refreshPricing().catch(() => {/* already logged inside refreshPricing */});
 
   // Read newline-delimited JSON-RPC from stdin
   let buffer = '';
@@ -448,4 +499,6 @@ async function handleRequest(req) {
   process.stdin.on('end', () => process.exit(0));
   process.on('SIGTERM', () => process.exit(0));
   process.on('SIGINT',  () => process.exit(0));
+  process.on('uncaughtException', err => logError('Uncaught exception:', err.message, err.stack));
+  process.on('unhandledRejection', err => logError('Unhandled rejection:', err));
 })();

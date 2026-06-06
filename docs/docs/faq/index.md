@@ -286,6 +286,24 @@ Yes — `specs/cost-log.json` is plain JSON committed to git. It contains one en
 
 ## Troubleshooting
 
+### Cost not being recorded after agent runs
+
+If `/track-cost` shows no data after running ideation, architecture, or a feature phase, check the MCP server log:
+
+```bash
+tail -f logs/spec-gantry-costs.log
+```
+
+Common causes:
+- **`logs/` directory is empty or missing** — the MCP server didn't start. Check that Node.js is installed (`node --version`) and the plugin is up to date.
+- **`Could not find subagent for toolUseId`** — the orchestrator called the MCP tool but the `.meta.json` file wasn't found. This can happen if the session directory structure differs from what was expected. Enable debug logging to investigate: set `SPEC_GANTRY_LOG_LEVEL=debug` in `.claude/settings.json`.
+- **No log file at all** — the MCP server may not be registered. Reinstall the plugin:
+  ```
+  claude plugin uninstall spec-gantry
+  claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+  claude plugin install spec-gantry
+  ```
+
 ### `/spec-gantry` shows wrong state
 
 Re-run it. The dashboard re-reads all state on every invocation — most inconsistencies self-correct. If the problem persists, inspect the YAML files directly.

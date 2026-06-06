@@ -73,6 +73,7 @@ joined: [YYYY-MM-DD]
 Append to `.gitignore` (create if it doesn't exist):
 ```
 .claude/local-state.yaml
+logs/
 ```
 
 ### Create specs/cost-log.json

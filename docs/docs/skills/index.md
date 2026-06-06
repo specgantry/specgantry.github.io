@@ -323,6 +323,16 @@ Unlike character-based estimates, token counts here are the actual values return
 Rates last updated: 2026-06-06T10:30:00Z
 ```
 
+### Debugging cost collection
+
+If no data appears, check the MCP server log in your project directory:
+
+```bash
+tail -f logs/spec-gantry-costs.log
+```
+
+For full detail on what the server is doing, set `SPEC_GANTRY_LOG_LEVEL=debug` in `.claude/settings.json`.
+
 ---
 
 ## 6. update-pricing {#update-pricing}

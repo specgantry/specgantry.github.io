@@ -280,6 +280,12 @@ The dashboard shows per-feature cost inline next to each pipeline row. Run `/tra
   <strong>Pricing:</strong> The MCP server fetches current rates from <code>anthropic.com/pricing</code> at startup and caches them locally. If the fetch fails, it falls back to bundled rates. Run <code>/update-pricing</code> anytime to force a refresh.
 </div>
 
+<div class="info">
+  <strong>Debugging:</strong> The MCP server writes a log to <code>logs/spec-gantry-costs.log</code> in your project directory. Tail it to verify the server is recording costs correctly:
+  <pre>tail -f logs/spec-gantry-costs.log</pre>
+  To increase verbosity, set <code>SPEC_GANTRY_LOG_LEVEL=debug</code> in your project's <code>.claude/settings.json</code>.
+</div>
+
 ---
 
 ## Feature Dependencies

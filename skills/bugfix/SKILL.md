@@ -41,4 +41,4 @@ Invoke the orchestrator with:
 - pre_classified: bug_fix
 - Description: [bug description from Step 1]
 
-The orchestrator skips the classification prompt (pre_classified is set), creates the BUGFIX state files, invokes dev-agent directly (hot_path bypasses the feature spec gate), logs tokens after dev-agent and test-agent complete, and enforces the deployment gate.
+The orchestrator skips the classification prompt (pre_classified is set), creates the BUGFIX state files, invokes dev-agent directly (hot_path bypasses the feature spec gate), records cost via the MCP tool after dev-agent and test-agent complete, and enforces the deployment gate.

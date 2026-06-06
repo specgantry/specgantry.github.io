@@ -260,7 +260,7 @@ Yes, from the spec phase: in the feature-spec agent, select `x` (Abandon) to ret
 
 ### How does cost tracking work?
 
-SpecGantry includes a local MCP server that runs alongside Claude Code. After each agent invocation, the orchestrator calls the MCP server, which reads the agent's session transcript from Claude Code's JSONL files and extracts exact token counts from the API response data. Costs are computed immediately using live pricing rates and stored in `specs/cost-log.json`.
+SpecGantry uses a `SubagentStop` hook that Claude Code fires automatically whenever any SpecGantry agent finishes — no LLM cooperation required. The hook reads the agent's session transcript from Claude Code's JSONL files and extracts exact token counts from the API response data. Costs are computed immediately using live pricing rates and stored in `specs/cost-log.json`.
 
 This means token counts are real API counts — not character-based estimates. The dashboard shows per-feature cost inline, and `/track-cost` gives the full breakdown.
 

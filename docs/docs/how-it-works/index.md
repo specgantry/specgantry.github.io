@@ -252,7 +252,7 @@ For feature specs, if you complete 4 of 6 sections before a network drop, the ne
 
 ## Cost Tracking {#cost-tracking}
 
-SpecGantry captures real token counts for every agent invocation using a local MCP server bundled with the plugin. After each agent completes, the orchestrator calls the MCP server, which reads the agent's session transcript from Claude Code's local JSONL files and extracts exact token counts from the API response data.
+SpecGantry captures real token counts for every agent invocation using a local MCP server and a `SubagentStop` hook bundled with the plugin. When any SpecGantry agent finishes, Claude Code automatically fires the hook — no LLM cooperation required. The hook reads the agent's session transcript from Claude Code's local JSONL files and extracts exact token counts from the API response data.
 
 ```json
 {

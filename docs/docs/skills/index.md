@@ -291,7 +291,7 @@ Or select `[C]ost` from the `/spec-gantry` menu.
 
 ### What It Does
 
-SpecGantry's local MCP server captures exact token counts from Claude Code's session transcripts after every agent invocation. This skill reads the stored data from `specs/cost-log.json` and renders a breakdown by phase, feature, and total.
+SpecGantry's `SubagentStop` hook captures exact token counts from Claude Code's session transcripts automatically when any SpecGantry agent finishes. This skill reads the stored data from `specs/cost-log.json` and renders a breakdown by phase, feature, and total.
 
 Unlike character-based estimates, token counts here are the actual values returned by the Anthropic API — including cache creation and cache read tokens, which are billed at different rates.
 
@@ -385,7 +385,7 @@ Skills call agents to do the actual work. Agents are invoked by the orchestrator
 | **test-agent** | orchestrator | Runs test suite, retries on failure to detect flaky tests, sets `overall_status` |
 | **deployment-agent** | orchestrator | Validates tests + dependencies, generates deploy.sh, marks feature complete |
 
-The orchestrator is the sole choke point for all phase transitions. After every agent returns, it calls the `spec-gantry-costs` MCP server to record exact token counts from the agent's session transcript.
+The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent. Cost recording happens automatically via a `SubagentStop` hook — the hook fires when each agent completes and reads exact token counts from Claude Code's session transcripts.
 
 ---
 

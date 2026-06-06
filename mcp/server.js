@@ -466,8 +466,169 @@ async function handleRequest(req) {
   if (id !== undefined) sendError(id, -32601, `Unknown method: ${method}`);
 }
 
+// ─── Agent type → phase + model mapping ──────────────────────────────────────
+// Claude Code constructs agentType as: "plugin-name:subdir:agent-name"
+// for plugin agents, or bare names like "Explore" for built-in agents.
+const AGENT_MAP = {
+  'spec-gantry:ideation:ideation-agent':                    { phase: 'ideation',        model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:architecture:architecture-agent':            { phase: 'architecture',     model: 'claude-sonnet-4-6' },
+  'spec-gantry:feature-spec:feature-spec-agent':            { phase: 'feature_spec',     model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:dev-agent':                      { phase: 'development',      model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:test-agent':                     { phase: 'test',             model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:deployment:deployment-agent':                { phase: 'deployment',       model: 'claude-sonnet-4-6' },
+  'spec-gantry:reverse-engineer:reverse-engineer-agent':    { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
+  // orchestrator is intentionally absent — it's the router, not a costed worker
+};
+
+// Infer feature ID from the subagent's transcript: look for current_feature in state files
+// or FEATURE-/BUGFIX- patterns in the agent's input text.
+function inferFeatureFromTranscript(transcriptPath) {
+  try {
+    const lines = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
+    for (const line of lines) {
+      try {
+        const r = JSON.parse(line);
+        // Look in the first user message (the prompt passed to the agent)
+        if (r.type === 'user' && r.parentUuid === null) {
+          const text = JSON.stringify(r.message || '');
+          const m = text.match(/(FEATURE-\d+(?:-v\d+)?|BUGFIX-\d+)/);
+          if (m) return m[1];
+        }
+      } catch { /* skip */ }
+    }
+  } catch { /* transcript unreadable */ }
+  return null;
+}
+
+// Sum token usage from a subagent JSONL transcript.
+function sumTokensFromTranscript(transcriptPath) {
+  let input_tokens = 0, output_tokens = 0, cache_creation_tokens = 0, cache_read_tokens = 0;
+  let model = null;
+  try {
+    const lines = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
+    for (const line of lines) {
+      try {
+        const r = JSON.parse(line);
+        if (r.type !== 'assistant') continue;
+        const usage = r.message && r.message.usage;
+        if (!usage) continue;
+        if (!model && r.message.model) model = r.message.model;
+        input_tokens          += (usage.input_tokens || 0);
+        output_tokens         += (usage.output_tokens || 0);
+        cache_creation_tokens += (usage.cache_creation_input_tokens || 0);
+        cache_read_tokens     += (usage.cache_read_input_tokens || 0);
+      } catch { /* malformed line */ }
+    }
+  } catch (err) {
+    logError('sumTokensFromTranscript failed:', err.message);
+  }
+  return { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, model };
+}
+
+// ─── Hook mode: SubagentStop handler ─────────────────────────────────────────
+// Invoked by Claude Code's SubagentStop hook with JSON payload on stdin.
+// Reads the subagent transcript, infers phase/model, and appends to cost-log.json.
+async function runHookMode() {
+  let payload;
+  try {
+    const raw = await new Promise((resolve, reject) => {
+      let data = '';
+      process.stdin.setEncoding('utf8');
+      process.stdin.on('data', c => data += c);
+      process.stdin.on('end', () => resolve(data));
+      process.stdin.on('error', reject);
+    });
+    payload = JSON.parse(raw);
+  } catch (err) {
+    logError('Hook: failed to parse stdin payload:', err.message);
+    process.exit(0); // never block Claude Code
+  }
+
+  const { agent_id, tool_use_id, session_id, transcript_path, cwd } = payload;
+  const agentType = payload.agent_type || payload.agentType || '';
+
+  logDebug('Hook SubagentStop:', JSON.stringify({ agent_id, agentType, session_id }));
+
+  // Only process SpecGantry agents — ignore Explore, Plan, claude-code-guide, etc.
+  const mapping = AGENT_MAP[agentType];
+  if (!mapping) {
+    logDebug('Hook: skipping non-SpecGantry agent:', agentType);
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
+  }
+
+  logInfo(`Hook: recording cost for ${mapping.phase} (${agentType})`);
+
+  // Read token counts from the transcript Claude Code provides
+  const resolvedTranscript = transcript_path ||
+    (() => {
+      // Fallback: derive path from session_id and agent_id if transcript_path absent
+      const slug = projectSlug(cwd || PROJECT_DIR);
+      return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);
+    })();
+
+  logDebug('Hook: transcript path:', resolvedTranscript);
+  const tokens = sumTokensFromTranscript(resolvedTranscript);
+
+  // Use model from transcript if available (more accurate than frontmatter default)
+  const model = tokens.model || mapping.model;
+  const feature = inferFeatureFromTranscript(resolvedTranscript);
+
+  logDebug('Hook: tokens:', JSON.stringify(tokens), 'model:', model, 'feature:', feature);
+
+  // Compute cost
+  const { r: rates, source: pricing_source } = getRatesForModel(model);
+  const M = 1_000_000;
+  const input_cost_usd       = +(tokens.input_tokens          / M * rates.input_per_1m).toFixed(8);
+  const output_cost_usd      = +(tokens.output_tokens         / M * rates.output_per_1m).toFixed(8);
+  const cache_write_cost_usd = +(tokens.cache_creation_tokens / M * rates.cache_write_per_1m).toFixed(8);
+  const cache_read_cost_usd  = +(tokens.cache_read_tokens     / M * rates.cache_read_per_1m).toFixed(8);
+  const total_cost_usd       = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
+
+  const entry = {
+    phase:               mapping.phase,
+    agent:               agentType,
+    model,
+    feature:             feature || null,
+    date:                new Date().toISOString().slice(0, 10),
+    input_tokens:        tokens.input_tokens,
+    output_tokens:       tokens.output_tokens,
+    cache_creation_tokens: tokens.cache_creation_tokens,
+    cache_read_tokens:   tokens.cache_read_tokens,
+    input_cost_usd,
+    output_cost_usd,
+    cache_write_cost_usd,
+    cache_read_cost_usd,
+    total_cost_usd,
+    pricing_source,
+  };
+
+  const projectDir = cwd || PROJECT_DIR;
+  const logPath = path.join(projectDir, 'specs', 'cost-log.json');
+  try {
+    const existing = (() => { try { return JSON.parse(fs.readFileSync(logPath, 'utf8')); } catch { return []; } })();
+    existing.push(entry);
+    fs.mkdirSync(path.dirname(logPath), { recursive: true });
+    atomicWriteJson(logPath, existing);
+    logInfo(`Hook: cost recorded — ${mapping.phase}${feature ? ' / ' + feature : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${total_cost_usd} (${pricing_source})`);
+  } catch (err) {
+    logError('Hook: failed to write cost-log.json:', err.message);
+  }
+
+  // Hook must output JSON and exit 0 — never block Claude Code
+  process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+  process.exit(0);
+}
+
 // ─── Startup ──────────────────────────────────────────────────────────────────
 (async function main() {
+  // Hook mode: invoked by Claude Code's SubagentStop hook
+  if (process.argv.includes('--hook')) {
+    await runHookMode();
+    return;
+  }
+
+  // MCP server mode: long-running stdio JSON-RPC server
   logInfo(`Starting spec-gantry-costs MCP server (log level: ${process.env.SPEC_GANTRY_LOG_LEVEL || 'info'})`);
   logInfo('Log file:', LOG_FILE);
   logDebug('PROJECT_DIR:', PROJECT_DIR);

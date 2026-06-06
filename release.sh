@@ -27,6 +27,7 @@ MANIFEST_FILE=".claude-plugin/plugin.json"
 MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 LANDING_PAGE="docs/_layouts/landing.html"
 GETTING_STARTED="docs/docs/getting-started/index.md"
+SKILL_FILE="skills/spec-gantry/SKILL.md"
 
 # Functions
 log_info() {
@@ -145,7 +146,7 @@ release() {
   fi
 
   # Update version in both manifests and docs pages
-  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, and $GETTING_STARTED"
+  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, $GETTING_STARTED, and $SKILL_FILE"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -153,18 +154,20 @@ release() {
     sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$LANDING_PAGE"
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$GETTING_STARTED"
+    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$SKILL_FILE"
   else
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$LANDING_PAGE"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$GETTING_STARTED"
+    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$SKILL_FILE"
   fi
 
   log_success "Version updated to $version"
 
   # Commit
   log_info "Creating commit"
-  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE" "$GETTING_STARTED"
+  git add "$MANIFEST_FILE" "$MARKETPLACE_FILE" "$LANDING_PAGE" "$GETTING_STARTED" "$SKILL_FILE"
   git commit -m "Release v$version"
   log_success "Commit created"
 

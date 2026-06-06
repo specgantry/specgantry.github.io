@@ -150,7 +150,7 @@ After rendering, work through these cases in order. Take the **first** match.
 Show the welcome banner once:
 
 ```
-════════════════════ SpecGantry v2.2.0 · AI-powered SDLC pipeline for Claude Code ══════════════════
+════════════════════ SpecGantry v1.3.4 · AI-powered SDLC pipeline for Claude Code ══════════════════
                         Copyright 2026 Mangesh Pise · Apache License 2.0         
                        Independent project, not affiliated with Anthropic.      
                       See LICENSE, NOTICE, and CONTRIBUTING.md for details.    

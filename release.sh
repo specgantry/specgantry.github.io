@@ -28,6 +28,7 @@ MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 LANDING_PAGE="docs/_layouts/landing.html"
 GETTING_STARTED="docs/docs/getting-started/index.md"
 SKILL_FILE="skills/spec-gantry/SKILL.md"
+SKILLS_GUIDE="docs/docs/skills/index.md"
 
 # Functions
 log_info() {
@@ -145,7 +146,7 @@ release() {
   fi
 
   # Update version in both manifests and docs pages
-  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, $GETTING_STARTED, and $SKILL_FILE"
+  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, $GETTING_STARTED, $SKILL_FILE, and $SKILLS_GUIDE"
 
   # Use sed to update version (works on both macOS and Linux)
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -154,12 +155,14 @@ release() {
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$LANDING_PAGE"
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$GETTING_STARTED"
     sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$SKILL_FILE"
+    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$SKILLS_GUIDE"
   else
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$LANDING_PAGE"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$GETTING_STARTED"
     sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$SKILL_FILE"
+    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$SKILLS_GUIDE"
   fi
 
   log_success "Version updated to $version"

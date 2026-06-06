@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.8`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.9`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -111,7 +111,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.4.8  |  New Project
+SpecGantry v1.4.9  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -129,7 +129,7 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.4.8  |  New Project
+SpecGantry v1.4.9  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -149,7 +149,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.4.8  |  Acme Platform
+SpecGantry v1.4.9  |  Acme Platform
 Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -229,7 +229,7 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.4.8  |  My App
+SpecGantry v1.4.9  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer

@@ -2,7 +2,7 @@
 layout: docs
 title: FAQ
 description: Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.
-prev_page: "Architecture"
+prev_page: "Reference"
 prev_page_url: "/docs/architecture"
 ---
 
@@ -32,7 +32,7 @@ Claude Code manages plugins automatically:
 
 ### Can I use SpecGantry offline?
 
-Yes. SpecGantry runs entirely within Claude Code and your local project directory. No cloud calls, no external APIs. The only network activity is the model invocations themselves (Claude Code's normal operation).
+Yes. SpecGantry runs entirely within Claude Code and your local project directory. The only network activity is the model invocations themselves — Claude Code's normal operation. The one exception is `/update-pricing`, which fetches current rates from Anthropic's pricing page.
 
 ### Do I need git?
 
@@ -41,11 +41,10 @@ Not required. SpecGantry saves state as plain text files in `specs/` — git is 
 - Version history of your architecture and specs
 - Recovery from accidental file deletion
 
-### How do I update SpecGantry?
-
-If you already have SpecGantry installed, update to the latest version using one of these commands:
+### How do I update SpecGantry? {#how-do-i-update-specgantry}
 
 **Option 1 — From the marketplace (recommended):**
+
 ```bash
 claude plugin marketplace update spec-gantry
 ```
@@ -56,13 +55,9 @@ Or from within Claude Code:
 ```
 
 **Option 2 — Direct plugin update:**
+
 ```bash
 claude plugin update spec-gantry@spec-gantry
-```
-
-Or from within Claude Code:
-```
-/plugin update spec-gantry@spec-gantry
 ```
 
 Check your current version anytime:
@@ -72,10 +67,7 @@ claude plugin list
 
 ### What's the difference between `plugin marketplace update` and `plugin update`?
 
-- **`claude plugin marketplace update spec-gantry`** — Updates from the registered marketplace (recommended). Safe, verifies the plugin structure, and keeps you on the latest stable release.
-- **`claude plugin update spec-gantry@spec-gantry`** — Direct plugin update. Also works but bypasses the marketplace verification step.
-
-Both achieve the same result — use whichever is more convenient.
+Both update to the latest version. `marketplace update` is recommended — it verifies the plugin structure as part of the update. Use whichever is more convenient.
 
 ---
 
@@ -83,37 +75,15 @@ Both achieve the same result — use whichever is more convenient.
 
 ### I'm starting a new project. What do I do?
 
-Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you:
-
-```
-[1] Start a new project
-[2] Reverse-engineer existing code
-```
-
-Select `[1]` and answer the initial questions. Takes 5–10 minutes.
+Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer the initial questions. Takes 5–10 minutes.
 
 ### I'm joining a team. What do I do?
 
-Get the project repository from your Team Lead (it should include the `specs/` folder), then:
-
-```bash
-git clone <repo-url>
-cd <project>
-```
-
-Open in Claude Code and run `/spec-gantry`. It detects `specs/project-state.yaml`, sets your role as Developer, and shows you the backlog.
+Get the project repository from your Team Lead (it should include the `specs/` folder), then open it in Claude Code and run `/spec-gantry`. It detects the project, sets your role as Developer, and shows you the backlog.
 
 ### I have an existing codebase. Should I reverse-engineer it?
 
-Yes, if you want SpecGantry's structure (architecture doc, feature backlog, guardrails). Run:
-
-```
-/spec-gantry
-  → Detects source files
-  → [1] Reverse-engineer this codebase
-```
-
-Review the proposed architecture and backlog before confirming. The reverse-engineer agent proposes — you decide.
+Yes, if you want SpecGantry's structure — architecture documentation, a feature backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.
 
 ---
 
@@ -121,31 +91,19 @@ Review the proposed architecture and backlog before confirming. The reverse-engi
 
 ### Can a Developer see the architecture spec?
 
-Yes, read-only. Developers need the architecture spec context to write feature specs that fit the system. They can view it with `[A]rchitecture` in the dashboard. They cannot modify it.
+Yes, read-only. Developers need the architecture context to write feature specs that fit the system. Select `[A]rchitecture` from the dashboard to view it. They cannot modify it.
 
 ### Can a Team Lead build features?
 
-Technically yes — they can edit `.claude/local-state.yaml` to set `role: dev`. SpecGantry doesn't prevent this. But the tool is designed for clear role separation, and mixing roles loses many of the process guarantees.
+SpecGantry is designed for clear role separation — Team Leads own project-level phases, developers own feature-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.
 
 ### What if the Team Lead leaves?
 
-Another person becomes Team Lead by editing `.claude/local-state.yaml`:
-
-```yaml
-role: tl
-```
-
-Run `/spec-gantry`. They'll see the full project dashboard with all pending approvals and can continue managing the project.
+Another person can take over as Team Lead by updating their local role setting and running `/spec-gantry`. They'll see the full project dashboard with all pending items and can continue managing the project.
 
 ### Can multiple developers work in parallel?
 
-Yes. Each developer:
-1. Has their own `.claude/local-state.yaml` (local to their machine, not committed)
-2. Works on different features (each feature has its own directory)
-3. Commits spec files to their feature branch
-4. Pulls the latest `project-state.yaml` from git for backlog updates
-
-No conflicts because each feature lives under `specs/features/FEATURE-XXX/` — separate directories, no shared files during active development.
+Yes. Each developer works on different features — features are isolated from each other in separate directories. Each developer has their own local role settings that stay on their machine. Spec files are committed per-feature, so parallel work doesn't conflict.
 
 ---
 
@@ -153,13 +111,11 @@ No conflicts because each feature lives under `specs/features/FEATURE-XXX/` — 
 
 ### Can I skip ideation?
 
-No. Ideation validates the project problem and captures constraints before any architecture decision is made. It's the foundation the architecture agent builds on. Without it, the architecture session has no project context.
-
-(You can force-skip by editing YAML directly, but you'll lose the guided process and the feasibility assessment.)
+No. Ideation validates the project problem and captures constraints before any architecture decisions are made. It's the foundation the architecture phase builds on. Without a completed ideation, the architecture session has no project context to work from.
 
 ### Can I skip the feature spec?
 
-No. This is the core gate that SpecGantry exists to enforce. No feature spec = no build. The orchestrator reads the filesystem — the spec file must exist on disk with all six sections, zero guardrail violations, and a developer self-review confirmation.
+No. The feature spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete, has zero guardrail violations, and has been self-reviewed before development can begin.
 
 ### How long does each phase take?
 
@@ -173,32 +129,28 @@ No. This is the core gate that SpecGantry exists to enforce. No feature spec = n
 
 ### Can multiple phases overlap?
 
-Feature-level phases can run in parallel across different features, even while the Team Lead is finalizing architecture details. But within a feature:
-- Spec must be complete before Build
-- Build (passing tests) must be complete before Deploy
-
-And project-level phases are strictly sequential — Ideation before Architecture.
+Feature-level phases run in parallel across different features. Multiple developers can be in different phases on different features simultaneously. Within a single feature, phases are sequential — spec before build, build before deploy. Project-level phases are also sequential — ideation before architecture.
 
 ### What happens after all features are deployed?
 
-SpecGantry enters project-complete mode and prompts you to describe what you want to work on next. The orchestrator classifies your description — bug, enhancement, new feature, or project change — and confirms before creating anything. See [How It Works → Post-Completion](/docs/how-it-works#post-completion-classify-and-route) for the full routing logic.
+SpecGantry enters project-complete mode and asks what you want to work on next. Describe a bug, an improvement, a new capability, or a broader change. SpecGantry classifies it, confirms with you, and routes it to the right workflow. See [How It Works → Post-Completion](/docs/how-it-works#post-completion-classify-and-route) for details.
 
 ### What is a versioned feature (FEATURE-NNN-v2)?
 
-When you describe an enhancement to a completed feature, SpecGantry archives the original instead of overwriting it. The original feature's spec and dev artifacts are renamed to `*-v1` variants, and a new `FEATURE-NNN-v2/` directory is created with a full spec cycle. The dashboard shows the archived original collapsed under the active version. Only active (non-superseded) features count toward the progress total.
+When you describe an enhancement to a completed feature, SpecGantry archives the original and creates a new version with a full spec cycle. The dashboard shows the active version with the archived original collapsed underneath. Only active features count toward the progress total.
 
 ### What's a "guardrail violation"?
 
-A guardrail is a rule from `architecture-spec.md` that applies to all features. Examples:
+A guardrail is a rule from the architecture that applies to all features. Examples:
 - "All API endpoints must use JWT authentication"
 - "No direct database access from the UI layer"
-- "All external API calls must have a timeout ≤ 5 seconds"
+- "All external API calls must have a timeout of 5 seconds or less"
 
-During Feature Spec, the feature-spec agent checks every guardrail against the spec content. If a spec says "this endpoint is publicly accessible with no auth," that violates the JWT guardrail. The violation is written to the spec file and the gate fails until resolved.
+During the Feature Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one — for example, defining a public endpoint with no auth — the violation is written to the spec file and the gate fails until it's resolved.
 
-Violations cannot be bypassed. The only options are:
-1. Revise the spec to comply
-2. Get the Team Lead to change the guardrail in `architecture-spec.md` (which affects all future features)
+Options to resolve a violation:
+1. Revise the spec to comply with the guardrail
+2. Ask the Team Lead to update the guardrail in the architecture spec (which affects all future features)
 
 ---
 
@@ -206,24 +158,24 @@ Violations cannot be bypassed. The only options are:
 
 ### What makes a good feature spec?
 
-A spec that can be handed to any developer and result in the same implementation. The spec agent guides you through six sections:
+A spec clear enough that any developer could pick it up and build the same thing. SpecGantry guides you through six sections:
 
-1. **Scope** — What it does and explicitly doesn't do
+1. **Scope** — What it does and explicitly what it doesn't do
 2. **API / Interface Contract** — Every endpoint, function, or event with types
 3. **Data** — What data the feature owns, reads, and writes
 4. **Implementation Plan** — Ordered tasks, each achievable in one session
 5. **Test Plan** — Unit tests, integration tests, edge cases
-6. **Non-Functional Considerations** — Performance, security, env vars for all credentials
+6. **Non-Functional Considerations** — Performance, security, env var names for all credentials
 
 ### Does the Team Lead have to review every spec?
 
-The Team Lead doesn't approve — the **developer self-reviews**. The developer reads the completed spec, confirms they can build it as written, and marks it reviewed (`y`). This triggers the gate check.
+The developer self-reviews. After completing all six sections, the developer confirms they can build it as written — that's the final gate before development begins.
 
-The Team Lead sees specs marked as in-progress on their dashboard and can review them asynchronously. They can flag concerns by resetting the `spec_reviewed` flag, which returns the feature to the developer.
+The Team Lead sees in-progress specs on their dashboard and can review them asynchronously. If they spot a concern, they can return the spec to the developer for revision.
 
 ### Can I edit a spec after starting to build?
 
-Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. Note that editing the spec resets the `spec_reviewed` flag — you must re-review and re-confirm before building can resume. This is intentional: the spec and the implementation should always agree.
+Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. Editing resets the self-review confirmation — you must re-review before building can resume. The spec and the implementation should always agree.
 
 ---
 
@@ -231,28 +183,19 @@ Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. 
 
 ### What happens if I close Claude Code mid-session?
 
-All state is written to disk after every question. Closing Claude Code at any point loses nothing. Next `/spec-gantry` picks up at the next unanswered question.
+All progress is saved after every question. Closing Claude Code at any point loses nothing. The next `/spec-gantry` picks up at the next unanswered question.
 
 ### Can I have multiple features in progress?
 
-Yes. Set `current_feature` in `.claude/local-state.yaml` to switch between features. The dashboard shows all your features and their status. You can have one in Build while starting the spec on another.
+Yes. You can switch between features from the dashboard. You might have one feature in Build while starting the spec on another.
 
 ### How do I restart a phase?
 
-Edit the relevant `state.yaml` and set the phase gate back to `false`:
-
-```yaml
-# specs/features/FEATURE-001/state.yaml
-phase_gates:
-  feature_spec_complete: false   ← set to false
-  spec_reviewed: false
-```
-
-Next `/spec-gantry` will offer to resume that phase.
+Contact your Team Lead or use `/spec-gantry` and select the feature to revisit a completed phase. Phase state can be reset through the project menu when appropriate.
 
 ### Can I move a feature back to pending?
 
-Yes, from the spec phase: in the feature-spec agent, select `x` (Abandon) to return the feature to the backlog with `status: pending`, unassigned. From later phases, edit the state file directly.
+Yes — during the spec phase, select Abandon to return the feature to the backlog unassigned. From later phases, the Team Lead can reassign or defer features through the `[B]acklog` menu.
 
 ---
 
@@ -260,72 +203,64 @@ Yes, from the spec phase: in the feature-spec agent, select `x` (Abandon) to ret
 
 ### How does cost tracking work?
 
-SpecGantry uses a `SubagentStop` hook that Claude Code fires automatically whenever any SpecGantry agent finishes — no LLM cooperation required. The hook reads the agent's session transcript from Claude Code's JSONL files and extracts exact token counts from the API response data. Costs are computed immediately using live pricing rates and stored in `specs/cost-log.json`.
+SpecGantry tracks token usage automatically at the end of every agent session — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.json` alongside your other project files and committed to git.
 
-This means token counts are real API counts — not character-based estimates. The dashboard shows per-feature cost inline, and `/track-cost` gives the full breakdown.
+Run `/track-cost` to see the full breakdown by phase and feature.
 
 ### Why are my costs higher than expected?
 
-The `/track-cost` report shows Input, Output, Cache Write, and Cache Read costs in separate columns — check those columns first. Cache write and cache read costs typically dominate for agents with large context windows, and if they were collapsed into a single Total column in older versions they could look surprising.
+Run `/track-cost` and look at the Cache Write and Cache Read columns — these often account for the majority of cost when agents are working through large codebases or long conversations.
 
-Common causes for high totals:
-- **Large context windows** — each agent turn re-sends the full conversation history through the cache. Cache read tokens are cheap (10% of base input price) but add up at millions of tokens per run.
-- **Large codebase for reverse-engineer** — the agent reads many files, all passed as context
+Common reasons totals are higher than expected:
+- **Large codebase** — reverse-engineering or building against a large existing project means more context per turn
+- **Long conversations** — agents working through complex features accumulate context over many turns
+- **Cache writes** — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper
 - **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
-- **Cache creation** — the first call in a session pays a 1.25× premium to write the prompt cache; subsequent calls are cheaper
 
-The ideation agent uses `claude-haiku-4-5` (cheaper). Architecture, spec, and dev agents use `claude-sonnet-4-6`.
+The ideation agent uses a lighter, faster model. Architecture, spec, and development agents use a more capable model that costs more per token.
 
 ### How do I refresh the pricing rates?
 
-Run `/update-pricing`. The MCP server fetches current rates from `platform.claude.com/docs/en/about-claude/pricing` and updates the local cache. If the page is unreachable, it shows the current cached rates and their age.
+Run `/update-pricing`. SpecGantry fetches the latest rates from Anthropic's pricing page and updates its local cache. If the page is temporarily unavailable, it shows the current cached rates and their age so you can see when they were last confirmed.
 
 ### Can I export a cost report?
 
-Yes — `specs/cost-log.json` is plain JSON committed to git. It contains one entry per agent invocation with full token counts and costs. Any tool that can read JSON can aggregate or chart it.
+Yes — `specs/cost-log.json` is plain JSON committed to git. It contains one entry per agent session with full token counts and cost by type. Any tool that reads JSON can aggregate or visualize it.
 
 ---
 
 ## Troubleshooting
 
-### Cost not being recorded after agent runs
+### Costs not being recorded after agent runs {#costs-not-being-recorded}
 
-If `/track-cost` shows no data after running ideation, architecture, or a feature phase, check the MCP server log:
+If `/track-cost` shows no data after completing a phase:
 
-```bash
-tail -f logs/spec-gantry-costs.log
-```
-
-Common causes:
-- **`logs/` directory is empty or missing** — the MCP server didn't start. Check that Node.js is installed (`node --version`) and the plugin is up to date.
-- **`Could not find subagent for toolUseId`** — the orchestrator called the MCP tool but the `.meta.json` file wasn't found. This can happen if the session directory structure differs from what was expected. Enable debug logging to investigate: set `SPEC_GANTRY_LOG_LEVEL=debug` in `.claude/settings.json`.
-- **No log file at all** — the MCP server may not be registered. Reinstall the plugin:
-  ```
-  claude plugin uninstall spec-gantry
-  claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-  claude plugin install spec-gantry
-  ```
+1. **Update the plugin** — cost tracking improvements ship regularly:
+   ```bash
+   claude plugin marketplace update spec-gantry
+   ```
+2. **Check that Node.js is installed** — cost tracking requires Node.js to be available:
+   ```bash
+   node --version
+   ```
+3. **Reinstall if needed:**
+   ```bash
+   claude plugin uninstall spec-gantry
+   claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+   claude plugin install spec-gantry
+   ```
 
 ### `/spec-gantry` shows wrong state
 
-Re-run it. The dashboard re-reads all state on every invocation — most inconsistencies self-correct. If the problem persists, inspect the YAML files directly.
+Re-run it. The dashboard re-reads all state from disk on every invocation — most inconsistencies self-correct. If the problem persists, check whether the `specs/` files are as expected and try again.
 
 ### Feature is stuck — can't advance
 
-Check the gate failure message. It will list exactly which conditions failed:
-
-```
-✗ Gate check failed: feature_spec → build
-  spec_reviewed: false  →  resolve: self-review the completed spec
-```
-
-Address each failed condition. Run `/spec-gantry` again.
+Read the gate failure message in the dashboard. It will list exactly which conditions are unmet and what action to take to resolve each one. Address each item and run `/spec-gantry` again.
 
 ### Spec won't pass guardrail check
 
-The spec contains a `VIOLATION:` marker. Read the violation message — it will name the specific guardrail and what needs to change. Options:
-1. Revise the spec section to comply with the guardrail
-2. Request a guardrail exception — Team Lead must update `architecture-spec.md` first
+The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or ask your Team Lead to update the architecture guardrail.
 
 ### Plugin stopped working after a Claude Code update
 
@@ -343,24 +278,20 @@ claude plugin install spec-gantry
 
 ### Can I version my specs?
 
-Yes. The `specs/` folder is plain text — commit it to git. Use `git diff`, `git log`, and `git blame` to track spec evolution. Spec review history is implicit in commit history.
+Yes — `specs/` is plain text committed to git. Use standard git tools to track spec evolution, compare versions, and understand how decisions changed over time.
 
-### Can I export a cost report?
+### Can I extend SpecGantry with custom agents or guardrails?
 
-SpecGantry doesn't have built-in cost tracking. Use the Anthropic console to monitor your API usage by project or time range.
-
-### Can I extend SpecGantry with custom agents?
-
-Yes. See [Architecture → Extension Points](/docs/architecture#extension-points) for details.
+Yes. See [Reference → Extension Points](/docs/architecture#extension-points) for details on adding custom guardrails, agents, and skills.
 
 ### Can I use SpecGantry with a different AI assistant?
 
-SpecGantry is designed specifically for Claude Code — it uses Claude Code's skill and agent system. It won't work with other AI tools as-is.
+SpecGantry is designed specifically for Claude Code. It uses Claude Code's skill and agent system and won't work with other AI tools.
 
 ---
 
 ## Getting Help
 
-- **Bug reports:** [GitHub Issues](https://github.com/specgantry/specgantry.github.io/issues) — include your `specs/` directory (anonymize sensitive content) and what you were doing when the problem occurred
+- **Bug reports:** [GitHub Issues](https://github.com/specgantry/specgantry.github.io/issues)
 - **Feature requests:** [GitHub Discussions](https://github.com/specgantry/specgantry.github.io/discussions)
 - **Contributing:** See [CONTRIBUTING.md](https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md)

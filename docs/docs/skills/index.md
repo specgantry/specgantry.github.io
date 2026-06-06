@@ -1,16 +1,16 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 6 skills and 8 agents — what they do, when to use them, and how they interact.
+description: All 6 skills — what they do, when to use them, and how they connect to the pipeline.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
-next_page: "Architecture"
+next_page: "Reference"
 next_page_url: "/docs/architecture"
 ---
 
 # SpecGantry Skills Guide
 
-All 6 skills and their associated agents — what they do, when to invoke them, and how they connect to the pipeline.
+All 6 skills — what they do, when to invoke them, and how they connect to the pipeline.
 
 ---
 
@@ -21,9 +21,9 @@ All 6 skills and their associated agents — what they do, when to invoke them, 
 | **spec-gantry** | `/spec-gantry` | Both | Main dashboard and entry point |
 | **start-project** | `/start-project` | Team Lead | New project initialization |
 | **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
-| **bugfix** | `/bugfix` | Developer | Log and manage bugs |
-| **track-cost** | `/track-cost` | Both | View real token counts and costs |
-| **update-pricing** | `/update-pricing` | Both | Refresh pricing rates from anthropic.com |
+| **bugfix** | `/bugfix` | Developer | Fast-track a production bug fix |
+| **track-cost** | `/track-cost` | Both | View token usage and cost breakdown |
+| **update-pricing** | `/update-pricing` | Both | Refresh pricing rates |
 
 ---
 
@@ -43,21 +43,13 @@ All 6 skills and their associated agents — what they do, when to invoke them, 
 
 ## 1. spec-gantry {#spec-gantry}
 
-**The main dashboard and your only entry point for daily work.**
+**The main dashboard and your entry point for all daily work.**
 
 ```
 /spec-gantry
 ```
 
-### What It Does
-
-Every invocation:
-1. Reads `.claude/local-state.yaml` — your role and current feature
-2. Reads `specs/project-state.yaml` — project metadata, backlog, phase gates
-3. Reads all `specs/features/*/state.yaml` — feature progress
-4. Renders the full dashboard
-5. Presents contextual next actions
-6. Accepts menu commands
+Run this at the start of every session. SpecGantry reads your project state, determines where you are in the pipeline, and shows you exactly what to do next.
 
 ### The Dashboard
 
@@ -90,47 +82,28 @@ Every invocation:
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]rchitecture` | Both (read-only for Dev) | View the full architecture spec and open questions |
-| `[B]acklog` | Team Lead only | Full backlog management — prioritize, assign, defer, reassign |
-| `[C]ost` | Both | Show cost breakdown from `specs/cost-log.json` |
-| `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project name/vision |
+| `[A]rchitecture` | Both | View the architecture spec and any open design questions |
+| `[B]acklog` | Team Lead only | Manage the backlog — prioritize, assign, defer, reassign |
+| `[C]ost` | Both | Show cost breakdown for the project |
+| `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project details |
 | `e[X]it` | Both | Exit SpecGantry, return to normal Claude Code |
-
-### Automatic Invocation
-
-`/spec-gantry` calls other skills automatically based on state:
-- Detects no project → runs `/start-project`
-- Detects source files but no spec → offers `/reverse-engineer`
-- Detects an existing project → sets role and shows dashboard
 
 ### Session Resume
 
-Because all state is on disk, every `/spec-gantry` invocation is idempotent. Run it at the start of every session — it picks up exactly where you left off.
+Because all state is on disk, every `/spec-gantry` invocation picks up exactly where you left off. Run it at the start of every session — no manual state management needed.
 
 ### When All Features Are Deployed
 
-When every active feature in the backlog reaches `deployment_status: complete`, SpecGantry enters project-complete mode:
-
-```
-  🎉 All features are deployed! The project backlog is complete.
-
-  What would you like to work on next?
-  Describe a bug, an improvement, a new feature, or a larger project change.
-  (Type "nothing for now" to exit.)
-
-  >
-```
-
-The orchestrator classifies whatever you describe into one of four types and confirms with you before creating any files:
+When every active feature reaches completion, SpecGantry prompts you to describe what's next. Whatever you describe — a bug, an improvement, a new capability, or a broader change — SpecGantry classifies it and confirms before creating anything:
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that worked is now broken — restores prior behaviour |
+| `bug_fix` | Something that worked is now broken — goes straight to development |
 | `enhancement` | An existing feature needs to do more or work differently |
 | `new_feature` | A net-new capability with no backlog entry |
 | `project_change` | Cross-cutting: infrastructure, auth, data model, multi-feature scope |
 
-On confirmation, the appropriate sub-flow runs: bugs go straight to development (skipping spec), enhancements create a versioned `FEATURE-NNN-v2`, new features may trigger an architecture amendment, and project changes always go through ideation and architecture first.
+On confirmation, the appropriate flow runs automatically.
 
 ---
 
@@ -146,16 +119,7 @@ On confirmation, the appropriate sub-flow runs: bugs go straight to development 
 
 ### What It Does
 
-Guides you through three prompts:
-- **Project name** — short, used in dashboard headers (e.g. "Acme API Platform")
-- **Project vision** — 3–5 sentences: what problem it solves, who the users are, what success looks like
-- **Release label** — what you're calling the first release (default: v1.0)
-
-Creates:
-- `specs/project-state.yaml` — project metadata, empty phase gates, and empty backlog
-- `.claude/local-state.yaml` — your role (`tl`) and session state (local only, gitignored)
-
-Then hands off to the ideation agent automatically.
+Guides you through three quick prompts — project name, a brief vision (what it solves, who it's for, what success looks like), and a release label — then hands off to the ideation phase automatically.
 
 ### Example Interaction
 
@@ -171,23 +135,21 @@ Then hands off to the ideation agent automatically.
   > v1.0
 
   ✓ Project initialised: Acme Platform
-  ✓ local-state.yaml written  (role: Team Lead/Architect — gitignored)
-  ✓ project-state.yaml written  (commit this to git)
 
   Starting ideation phase...
 ```
 
 ### When to Use It Directly
 
-- Manually, on a fresh project (though `/spec-gantry` calls it automatically)
-- After deleting `specs/` to start a project over
-- To initialize a second project in an advanced setup
+- Starting a brand new project
+- After deleting specs to start a project over
+- Initializing a second project in an advanced setup
 
 ---
 
 ## 3. reverse-engineer {#reverse-engineer}
 
-**Analyze existing code and generate a project spec.**
+**Bring SpecGantry discipline to an existing codebase.**
 
 ```
 /reverse-engineer
@@ -197,17 +159,9 @@ Then hands off to the ideation agent automatically.
 
 ### What It Does
 
-Scans:
-- Directory structure and file layout
-- File types, languages, and frameworks
-- Package dependencies
-- Database schemas (if detectable)
-- API endpoints (REST, GraphQL, etc.)
+Analyzes your existing code — structure, languages, frameworks, dependencies, database schemas, API endpoints — and proposes a SpecGantry project structure: an architecture spec, domain taxonomy, and feature backlog.
 
-Proposes:
-- Architecture spec (`specs/architecture-spec.md`)
-- Domain taxonomy
-- Feature backlog
+The agent proposes. You review and decide before anything is written.
 
 ### Example Output
 
@@ -235,16 +189,16 @@ Review the proposed architecture before confirming? [Y/n]
 
 ### When to Use It
 
-- Joining an existing project that has no SpecGantry structure
+- Joining a project that has no SpecGantry structure
 - Documenting undocumented code before a handoff
 - Adding SpecGantry discipline to a project already in production
-- Onboarding new team members by generating a structured spec
+- Onboarding new team members with a structured architecture reference
 
 ---
 
 ## 4. bugfix {#bugfix}
 
-**Emergency fast-track for critical bugs — skips the normal pipeline and goes straight to development.**
+**Emergency fast-track for production bugs — straight to development.**
 
 ```
 /bugfix
@@ -252,11 +206,9 @@ Review the proposed architecture before confirming? [Y/n]
 
 ### What It Does
 
-`/bugfix` is an emergency path for production bugs that cannot wait for the normal feature spec cycle. It bypasses ideation, architecture, and spec review — while still enforcing the development gate (tests must pass before deployment).
+`/bugfix` is for production issues that can't wait for the normal spec cycle. It skips the ideation and feature spec phases and goes directly to development — while still requiring tests to pass before deployment.
 
-1. You describe the bug (1–2 sentences)
-2. SpecGantry creates a `BUGFIX-NNN` directory with a pre-approved spec and sets it as your current feature
-3. The dev agent is invoked immediately — no spec phase to complete
+Describe the bug in one or two sentences. SpecGantry creates a tracked bug fix entry and begins development immediately.
 
 ```
   Describe the bug (1–2 sentences):
@@ -265,23 +217,23 @@ Review the proposed architecture before confirming? [Y/n]
   Bug: > The auth middleware returns 200 instead of 401 for expired tokens
 
   ✓ Bug fix fast-track activated: BUGFIX-001
-  ✓ Hot path — architecture guardrails apply; feature spec gate bypassed
+  ✓ Architecture guardrails apply
   ✓ Tests required before deployment
 
   Analysing codebase...
 ```
 
-Bugfix entries use the ID format `BUGFIX-NNN` and are separate from the main feature backlog.
+Architecture guardrails still apply throughout the fix — bugs don't get a bypass on code quality.
 
 ### Graduating Bugs to Features
 
-Sometimes a bug reveals that something was never properly spec'd. The Team Lead can use `[P]roject → Graduate bugfix` to promote a BUGFIX entry to a full FEATURE with its own spec phase, domain assignment, and backlog position.
+Sometimes a bug reveals that something was never properly designed. The Team Lead can promote a bug fix to a full feature with its own spec phase, domain assignment, and backlog position.
 
 ---
 
 ## 5. track-cost {#track-cost}
 
-**View real token counts and costs for every agent invocation.**
+**See exactly what your AI development sessions cost, by phase and feature.**
 
 ```
 /track-cost
@@ -291,9 +243,9 @@ Or select `[C]ost` from the `/spec-gantry` menu.
 
 ### What It Does
 
-SpecGantry's `SubagentStop` hook captures exact token counts from Claude Code's session transcripts automatically when any SpecGantry agent finishes. This skill reads the stored data from `specs/cost-log.json` and renders a breakdown by phase, feature, and total.
+SpecGantry tracks the real cost of every agent session automatically. This skill reads that data and presents a complete breakdown — by phase, by feature, with each cost component in its own column.
 
-Unlike character-based estimates, token counts here are the actual values returned by the Anthropic API — including cache write and cache read tokens, which are billed at different rates. The report shows all four cost components in separate columns so you can see exactly where spend is coming from.
+Token counts are exact API values, not estimates. All four token categories are shown separately — input, output, cache write, and cache read — because each tells a different story. Cache costs in particular can be significant for agents working through large codebases or long conversations, and they're easy to miss if collapsed into a single total.
 
 ### Example Output
 
@@ -327,23 +279,15 @@ Unlike character-based estimates, token counts here are the actual values return
 Rates last updated: 2026-06-06T17:39:51.291Z
 ```
 
-Cache write and cache read costs routinely dominate the total for long-running agents with large context windows. The four-column breakdown makes this visible rather than hiding it in the Total column.
+### If No Data Appears
 
-### Debugging cost collection
-
-If no data appears, check the MCP server log in your project directory:
-
-```bash
-tail -f logs/spec-gantry-costs.log
-```
-
-For full detail on what the server is doing, set `SPEC_GANTRY_LOG_LEVEL=debug` in `.claude/settings.json`.
+Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the troubleshooting section in the [FAQ](/docs/faq#costs-not-being-recorded).
 
 ---
 
 ## 6. update-pricing {#update-pricing}
 
-**Refresh pricing rates from `platform.claude.com/docs/en/about-claude/pricing`.**
+**Make sure your cost calculations use current rates.**
 
 ```
 /update-pricing
@@ -351,12 +295,7 @@ For full detail on what the server is doing, set `SPEC_GANTRY_LOG_LEVEL=debug` i
 
 ### What It Does
 
-The MCP server fetches current Anthropic rates at startup and caches them in the plugin directory. This skill forces a synchronous refresh and shows you the result.
-
-Run it when:
-- Anthropic's pricing has changed
-- A cost entry shows `pricing_source: fallback` (live fetch failed previously)
-- You want to verify the rates being used
+SpecGantry maintains a local cache of Anthropic's current pricing rates. This skill fetches the latest rates and updates that cache. Run it when pricing has changed or when you want to confirm the rates in use.
 
 ### Example Output
 
@@ -378,42 +317,7 @@ Run it when:
   Cost entries already recorded are not retroactively updated.
 ```
 
-### When the fetch fails
-
-If the pricing page is unreachable or its format has changed, the skill shows the current cached rates and their age:
-
-```
-✗ Pricing update failed: Could not parse pricing from page
-
-  The existing cached rates are still in use:
-
-  Last updated: 2026-06-06T17:39:51Z
-
-  Model                          Input / 1M tokens    Output / 1M tokens
-  ...
-
-  To retry, run /update-pricing again when you have network access.
-  To verify current rates manually: https://platform.claude.com/docs/en/about-claude/pricing
-```
-
----
-
-## The Agents
-
-Skills call agents to do the actual work. Agents are invoked by the orchestrator — you never call them directly.
-
-| Agent | Invoked By | Purpose |
-|-------|-----------|---------|
-| **orchestrator** | Skills | Routes phases, enforces gates, records cost after every agent invocation |
-| **ideation-agent** | orchestrator | Guides project clarification, produces feasibility assessment |
-| **architecture-agent** | orchestrator | Designs system, produces guardrails and feature backlog |
-| **reverse-engineer-agent** | orchestrator | Analyses existing codebase, synthesises architecture spec and feature backlog |
-| **feature-spec-agent** | orchestrator | Guides 6-section spec, checks guardrail compliance |
-| **dev-agent** | orchestrator | Implements feature from spec, writes tests |
-| **test-agent** | orchestrator | Runs test suite, retries on failure to detect flaky tests, sets `overall_status` |
-| **deployment-agent** | orchestrator | Validates tests + dependencies, generates deploy.sh, marks feature complete |
-
-The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent. Cost recording happens automatically via a `SubagentStop` hook — the hook fires when each agent completes and reads exact token counts from Claude Code's session transcripts.
+If the pricing page is temporarily unavailable, SpecGantry continues using the most recently cached rates and shows you when they were last updated. Re-run `/update-pricing` when connectivity is restored.
 
 ---
 
@@ -423,17 +327,17 @@ The orchestrator is the sole choke point for all phase transitions. It verifies 
 
 ```
 Team Lead:
-  /spec-gantry → [1] Start new project     (/start-project)
-              → Answer ideation questions   (ideation-agent)
-              → Define architecture         (architecture-agent)
+  /spec-gantry → [1] Start new project
+              → Answer ideation questions
+              → Define architecture
               → Commit specs/ to git
 
 Developers:
   pull origin main
-  /spec-gantry → detects project-state.yaml → role: dev
+  /spec-gantry → detects project → role: developer
               → [1] Pick up FEATURE-XXX
-              → Write feature spec          (feature-spec-agent)
-              → Build                       (dev-agent + test-agent)
+              → Write feature spec
+              → Build and test
 ```
 
 ### Existing Codebase
@@ -441,22 +345,21 @@ Developers:
 ```
 Team Lead:
   /spec-gantry → detects source files
-              → [1] Reverse-engineer        (/reverse-engineer)
+              → [1] Reverse-engineer this codebase
               → Review proposed architecture
               → Refine and confirm
               → Commit specs/ to git
 ```
 
-### Bug Found During Development
+### Bug Found in Production
 
 ```
 Developer:
-  /bugfix → [1] Log as bugfix              (BUGFIX-003 created)
-          → Continue feature development
+  /bugfix → describe the issue → development begins immediately
 
-Team Lead:
+Team Lead (if needed):
   /spec-gantry → [P]roject → Graduate bugfix
-              → BUGFIX-003 becomes FEATURE-009
+              → Bug fix promoted to full feature with spec cycle
 ```
 
 ---
@@ -467,8 +370,8 @@ Team Lead:
   <a href="/docs/architecture" class="next-step-card">
     <div class="next-step-icon">🏗️</div>
     <div>
-      <strong>Technical Architecture</strong>
-      <span>State machine, data model, design decisions, and how to extend SpecGantry.</span>
+      <strong>Reference</strong>
+      <span>File structure, security model, design principles, and how to extend SpecGantry.</span>
     </div>
   </a>
   <a href="/docs/faq" class="next-step-card">

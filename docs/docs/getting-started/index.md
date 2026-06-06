@@ -33,11 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will:
-- Clone the SpecGantry repository
-- Verify the plugin structure
-- Register 6 skills and 8 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.4.4`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.4.5`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -116,7 +112,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.4.4 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.4.5 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]
@@ -204,7 +200,7 @@ You're set as Developer automatically. Pick a feature and start writing the spec
 
 ## The Directory Structure
 
-After SpecGantry runs, your project contains:
+After SpecGantry runs, your project contains a `specs/` directory to commit to git:
 
 ```
 project-root/
@@ -212,21 +208,18 @@ project-root/
 │   ├── project-state.yaml          # Project metadata and backlog
 │   ├── ideation-artifact.md        # Project vision & validated assumptions
 │   ├── architecture-spec.md        # Tech stack, system design, guardrails
+│   ├── cost-log.json               # Token usage and cost per agent session
 │   └── features/
 │       ├── FEATURE-001/
-│       │   ├── state.yaml          # Phase gates and metrics
 │       │   ├── feature-spec.md     # Feature specification (6 sections)
-│       │   ├── dev-artifact.yaml   # Implementation notes, test results
 │       │   ├── deploy.sh           # Generated deployment script
 │       │   └── deploy-artifact.md  # Deployment validation summary
 │       └── FEATURE-002/
 │           └── ...
-└── .claude/
-    └── local-state.yaml            # Your role & current feature (local only)
 ```
 
-<div class="warning">
-  <strong>Don't edit these files manually</strong> unless you're recovering from a conflict. SpecGantry manages all state. Manual edits outside the pipeline may cause gate failures or data loss.
+<div class="info">
+  <strong>Commit <code>specs/</code> to git.</strong> This is how your team shares project decisions, tracks feature progress, and maintains a history of architecture choices. Each developer's local role settings stay on their own machine and are not committed.
 </div>
 
 ---
@@ -282,7 +275,7 @@ Yes. Use `/reverse-engineer` to generate an architecture spec from your existing
 SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. Many solo developers find that the ideation questions alone clarify their thinking significantly.
 
 **"How much does it cost to run SpecGantry?"**  
-It depends on model choice and project size. Full ideation + architecture runs about $0.50–$2.00 with Sonnet. You can monitor usage in the Anthropic console.
+It depends on project size and complexity. A complete ideation + architecture session typically runs $0.50–$2.00. Run `/track-cost` at any point for a live breakdown by phase and feature.
 
 ---
 

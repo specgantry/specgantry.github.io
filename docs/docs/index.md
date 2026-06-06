@@ -9,7 +9,7 @@ next_page_url: "/docs/getting-started"
 
 # SpecGantry Documentation
 
-**AI-assisted SDLC pipeline for Claude Code.** Enforces structured development from ideation through deployment — specs before code, architecture as guardrails, role-based ownership, and real token cost visibility.
+**AI-assisted SDLC pipeline for Claude Code.** Bring structure to your AI development workflow — from first idea through deployment — with specs before code, architectural guardrails, role-based ownership, and real cost visibility.
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -19,23 +19,23 @@ next_page_url: "/docs/getting-started"
 
 ## What Is SpecGantry?
 
-SpecGantry is a Claude Code plugin that wraps your AI coding workflow in a structured SDLC pipeline. It enforces the process your team already knows it should follow — but usually skips under pressure.
+SpecGantry is a Claude Code plugin that guides your team through a structured development process. Instead of jumping straight into code, it ensures every feature is grounded in a validated idea, a thoughtful architecture, and a precise spec — before a single line is written.
 
-The core idea is simple: **no code without a spec, no spec without an architecture**. Every phase transition is gated by the filesystem. Claude Code cannot proceed without the previous artifact existing on disk.
+The result: less rework, fewer surprises, and a codebase that reflects deliberate decisions rather than accumulated shortcuts.
 
 ```
 PROJECT LEVEL (Team Lead/Architect)
-  1. Ideation        → Clarify goals, validate the problem
-  2. Architecture    → Define tech stack, system design, guardrails
+  1. Ideation        → Validate the problem, surface assumptions
+  2. Architecture    → Define the system and set development guardrails
 
   ── Commit → Team joins ──
 
 FEATURE LEVEL (Developers)
-  3. Feature Spec    → Write precise, implementation-ready spec
-  4. Build           → Implement against the spec, write tests
-  5. Deploy          → Verify and release to production
+  3. Feature Spec    → Write a precise, implementation-ready spec
+  4. Build           → Implement against the spec, run tests
+  5. Deploy          → Verify and release
 
-Each phase has gates. You cannot proceed without completing the previous one.
+Each phase builds on the last. You move forward when the work is done — not before.
 ```
 
 ---
@@ -54,21 +54,21 @@ Each phase has gates. You cannot proceed without completing the previous one.
     <div class="doc-nav-icon">⚙️</div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">Detailed breakdown of all five phases, roles, gates, and cost tracking.</div>
+      <div class="doc-nav-desc">A complete walkthrough of all five phases, roles, and how SpecGantry keeps your team aligned.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon">🛠️</div>
     <div>
       <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">All 6 skills and 8 agents — what they do, when to use them, how they interact.</div>
+      <div class="doc-nav-desc">Every skill command — what it does, when to use it, and what it produces.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
     <div class="doc-nav-icon">🏗️</div>
     <div>
-      <div class="doc-nav-title">Architecture</div>
-      <div class="doc-nav-desc">Design philosophy, state machine, data model, and extension points.</div>
+      <div class="doc-nav-title">Reference</div>
+      <div class="doc-nav-desc">Design principles, file structure, security model, and how to extend SpecGantry.</div>
     </div>
   </a>
   <a href="/docs/faq" class="doc-nav-card">
@@ -119,22 +119,21 @@ See [FAQ → Installation](/docs/faq#how-do-i-update-specgantry) for more update
 
 ### Phase Gates
 
-Every phase transition in SpecGantry requires a gate check. Gates read two sources of truth:
-1. The phase flag in `state.yaml` (set by the agent on completion)
-2. The artifact file on disk (e.g. `ideation-artifact.md`, `feature-spec.md`)
+Every phase transition requires the previous phase to be fully complete — both the decisions you made and the documents they produced. SpecGantry verifies completeness automatically before moving forward. Partial work doesn't advance the pipeline.
 
-Both must agree. An agent that sets a flag without producing the artifact fails the gate. An artifact without a flag fails the gate. This prevents partial or stale state from advancing the pipeline.
+This isn't bureaucracy — it's the thing that prevents half-finished specs from becoming hard-to-change code.
 
 ### Architecture as Guardrails
 
-When the Team Lead defines the architecture, every decision becomes an enforceable guardrail. During the Feature Spec phase, the feature-spec agent reads `architecture-spec.md` and checks every API contract, data model reference, and layer boundary. Violations are hard blockers — they prevent the spec from completing until resolved.
+When the Team Lead defines the architecture, every decision becomes a rule the whole team builds to. During the Feature Spec phase, SpecGantry checks every spec against those rules before development can begin. If a spec contradicts the architecture — wrong auth pattern, wrong data ownership, wrong layer access — it fails with a specific explanation before any code is written.
 
-### YAML-Based State
+### State That Survives Interruption
 
-All project state lives in plain-text YAML files under `specs/`. This means:
-- **Human-readable** — you can inspect and understand state without tooling
-- **Git-friendly** — diffs are meaningful, history is preserved
-- **Session-safe** — state written after every question means no work is lost on context reset
+All progress is saved after every question and every section. If your session is interrupted for any reason — context reset, network drop, end of day — the next `/spec-gantry` picks up exactly where you left off. Nothing is lost.
+
+### Specs in Git
+
+All project state — ideation, architecture, feature specs, and cost data — lives in plain-text files under `specs/` in your project. Commit them to git and your whole team shares a single source of truth, complete history, and meaningful diffs.
 
 ---
 
@@ -142,21 +141,10 @@ All project state lives in plain-text YAML files under `specs/`. This means:
 
 | Role | Use Case |
 |------|----------|
-| **Team Lead / Architect** | Enforce consistent process across the team without policing code review |
-| **Developer** | Always have a clear, approved spec before building |
-| **Solo Developer** | Discipline your own AI workflow, avoid "build fast in the wrong direction" |
-| **Engineering Manager** | Real token cost visibility and audit trail for AI-assisted development |
-
----
-
-## Under the Hood
-
-| Component | Count | What they do |
-|-----------|-------|-------------|
-| **Skills** | 6 | Entry points: dashboard, setup, reverse-engineer, bugfix, track-cost, update-pricing |
-| **Agents** | 8 | Specialists: ideation, architecture, reverse-engineer, spec, dev, test, deployment, orchestrator |
-| **State files** | Per project | YAML artifacts, Markdown outputs |
-| **Dependencies** | 0 | Runs entirely within Claude Code |
+| **Team Lead / Architect** | Establish a consistent process the whole team follows without needing to police every PR |
+| **Developer** | Always start from a clear, approved spec — no ambiguity, no scope creep mid-build |
+| **Solo Developer** | Bring discipline to your own AI workflow; avoid building fast in the wrong direction |
+| **Engineering Manager** | Get cost visibility and an audit trail for every AI-assisted feature |
 
 ---
 

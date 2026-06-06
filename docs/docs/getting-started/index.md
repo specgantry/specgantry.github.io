@@ -36,8 +36,8 @@ claude plugin install spec-gantry
 Claude Code will:
 - Clone the SpecGantry repository
 - Verify the plugin structure
-- Register 6 skills and 7 agents
-- Confirm with: `✓ Plugin installed: SpecGantry v1.3.5`
+- Register 6 skills and 8 agents
+- Confirm with: `✓ Plugin installed: SpecGantry v1.3.6`
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -116,7 +116,7 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ```
 ════════════════════════════════════════════════════════════════════════
-  SpecGantry v1.3.5 · AI-powered SDLC pipeline for Claude Code
+  SpecGantry v1.3.6 · AI-powered SDLC pipeline for Claude Code
 ════════════════════════════════════════════════════════════════════════
 
 📊 Progress  [0/0 features]
@@ -216,7 +216,9 @@ project-root/
 │       ├── FEATURE-001/
 │       │   ├── state.yaml          # Phase gates, metrics, token usage
 │       │   ├── feature-spec.md     # Feature specification (6 sections)
-│       │   └── dev-artifact.yaml   # Implementation notes, test results
+│       │   ├── dev-artifact.yaml   # Implementation notes, test results
+│       │   ├── deploy.sh           # Generated deployment script
+│       │   └── deploy-artifact.md  # Deployment validation summary
 │       └── FEATURE-002/
 │           └── ...
 └── .claude/

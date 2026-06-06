@@ -179,6 +179,14 @@ Feature-level phases can run in parallel across different features, even while t
 
 And project-level phases are strictly sequential — Ideation before Architecture.
 
+### What happens after all features are deployed?
+
+SpecGantry enters project-complete mode and prompts you to describe what you want to work on next. The orchestrator classifies your description — bug, enhancement, new feature, or project change — and confirms before creating anything. See [How It Works → Post-Completion](/docs/how-it-works#post-completion-classify-and-route) for the full routing logic.
+
+### What is a versioned feature (FEATURE-NNN-v2)?
+
+When you describe an enhancement to a completed feature, SpecGantry archives the original instead of overwriting it. The original feature's spec and dev artifacts are renamed to `*-v1` variants, and a new `FEATURE-NNN-v2/` directory is created with a full spec cycle. The dashboard shows the archived original collapsed under the active version. Only active (non-superseded) features count toward the progress total.
+
 ### What's a "guardrail violation"?
 
 A guardrail is a rule from `architecture-spec.md` that applies to all features. Examples:
@@ -258,13 +266,13 @@ Every agent invocation appends a token usage entry to the relevant state file:
 token_usage:
   - phase: feature_spec
     agent: feature-spec-agent
-    model: claude-sonnet-4-6
+    model: sonnet
     date: 2026-06-04
     input_tokens: 12450
     output_tokens: 3820
 ```
 
-The dashboard computes per-feature and total costs using the pricing from `config/pricing-history.yaml`. Run `/update-pricing` to update pricing rates.
+Note: token counts are character-based estimates (chars ÷ 4), not exact API counts. Costs shown with `~$` in reports reflect this. Run `/track-cost` for the full breakdown. Run `/update-pricing` to update pricing rates.
 
 ### Why are my costs higher than expected?
 

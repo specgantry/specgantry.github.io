@@ -154,6 +154,12 @@ If the dev agent encounters a guardrail conflict during implementation, it stops
 
 The dev agent writes `dev-artifact.yaml` with files modified, tasks completed, commits made, and warnings encountered. It then hands off to the test agent automatically.
 
+The test agent detects the project's test runner (npm, pytest, go test, rspec, make test) and runs the full suite. If any tests fail on the first run, it runs them a second time immediately:
+- Tests that fail on run 1 but pass on run 2 → marked as **flaky** (recorded, but not a hard block)
+- Tests that fail on **both** runs → **hard failures** (deployment gate closed)
+
+This retry pass distinguishes genuine failures from non-deterministic tests that pollute CI. Flaky tests are always recorded in `dev-artifact.yaml → flaky_tests` even when they don't block.
+
 **Gate check:**
 - `dev-artifact.yaml` exists
 - `overall_status: pass` (set by test agent)
@@ -165,13 +171,16 @@ The dev agent writes `dev-artifact.yaml` with files modified, tasks completed, c
 
 **Who:** Team Lead (or Developer with permission)  
 **Time:** 5–10 minutes  
-**Output:** `specs/features/FEATURE-XXX/deploy-artifact.md`
+**Output:** `specs/features/FEATURE-XXX/deploy.sh` + `specs/features/FEATURE-XXX/deploy-artifact.md`
 
-The deployment agent runs final verification before production release:
-- All unit tests passing
-- Integration tests passing  
-- Architecture compliance confirmed
-- Code review approval recorded
+The deployment agent runs two hard checks before generating anything:
+
+1. **Tests passing** — reads `dev-artifact.yaml → overall_status`. Must be `pass`. If not, stops immediately.
+2. **Dependencies deployed** — reads the feature's `depends_on` list and verifies each has `deployment_status: complete`. If any are not yet deployed, stops and names the blockers.
+
+If there are spec warnings recorded during development (from `dev-artifact.yaml → warnings`), they are surfaced as notices — they don't block deployment but must be visible before the script runs.
+
+Once both hard checks pass, the agent generates `deploy.sh` — a concrete shell script derived from the feature's Implementation Plan and the list of files modified during development. Each step is either a runnable command or a `# MANUAL:` comment for steps that require human action. After writing the script, the agent validates it with `bash -n` (syntax check). A script that fails the syntax check sets `deployment_status: blocked` — it must be corrected before proceeding.
 
 On completion, the feature is marked `deployment_status: complete` in `project-state.yaml` and the feature count in the dashboard increments.
 
@@ -249,18 +258,19 @@ Every agent invocation logs:
 token_usage:
   - phase: feature_spec
     agent: feature-spec-agent
-    model: claude-sonnet-4-6
+    model: sonnet
     date: 2026-06-04
     input_tokens: 12450
     output_tokens: 3820
 ```
 
+Token counts are character-based estimates (chars ÷ 4), not exact API counts. All cost figures shown in reports carry a `~$` prefix to reflect this.
+
 **Project-level usage** is logged in `specs/project-state.yaml`. **Feature-level usage** is logged in `specs/features/[id]/state.yaml`.
 
 The dashboard computes:
-- **Per-feature cost** — shown next to each feature row
-- **Total project cost** — running balance
-- **Cost by developer** — visible to Team Leads
+- **Per-feature cost** — shown next to each feature row (`~$0.NNN`)
+- **Total project cost** — running balance across all phases and features
 
 Pricing is configurable with `/update-pricing` — update when Claude pricing changes, or to match your organization's internal rates.
 
@@ -287,6 +297,25 @@ The dashboard shows blocked features with a `🔴` indicator and lists which dep
 
 ---
 
+## Versioned Features (Enhancements)
+
+When the Team Lead classifies a post-completion request as an **enhancement** to an existing feature, SpecGantry creates a versioned successor rather than modifying the original:
+
+- The original feature's artifacts are renamed to `state-v1.yaml`, `feature-spec-v1.md`, etc.
+- A new `FEATURE-NNN-v2/` directory is created with a fresh spec cycle
+- The `v2` entry is added to the backlog with `supersedes: FEATURE-NNN`
+
+On the dashboard, the superseded original is shown collapsed and labelled `[archived v1]`, and the active version carries a `(v2)` badge. The progress count only includes active (non-superseded) features:
+
+```
+  FEATURE-003-v2: Payment Gateway (v2)   ✅ Spec  ✅ Review  🔄 Build  ○ Tests  ○ Done
+  └─ FEATURE-003 [archived v1]           (deployed 2026-05-12)
+```
+
+This preserves full history — the original spec and dev artifact remain on disk — while giving the new version a clean spec cycle with current guardrails.
+
+---
+
 ## The File Structure
 
 ```
@@ -298,7 +327,9 @@ specs/
     ├── FEATURE-001/
     │   ├── state.yaml              # Phase gates, timestamps, token usage
     │   ├── feature-spec.md         # 6-section spec + guardrail compliance
-    │   └── dev-artifact.yaml       # Files modified, tasks, test results
+    │   ├── dev-artifact.yaml       # Files modified, tasks, test results
+    │   ├── deploy.sh               # Generated deployment script (after deploy phase)
+    │   └── deploy-artifact.md      # Deployment validation summary
     └── FEATURE-002/
         └── ...
 
@@ -320,6 +351,22 @@ Edit the relevant `state.yaml` and set the phase gate flag back to `false`. Next
 
 **If YAML is corrupted:**  
 Fix it manually (it's plain text) or delete and re-run the phase. If committed to git, restore from history.
+
+---
+
+## Post-Completion: Classify and Route
+
+After all features are deployed, SpecGantry doesn't stop — it routes new work based on what you describe. The orchestrator classifies free-text descriptions into one of four types before creating any files:
+
+**`bug_fix`** — Something that worked before is broken. Routes directly to development with the spec gate bypassed. A `BUGFIX-NNN` entry is created, architecture guardrails still apply, and tests are required before deployment.
+
+**`enhancement`** — An existing feature needs to do more or behave differently. The original feature's artifacts are archived as `v1`, and a fresh `FEATURE-NNN-v2` directory is created with a new spec cycle. The new version goes through the full feature pipeline.
+
+**`new_feature`** — A capability with no prior backlog entry. If it requires a new domain or cross-cutting concern, the orchestrator first runs the architecture agent in **amendment mode** — appending changes to `architecture-spec.md` without overwriting prior decisions. Otherwise it goes straight to feature spec.
+
+**`project_change`** — Infrastructure, auth, data model, or multi-feature scope changes. Always goes through ideation and architecture amendment first. After architecture, any existing feature specs touching affected domains have `spec_reviewed` reset — their developers must re-review before building can continue.
+
+The orchestrator defaults to the more conservative classification when ambiguous (`bug_fix > enhancement > new_feature > project_change`) and always confirms its decision before proceeding.
 
 ---
 

@@ -107,6 +107,31 @@ Every invocation:
 
 Because all state is on disk, every `/spec-gantry` invocation is idempotent. Run it at the start of every session — it picks up exactly where you left off.
 
+### When All Features Are Deployed
+
+When every active feature in the backlog reaches `deployment_status: complete`, SpecGantry enters project-complete mode:
+
+```
+  🎉 All features are deployed! The project backlog is complete.
+
+  What would you like to work on next?
+  Describe a bug, an improvement, a new feature, or a larger project change.
+  (Type "nothing for now" to exit.)
+
+  >
+```
+
+The orchestrator classifies whatever you describe into one of four types and confirms with you before creating any files:
+
+| Classification | When it applies |
+|---|---|
+| `bug_fix` | Something that worked is now broken — restores prior behaviour |
+| `enhancement` | An existing feature needs to do more or work differently |
+| `new_feature` | A net-new capability with no backlog entry |
+| `project_change` | Cross-cutting: infrastructure, auth, data model, multi-feature scope |
+
+On confirmation, the appropriate sub-flow runs: bugs go straight to development (skipping spec), enhancements create a versioned `FEATURE-NNN-v2`, new features may trigger an architecture amendment, and project changes always go through ideation and architecture first.
+
 ---
 
 ## 2. start-project {#start-project}
@@ -280,27 +305,28 @@ SpecGantry logs token usage for every agent invocation automatically across **al
 📊 Cost Tracking Report
 ─────────────────────────────────────────────────────────────────
 Pricing effective: 2026-06-01
+⚠ Token counts are character-based estimates (chars ÷ 4) — actual API spend may differ.
 
 🏢 Project-Level Costs
 
-Phase        Agent               Model                Input    Output   Total
+Phase        Agent               Model    Input     Output    Total
 ──────────────────────────────────────────────────────────────────────────────
-ideation     ideation-agent      claude-sonnet-4-6    $0.12    $0.14    $0.26
-architecture architecture-agent  claude-sonnet-4-6    $0.44    $0.22    $0.66
-                                                                Subtotal: $0.92
+ideation     ideation-agent      haiku    ~$0.12    ~$0.14    ~$0.26
+architecture architecture-agent  sonnet   ~$0.44    ~$0.22    ~$0.66
+                                                    Subtotal: ~$0.92
 
 🎯 Per-Feature Costs
 
 FEATURE-001: User Auth
-  Phase        Agent               Model                Input    Output   Total
+  Phase    Agent               Model    Input     Output    Total
   ──────────────────────────────────────────────────────────────────────────────
-  spec         feature-spec-agent  claude-sonnet-4-6    $0.08    $0.16    $0.24
-  dev          dev-agent           claude-sonnet-4-6    $0.18    $0.15    $0.33
-  tests        test-agent          claude-haiku-4-5     $0.02    $0.01    $0.03
-                                                                  Subtotal: $0.60
+  spec     feature-spec-agent  sonnet   ~$0.08    ~$0.16    ~$0.24
+  dev      dev-agent           sonnet   ~$0.18    ~$0.15    ~$0.33
+  tests    test-agent          haiku    ~$0.02    ~$0.01    ~$0.03
+                                                  Subtotal: ~$0.60
 
 ──────────────────────────────────────────────────────────────────
-💰 Total Project Cost (all phases, all features): $1.52
+💰 Estimated Total Project Cost (all phases, all features): ~$1.52
 ──────────────────────────────────────────────────────────────────
 ```
 
@@ -425,8 +451,8 @@ Skills call agents to do the actual work. Agents are invoked by the orchestrator
 | **reverse-engineer-agent** | orchestrator | Analyses existing codebase, synthesises architecture spec and feature backlog |
 | **feature-spec-agent** | orchestrator | Guides 6-section spec, checks guardrail compliance |
 | **dev-agent** | orchestrator | Implements feature from spec, writes tests |
-| **test-agent** | dev-agent | Runs test suite, sets `overall_status` |
-| **deployment-agent** | orchestrator | Final verification, marks feature complete |
+| **test-agent** | orchestrator | Runs test suite, retries on failure to detect flaky tests, sets `overall_status` |
+| **deployment-agent** | orchestrator | Validates tests + dependencies, generates deploy.sh, marks feature complete |
 
 The orchestrator is the sole choke point for all phase transitions. It verifies gate conditions before invoking any agent, and logs token usage after every invocation.
 

@@ -136,7 +136,7 @@ backlog:
 token_usage:
   - phase: ideation
     agent: ideation-agent
-    model: claude-haiku-4-5-20251001
+    model: haiku
     date: 2026-01-15
     input_tokens: 42300
     output_tokens: 8900

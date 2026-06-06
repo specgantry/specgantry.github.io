@@ -94,12 +94,12 @@ Column formatting:
 
 For Team Lead / Architect:
 ```
-── [A]rch  [B]acklog  [C]ost  [P]roject  [?]Help  [X]Exit ────────────
+── [A]rch  [B]acklog  [P]roject  [?]Help  [X]Exit ────────────────────
 ```
 
 For Developer (or if role unknown):
 ```
-── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
 ---

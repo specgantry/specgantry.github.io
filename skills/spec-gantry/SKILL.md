@@ -40,7 +40,7 @@ Read the following. Missing files are not errors — they indicate pipeline stag
 **Always render this first, on every response.**
 
 ```
-SpecGantry v1.4.7  |  [Project Name, or "New Project" if none]
+SpecGantry v1.4.8  |  [Project Name, or "New Project" if none]
 Progress  [PROGRESSBAR]  [n] / [total] features complete  ·  Total spend: $[X.XX]
 ──────────────────────────────────────────────────────────────────────
 ```
@@ -119,38 +119,6 @@ Then the actions section:
   [numbered actions — see actions rules below]
 ```
 
-### View C — Cost breakdown (when user selects [C])
-
-```
-Cost Breakdown
-
-  Project phases
-  ──────────────────────────────────────────────────────────────────────
-  [phase]       [agent-shortname]   [model-shortname]  $[out]   $[cr]    $[total]
-  ...
-                                                        Subtotal  $[sum]
-
-  [FEATURE-ID] · [title]
-  ──────────────────────────────────────────────────────────────────────
-  [phase]       [agent-shortname]   [model-shortname]  $[out]   $[cr]    $[total]
-  ...
-                                                        Subtotal  $[sum]
-
-  ──────────────────────────────────────────────────────────────────────
-  Total  [N] tokens  ·  $[grand total]
-         input $[n]  ·  output $[n]  ·  cache write $[n]  ·  cache read $[n]
-  ──────────────────────────────────────────────────────────────────────
-  Rates as of [fetched_at date]  ·  /update-pricing to refresh
-```
-
-Column notes:
-- Show Output and Cache Read as the two visible mid-columns (they represent the dominant costs). Total is always last.
-- Shorten model names: `claude-sonnet-4-6` → `sonnet-4-6`, `claude-haiku-4-5-20251001` → `haiku-4-5`
-- Shorten agent names: strip `spec-gantry:*:` prefix, show bare name e.g. `feature-spec-agent`
-- If no cost data: show `No cost data yet. Costs are recorded automatically as agents complete.`
-
-After rendering, re-render View B below the cost table so the user remains oriented. Then render the quick-bar.
-
 ### View D — Architecture (when user selects [A])
 
 ```
@@ -212,7 +180,7 @@ Project
 Quick Reference
 
   /spec-gantry          Open this dashboard
-  /track-cost           Full cost breakdown (also: press C here)
+  /track-cost           Phase-level cost breakdown
   /update-pricing       Refresh Anthropic pricing rates
   /bugfix               Fast-track a production bug fix
   /reverse-engineer     Generate a spec from existing code
@@ -223,8 +191,7 @@ Quick Reference
 
   Keys
   [A]  Architecture spec    [B]  Backlog (Team Lead)
-  [C]  Cost breakdown       [P]  Project menu (Team Lead)
-  [?]  This help screen     [X]  Exit
+  [P]  Project menu (TL)    [?]  This help screen     [X]  Exit
 
   Docs: https://specgantry.github.io/docs
 ```
@@ -249,12 +216,12 @@ Describe a bug, an improvement, a new feature, or a broader change.
 
 For Team Lead / Architect:
 ```
-── [A]rch  [B]acklog  [C]ost  [P]roject  [?]Help  [X]Exit ────────────
+── [A]rch  [B]acklog  [P]roject  [?]Help  [X]Exit ────────────────────
 ```
 
 For Developer:
 ```
-── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
 When no project exists yet (View A):
@@ -332,11 +299,9 @@ Evaluate candidates in priority order. Assign `[1]`, `[2]`, `[3]`, `[4]` sequent
 | 8 | Architecture complete, unclaimed features exist with deps met | `Pick up [title] and start the feature spec  ↳ [domain] · [size]` |
 | 9 | Another of user's features needs attention | `[title] also needs attention — [stage]` |
 | 10 | TL: architecture complete, backlog fully assigned | `Review the architecture spec and guardrails` |
-| 11 | Any entries in cost-log.json | `See what this project has cost so far` |
 
 Rules:
 - Priority 7 may generate multiple numbered lines (one per deployable feature), counting against the cap of 4.
-- Priority 11 only appears when no higher-priority candidate fills the last slot.
 - Never repeat the same feature in two slots.
 - Each line is an imperative action. The `↳` sub-line adds one-line context without cluttering the action.
 - If zero candidates: show `  Nothing urgent right now — the project is on track.`
@@ -416,9 +381,6 @@ Render full UI with View D as main content.
 ### [B] — Backlog (Team Lead only)
 Render full UI with View E as main content. If Developer attempts: `Backlog management requires Team Lead / Architect role.`
 
-### [C] — Cost
-Render full UI with View C as main content.
-
 ### [P] — Project (Team Lead only)
 Render full UI with View F as main content. If Developer attempts: `Project management requires Team Lead / Architect role.`
 
@@ -449,9 +411,9 @@ Re-enter from Step 1. Re-read all state. Re-render the full UI. The user always 
 
 - The persistent header renders on **every** response, no exceptions.
 - The quick-bar renders as the **last line** of every response, no exceptions.
-- The quick-bar item order never changes: `[A]rch  [B]acklog  [C]ost  [P]roject  [?]Help  [X]Exit`
+- The quick-bar item order never changes: `[A]rch  [B]acklog  [P]roject  [?]Help  [X]Exit`
 - Role-gated items (`[B]`, `[P]`) are simply absent from the quick-bar for Developers — never shown as disabled.
 - No welcome banner, no copyright block, no SpecGantry ASCII art on any screen.
-- Cost, Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
+- Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
 - The `↳` sub-line on actions is one line maximum. Never nest further.
 - Never advance a phase without invoking the orchestrator. The orchestrator handles all gate enforcement.

@@ -76,7 +76,7 @@ Feature Pipeline
   [1] Continue spec for Notifications  ↳ section 2 of 6 in progress
   [2] Pick up Export PDF and start the feature spec  ↳ reporting · small
 
-── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
 ### Quick-bar Commands
@@ -85,7 +85,6 @@ Feature Pipeline
 |---------|-----|-------------|
 | `[A]rch` | Both | View the architecture spec and any open design questions |
 | `[B]acklog` | Team Lead only | Manage the backlog — prioritize, assign, defer, reassign |
-| `[C]ost` | Both | Show cost breakdown inline |
 | `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project details |
 | `[?]Help` | Both | Quick reference — commands, icons, docs link |
 | `[X]Exit` | Both | Exit SpecGantry, return to normal Claude Code |
@@ -241,7 +240,7 @@ Sometimes a bug reveals that something was never properly designed. The Team Lea
 /track-cost
 ```
 
-Or select `[C]ost` from the `/spec-gantry` menu.
+For a phase-level breakdown, run `/track-cost` directly.
 
 ### What It Does
 
@@ -277,7 +276,7 @@ Cost Breakdown
   ──────────────────────────────────────────────────────────────────────
   Rates as of 2026-06-06  ·  /update-pricing to refresh
 
-── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
 ### If No Data Appears
@@ -321,7 +320,7 @@ Pricing
   Future cost calculations will use these rates.
   Entries already recorded are not retroactively updated.
 
-── [A]rch  [C]ost  [?]Help  [X]Exit ──────────────────────────────────
+── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
 If the pricing page is temporarily unavailable, SpecGantry continues using the most recently cached rates and shows you when they were last updated. Re-run `/update-pricing` when connectivity is restored.

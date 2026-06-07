@@ -1,7 +1,7 @@
 {
     "name": "spec-gantry",
     "displayName": "SpecGantry",
-    "version": "1.5.3",
+    "version": "1.5.4",
     "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
     "author": {
         "name": "Mangesh Pise",
@@ -24,10 +24,7 @@
             "command": "node",
             "args": [
                 "${CLAUDE_PLUGIN_ROOT}/mcp/server.js"
-            ],
-            "env": {
-                "SPEC_GANTRY_LOG_LEVEL": "error"
-            }
+            ]
         }
     },
     "hooks": {

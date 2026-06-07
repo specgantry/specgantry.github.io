@@ -262,6 +262,27 @@ Read the gate failure message in the dashboard. It will list exactly which condi
 
 The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or ask your Team Lead to update the architecture guardrail.
 
+### How do I control the MCP server log level? {#mcp-log-level}
+
+The cost-tracking MCP server logs at `info` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change it:
+
+| Value | What you see |
+|-------|-------------|
+| `error` | Failures only — silent on success |
+| `info` | Key lifecycle events: startup, pricing fetch, cost recorded **(default)** |
+| `debug` | Full detail: resolved paths, token counts, every tool call in and out |
+
+Add it to your shell profile so it persists across sessions:
+
+```bash
+# ~/.zshrc or ~/.bashrc
+export SPEC_GANTRY_LOG_LEVEL=debug
+```
+
+Then restart your terminal (or run `source ~/.zshrc`) and reopen Claude Code. The MCP server picks up the env var from your shell environment automatically.
+
+To check what the server is logging, look at the log file written to your project's `logs/spec-gantry-costs.log`, or open Claude Code's MCP viewer to see stderr output in real time.
+
 ### Plugin stopped working after a Claude Code update
 
 Reinstall:

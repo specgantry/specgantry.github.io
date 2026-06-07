@@ -46,6 +46,23 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 
 Render on every response:
 
+**After every subagent returns** — before any gate check or next-phase logic — re-read all state files and render the full dashboard (HEADER + PIPELINE + QUICKBAR). This paints the updated pipeline at every major transition so the user can follow progress. Add a one-line transition note above the header:
+
+```
+✓ [phase] complete  ·  [feature or project level]
+──────────────────────────────────────────────────────────
+```
+
+Examples:
+```
+✓ Ideation complete  ·  proceeding to architecture
+✓ Feature spec complete  ·  FEATURE-003 Notifications
+✓ Build complete  ·  FEATURE-003 running tests
+✓ Tests passed  ·  FEATURE-003 ready to deploy
+```
+
+Then render the full dashboard below it so the user sees live pipeline state before the next action begins.
+
 **HEADER** (first):
 ```
 SpecGantry v[version]  |  [project.name or "New Project"]

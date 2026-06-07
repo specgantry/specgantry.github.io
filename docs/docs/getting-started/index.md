@@ -26,14 +26,18 @@ Everything you need to install SpecGantry and complete your first session.
 
 ## Step 1 — Install the Plugin
 
-Run these in your terminal:
+You must register the SpecGantry marketplace **before** installing the plugin. Both commands are required, in this order:
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.5.8`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.5.9`
+
+<div class="info">
+  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
+</div>
 
 <div class="success">
   <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
@@ -76,6 +80,32 @@ claude plugin list
 
 ---
 
+## Removing SpecGantry
+
+To uninstall the plugin and remove the marketplace entry, run both commands in order:
+
+```bash
+claude plugin uninstall spec-gantry
+claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+```
+
+The first command removes the plugin and all its skills and agents. The second removes the marketplace registration. Your project's `specs/` files are not touched — they stay in your repository.
+
+If you only want to uninstall the plugin without removing the marketplace (for example, to reinstall cleanly), run just the first command:
+
+```bash
+claude plugin uninstall spec-gantry
+```
+
+To reinstall after uninstalling, use the standard install sequence:
+
+```bash
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
+```
+
+---
+
 ## Step 2 — Open Your Project
 
 ```
@@ -111,7 +141,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.5.8  |  New Project
+SpecGantry v1.5.9  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -129,7 +159,7 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.5.8  |  New Project
+SpecGantry v1.5.9  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -149,7 +179,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.5.8  |  Acme Platform
+SpecGantry v1.5.9  |  Acme Platform
 Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -229,7 +259,7 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.5.8  |  My App
+SpecGantry v1.5.9  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer

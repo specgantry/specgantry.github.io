@@ -84,6 +84,8 @@ Each phase builds on the last. You move forward when the work is done — not be
 
 ## Quick Install
 
+Run both commands in order — the marketplace must be registered before installing:
+
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
@@ -111,7 +113,7 @@ Or from within Claude Code:
 /plugin marketplace update spec-gantry
 ```
 
-See [FAQ → Installation](/docs/faq#how-do-i-update-specgantry) for more update options.
+See [Getting Started → Install, Update & Remove](/docs/getting-started#step-1--install-the-plugin) for all options including uninstall.
 
 ---
 

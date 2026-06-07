@@ -5,11 +5,11 @@
 
 'use strict';
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
-const os   = require('os');
+const os = require('os');
 const https = require('https');
-const http  = require('http');
+const http = require('http');
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
 // All log output goes to stderr AND to PROJECT_DIR/logs/spec-gantry-costs.log.
@@ -20,7 +20,7 @@ const http  = require('http');
 //   debug  — full detail: resolved paths, token counts, every tool call in/out
 const LEVELS = { error: 0, info: 1, debug: 2 };
 const LOG_LEVEL = LEVELS[process.env.SPEC_GANTRY_LOG_LEVEL] ?? LEVELS.info;
-const LOG_FILE  = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), 'logs', 'spec-gantry-costs.log');
+const LOG_FILE = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), 'logs', 'spec-gantry-costs.log');
 
 // Ensure log directory exists (best-effort — never throw)
 try { fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true }); } catch { /* ignore */ }
@@ -33,29 +33,35 @@ function log(level, ...args) {
   try { fs.appendFileSync(LOG_FILE, line); } catch { /* non-fatal */ }
 }
 const logError = (...a) => log('error', ...a);
-const logInfo  = (...a) => log('info',  ...a);
+const logInfo = (...a) => log('info', ...a);
 const logDebug = (...a) => log('debug', ...a);
 
 // ─── Fallback pricing (rates as of 2026-06, from platform.claude.com/docs/en/about-claude/pricing) ────
 // These are used when live fetch from the pricing page fails.
 // Keys match the exact model IDs used in agent frontmatter.
 const FALLBACK_RATES = {
-  'claude-haiku-4-5-20251001': { input_per_1m: 1.00,  output_per_1m: 5.00,  cache_write_per_1m: 1.25,  cache_read_per_1m: 0.10  },
-  'claude-haiku-4-5':          { input_per_1m: 1.00,  output_per_1m: 5.00,  cache_write_per_1m: 1.25,  cache_read_per_1m: 0.10  },
-  'claude-sonnet-4-6':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75,  cache_read_per_1m: 0.30  },
-  'claude-sonnet-4-5':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75,  cache_read_per_1m: 0.30  },
-  'claude-opus-4-8':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
-  'claude-opus-4-7':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
-  'claude-opus-4-6':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
-  'claude-opus-4-5':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25,  cache_read_per_1m: 0.50  },
+  // --- Claude Haiku Tier ---
+  'claude-haiku-4-5-20251001': { input_per_1m: 1.00, output_per_1m: 5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
+  'claude-haiku-4-5': { input_per_1m: 1.00, output_per_1m: 5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
+
+  // --- Claude Sonnet Tier ---
+  'claude-sonnet-4-6': { input_per_1m: 3.00, output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
+  // NOTE: Requests over 200k tokens jump to $6.00 input / $22.50 output per 1M on 4.5
+  'claude-sonnet-4-5': { input_per_1m: 3.00, output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
+
+  // --- Claude Opus Tier ---
+  'claude-opus-4-8': { input_per_1m: 5.00, output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-7': { input_per_1m: 5.00, output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-6': { input_per_1m: 5.00, output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-5': { input_per_1m: 5.00, output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
 };
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
-const CLAUDE_HOME    = path.join(os.homedir(), '.claude');
-const PLUGIN_DIR     = path.dirname(__filename);
-const RATES_CACHE    = path.join(PLUGIN_DIR, 'rates-cache.json');
-const PROJECT_DIR    = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-const PRICING_URL    = 'https://platform.claude.com/docs/en/about-claude/pricing';
+const CLAUDE_HOME = path.join(os.homedir(), '.claude');
+const PLUGIN_DIR = path.dirname(__filename);
+const RATES_CACHE = path.join(PLUGIN_DIR, 'rates-cache.json');
+const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+const PRICING_URL = 'https://platform.claude.com/docs/en/about-claude/pricing';
 
 // ─── Slug derivation (matches Claude Code's convention) ──────────────────────
 // /Users/foo/myproject  →  -Users-foo-myproject  (Mac/Linux)
@@ -113,13 +119,13 @@ function parsePricingHtml(html) {
   // Map of model name patterns (as they appear in the table) → canonical model ID.
   // Most-specific patterns first to avoid Opus 4.5 matching Opus 4.8's row.
   const MODEL_PATTERNS = [
-    { pattern: /Claude\s+Opus\s+4\.8\b/i,   id: 'claude-opus-4-8'  },
-    { pattern: /Claude\s+Opus\s+4\.7\b/i,   id: 'claude-opus-4-7'  },
-    { pattern: /Claude\s+Opus\s+4\.6\b/i,   id: 'claude-opus-4-6'  },
-    { pattern: /Claude\s+Opus\s+4\.5\b/i,   id: 'claude-opus-4-5'  },
+    { pattern: /Claude\s+Opus\s+4\.8\b/i, id: 'claude-opus-4-8' },
+    { pattern: /Claude\s+Opus\s+4\.7\b/i, id: 'claude-opus-4-7' },
+    { pattern: /Claude\s+Opus\s+4\.6\b/i, id: 'claude-opus-4-6' },
+    { pattern: /Claude\s+Opus\s+4\.5\b/i, id: 'claude-opus-4-5' },
     { pattern: /Claude\s+Sonnet\s+4\.6\b/i, id: 'claude-sonnet-4-6' },
     { pattern: /Claude\s+Sonnet\s+4\.5\b/i, id: 'claude-sonnet-4-5' },
-    { pattern: /Claude\s+Haiku\s+4\.5\b/i,  id: 'claude-haiku-4-5-20251001' },
+    { pattern: /Claude\s+Haiku\s+4\.5\b/i, id: 'claude-haiku-4-5-20251001' },
   ];
 
   const priceRe = /\$([\d]+(?:\.[\d]+)?)\s*\/\s*MTok/g;
@@ -141,19 +147,19 @@ function parsePricingHtml(html) {
 
       if (prices.length >= 5) {
         rates[id] = {
-          input_per_1m:       prices[0],
-          output_per_1m:      prices[4],
+          input_per_1m: prices[0],
+          output_per_1m: prices[4],
           cache_write_per_1m: prices[1],  // 5-minute cache write
-          cache_read_per_1m:  prices[3],  // cache hit / refresh
+          cache_read_per_1m: prices[3],  // cache hit / refresh
         };
         found = true;
         break;
       } else if (prices.length >= 2) {
         rates[id] = {
-          input_per_1m:       prices[0],
-          output_per_1m:      prices[prices.length - 1],
+          input_per_1m: prices[0],
+          output_per_1m: prices[prices.length - 1],
           cache_write_per_1m: +(prices[0] * 1.25).toFixed(4),
-          cache_read_per_1m:  +(prices[0] * 0.10).toFixed(4),
+          cache_read_per_1m: +(prices[0] * 0.10).toFixed(4),
         };
         found = true;
         break;
@@ -167,7 +173,7 @@ function parsePricingHtml(html) {
 async function refreshPricing() {
   try {
     logDebug('Fetching pricing from', PRICING_URL);
-    const html  = await fetchPricingPage();
+    const html = await fetchPricingPage();
     const rates = parsePricingHtml(html);
     if (!rates) throw new Error('Could not parse pricing from page');
 
@@ -239,7 +245,7 @@ function appendCostLog(entry) {
 // This way the LLM never has to know agentId or sessionId — both are resolved
 // from filesystem state.
 function resolveAgentFromToolUseId(toolUseId) {
-  const slug    = projectSlug(PROJECT_DIR);
+  const slug = projectSlug(PROJECT_DIR);
   const projDir = path.join(CLAUDE_HOME, 'projects', slug);
   logDebug('Resolving toolUseId', toolUseId, 'in', projDir);
 
@@ -290,7 +296,7 @@ function resolveAgentFromToolUseId(toolUseId) {
 // Called at server startup; result written to specs/.current-session so the
 // orchestrator can read it for informational purposes if needed.
 function detectCurrentSession() {
-  const slug    = projectSlug(PROJECT_DIR);
+  const slug = projectSlug(PROJECT_DIR);
   const projDir = path.join(CLAUDE_HOME, 'projects', slug);
 
   try {
@@ -360,28 +366,28 @@ async function toolRecordAgentCost(args) {
       if (record.type !== 'assistant') continue;
       const usage = record.message && record.message.usage;
       if (!usage) continue;
-      input_tokens            += (usage.input_tokens || 0);
-      output_tokens           += (usage.output_tokens || 0);
-      cache_creation_tokens   += (usage.cache_creation_input_tokens || 0);
-      cache_read_tokens       += (usage.cache_read_input_tokens || 0);
+      input_tokens += (usage.input_tokens || 0);
+      output_tokens += (usage.output_tokens || 0);
+      cache_creation_tokens += (usage.cache_creation_input_tokens || 0);
+      cache_read_tokens += (usage.cache_read_input_tokens || 0);
     } catch { /* malformed line — skip */ }
   }
 
   // Compute cost
   const { r: rates, source: pricing_source } = getRatesForModel(model);
   const M = 1_000_000;
-  const input_cost_usd        = +(input_tokens            / M * rates.input_per_1m).toFixed(8);
-  const output_cost_usd       = +(output_tokens           / M * rates.output_per_1m).toFixed(8);
-  const cache_write_cost_usd  = +(cache_creation_tokens   / M * rates.cache_write_per_1m).toFixed(8);
-  const cache_read_cost_usd   = +(cache_read_tokens       / M * rates.cache_read_per_1m).toFixed(8);
-  const total_cost_usd        = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
+  const input_cost_usd = +(input_tokens / M * rates.input_per_1m).toFixed(8);
+  const output_cost_usd = +(output_tokens / M * rates.output_per_1m).toFixed(8);
+  const cache_write_cost_usd = +(cache_creation_tokens / M * rates.cache_write_per_1m).toFixed(8);
+  const cache_read_cost_usd = +(cache_read_tokens / M * rates.cache_read_per_1m).toFixed(8);
+  const total_cost_usd = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
 
   const entry = {
     phase,
-    agent:                    `agent-${agentId}`,
+    agent: `agent-${agentId}`,
     model,
-    feature:                  feature || null,
-    date:                     new Date().toISOString().slice(0, 10),
+    feature: feature || null,
+    date: new Date().toISOString().slice(0, 10),
     input_tokens,
     output_tokens,
     cache_creation_tokens,
@@ -395,7 +401,7 @@ async function toolRecordAgentCost(args) {
   };
 
   logDebug('Token counts — input:', input_tokens, 'output:', output_tokens,
-           'cache_write:', cache_creation_tokens, 'cache_read:', cache_read_tokens);
+    'cache_write:', cache_creation_tokens, 'cache_read:', cache_read_tokens);
   logDebug('Pricing source:', pricing_source, '— total_cost_usd:', total_cost_usd);
 
   appendCostLog(entry);
@@ -418,9 +424,9 @@ const TOOLS = {
       required: ['toolUseId', 'phase', 'model'],
       properties: {
         toolUseId: { type: 'string', description: 'The id field of the Agent tool_use call — looks like toolu_bdrk_... — visible to the orchestrator when it invokes the Agent tool' },
-        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, architecture, feature_spec, development, test, deployment' },
-        model:     { type: 'string', description: 'Exact model ID from the agent frontmatter, e.g. claude-sonnet-4-6' },
-        feature:   { type: 'string', description: 'Feature ID (FEATURE-001) or null for project-level phases', nullable: true },
+        phase: { type: 'string', description: 'SpecGantry phase name, e.g. ideation, architecture, feature_spec, development, test, deployment' },
+        model: { type: 'string', description: 'Exact model ID from the agent frontmatter, e.g. claude-sonnet-4-6' },
+        feature: { type: 'string', description: 'Feature ID (FEATURE-001) or null for project-level phases', nullable: true },
       },
     },
     handler: toolRecordAgentCost,
@@ -491,13 +497,13 @@ async function handleRequest(req) {
 // Claude Code constructs agentType as: "plugin-name:subdir:agent-name"
 // for plugin agents, or bare names like "Explore" for built-in agents.
 const AGENT_MAP = {
-  'spec-gantry:ideation:ideation-agent':                    { phase: 'ideation',        model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:architecture:architecture-agent':            { phase: 'architecture',     model: 'claude-sonnet-4-6' },
-  'spec-gantry:feature-spec:feature-spec-agent':            { phase: 'feature_spec',     model: 'claude-sonnet-4-6' },
-  'spec-gantry:development:dev-agent':                      { phase: 'development',      model: 'claude-sonnet-4-6' },
-  'spec-gantry:development:test-agent':                     { phase: 'test',             model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:deployment:deployment-agent':                { phase: 'deployment',       model: 'claude-sonnet-4-6' },
-  'spec-gantry:reverse-engineer:reverse-engineer-agent':    { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
+  'spec-gantry:ideation:ideation-agent': { phase: 'ideation', model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:architecture:architecture-agent': { phase: 'architecture', model: 'claude-sonnet-4-6' },
+  'spec-gantry:feature-spec:feature-spec-agent': { phase: 'feature_spec', model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:dev-agent': { phase: 'development', model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:test-agent': { phase: 'test', model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:deployment:deployment-agent': { phase: 'deployment', model: 'claude-sonnet-4-6' },
+  'spec-gantry:reverse-engineer:reverse-engineer-agent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
   // orchestrator is intentionally absent — it's the router, not a costed worker
 };
 
@@ -534,10 +540,10 @@ function sumTokensFromTranscript(transcriptPath) {
         const usage = r.message && r.message.usage;
         if (!usage) continue;
         if (!model && r.message.model) model = r.message.model;
-        input_tokens          += (usage.input_tokens || 0);
-        output_tokens         += (usage.output_tokens || 0);
+        input_tokens += (usage.input_tokens || 0);
+        output_tokens += (usage.output_tokens || 0);
         cache_creation_tokens += (usage.cache_creation_input_tokens || 0);
-        cache_read_tokens     += (usage.cache_read_input_tokens || 0);
+        cache_read_tokens += (usage.cache_read_input_tokens || 0);
       } catch { /* malformed line */ }
     }
   } catch (err) {
@@ -601,22 +607,22 @@ async function runHookMode() {
   // Compute cost
   const { r: rates, source: pricing_source } = getRatesForModel(model);
   const M = 1_000_000;
-  const input_cost_usd       = +(tokens.input_tokens          / M * rates.input_per_1m).toFixed(8);
-  const output_cost_usd      = +(tokens.output_tokens         / M * rates.output_per_1m).toFixed(8);
+  const input_cost_usd = +(tokens.input_tokens / M * rates.input_per_1m).toFixed(8);
+  const output_cost_usd = +(tokens.output_tokens / M * rates.output_per_1m).toFixed(8);
   const cache_write_cost_usd = +(tokens.cache_creation_tokens / M * rates.cache_write_per_1m).toFixed(8);
-  const cache_read_cost_usd  = +(tokens.cache_read_tokens     / M * rates.cache_read_per_1m).toFixed(8);
-  const total_cost_usd       = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
+  const cache_read_cost_usd = +(tokens.cache_read_tokens / M * rates.cache_read_per_1m).toFixed(8);
+  const total_cost_usd = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
 
   const entry = {
-    phase:               mapping.phase,
-    agent:               agentType,
+    phase: mapping.phase,
+    agent: agentType,
     model,
-    feature:             feature || null,
-    date:                new Date().toISOString().slice(0, 10),
-    input_tokens:        tokens.input_tokens,
-    output_tokens:       tokens.output_tokens,
+    feature: feature || null,
+    date: new Date().toISOString().slice(0, 10),
+    input_tokens: tokens.input_tokens,
+    output_tokens: tokens.output_tokens,
     cache_creation_tokens: tokens.cache_creation_tokens,
-    cache_read_tokens:   tokens.cache_read_tokens,
+    cache_read_tokens: tokens.cache_read_tokens,
     input_cost_usd,
     output_cost_usd,
     cache_write_cost_usd,
@@ -658,7 +664,7 @@ async function runHookMode() {
   logDebug('PLUGIN_DIR:', PLUGIN_DIR);
 
   detectCurrentSession();
-  refreshPricing().catch(() => {/* already logged inside refreshPricing */});
+  refreshPricing().catch(() => {/* already logged inside refreshPricing */ });
 
   // Read newline-delimited JSON-RPC from stdin
   let buffer = '';
@@ -681,7 +687,7 @@ async function runHookMode() {
 
   process.stdin.on('end', () => process.exit(0));
   process.on('SIGTERM', () => process.exit(0));
-  process.on('SIGINT',  () => process.exit(0));
+  process.on('SIGINT', () => process.exit(0));
   process.on('uncaughtException', err => logError('Uncaught exception:', err.message, err.stack));
   process.on('unhandledRejection', err => logError('Unhandled rejection:', err));
 })();

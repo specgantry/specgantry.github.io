@@ -69,6 +69,24 @@ claude plugin list
 
 Both update to the latest version. `marketplace update` is recommended — it verifies the plugin structure as part of the update. Use whichever is more convenient.
 
+### How do I uninstall SpecGantry? {#how-do-i-uninstall-specgantry}
+
+To remove the plugin and the marketplace entry completely:
+
+```bash
+claude plugin uninstall spec-gantry
+claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+```
+
+Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project's `specs/` files are not affected.
+
+To reinstall afterwards, use the standard install sequence:
+
+```bash
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry
+```
+
 ---
 
 ## Getting Started

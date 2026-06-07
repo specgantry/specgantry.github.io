@@ -13,6 +13,36 @@ You receive as input:
 - `project_name` — the name the user provided or that was inferred
 - `release_label` — the release label (default: v1.0)
 
+## HARD GATE — Execute first, every time
+
+Before doing anything else:
+
+1. Verify source files exist in the repo — run:
+   ```bash
+   find . -maxdepth 3 -not -path './.git/*' -not -path './node_modules/*' \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.go" -o -name "*.java" -o -name "*.rb" -o -name "*.rs" -o -name "*.cs" \) | head -1
+   ```
+2. Verify `specs/project-state.yaml` does NOT already have `phase_gates.architecture_complete: true` — this agent must not overwrite a completed project
+
+If source files are absent:
+```
+✗ Reverse-engineer gate FAILED
+
+  No source files found in this repository.
+  This command is for analysing existing codebases.
+  Run /start-project to begin a new project from scratch.
+```
+Stop.
+
+If architecture is already complete:
+```
+✗ Reverse-engineer gate FAILED
+
+  This project already has a completed architecture spec.
+  Re-running reverse-engineer would overwrite existing work.
+  Run /spec-gantry to continue with the existing project.
+```
+Stop.
+
 ---
 
 ## Step 1 — Analyse the codebase

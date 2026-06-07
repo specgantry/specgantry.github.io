@@ -491,7 +491,6 @@ async function handleRequest(req) {
 // Claude Code constructs agentType as: "plugin-name:subdir:agent-name"
 // for plugin agents, or bare names like "Explore" for built-in agents.
 const AGENT_MAP = {
-  // Fully qualified names (spec-gantry:category:agent-name)
   'spec-gantry:ideation:ideation-agent':                    { phase: 'ideation',        model: 'claude-haiku-4-5-20251001' },
   'spec-gantry:architecture:architecture-agent':            { phase: 'architecture',     model: 'claude-sonnet-4-6' },
   'spec-gantry:feature-spec:feature-spec-agent':            { phase: 'feature_spec',     model: 'claude-sonnet-4-6' },
@@ -499,18 +498,7 @@ const AGENT_MAP = {
   'spec-gantry:development:test-agent':                     { phase: 'test',             model: 'claude-haiku-4-5-20251001' },
   'spec-gantry:deployment:deployment-agent':                { phase: 'deployment',       model: 'claude-sonnet-4-6' },
   'spec-gantry:reverse-engineer:reverse-engineer-agent':    { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
-
-  // Short names (in case Claude Code passes agent name without plugin namespace)
-  'ideation-agent':                                         { phase: 'ideation',        model: 'claude-haiku-4-5-20251001' },
-  'architecture-agent':                                     { phase: 'architecture',     model: 'claude-sonnet-4-6' },
-  'feature-spec-agent':                                     { phase: 'feature_spec',     model: 'claude-sonnet-4-6' },
-  'dev-agent':                                              { phase: 'development',      model: 'claude-sonnet-4-6' },
-  'test-agent':                                             { phase: 'test',             model: 'claude-haiku-4-5-20251001' },
-  'deployment-agent':                                       { phase: 'deployment',       model: 'claude-sonnet-4-6' },
-  'reverse-engineer-agent':                                 { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
-
   // orchestrator is intentionally absent — it's the router, not a costed worker
-  // If it appears in AGENT_MAP, code will skip it (null value triggers skip logic)
 };
 
 // Infer feature ID from the subagent's transcript: look for current_feature in state files

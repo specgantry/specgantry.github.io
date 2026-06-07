@@ -93,8 +93,18 @@ Read the Action parameter:
 - If `phase_gates.ideation_complete: true`, return success (ideation already done, auto-advance to architecture)
 
 **Execute:**
-- Invoke `spec-gantry:ideation:ideation-agent`
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:ideation:ideation-agent`. Do NOT write ideation content yourself. The ideation agent runs interactively with the user. You wait for it to complete, then proceed to validation.
+
+- Invoke `spec-gantry:ideation:ideation-agent` via Agent tool
 - Pass vision_statement as context
+- Note the `toolUseId` returned by the Agent tool call (looks like `toolu_bdrk_...`)
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `ideation`
+  - `model`: `claude-haiku-4-5-20251001`
+  - `feature`: `null`
 
 **Artifact Validation (upon completion):**
 - Verify `specs/ideation-artifact.md` exists
@@ -142,8 +152,18 @@ Halt (return to caller, do not auto-advance)
 - If `phase_gates.architecture_complete: true`, return success (architecture already done, prepare for feature development)
 
 **Execute:**
-- Invoke `spec-gantry:architecture:architecture-agent`
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:architecture:architecture-agent`. Do NOT write architecture content yourself. The architecture agent runs interactively with the user. You wait for it to complete, then proceed to validation.
+
+- Invoke `spec-gantry:architecture:architecture-agent` via Agent tool
 - Pass ideation-artifact.md as context
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `architecture`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `null`
 
 **Artifact Validation (upon completion):**
 - Verify `specs/architecture-spec.md` exists
@@ -212,9 +232,19 @@ Halt.
 - If `feature_spec_complete: true` and `spec_reviewed: false`, route to `review_feature_spec` instead
 
 **Execute:**
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:feature-spec:feature-spec-agent`. Do NOT write feature spec content yourself — not the sections, not guardrail checks, not the state updates. The feature-spec agent owns all spec content and interacts directly with the developer. You wait for the agent to complete, then proceed to artifact validation.
+
 - Create `.claude/features/[ID].lock` file (timestamp: now)
-- Invoke `spec-gantry:feature-spec:feature-spec-agent`
+- Invoke `spec-gantry:feature-spec:feature-spec-agent` via Agent tool
 - Pass architecture-spec.md (guardrails context) and domain description
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `feature_spec`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
 - Verify `specs/features/[ID]/feature-spec.md` exists
@@ -256,8 +286,18 @@ Halt.
 - Same as start_feature_spec
 
 **Execute:**
-- Invoke `spec-gantry:feature-spec:feature-spec-agent`
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:feature-spec:feature-spec-agent`. Do NOT write or edit spec content yourself. The feature-spec agent resumes the existing spec from where it left off and interacts with the developer.
+
+- Invoke `spec-gantry:feature-spec:feature-spec-agent` via Agent tool
 - Agent resumes from last incomplete section (reads existing spec-md)
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `feature_spec`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[ID]`
 
 **Artifact & State Validation:**
 - Same as start_feature_spec
@@ -284,8 +324,18 @@ Halt.
 - If `spec_reviewed: true`, return success (already reviewed)
 
 **Execute:**
-- Invoke `spec-gantry:feature-spec:feature-spec-agent` with mode: review
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:feature-spec:feature-spec-agent`. Do NOT review or edit spec content yourself. The feature-spec agent presents the full spec to the developer and handles the review interaction.
+
+- Invoke `spec-gantry:feature-spec:feature-spec-agent` via Agent tool with mode: review
 - Agent displays full spec and prompts: "Does this spec correctly capture the feature? [Y/N]"
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `feature_spec`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[ID]`
 
 **Review Flow:**
 - If developer confirms spec is correct: agent returns confirmation
@@ -364,9 +414,19 @@ Halt.
 - If `dev_complete: true` but `tests_passing: false`, auto-invoke `resume_testing`
 
 **Execute:**
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:development:dev-agent`. Do NOT write implementation code yourself. The dev agent owns all code changes and interacts with the codebase.
+
 - Create `.claude/features/[ID].lock` file
-- Invoke `spec-gantry:development:dev-agent`
+- Invoke `spec-gantry:development:dev-agent` via Agent tool
 - Pass feature-spec.md and architecture-spec.md
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `development`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
 - Verify `specs/features/[ID]/dev-artifact.yaml` exists
@@ -408,8 +468,18 @@ Halt.
 - Same as start_development
 
 **Execute:**
-- Invoke `spec-gantry:development:dev-agent`
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:development:dev-agent`. Do NOT write implementation code yourself.
+
+- Invoke `spec-gantry:development:dev-agent` via Agent tool
 - Agent resumes from last incomplete task
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `development`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[ID]`
 
 **Artifact & State Validation:**
 - Same as start_development
@@ -434,8 +504,18 @@ Halt.
 - (Tests already passing; skip expensive re-run)
 
 **Execute:**
-- Invoke `spec-gantry:development:test-agent`
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:development:test-agent`. Do NOT run tests yourself or interpret test output for state updates.
+
+- Invoke `spec-gantry:development:test-agent` via Agent tool
 - Pass feature-spec.md and dev-artifact.yaml
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `test`
+  - `model`: `claude-haiku-4-5-20251001`
+  - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
 - Verify `specs/features/[ID]/dev-artifact.yaml` still valid
@@ -472,9 +552,19 @@ Halt.
 - If `deployment_status: complete` in backlog entry, return success (already deployed)
 
 **Execute:**
+> ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:deployment:deployment-agent`. Do NOT perform deployment steps yourself.
+
 - Create `.claude/features/[feature_id].lock` file
-- Invoke `spec-gantry:deployment:deployment-agent`
+- Invoke `spec-gantry:deployment:deployment-agent` via Agent tool
 - Pass feature_id and dev-artifact.yaml
+- Note the `toolUseId` returned by the Agent tool call
+
+**Cost Recording (immediately after agent returns):**
+- Call `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` with:
+  - `toolUseId`: the id from the Agent tool call above
+  - `phase`: `deployment`
+  - `model`: `claude-sonnet-4-6`
+  - `feature`: `[feature_id]`
 
 **State Validation (upon completion, Gap 6):**
 - Read `specs/features/[feature_id]/state.yaml`, verify it now contains:
@@ -656,6 +746,8 @@ Requires full architecture review:
 12. **Auto-advance when gates pass.** After gate passes, immediately invoke next agent without waiting.
 13. **Check idempotency before invoking.** If work already done, return success.
 14. **Never invoke agent if concurrent work detected.** Fail with lock message.
+15. **⛔ Never do the work of a sub-agent yourself.** Ideation, architecture, feature spec, development, testing, and deployment work must be delegated via the Agent tool to the appropriate sub-agent. The orchestrator routes and validates — it does not author content, write code, or run tests.
+16. **Always call `record_agent_cost` after every Agent tool invocation.** Use `mcp__plugin_spec-gantry_spec-gantry-costs__record_agent_cost` immediately after each agent returns, before proceeding to artifact validation. Never skip this step.
 
 ---
 

@@ -9,7 +9,10 @@
       "Bash(git show *)",
       "Bash(git commit -m ' *)",
       "Skill(update-config)",
-      "Bash(TMPDIR=/tmp grep -n orchestrator-agent /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/start-project/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/bugfix/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/spec-gantry/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/reverse-engineer/SKILL.md)"
+      "Bash(TMPDIR=/tmp grep -n orchestrator-agent /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/start-project/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/bugfix/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/spec-gantry/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/reverse-engineer/SKILL.md)",
+      "Read(//Users/I519286/Documents/Code/Calc/**)",
+      "Read(//Users/I519286/Documents/Code/Calc/specs/**)",
+      "Bash(./release.sh *)"
     ]
   }
 }

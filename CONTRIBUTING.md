@@ -126,9 +126,9 @@ Since SpecGantry has no compiled code, testing is functional — run through the
 4. Orchestrator must refuse and list failing tests
 
 **Gate 3: Bugfix fast-track**
-1. Run `/bugfix` with a bug description
-2. Verify `specs/features/BUGFIX-001/state.yaml` is created with `hot_path: true` and `feature_spec_complete: true`
-3. Verify code-executor is invoked without checking for a feature spec
+1. Run `/spec-gantry`, press `[+]New work`, describe a bug
+2. Verify `classify_and_route` routes to `bug_fix` and `specs/features/BUGFIX-001/state.yaml` is created with `hot_path: true` and `feature_spec_complete: true`
+3. Verify dev-subagent is invoked without checking for a feature spec
 
 **Gate 4: Architecture guardrail enforcement**
 1. Complete the architecture phase with at least one guardrail

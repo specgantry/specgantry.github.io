@@ -18,10 +18,7 @@ All 6 skills — what they do, when to invoke them, and how they connect to the 
 
 | Skill | Command | Role | Purpose |
 |-------|---------|------|---------|
-| **spec-gantry** | `/spec-gantry` | Both | Main dashboard and entry point |
-| **start-project** | `/start-project` | Team Lead | New project initialization |
-| **reverse-engineer** | `/reverse-engineer` | Team Lead | Analyze existing code |
-| **bugfix** | `/bugfix` | Developer | Fast-track a production bug fix |
+| **spec-gantry** | `/spec-gantry` | Both | Main dashboard and single entry point |
 | **track-cost** | `/track-cost` | Both | View token usage and cost breakdown |
 | **update-pricing** | `/update-pricing` | Both | Refresh pricing rates |
 
@@ -54,7 +51,7 @@ Run this at the start of every session. SpecGantry reads your project state, det
 ### The Dashboard
 
 ```
-SpecGantry v1.7.3  |  My App
+SpecGantry v1.7.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -197,42 +194,7 @@ Review the proposed architecture before confirming? [Y/n]
 
 ---
 
-## 4. bugfix {#bugfix}
-
-**Emergency fast-track for production bugs — straight to development.**
-
-```
-/bugfix
-```
-
-### What It Does
-
-`/bugfix` is for production issues that can't wait for the normal spec cycle. It skips the ideation and feature spec phases and goes directly to development — while still requiring tests to pass before deployment.
-
-Describe the bug in one or two sentences. SpecGantry creates a tracked bug fix entry and begins development immediately.
-
-```
-  Describe the bug (1–2 sentences):
-  What is broken and what is the expected behaviour?
-
-  Bug: > The auth middleware returns 200 instead of 401 for expired tokens
-
-  ✓ Bug fix fast-track activated: BUGFIX-001
-  ✓ Architecture guardrails apply
-  ✓ Tests required before deployment
-
-  Analysing codebase...
-```
-
-Architecture guardrails still apply throughout the fix — bugs don't get a bypass on code quality.
-
-### Graduating Bugs to Features
-
-Sometimes a bug reveals that something was never properly designed. The Team Lead can promote a bug fix to a full feature with its own spec phase, domain assignment, and backlog position.
-
----
-
-## 5. track-cost {#track-cost}
+## 4. track-cost {#track-cost}
 
 **See exactly what your AI development sessions cost, by phase and feature.**
 
@@ -251,7 +213,7 @@ Token counts are exact API values, not estimates. All four token categories are 
 ### Example Output
 
 ```
-SpecGantry v1.7.3  |  My App
+SpecGantry v1.7.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 
@@ -300,7 +262,7 @@ SpecGantry maintains a local cache of Anthropic's current pricing rates. This sk
 ### Example Output
 
 ```
-SpecGantry v1.7.3  |  My App
+SpecGantry v1.7.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 
@@ -360,8 +322,8 @@ Team Lead:
 ### Bug Found in Production
 
 ```
-Developer:
-  /bugfix → describe the issue → development begins immediately
+Team Lead or Developer:
+  /spec-gantry → [+]New work → describe the issue → development begins immediately
 
 Team Lead (if needed):
   /spec-gantry → [P]roject → Graduate bugfix

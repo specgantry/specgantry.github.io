@@ -81,10 +81,11 @@ Progress bar: 10 chars, proportional fill (█ deployed, ░ remaining). Read `s
 
 **QUICKBAR** — render on every response, last:
 ```
-── [A]rch  [B]acklog  [P]roject  [?]Help  [X]Exit ──  (role: tl)
-── [A]rch  [?]Help  [X]Exit ──────────────────────  (role: dev)
-── [?]Help  [X]Exit ────────────────────────────────  (no project)
+── [A]rch  [B]acklog  [P]roject  [+]New work  [?]Help  [X]Exit ──  (role: tl, project active)
+── [A]rch  [?]Help  [X]Exit ────────────────────────────────────  (role: dev)
+── [?]Help  [X]Exit ─────────────────────────────────────────────  (no project)
 ```
+`[+]New work` appears for TL only when `architecture_complete:true` and at least one feature has `deployment_status:complete`.
 
 **GATE_FORMAT:**
 ```
@@ -150,6 +151,7 @@ Read state, find the first matching case, run the action. Do not prompt the user
 | 8 | TL · any feature `tests_passing:true` · not deployed | Run **deploy_feature** (prompt which) |
 | 9 | No `current_feature` · unclaimed features exist | List claimable features; on pick: assign, write `current_feature`, run **feature_spec** |
 | 10 | All features deployed | View H: ask for next work; run **classify_and_route** |
+| 10b | TL · `architecture_complete:true` · at least one feature deployed · `[+]` pressed | Run **classify_and_route** |
 
 **View A** (no project, source files found):
 ```
@@ -160,7 +162,7 @@ Existing codebase detected — no SpecGantry project found.
 On [1]: run **init_project**.
 On [2]: run **reverse_engineer**.
 
-**View H** (project complete):
+**View H** (all features deployed):
 ```
 All [n] features deployed.
 Describe what to work on next (bug, improvement, new feature, or change), or X to exit:
@@ -338,10 +340,17 @@ On N: `Cancelled.`
 
 **[P]** *(TL only)* Project menu: add feature / defer / reassign / graduate bugfix / edit name or vision.
 
+**[+]** *(TL only, available once at least one feature is deployed)* Prompt:
+```
+What would you like to work on next?
+Describe a bug, improvement, new feature, or broader change:  >
+```
+Run **classify_and_route** with the description.
+
 **[?]**
 ```
 /spec-gantry     Dashboard & entry point    /track-cost    Cost breakdown
-/update-pricing  Refresh rates              /bugfix        Fast-track bug fix
+/update-pricing  Refresh rates
 ```
 
 **[X]** `Run /spec-gantry anytime to return.`

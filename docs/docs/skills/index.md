@@ -54,7 +54,7 @@ Run this at the start of every session. SpecGantry reads your project state, det
 ### The Dashboard
 
 ```
-SpecGantry v1.6.3  |  My App
+SpecGantry v1.6.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -251,7 +251,7 @@ Token counts are exact API values, not estimates. All four token categories are 
 ### Example Output
 
 ```
-SpecGantry v1.6.3  |  My App
+SpecGantry v1.6.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 
@@ -300,7 +300,7 @@ SpecGantry maintains a local cache of Anthropic's current pricing rates. This sk
 ### Example Output
 
 ```
-SpecGantry v1.6.3  |  My App
+SpecGantry v1.6.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 

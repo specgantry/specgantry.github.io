@@ -94,7 +94,7 @@ Write an empty JSON array:
 
 ## Hand off to orchestrator
 
-Invoke the orchestrator with:
+Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator` with:
 - Action: start ideation
 - Vision statement (pass through to ideation-agent)
 

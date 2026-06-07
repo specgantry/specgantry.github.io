@@ -40,7 +40,7 @@ Read the following. Missing files are not errors — they indicate pipeline stag
 **Always render this first, on every response.**
 
 ```
-SpecGantry v1.5.2  |  [Project Name, or "New Project" if none]
+SpecGantry v1.5.3  |  [Project Name, or "New Project" if none]
 Progress  [PROGRESSBAR]  [n] / [total] features complete  ·  Total spend: $[X.XX]
 ──────────────────────────────────────────────────────────────────────
 ```
@@ -332,23 +332,23 @@ Show `[2] Analyze this existing codebase` only if files are found.
 
 ### Case 2 — TL, ideation not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → ideation-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → ideation-agent.
 
 ### Case 3 — TL, ideation done, architecture not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → architecture-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → architecture-agent.
 
 ### Case 4 — Current feature: spec in progress
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → feature-spec-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → feature-spec-agent.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → feature-spec-agent to show self-review prompt.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → feature-spec-agent to show self-review prompt.
 
 ### Case 6 — Current feature: reviewed, dev not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke orchestrator → dev-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → dev-agent.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
 
@@ -364,7 +364,7 @@ Render full UI (View B) with actions. Let Team Lead choose.
 
 ### Case 10 — Project complete
 
-Render header (all `█` progress bar) + View H. After user input, pass description to orchestrator with `Action: classify_and_route`. On confirmation, route to sub-flow. Re-enter from Step 1 on completion.
+Render header (all `█` progress bar) + View H. After user input, pass description to `spec-gantry:orchestrator` with `Action: classify_and_route`. On confirmation, route to sub-flow. Re-enter from Step 1 on completion.
 
 If user types "nothing for now", "done", "exit", "no", or "x":
 ```
@@ -416,4 +416,4 @@ Re-enter from Step 1. Re-read all state. Re-render the full UI. The user always 
 - No welcome banner, no copyright block, no SpecGantry ASCII art on any screen.
 - Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
 - The `↳` sub-line on actions is one line maximum. Never nest further.
-- Never advance a phase without invoking the orchestrator. The orchestrator handles all gate enforcement.
+- Never advance a phase without invoking the orchestrator. Always use `subagent_type: spec-gantry:orchestrator` — never invoke it by short name or description alone.

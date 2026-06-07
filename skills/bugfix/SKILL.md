@@ -36,7 +36,7 @@ If `[N]`: exit with "Cancelled."
 
 ## Step 3: Hand off to orchestrator
 
-Invoke the orchestrator with:
+Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator` with:
 - Action: classify_and_route
 - pre_classified: bug_fix
 - Description: [bug description from Step 1]

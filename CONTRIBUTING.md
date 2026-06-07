@@ -133,7 +133,7 @@ Since SpecGantry has no compiled code, testing is functional — run through the
 **Gate 4: Architecture guardrail enforcement**
 1. Complete the architecture phase with at least one guardrail
 2. Start a feature spec and enter content that violates the guardrail
-3. Verify feature-spec-agent flags the conflict with `⚠ Guardrail conflict:` before writing the section
+3. Verify feature-spec-subagent flags the conflict with `⚠ Guardrail conflict:` before writing the section
 4. Verify the final `## Guardrail Compliance` section contains `VIOLATION:` and the spec gate fails
 
 ---

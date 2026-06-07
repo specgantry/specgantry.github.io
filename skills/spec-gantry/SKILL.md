@@ -73,13 +73,13 @@ Per-feature cost: sum `total_cost_usd` from cost-log.ndjson entries where `featu
 
 ## Routing — Take First Match
 
-Read state, find the first matching case, invoke the action. Do not prompt the user unless the case explicitly calls for it.
+Read state, find the first matching case, invoke the action. Do not prompt the user unless the case explicitly calls for it. **Invoke the orchestrator once per `/spec-gantry` call — do not chain multiple orchestrator calls in the same turn. The orchestrator handles its own phase transitions internally.**
 
 | # | Condition | Action |
 |---|-----------|--------|
 | 1 | No `.claude/local-state.yaml` | Render View A; offer [2] reverse-engineer if source files exist |
-| 2 | TL · `ideation_complete: false` | `→ orchestrator: start_ideation` |
-| 3 | TL · `architecture_complete: false` | `→ orchestrator: start_architecture` |
+| 2 | TL · `ideation_complete: false` | `→ orchestrator: start_ideation` — then stop; re-render dashboard |
+| 3 | TL · `ideation_complete: true` · `architecture_complete: false` | `→ orchestrator: start_architecture` — then stop; re-render dashboard |
 | 4 | `current_feature` set · spec in progress | `→ orchestrator: resume_feature_spec` |
 | 5 | `current_feature` set · spec done · not reviewed | `→ orchestrator: review_feature_spec` |
 | 6 | `current_feature` set · reviewed · dev not done | `→ orchestrator: resume_development` |

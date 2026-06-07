@@ -259,15 +259,15 @@ Cost Breakdown
 
   Project phases
   ──────────────────────────────────────────────────────────────────────
-  ideation     ideation-agent      haiku-4-5    $0.0000  $0.0000  $0.0001
-  architecture architecture-agent  sonnet-4-6   $0.0002  $0.0003  $0.0010
+  ideation     ideation-subagent      haiku-4-5    $0.0000  $0.0000  $0.0001
+  architecture architecture-subagent  sonnet-4-6   $0.0002  $0.0003  $0.0010
                                                           Subtotal  $0.0011
 
   FEATURE-001 · User Auth
   ──────────────────────────────────────────────────────────────────────
-  feature_spec  feature-spec-agent  sonnet-4-6  $0.0600  $0.2820  $0.4557
-  development   dev-agent           sonnet-4-6  $0.1062  $0.4618  $0.7084
-  test          test-agent          sonnet-4-6  $0.1122  $0.4910  $0.7489
+  feature_spec  feature-spec-subagent  sonnet-4-6  $0.0600  $0.2820  $0.4557
+  development   dev-subagent           sonnet-4-6  $0.1062  $0.4618  $0.7084
+  test          test-subagent          sonnet-4-6  $0.1122  $0.4910  $0.7489
                                                           Subtotal  $1.9130
 
   ──────────────────────────────────────────────────────────────────────

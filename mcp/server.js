@@ -509,13 +509,13 @@ async function handleRequest(req) {
 // Claude Code constructs agentType as: "plugin-name:subdir:agent-name"
 // for plugin agents, or bare names like "Explore" for built-in agents.
 const AGENT_MAP = {
-  'spec-gantry:ideation:ideation-agent': { phase: 'ideation', model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:architecture:architecture-agent': { phase: 'architecture', model: 'claude-sonnet-4-6' },
-  'spec-gantry:feature-spec:feature-spec-agent': { phase: 'feature_spec', model: 'claude-sonnet-4-6' },
-  'spec-gantry:development:dev-agent': { phase: 'development', model: 'claude-sonnet-4-6' },
-  'spec-gantry:development:test-agent': { phase: 'test', model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:deployment:deployment-agent': { phase: 'deployment', model: 'claude-sonnet-4-6' },
-  'spec-gantry:reverse-engineer:reverse-engineer-agent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
+  'spec-gantry:ideation:ideation-subagent': { phase: 'ideation', model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:architecture:architecture-subagent': { phase: 'architecture', model: 'claude-sonnet-4-6' },
+  'spec-gantry:feature-spec:feature-spec-subagent': { phase: 'feature_spec', model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:dev-subagent': { phase: 'development', model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:test-subagent': { phase: 'test', model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:deployment:deployment-subagent': { phase: 'deployment', model: 'claude-sonnet-4-6' },
+  'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
   'spec-gantry:orchestrator:orchestrator-agent': { phase: 'orchestration', model: 'claude-sonnet-4-6' },
 };
 
@@ -562,6 +562,36 @@ function sumTokensFromTranscript(transcriptPath) {
     logError('sumTokensFromTranscript failed:', err.message);
   }
   return { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, model };
+}
+
+// ─── Hook mode: SubagentStart handler ────────────────────────────────────────
+// Invoked by Claude Code's SubagentStart hook with JSON payload on stdin.
+// Logs when a SpecGantry agent is kicked off.
+async function runHookStartMode() {
+  let payload;
+  try {
+    const raw = await new Promise((resolve, reject) => {
+      let data = '';
+      process.stdin.setEncoding('utf8');
+      process.stdin.on('data', c => data += c);
+      process.stdin.on('end', () => resolve(data));
+      process.stdin.on('error', reject);
+    });
+    payload = JSON.parse(raw);
+  } catch (err) {
+    logError('Hook start: failed to parse stdin payload:', err.message);
+    process.exit(0);
+  }
+
+  const agentType = payload.agent_type || payload.agentType || '';
+  const mapping = AGENT_MAP[agentType];
+
+  if (mapping) {
+    logInfo(`Agent started: ${mapping.phase} (${agentType})`);
+  }
+
+  process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+  process.exit(0);
 }
 
 // ─── Hook mode: SubagentStop handler ─────────────────────────────────────────
@@ -665,6 +695,12 @@ async function runHookMode() {
 
 // ─── Startup ──────────────────────────────────────────────────────────────────
 (async function main() {
+  // Hook mode: invoked by Claude Code's SubagentStart hook
+  if (process.argv.includes('--hook-start')) {
+    await runHookStartMode();
+    return;
+  }
+
   // Hook mode: invoked by Claude Code's SubagentStop hook
   if (process.argv.includes('--hook')) {
     await runHookMode();

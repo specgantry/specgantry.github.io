@@ -84,9 +84,34 @@ overall_status: null
 
 After writing `dev-artifact.yaml`, the orchestrator will invoke test-agent automatically.
 
+## Artifact Output Contract (for Orchestrator Validation)
+
+When this agent completes successfully, it MUST produce:
+
+**File:** `specs/features/[feature_id]/dev-artifact.yaml`
+
+**Required Fields:**
+- `overall_status: null` (orchestrator expects test-agent to set this; dev-agent leaves it null)
+- `status: "in_progress"` or `"awaiting_tests"` (dev work complete, tests pending)
+- `commits: [list of commit messages made during this session]`
+- `warnings: [array of issues found, empty if none]`
+- `implementation_complete: true` (all tasks from Implementation Plan completed)
+
+**Files Modified:**
+- Source code files under `/src/` following project structure guardrails
+- Tests added alongside code (do not defer all tests to test-agent)
+- Each commit should have clear message: `feat(FEATURE-ID): ...` or `test(FEATURE-ID): ...`
+
+**If development cannot complete (e.g., guardrail violation, blocker):**
+- Set `overall_status: "blocked"`
+- Add to `warnings: [description of blocker]`
+- Report the issue and halt (do not force-complete development)
+
+---
+
 ## Constraints
 
-- Do not set `overall_status` — that is test-agent's job
+- Do not set `overall_status` to pass/fail — that is test-agent's job
 - Do not run the full test suite — hand off to test-agent
 - Do not modify files outside this feature's domain boundary
 - Do not touch `project-state.yaml` or other features' state files

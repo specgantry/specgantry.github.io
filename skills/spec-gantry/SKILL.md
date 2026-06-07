@@ -12,6 +12,19 @@ You are the **spec-gantry dashboard**. Your primary rule:
 
 ---
 
+## ⚠️ CRITICAL: Concurrent Development Notice
+
+**The orchestrator is NOT thread-safe.** Only one developer should work on the same feature at a time.
+
+- Do NOT run `/spec-gantry` on the same feature from multiple terminals simultaneously
+- Do NOT let two developers pick up the same feature without coordination
+- The orchestrator uses `.claude/features/[FEATURE-ID].lock` files to detect concurrent access and will halt with a lock error
+- If you see a lock error, check if another developer is working on that feature, or ask them to finish first
+
+For team coordination: Use the dashboard to see who has `current_feature` set in their local-state.yaml, or check git commits to see what's in progress.
+
+---
+
 ## The UI Contract
 
 Every single response — without exception — begins with the persistent header, then the main content area, then the quick-bar. This structure never changes. The user always knows where to look.
@@ -40,7 +53,7 @@ Read the following. Missing files are not errors — they indicate pipeline stag
 **Always render this first, on every response.**
 
 ```
-SpecGantry v1.5.7  |  [Project Name, or "New Project" if none]
+SpecGantry v1.5.8  |  [Project Name, or "New Project" if none]
 Progress  [PROGRESSBAR]  [n] / [total] features complete  ·  Total spend: $[X.XX]
 ──────────────────────────────────────────────────────────────────────
 ```
@@ -328,27 +341,25 @@ Show `[2] Analyze this existing codebase` only if files are found.
 **If user picks `[1]`:** run `/start-project`. Re-enter from Step 1 on completion.
 **If user picks `[2]`:** run `/reverse-engineer`. Re-enter from Step 1 on completion.
 
-**No welcome banner. No copyright notice. Just the header and the choice.**
-
 ### Case 2 — TL, ideation not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → ideation-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: start_ideation`.
 
 ### Case 3 — TL, ideation done, architecture not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → architecture-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: start_architecture`.
 
 ### Case 4 — Current feature: spec in progress
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → feature-spec-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: resume_feature_spec`.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → feature-spec-agent to show self-review prompt.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: review_feature_spec`.
 
 ### Case 6 — Current feature: reviewed, dev not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → dev-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: resume_development`.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
 
@@ -364,7 +375,7 @@ Render full UI (View B) with actions. Let Team Lead choose.
 
 ### Case 10 — Project complete
 
-Render header (all `█` progress bar) + View H. After user input, pass description to `spec-gantry:orchestrator` with `Action: classify_and_route`. On confirmation, route to sub-flow. Re-enter from Step 1 on completion.
+Render header (all `█` progress bar) + View H. After user input, pass description to `spec-gantry:orchestrator:orchestrator-agent` with `Action: classify_and_route`. On confirmation, route to sub-flow. Re-enter from Step 1 on completion.
 
 If user types "nothing for now", "done", "exit", "no", or "x":
 ```
@@ -413,7 +424,6 @@ Re-enter from Step 1. Re-read all state. Re-render the full UI. The user always 
 - The quick-bar renders as the **last line** of every response, no exceptions.
 - The quick-bar item order never changes: `[A]rch  [B]acklog  [P]roject  [?]Help  [X]Exit`
 - Role-gated items (`[B]`, `[P]`) are simply absent from the quick-bar for Developers — never shown as disabled.
-- No welcome banner, no copyright block, no SpecGantry ASCII art on any screen.
 - Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
 - The `↳` sub-line on actions is one line maximum. Never nest further.
 - Never advance a phase without invoking the orchestrator. Always use `subagent_type: spec-gantry:orchestrator:orchestrator-agent` — never invoke it by short name or description alone.

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(SPEC_GANTRY_LOG_LEVEL=debug ls logs/)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Fix cost tracking for ideation and architecture agents *)",
+      "Bash(git commit -m 'Fix SubagentStop matcher to properly match fully qualified agent names *)",
+      "Bash(git commit -m 'Clean up AGENT_MAP after matcher fix *)",
+      "Bash(git show *)",
+      "Bash(git commit -m ' *)",
+      "Skill(update-config)"
+    ]
+  }
+}

@@ -122,6 +122,36 @@ Also write `specs/features/[feature_id]/deploy-artifact.md` with a minimal summa
 `specs/features/[feature_id]/deploy.sh` — run this to deploy.
 ```
 
+## Artifact Output Contract (for Orchestrator Validation)
+
+When this agent completes, it MUST update:
+
+**File:** `specs/features/[feature_id]/state.yaml`
+
+**Required Fields (if ready to deploy):**
+- `deployment_status: "ready"`
+- `deployment_blockers: []` (empty array)
+
+**Required Fields (if blocked):**
+- `deployment_status: "blocked"`
+- `deployment_blockers: [list of specific blockers that must be resolved]`
+
+**File:** `specs/features/[feature_id]/deploy-artifact.md`
+
+**Required Sections:**
+- `# Deploy Artifact — [FEATURE-ID]: [title]`
+- `**Validated:** [YYYY-MM-DD]`
+- `**Status:** ready | blocked`
+- `## Checks` table with at minimum: Tests, Dependencies
+- `## Spec Warnings` section (list any warnings from dev-artifact, or "none")
+- `## Deployment Script` with path to deploy.sh or notes
+
+**Backlog Entry Update (in project-state.yaml):**
+- `deployment_status: "ready"` or `"blocked"`
+- If blocked: `deployment_blockers: [list]`
+
+---
+
 ## Constraints
 
 - Do not trigger any deployment pipeline

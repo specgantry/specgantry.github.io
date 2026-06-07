@@ -105,6 +105,32 @@ phase_gates:
   dev_complete: false
 ```
 
+## Artifact Output Contract (for Orchestrator Validation)
+
+When this agent completes, it MUST update:
+
+**File:** `specs/features/[feature_id]/dev-artifact.yaml`
+
+**Required Fields:**
+- `overall_status: "pass"` (if all tests passed on final run)
+- `overall_status: "fail"` (if any test failed on final run)
+- `tests_summary: {passed: N, failed: N, skipped: N, total: N}`
+- `test_results: [array of test case results with name, status, duration, error_message if failed]`
+- `test_command: "[command used to run tests]"`
+- `coverage: percentage` (if coverage tool available, omit if not)
+- `warnings: [list of flaky tests, timeouts, warnings — empty if none]`
+
+**File:** `specs/features/[feature_id]/state.yaml`
+
+**Required Fields (if all pass):**
+- `phase_gates.tests_passing: true`
+
+**Required Fields (if any fail):**
+- `phase_gates.tests_passing: false`
+- Add failing test names to `warnings` or top-level comment
+
+---
+
 ## Constraints
 
 - Do not fix failing tests

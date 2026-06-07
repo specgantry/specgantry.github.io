@@ -36,4 +36,4 @@ Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator:orchestra
 - project_name: [value from Step 2, or blank to infer]
 - release_label: [value from Step 2, default v1.0]
 
-The orchestrator invokes `reverse-engineer-agent` to perform the full codebase analysis, synthesis, and file generation.
+The orchestrator invokes `subagent_type: spec-gantry:reverse-engineer:reverse-engineer-agent` to perform the full codebase analysis, synthesis, and file generation.

@@ -220,3 +220,31 @@ Ask which section to revise. Return to that section, revise, re-run gate check, 
 
 ---
 
+## Artifact Output Contract (for Orchestrator Validation)
+
+When this agent completes successfully, it MUST produce:
+
+**File:** `specs/features/[feature_id]/feature-spec.md`
+
+**Required Content:**
+- All 6 sections present and completed (not marked `_not yet written_`)
+- Each section has substantial content (minimum 50 characters, not placeholder text)
+- `## Guardrail Compliance` section present and contains either:
+  - "✓ All guardrails met" or similar confirmation, OR
+  - Specific violations marked with `VIOLATION: [guardrail text]` (must be resolved before completion)
+- No `VIOLATION:` markers if spec passed orchestrator validation (orchestrator will reject spec with violations)
+
+**File:** `specs/features/[feature_id]/state.yaml`
+
+**Required Fields:**
+- `feature_spec_complete: true` (only if spec passed guardrail check)
+- `spec_reviewed: true` (only if developer confirmed self-review)
+- `phase_gates` block with correct boolean values
+
+**If the spec cannot be completed (e.g., guardrail violations that cannot be resolved):**
+- Set `blockers: [description of blocker]` in state.yaml
+- Do NOT set `feature_spec_complete: true`
+- Report the issue to the developer
+
+---
+

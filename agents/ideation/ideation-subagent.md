@@ -20,7 +20,7 @@ Read: .claude/local-state.yaml  →  role must be tl
 Read: specs/project-state.yaml  →  must exist
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
-`✗ Ideation gate FAILED · role must be tl and project-state.yaml must exist · Run /start-project`
+`✗ Ideation gate FAILED · role must be tl and project-state.yaml must exist · Run /spec-gantry`
 
 ## Step 1 — Load or resume artifact
 

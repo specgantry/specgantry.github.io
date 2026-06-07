@@ -1,6 +1,6 @@
 ---
 name: reverse-engineer-subagent
-description: Analyses an existing codebase and synthesises a complete spec-gantry project structure — architecture spec, ideation artifact, and feature backlog derived from the actual code. Invoked by the orchestrator after the reverse-engineer skill collects the project name and release label.
+description: Analyses an existing codebase and synthesises a complete spec-gantry project structure — architecture spec, ideation artifact, and feature backlog derived from the actual code. Invoked by /spec-gantry when an existing codebase is detected without SpecGantry artifacts.
 model: claude-sonnet-4-6
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -22,7 +22,7 @@ Bash: find source files (*.py *.ts *.js *.go *.java *.rb *.rs *.cs, maxdepth 3) 
 Read: specs/project-state.yaml (if exists)  →  architecture_complete must NOT be true
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
-- No source files: `✗ RE gate FAILED · no source files found · use /start-project for a new project`
+- No source files: `✗ RE gate FAILED · no source files found · run /spec-gantry to start a new project`
 - Already complete: `✗ RE gate FAILED · architecture already complete · run /spec-gantry to continue`
 
 ## Step 1 — Silent analysis

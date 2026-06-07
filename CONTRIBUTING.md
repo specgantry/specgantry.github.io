@@ -51,12 +51,12 @@ Default to Haiku unless the task requires reasoning across large context or prod
 
 ## Customizing Phase Gates
 
-Phase gate logic lives in `agents/orchestrator.md` under **Step 2: Route by phase**.
+Phase gate logic lives in `skills/spec-gantry/SKILL.md` under **Gate & Routing Actions**.
 
 To add a new gate condition:
-1. Add a new field to the `phase_gates` block in the initial YAML template (in `orchestrator.md` and `skills/start-project/SKILL.md`)
-2. Add a gate check entry in the relevant phase section of `orchestrator.md`
-3. Update `skills/spec-gantry/SKILL.md` stage completion logic to reflect the new gate flag
+1. Add a new field to the `phase_gates` block in the initial YAML template (in `skills/spec-gantry/SKILL.md` under **init_project**)
+2. Add a gate check entry in the relevant action section of `skills/spec-gantry/SKILL.md`
+3. Update the stage completion logic in the Feature Pipeline section to reflect the new gate flag
 
 ### Adding a New Phase
 

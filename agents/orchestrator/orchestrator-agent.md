@@ -1,5 +1,5 @@
 ---
-name: orchestrator
+name: orchestrator-agent
 description: Routes tasks through SDLC phases via explicit Actions, enforces phase gates, and manages state transitions. The single choke point for all phase transitions — no phase can advance without passing through here.
 model: claude-sonnet-4-6
 tools: Read, Write, Bash, Glob, Grep, Agent

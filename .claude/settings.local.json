@@ -8,7 +8,8 @@
       "Bash(git commit -m 'Clean up AGENT_MAP after matcher fix *)",
       "Bash(git show *)",
       "Bash(git commit -m ' *)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(TMPDIR=/tmp grep -n orchestrator-agent /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/start-project/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/bugfix/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/spec-gantry/SKILL.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/skills/reverse-engineer/SKILL.md)"
     ]
   }
 }

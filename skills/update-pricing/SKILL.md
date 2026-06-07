@@ -1,6 +1,7 @@
 ---
 name: update-pricing
 description: Refreshes SpecGantry's local pricing cache by fetching current Anthropic model rates. Call this when rates change or when cost entries show pricing_source: fallback.
+allowed-tools: Read
 ---
 
 # Update Pricing

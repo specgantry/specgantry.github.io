@@ -1,6 +1,7 @@
 ---
 name: track-cost
 description: Reads specs/cost-log.json and displays a full cost breakdown by phase, feature, and total. Uses real token counts captured automatically after each agent session.
+allowed-tools: Read
 ---
 
 # Track Cost

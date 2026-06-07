@@ -1,6 +1,6 @@
 ---
 name: track-cost
-description: Reads specs/cost-log.json and displays a full cost breakdown by phase, feature, and total. Uses real token counts captured automatically after each agent session.
+description: Reads specs/cost-log.ndjson and displays a full cost breakdown by phase, feature, and total. Uses real token counts captured automatically after each agent session.
 allowed-tools: Read
 ---
 
@@ -8,7 +8,9 @@ allowed-tools: Read
 
 Render **UI_HEADER** (defined in spec-gantry/SKILL.md).
 
-Read `specs/cost-log.json`. If absent or empty: show "No cost data recorded yet." then render **QUICKBAR**.
+Read `specs/cost-log.ndjson`. If absent or empty: show "No cost data recorded yet." then render **QUICKBAR**.
+
+Parse each line as a JSON object (one entry per line).
 
 Otherwise render two tables:
 

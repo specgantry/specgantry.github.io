@@ -214,25 +214,33 @@ function atomicWriteJson(filePath, data) {
   fs.renameSync(tmp, filePath);
 }
 
-// ─── cost-log.json management ────────────────────────────────────────────────
+// ─── cost-log.ndjson management ──────────────────────────────────────────────
+// NDJSON (newline-delimited JSON): one entry per line.
+// fs.appendFileSync is atomic for small writes on most OSes — no read-modify-write
+// race when two hooks fire simultaneously (e.g. parallel feature development).
+// track-cost skill reads all lines and parses each; /track-cost displays totals.
 function costLogPath() {
-  return path.join(PROJECT_DIR, 'specs', 'cost-log.json');
+  return path.join(PROJECT_DIR, 'specs', 'cost-log.ndjson');
 }
 
-function readCostLog() {
+function readCostLog(logPath) {
+  const p = logPath || costLogPath();
   try {
-    return JSON.parse(fs.readFileSync(costLogPath(), 'utf8'));
+    return fs.readFileSync(p, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map(line => JSON.parse(line));
   } catch {
     return [];
   }
 }
 
-function appendCostLog(entry) {
-  const log = readCostLog();
-  log.push(entry);
-  const p = costLogPath();
+function appendCostLog(entry, projectDir) {
+  const p = projectDir
+    ? path.join(projectDir, 'specs', 'cost-log.ndjson')
+    : costLogPath();
   fs.mkdirSync(path.dirname(p), { recursive: true });
-  atomicWriteJson(p, log);
+  fs.appendFileSync(p, JSON.stringify(entry) + '\n', 'utf8');
 }
 
 // ─── Session + agent resolution via .meta.json ───────────────────────────────
@@ -356,6 +364,10 @@ async function toolRecordAgentCost(args) {
   const subagentFile = path.join(subagentDir, `agent-${agentId}.jsonl`);
   logDebug('Reading transcript:', subagentFile);
 
+  // Resolve agentType from AGENT_MAP reverse lookup using the provided phase,
+  // so the agent field is always the fully-qualified type (same as hook path).
+  const agentType = Object.keys(AGENT_MAP).find(k => AGENT_MAP[k].phase === phase) || null;
+
   // Sum token usage across all assistant messages in the subagent transcript
   const lines = fs.readFileSync(subagentFile, 'utf8').split('\n').filter(Boolean);
   let input_tokens = 0, output_tokens = 0, cache_creation_tokens = 0, cache_read_tokens = 0;
@@ -384,7 +396,7 @@ async function toolRecordAgentCost(args) {
 
   const entry = {
     phase,
-    agent: `agent-${agentId}`,
+    agent: agentType || `agent-${agentId}`,
     model,
     feature: feature || null,
     date: new Date().toISOString().slice(0, 10),
@@ -418,7 +430,7 @@ async function toolRefreshPricing(_args) {
 // ─── MCP stdio protocol ───────────────────────────────────────────────────────
 const TOOLS = {
   record_agent_cost: {
-    description: 'Resolve a subagent by its toolUseId, read real token counts from its JSONL transcript, and append a cost entry to specs/cost-log.json.',
+    description: 'Resolve a subagent by its toolUseId, read real token counts from its JSONL transcript, and append a cost entry to specs/cost-log.ndjson.',
     inputSchema: {
       type: 'object',
       required: ['toolUseId', 'phase', 'model'],
@@ -554,7 +566,7 @@ function sumTokensFromTranscript(transcriptPath) {
 
 // ─── Hook mode: SubagentStop handler ─────────────────────────────────────────
 // Invoked by Claude Code's SubagentStop hook with JSON payload on stdin.
-// Reads the subagent transcript, infers phase/model, and appends to cost-log.json.
+// Reads the subagent transcript, infers phase/model, and appends to cost-log.ndjson.
 async function runHookMode() {
   let payload;
   try {
@@ -587,15 +599,23 @@ async function runHookMode() {
 
   logInfo(`Hook: recording cost for ${mapping.phase} (${agentType})`);
 
-  // Read token counts from the transcript Claude Code provides
+  // Resolve transcript path — prefer what Claude Code provides; fall back to derived path.
   const resolvedTranscript = transcript_path ||
     (() => {
-      // Fallback: derive path from session_id and agent_id if transcript_path absent
       const slug = projectSlug(cwd || PROJECT_DIR);
       return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);
     })();
 
   logDebug('Hook: transcript path:', resolvedTranscript);
+
+  // Fail loudly if transcript is unreadable — a $0.00 silent entry is worse than no entry.
+  if (!fs.existsSync(resolvedTranscript)) {
+    logError('Hook: transcript not found:', resolvedTranscript);
+    logError('Hook: skipping cost recording — cannot read token counts without transcript');
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
+  }
+
   const tokens = sumTokensFromTranscript(resolvedTranscript);
 
   // Use model from transcript if available (more accurate than frontmatter default)
@@ -615,7 +635,7 @@ async function runHookMode() {
 
   const entry = {
     phase: mapping.phase,
-    agent: agentType,
+    agent: agentType,          // always fully-qualified type (consistent with tool path)
     model,
     feature: feature || null,
     date: new Date().toISOString().slice(0, 10),
@@ -631,16 +651,11 @@ async function runHookMode() {
     pricing_source,
   };
 
-  const projectDir = cwd || PROJECT_DIR;
-  const logPath = path.join(projectDir, 'specs', 'cost-log.json');
   try {
-    const existing = (() => { try { return JSON.parse(fs.readFileSync(logPath, 'utf8')); } catch { return []; } })();
-    existing.push(entry);
-    fs.mkdirSync(path.dirname(logPath), { recursive: true });
-    atomicWriteJson(logPath, existing);
+    appendCostLog(entry, cwd || PROJECT_DIR);
     logInfo(`Hook: cost recorded — ${mapping.phase}${feature ? ' / ' + feature : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${total_cost_usd} (${pricing_source})`);
   } catch (err) {
-    logError('Hook: failed to write cost-log.json:', err.message);
+    logError('Hook: failed to write cost-log.ndjson:', err.message);
   }
 
   // Hook must output JSON and exit 0 — never block Claude Code

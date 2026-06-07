@@ -12,10 +12,10 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent, Skill
 **UI_HEADER** — render on every response, first:
 ```
 SpecGantry v[version]  |  [project.name or "New Project"]
-[██████████]  [n]/[total] deployed  ·  $[sum of cost-log.json total_cost_usd, or $0.00]
+[██████████]  [n]/[total] deployed  ·  $[sum of cost-log.ndjson total_cost_usd, or $0.00]
 ──────────────────────────────────────────────────────────
 ```
-Progress bar: 10 chars, proportional fill (█ deployed, ░ remaining). Read `specs/cost-log.json` for spend.
+Progress bar: 10 chars, proportional fill (█ deployed, ░ remaining). Read `specs/cost-log.ndjson` for spend (sum `total_cost_usd` across all lines).
 
 **QUICKBAR** — render on every response, last:
 ```
@@ -42,7 +42,7 @@ Progress bar: 10 chars, proportional fill (█ deployed, ░ remaining). Read `s
 
 Re-read all state files before each response. Missing files are not errors — they indicate pipeline stage.
 
-State files: `.claude/local-state.yaml` · `specs/project-state.yaml` · `specs/features/*/state.yaml` · `specs/cost-log.json`
+State files: `.claude/local-state.yaml` · `specs/project-state.yaml` · `specs/features/*/state.yaml` · `specs/cost-log.ndjson`
 
 ---
 
@@ -67,7 +67,7 @@ Stage icons:
 
 Stage completion: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
-Per-feature cost: sum `total_cost_usd` from cost-log entries where `feature` matches. Omit if zero.
+Per-feature cost: sum `total_cost_usd` from cost-log.ndjson entries where `feature` matches. Omit if zero.
 
 ---
 

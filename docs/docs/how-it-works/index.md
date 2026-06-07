@@ -178,10 +178,10 @@ Token counts are the exact values from the API — not estimates. All four token
 
 The dashboard shows a per-feature cost alongside each pipeline row. Run `/track-cost` for a full breakdown by phase and feature, with each cost component in its own column. This makes it immediately visible when cache costs are dominating — which is common for agents working with large codebases or long conversations.
 
-Pricing rates are fetched automatically from Anthropic's pricing page when the MCP server starts. If `/track-cost` shows fallback rates, restart Claude Code to refresh.
+Pricing rates are fetched automatically from Anthropic's pricing page when SpecGantry starts. If `/track-cost` shows fallback rates, restart Claude Code to refresh.
 
 <div class="info">
-  <strong>Cost data in git:</strong> <code>specs/cost-log.json</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over time.
+  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over time.
 </div>
 
 ---

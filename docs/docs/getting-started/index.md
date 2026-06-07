@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.7.6`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.7.7`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -141,7 +141,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.7.6  |  New Project
+SpecGantry v1.7.7  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -159,7 +159,7 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.7.6  |  New Project
+SpecGantry v1.7.7  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -179,7 +179,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.7.6  |  Acme Platform
+SpecGantry v1.7.7  |  Acme Platform
 Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -238,7 +238,7 @@ project-root/
 │   ├── project-state.yaml          # Project metadata and backlog
 │   ├── ideation-artifact.md        # Project vision & validated assumptions
 │   ├── architecture-spec.md        # Tech stack, system design, guardrails
-│   ├── cost-log.json               # Token usage and cost per agent session
+│   ├── cost-log.ndjson             # Token usage and cost per agent session
 │   └── features/
 │       ├── FEATURE-001/
 │       │   ├── feature-spec.md     # Feature specification (6 sections)
@@ -259,7 +259,7 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.7.6  |  My App
+SpecGantry v1.7.7  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -312,7 +312,7 @@ Feature Pipeline
 No. Ideation answers fundamental questions about the project. Without it, architecture has no context to work from.
 
 **"Can I use SpecGantry with an existing project?"**  
-Yes. Use `/reverse-engineer` to generate an architecture spec from your existing code. See [Skills Guide →](/docs/skills#reverse-engineer)
+Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate an architecture spec, domain breakdown, and feature backlog. See [How It Works →](/docs/how-it-works)
 
 **"What if I'm working solo?"**  
 SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. Many solo developers find that the ideation questions alone clarify their thinking significantly.

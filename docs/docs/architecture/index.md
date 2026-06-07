@@ -41,7 +41,7 @@ specs/
 ├── project-state.yaml              # Project metadata and feature backlog
 ├── ideation-artifact.md            # Ideation output and feasibility assessment
 ├── architecture-spec.md            # System architecture, guardrails, and domains
-├── cost-log.json                   # Token usage and cost per agent session
+├── cost-log.ndjson                 # Token usage and cost per agent session
 └── features/
     ├── FEATURE-001/
     │   ├── state.yaml              # Phase progress and timestamps
@@ -80,7 +80,7 @@ The output of the Architecture phase. Covers tech stack decisions, component bou
 
 A six-section specification for a single feature: scope (including explicit out-of-scope), API/interface contracts, data ownership, an ordered implementation plan, a test plan, and non-functional considerations including all required environment variables for secrets. The spec also contains a guardrail compliance section that must be clean before development begins.
 
-### `specs/cost-log.json`
+### `specs/cost-log.ndjson`
 
 An append-only record of token usage and cost for every agent session. Each entry includes the phase, feature, model, token counts by type, and cost by type. Run `/track-cost` to see this data rendered as a readable breakdown.
 
@@ -141,20 +141,16 @@ SpecGantry is open source and designed to be extended.
 Add custom rules to the `## Guardrails` section of `architecture-spec.md`. The feature-spec agent enforces every guardrail in that section — adding new ones requires no code changes. Examples:
 
 - "All API endpoints must require authentication"
-- "No direct database queries from the presentation layer"  
+- "No direct database queries from the presentation layer"
 - "All external API calls must respect a 5-second timeout"
 
 ### Custom Agents
 
-Add domain-specific agents by placing a new agent definition file in the `agents/` directory with standard frontmatter. Custom agents can be invoked by the orchestrator at specific phase transitions.
-
-### Custom Skills
-
-Add workflow steps by creating a skill file in the `skills/` directory. Custom skills can be invoked directly or triggered automatically.
+Add domain-specific agents by placing a new agent definition file in the `agents/` directory with standard frontmatter. Custom agents follow the same subagent pattern as built-in phase agents.
 
 ### Custom Phase Pipeline
 
-Advanced users can modify the orchestrator to add phases — for example, inserting a security review phase between spec and build — or adjust role requirements for existing phases.
+Advanced users can extend the pipeline — for example, inserting a security review phase between spec and build — by adding a new agent and wiring it into the `/spec-gantry` skill routing logic.
 
 ---
 

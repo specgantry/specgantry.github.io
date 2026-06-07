@@ -221,7 +221,7 @@ Yes — during the spec phase, select Abandon to return the feature to the backl
 
 ### How does cost tracking work?
 
-SpecGantry tracks token usage automatically at the end of every agent session — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.json` alongside your other project files and committed to git.
+SpecGantry tracks token usage automatically at the end of every agent session — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
 
 Run `/track-cost` to see the full breakdown by phase and feature.
 
@@ -243,7 +243,7 @@ Restart Claude Code. The MCP server fetches the latest rates from Anthropic's pr
 
 ### Can I export a cost report?
 
-Yes — `specs/cost-log.json` is plain JSON committed to git. It contains one entry per agent session with full token counts and cost by type. Any tool that reads JSON can aggregate or visualize it.
+Yes — `specs/cost-log.ndjson` is newline-delimited JSON committed to git. It contains one entry per agent session with full token counts and cost by type. Any tool that reads JSON can aggregate or visualize it.
 
 ---
 

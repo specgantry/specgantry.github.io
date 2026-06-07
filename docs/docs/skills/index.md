@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: All 6 skills — what they do, when to use them, and how they connect to the pipeline.
+description: The two skills that power SpecGantry — what they do and when to use them.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Reference"
@@ -10,52 +10,40 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-All 6 skills — what they do, when to invoke them, and how they connect to the pipeline.
+SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is for reviewing AI spend.
 
 ---
 
 ## Skills Overview
 
-| Skill | Command | Role | Purpose |
-|-------|---------|------|---------|
-| **spec-gantry** | `/spec-gantry` | Both | Main dashboard and single entry point |
-| **track-cost** | `/track-cost` | Both | View token usage and cost breakdown |
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, bug fixes, everything |
+| **track-cost** | `/track-cost` | Full cost breakdown by phase and feature |
 
 ---
 
-## Video: Skills in Action
+## /spec-gantry {#spec-gantry}
 
-<div class="video-placeholder">
-  <div class="video-placeholder-inner">
-    <div class="video-icon">▶</div>
-    <div class="video-text">
-      <strong>SpecGantry Skills Walkthrough</strong>
-      <span>Coming soon — a demonstration of each skill in a real project workflow.</span>
-    </div>
-  </div>
-</div>
-
----
-
-## 1. spec-gantry {#spec-gantry}
-
-**The main dashboard and your entry point for all daily work.**
+**The only command you need to know.**
 
 ```
 /spec-gantry
 ```
 
-Run this at the start of every session. SpecGantry reads your project state, determines where you are in the pipeline, and shows you exactly what to do next.
+Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, joining a team mid-flight, picking up a feature, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
+
+You never need to remember separate commands for different workflows. One command, every time.
+
+---
 
 ### The Dashboard
 
 ```
-SpecGantry v1.7.6  |  My App
+SpecGantry v1.7.7  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
-
-⚠  1 spec awaiting review  ·  FEATURE-004
 
 Feature Pipeline
 
@@ -75,125 +63,61 @@ Feature Pipeline
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
 
+The dashboard is the same entry point for every role. What you see reflects who you are and where the project is.
+
+---
+
+### What /spec-gantry Handles
+
+**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name, vision, release label) and moves straight into ideation. No separate setup command needed.
+
+**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written.
+
+**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically. The pipeline shows exactly what's been done and what's available to pick up.
+
+**Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically at each step.
+
+**Bug fixes and new work** — Once at least one feature is deployed, the `[+] New work` quick-bar action lets the Team Lead describe a bug, improvement, or new requirement. SpecGantry classifies it and confirms before routing to the right workflow.
+
+---
+
 ### Quick-bar Commands
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]rch` | Both | View the architecture spec and any open design questions |
-| `[B]acklog` | Team Lead only | Manage the backlog — prioritize, assign, defer, reassign |
-| `[P]roject` | Team Lead only | Add features, graduate bugfixes, edit project details |
-| `[?]Help` | Both | Quick reference — commands, icons, docs link |
-| `[X]Exit` | Both | Exit SpecGantry, return to normal Claude Code |
+| `[A]rch` | Both | View the full architecture spec |
+| `[B]acklog` | Team Lead | Manage backlog — prioritize, assign, defer, reassign |
+| `[P]roject` | Team Lead | Add features, graduate bug fixes, edit project details |
+| `[+] New work` | Team Lead | Describe a bug, improvement, new feature, or change |
+| `[?]Help` | Both | Quick reference and docs link |
+| `[X]Exit` | Both | Return to normal Claude Code |
 
-### Session Resume
+`[+] New work` appears when `architecture_complete` is true and at least one feature has been deployed.
 
-Because all state is on disk, every `/spec-gantry` invocation picks up exactly where you left off. Run it at the start of every session — no manual state management needed.
+---
 
-### When All Features Are Deployed
+### Classifying New Work
 
-When every active feature reaches completion, SpecGantry prompts you to describe what's next. Whatever you describe — a bug, an improvement, a new capability, or a broader change — SpecGantry classifies it and confirms before creating anything:
+When you use `[+] New work` or when all features are deployed, SpecGantry asks what you want to work on next and classifies your description into one of four types — confirming with you before doing anything:
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that worked is now broken — goes straight to development |
-| `enhancement` | An existing feature needs to do more or work differently |
-| `new_feature` | A net-new capability with no backlog entry |
-| `project_change` | Cross-cutting: infrastructure, auth, data model, multi-feature scope |
+| `bug_fix` | Something that was working is now broken — goes straight to development, spec phases bypassed |
+| `enhancement` | An existing feature needs to do more or work differently — creates a new versioned spec cycle |
+| `new_feature` | A net-new capability with no backlog entry — goes through the full feature pipeline |
+| `project_change` | Cross-cutting: infrastructure, auth, data model, multi-feature scope — goes through architecture first |
 
-On confirmation, the appropriate flow runs automatically.
-
----
-
-## 2. start-project {#start-project}
-
-**Initialize a new project from scratch.**
-
-```
-/start-project
-```
-
-*Usually called automatically by `/spec-gantry` when no project exists.*
-
-### What It Does
-
-Guides you through three quick prompts — project name, a brief vision (what it solves, who it's for, what success looks like), and a release label — then hands off to the ideation phase automatically.
-
-### Example Interaction
-
-```
-  Project name:
-  > Acme Platform
-
-  Project vision (3–5 sentences):
-  > A B2B SaaS platform that helps small teams manage their AI-assisted
-    development workflow. Team leads define architecture; developers build to spec.
-
-  What are you calling the first release? (default: v1.0)
-  > v1.0
-
-  ✓ Project initialised: Acme Platform
-
-  Starting ideation phase...
-```
-
-### When to Use It Directly
-
-- Starting a brand new project
-- After deleting specs to start a project over
-- Initializing a second project in an advanced setup
+SpecGantry always confirms its classification and the reason before proceeding.
 
 ---
 
-## 3. reverse-engineer {#reverse-engineer}
+### Session Resume
 
-**Bring SpecGantry discipline to an existing codebase.**
-
-```
-/reverse-engineer
-```
-
-*Usually called automatically by `/spec-gantry` when source files are found but no spec exists.*
-
-### What It Does
-
-Analyzes your existing code — structure, languages, frameworks, dependencies, database schemas, API endpoints — and proposes a SpecGantry project structure: an architecture spec, domain taxonomy, and feature backlog.
-
-The agent proposes. You review and decide before anything is written.
-
-### Example Output
-
-```
-Found existing codebase. Analyzing...
-
-📁 Structure: Monorepo (apps/, packages/, services/)
-🛠  Tech: TypeScript, Express, PostgreSQL, Redis
-🗄  DB: 12 tables detected
-🔗 APIs: 31 REST endpoints across 4 services
-📦 Key packages: passport, stripe, socket.io, bull
-
-Proposed architecture:
-  Domain        Description
-  ──────────────────────────────────────────────────
-  auth          Authentication, sessions, OAuth
-  billing       Stripe integration, plans, invoices
-  messaging     Real-time channels, notifications
-  core          User management, settings, admin
-
-Proposed feature backlog: 14 features
-
-Review the proposed architecture before confirming? [Y/n]
-```
-
-### When to Use It
-
-- Joining a project that has no SpecGantry structure
-- Documenting undocumented code before a handoff
-- Adding SpecGantry discipline to a project already in production
-- Onboarding new team members with a structured architecture reference
+All progress is saved after every question and every section. Every `/spec-gantry` invocation picks up exactly where you left off — no manual state management, no lost progress.
 
 ---
 
-## 4. track-cost {#track-cost}
+## /track-cost {#track-cost}
 
 **See exactly what your AI development sessions cost, by phase and feature.**
 
@@ -201,40 +125,37 @@ Review the proposed architecture before confirming? [Y/n]
 /track-cost
 ```
 
-For a phase-level breakdown, run `/track-cost` directly.
+SpecGantry tracks token usage automatically after every agent session. `/track-cost` renders that data as a full breakdown — by project phase, by feature, with each cost component in its own column.
 
-### What It Does
+Token counts are the exact values from the API, not estimates. Input, output, cache write, and cache read are shown separately because each is billed at a different rate and each tells a different story about where work is being done.
 
-SpecGantry tracks the real cost of every agent session automatically. This skill reads that data and presents a complete breakdown — by phase, by feature, with each cost component in its own column.
-
-Token counts are exact API values, not estimates. All four token categories are shown separately — input, output, cache write, and cache read — because each tells a different story. Cache costs in particular can be significant for agents working through large codebases or long conversations, and they're easy to miss if collapsed into a single total.
+---
 
 ### Example Output
 
 ```
-SpecGantry v1.7.6  |  My App
+SpecGantry v1.7.7  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 
 Cost Breakdown
 
   Project phases
-  ──────────────────────────────────────────────────────────────────────
-  ideation     ideation-subagent      haiku-4-5    $0.0000  $0.0000  $0.0001
-  architecture architecture-subagent  sonnet-4-6   $0.0002  $0.0003  $0.0010
-                                                          Subtotal  $0.0011
+  ─────────────────────────────────────────────────────────────
+  ideation     haiku-4-5     $0.0000   $0.0000   $0.0001   $0.0001
+  architecture sonnet-4-6    $0.0002   $0.0003   $0.0004   $0.0010
+                                                  Subtotal  $0.0011
 
   FEATURE-001 · User Auth
-  ──────────────────────────────────────────────────────────────────────
-  feature_spec  feature-spec-subagent  sonnet-4-6  $0.0600  $0.2820  $0.4557
-  development   dev-subagent           sonnet-4-6  $0.1062  $0.4618  $0.7084
-  test          test-subagent          sonnet-4-6  $0.1122  $0.4910  $0.7489
-                                                          Subtotal  $1.9130
+  ─────────────────────────────────────────────────────────────
+  feature_spec sonnet-4-6    $0.0600   $0.2820   $0.1137   $0.4557
+  development  sonnet-4-6    $0.1062   $0.4618   $0.1404   $0.7084
+  test         haiku-4-5     $0.1122   $0.4910   $0.1457   $0.7489
+                                                  Subtotal  $1.9130
 
-  ──────────────────────────────────────────────────────────────────────
+  ─────────────────────────────────────────────────────────────
   Total  4,160,786 tokens  ·  $1.91
-         input $0.00  ·  output $0.38  ·  cache write $0.40  ·  cache read $1.13
-  ──────────────────────────────────────────────────────────────────────
+  ─────────────────────────────────────────────────────────────
   Rates as of 2026-06-06  ·  restart Claude Code to refresh
 
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
@@ -242,51 +163,48 @@ Cost Breakdown
 
 ### If No Data Appears
 
-Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the troubleshooting section in the [FAQ](/docs/faq#costs-not-being-recorded).
+Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the [FAQ troubleshooting section](/docs/faq#costs-not-being-recorded).
 
 ---
 
----
+## Common Workflows
 
-## Common Skill Workflows
-
-### New Team Project
+### Starting a New Project
 
 ```
 Team Lead:
   /spec-gantry → [1] Start new project
-              → Answer ideation questions
-              → Define architecture
+              → Enter name, vision, release label
+              → Answer ideation questions  (~15 min)
+              → Define architecture        (~30 min)
               → Commit specs/ to git
 
 Developers:
-  pull origin main
+  git pull
   /spec-gantry → detects project → role: developer
-              → [1] Pick up FEATURE-XXX
-              → Write feature spec
-              → Build and test
+              → pick a feature from ⚡ Next
+              → write spec, build, test
 ```
 
-### Existing Codebase
+### Onboarding an Existing Codebase
 
 ```
 Team Lead:
-  /spec-gantry → detects source files
-              → [1] Reverse-engineer this codebase
-              → Review proposed architecture
-              → Refine and confirm
-              → Commit specs/ to git
+  /spec-gantry → detects source files, no project found
+              → [2] Analyse existing codebase
+              → Review proposed architecture and backlog
+              → Confirm → commit specs/ to git
 ```
 
-### Bug Found in Production
+### Handling a Production Bug
 
 ```
-Team Lead or Developer:
-  /spec-gantry → [+]New work → describe the issue → development begins immediately
-
-Team Lead (if needed):
-  /spec-gantry → [P]roject → Graduate bugfix
-              → Bug fix promoted to full feature with spec cycle
+Team Lead:
+  /spec-gantry → [+] New work
+              → Describe the bug
+              → SpecGantry classifies as bug_fix, confirms
+              → Development begins immediately (spec phases bypassed)
+              → Tests required before deployment
 ```
 
 ---

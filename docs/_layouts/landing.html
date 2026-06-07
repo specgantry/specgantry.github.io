@@ -60,7 +60,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v1.7.6 · Production Ready
+          Claude Code Plugin · v1.7.7 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -90,11 +90,11 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v1.7.6</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v1.7.7</div>
             <div class="terminal-line output">✓ 6 skills loaded · 8 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">════════════════════════════════════════════════════</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v1.7.6</span> · AI-powered SDLC pipeline</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v1.7.7</span> · AI-powered SDLC pipeline</div>
             <div class="terminal-line output">════════════════════════════════════════════════════</div>
             <div class="terminal-line output"></div>
             <div class="terminal-line output"><span class="hl-yellow">📊 Progress</span> [0/8 features complete]</div>
@@ -344,12 +344,12 @@
       <div class="section-inner">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-num">6</div>
-            <div class="stat-label">Skills — Dashboard, setup, bugfix, reverse-engineer, cost tracking, pricing</div>
+            <div class="stat-num">2</div>
+            <div class="stat-label">Skills — /spec-gantry for everything, /track-cost for cost visibility</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">8</div>
-            <div class="stat-label">Agents — Ideation through deployment</div>
+            <div class="stat-num">7</div>
+            <div class="stat-label">Agents — Ideation through deployment, each owning one phase</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">0</div>
@@ -366,49 +366,21 @@
     <!-- ─── SKILLS QUICK OVERVIEW ─────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">6 Skills, 8 Agents</div>
-        <h2 class="center">Every workflow covered, from first idea to production</h2>
+        <div class="section-label center">2 Skills, 7 Agents</div>
+        <h2 class="center">One command. Every workflow covered.</h2>
         <div class="skills-grid">
           <div class="skill-row">
             <code class="skill-cmd">/spec-gantry</code>
             <div class="skill-desc">
-              <strong>Main Dashboard</strong> — Your entry point every session. Re-reads all state, renders the pipeline
-              board with real per-feature costs, and shows your next action. Role-aware, session-safe.
-            </div>
-          </div>
-          <div class="skill-row">
-            <code class="skill-cmd">/start-project</code>
-            <div class="skill-desc">
-              <strong>New Project Setup</strong> — Guides you through naming, vision, platform, and team structure.
-              Creates all initial state files.
-            </div>
-          </div>
-          <div class="skill-row">
-            <code class="skill-cmd">/reverse-engineer</code>
-            <div class="skill-desc">
-              <strong>Code Analysis</strong> — Scans an existing codebase and proposes architecture spec and feature
-              backlog. Bring SpecGantry to legacy projects.
-            </div>
-          </div>
-          <div class="skill-row">
-            <code class="skill-cmd">/bugfix</code>
-            <div class="skill-desc">
-              <strong>Bug Tracking</strong> — Log bugs without disrupting feature development. Fix immediately or defer.
-              Bugfixes can graduate to full features.
+              <strong>Your Single Entry Point</strong> — New project, existing codebase, daily work, bug fixes, new features.
+              Run this at the start of every session. SpecGantry reads your state, shows the full pipeline, and tells you exactly what to do next.
             </div>
           </div>
           <div class="skill-row">
             <code class="skill-cmd">/track-cost</code>
             <div class="skill-desc">
-              <strong>Cost Tracking</strong> — View real token counts and costs per phase and feature.
-              Powered by the bundled MCP server that reads exact usage from Claude Code's session transcripts.
-            </div>
-          </div>
-          <div class="skill-row">
-            <code class="skill-cmd">/update-pricing</code>
-            <div class="skill-desc">
-              <strong>Refresh Pricing</strong> — Fetch current Anthropic model rates from anthropic.com/pricing
-              and update the local cache used for cost calculations.
+              <strong>Cost Breakdown</strong> — Real token counts and costs by phase and feature.
+              Powered by exact API usage — not estimates. Input, output, cache write, and cache read shown separately.
             </div>
           </div>
         </div>

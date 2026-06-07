@@ -61,7 +61,7 @@ Each phase builds on the last. You move forward when the work is done — not be
     <div class="doc-nav-icon">🛠️</div>
     <div>
       <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">Every skill command — what it does, when to use it, and what it produces.</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — the two commands you need and everything they do.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">

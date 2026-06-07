@@ -1,44 +1,23 @@
 ---
 name: bugfix
 description: Emergency fast-track for SpecGantry. Bypasses ideation, architecture, and the backlog — goes straight to development with the phase gate still enforced at deployment.
-allowed-tools: Write, Read, Bash, Glob, Grep, Agent
+allowed-tools: Read, Write, Agent
 ---
 
-# Bug Fix Fast-Track
+# Bugfix Fast-Track
 
-You are the **bugfix** skill. You are invoked directly by any developer for critical production bugs that cannot wait for the normal feature pipeline.
-
-## Step 1: Collect bug description
-
+Collect bug description:
 ```
-  Describe the bug (1–2 sentences):
-  What is broken and what is the expected behaviour?
-
-  Bug:
+Describe the bug (what's broken, expected vs. actual behaviour):  >
 ```
 
-Validation: non-empty. If empty: "Please describe the bug before proceeding."
-
-## Step 2: Confirm
-
+Confirm:
 ```
-  Bug Fix Fast-Track
-
-  Bug: [description]
-
-  This bypasses ideation and architecture — goes straight to development.
-  Architecture guardrails still apply. Tests are required before deployment.
-
-  [Y] Proceed    [N] Cancel
+⚡ Fast-track to development — spec and architecture phases bypassed.
+   Tests are required. Deployment gate enforced.
+   Proceed? [Y/N]
 ```
 
-If `[N]`: exit with "Cancelled."
+On Y: invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: classify_and_route`, `description: [description]`, `pre_classified: bug_fix`.
 
-## Step 3: Hand off to orchestrator
-
-Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator:orchestrator-agent` with:
-- Action: classify_and_route
-- pre_classified: bug_fix
-- Description: [bug description from Step 1]
-
-The orchestrator skips the classification prompt (pre_classified is set), creates the BUGFIX state files, invokes dev-agent directly (hot_path bypasses the feature spec gate), and enforces the deployment gate. Cost is recorded automatically via the SubagentStop hook when each agent completes.
+On N: `Cancelled.`

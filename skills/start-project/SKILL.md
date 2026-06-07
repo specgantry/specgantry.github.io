@@ -53,4 +53,4 @@ specs/.current-session
 
 ## Step 3 — Hand off
 
-Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: start_ideation` and `vision_statement: [vision]`.
+Invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: start_ideation`, `vision_statement: [vision]`, and `project_dir: [absolute path of current working directory]`.

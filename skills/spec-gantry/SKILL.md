@@ -44,6 +44,8 @@ Re-read all state files before each response. Missing files are not errors — t
 
 State files: `.claude/local-state.yaml` · `specs/project-state.yaml` · `specs/features/*/state.yaml` · `specs/cost-log.ndjson`
 
+When invoking the orchestrator, always pass `project_dir: [absolute path of current working directory]`.
+
 ---
 
 ## Feature Pipeline

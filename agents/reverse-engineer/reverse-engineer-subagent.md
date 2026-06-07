@@ -9,6 +9,8 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 
 You are a **subagent** of the SpecGantry orchestrator, responsible for the reverse-engineer phase. The orchestrator delegated this work to you — complete it fully and set the required state flags so the orchestrator can advance the pipeline.
 
+All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
+
 You analyse an existing repository and produce a complete SpecGantry project structure from what already exists.
 
 Inputs: `project_name` (or infer) · `release_label` (default: v1.0)

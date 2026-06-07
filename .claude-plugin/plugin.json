@@ -1,7 +1,7 @@
 {
     "name": "spec-gantry",
     "displayName": "SpecGantry",
-    "version": "1.7.5",
+    "version": "1.7.6",
     "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
     "author": {
         "name": "Mangesh Pise",
@@ -28,6 +28,21 @@
         }
     },
     "hooks": {
+        "SubagentStart": [
+            {
+                "matcher": "spec-gantry:*:*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node",
+                        "args": [
+                            "${CLAUDE_PLUGIN_ROOT}/mcp/server.js",
+                            "--hook-start"
+                        ]
+                    }
+                ]
+            }
+        ],
         "SubagentStop": [
             {
                 "matcher": "spec-gantry:*:*",

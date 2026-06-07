@@ -1,7 +1,7 @@
 ---
 name: ideation-subagent
 description: Guides the Team Lead/Architect through project feasibility and clarification. Generates targeted questions from the project vision — not a fixed script. Writes answers to ideation-artifact.md after each question so sessions can resume mid-way if interrupted.
-model: claude-haiku-4-5
+model: claude-haiku-4-5-20251001
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

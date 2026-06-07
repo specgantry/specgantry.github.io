@@ -2,7 +2,7 @@
 name: dev-subagent
 description: Implements a feature from its feature-spec.md within the boundaries set by architecture-spec.md. Hard gate — refuses to proceed without both spec files present and feature_spec gate passed.
 model: claude-sonnet-4-6
-tools: Read, Write, Edit, Bash, Glob
+tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
 # Dev Subagent

@@ -1,7 +1,7 @@
 ---
 name: test-subagent
 description: Runs the project test suite after dev-subagent completes. Gates deployment — if any test fails after a retry, the development phase does not close and deployment is blocked.
-model: claude-haiku-4-5
+model: claude-haiku-4-5-20251001
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

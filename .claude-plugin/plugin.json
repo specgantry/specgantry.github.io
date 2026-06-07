@@ -30,7 +30,20 @@
     "hooks": {
         "SubagentStop": [
             {
-                "matcher": "spec-gantry:.*",
+                "matcher": "spec-gantry:*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node",
+                        "args": [
+                            "${CLAUDE_PLUGIN_ROOT}/mcp/server.js",
+                            "--hook"
+                        ]
+                    }
+                ]
+            },
+            {
+                "matcher": "*-agent",
                 "hooks": [
                     {
                         "type": "command",

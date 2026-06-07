@@ -332,23 +332,23 @@ Show `[2] Analyze this existing codebase` only if files are found.
 
 ### Case 2 — TL, ideation not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → ideation-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → ideation-agent.
 
 ### Case 3 — TL, ideation done, architecture not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → architecture-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → architecture-agent.
 
 ### Case 4 — Current feature: spec in progress
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → feature-spec-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → feature-spec-agent.
 
 ### Case 5 — Current feature: spec complete, not yet reviewed
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → feature-spec-agent to show self-review prompt.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → feature-spec-agent to show self-review prompt.
 
 ### Case 6 — Current feature: reviewed, dev not complete
 
-Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator` → dev-agent.
+Render full UI (View B). Obvious next action. Do not show a menu. Invoke `spec-gantry:orchestrator:orchestrator-agent` → dev-agent.
 
 ### Case 7 — Current feature: dev complete, tests passing, not deployed
 
@@ -416,4 +416,4 @@ Re-enter from Step 1. Re-read all state. Re-render the full UI. The user always 
 - No welcome banner, no copyright block, no SpecGantry ASCII art on any screen.
 - Architecture, Backlog, and Project views render inline within the same UI frame — never as separate skill invocations that lose the header/quick-bar.
 - The `↳` sub-line on actions is one line maximum. Never nest further.
-- Never advance a phase without invoking the orchestrator. Always use `subagent_type: spec-gantry:orchestrator` — never invoke it by short name or description alone.
+- Never advance a phase without invoking the orchestrator. Always use `subagent_type: spec-gantry:orchestrator:orchestrator-agent` — never invoke it by short name or description alone.

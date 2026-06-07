@@ -31,7 +31,7 @@ If `N`: exit with "Cancelled. Run /spec-gantry again to restart."
 
 ## Step 3 — Hand off to orchestrator
 
-Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator` with:
+Invoke the orchestrator using `subagent_type: spec-gantry:orchestrator:orchestrator-agent` with:
 - Action: reverse_engineer
 - project_name: [value from Step 2, or blank to infer]
 - release_label: [value from Step 2, default v1.0]

@@ -40,7 +40,7 @@ Read the following. Missing files are not errors — they indicate pipeline stag
 **Always render this first, on every response.**
 
 ```
-SpecGantry v1.5.4  |  [Project Name, or "New Project" if none]
+SpecGantry v1.5.5  |  [Project Name, or "New Project" if none]
 Progress  [PROGRESSBAR]  [n] / [total] features complete  ·  Total spend: $[X.XX]
 ──────────────────────────────────────────────────────────────────────
 ```

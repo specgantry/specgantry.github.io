@@ -42,4 +42,10 @@ FEATURE-001 total                            26,209      $2.47
 
 Group entries by feature, sorted by feature ID. Shorten model names (strip `claude-` prefix). Sum tokens and costs per group and overall.
 
+If any entry has `pricing_source: fallback`, show after the tables:
+```
+⚠ Some cost entries used fallback rates — figures may be approximate.
+  Restart Claude Code to refresh pricing from Anthropic.
+```
+
 Render **QUICKBAR** (defined in spec-gantry/SKILL.md).

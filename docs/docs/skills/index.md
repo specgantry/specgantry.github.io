@@ -20,7 +20,6 @@ All 6 skills — what they do, when to invoke them, and how they connect to the 
 |-------|---------|------|---------|
 | **spec-gantry** | `/spec-gantry` | Both | Main dashboard and single entry point |
 | **track-cost** | `/track-cost` | Both | View token usage and cost breakdown |
-| **update-pricing** | `/update-pricing` | Both | Refresh pricing rates |
 
 ---
 
@@ -51,7 +50,7 @@ Run this at the start of every session. SpecGantry reads your project state, det
 ### The Dashboard
 
 ```
-SpecGantry v1.7.4  |  My App
+SpecGantry v1.7.5  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -213,7 +212,7 @@ Token counts are exact API values, not estimates. All four token categories are 
 ### Example Output
 
 ```
-SpecGantry v1.7.4  |  My App
+SpecGantry v1.7.5  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 
@@ -236,7 +235,7 @@ Cost Breakdown
   Total  4,160,786 tokens  ·  $1.91
          input $0.00  ·  output $0.38  ·  cache write $0.40  ·  cache read $1.13
   ──────────────────────────────────────────────────────────────────────
-  Rates as of 2026-06-06  ·  /update-pricing to refresh
+  Rates as of 2026-06-06  ·  restart Claude Code to refresh
 
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
@@ -246,46 +245,6 @@ Cost Breakdown
 Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the troubleshooting section in the [FAQ](/docs/faq#costs-not-being-recorded).
 
 ---
-
-## 6. update-pricing {#update-pricing}
-
-**Make sure your cost calculations use current rates.**
-
-```
-/update-pricing
-```
-
-### What It Does
-
-SpecGantry maintains a local cache of Anthropic's current pricing rates. This skill fetches the latest rates and updates that cache. Run it when pricing has changed or when you want to confirm the rates in use.
-
-### Example Output
-
-```
-SpecGantry v1.7.4  |  My App
-Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
-──────────────────────────────────────────────────────────────────────
-
-Pricing
-
-  ✓ Rates updated as of 2026-06-06T17:39:51Z
-
-  Model                     Input / 1M    Output / 1M
-  ──────────────────────────────────────────────────
-  haiku-4-5                 $1.00         $5.00
-  sonnet-4-6                $3.00         $15.00
-  opus-4-8                  $5.00         $25.00
-  opus-4-7                  $5.00         $25.00
-
-  Source: https://platform.claude.com/docs/en/about-claude/pricing
-
-  Future cost calculations will use these rates.
-  Entries already recorded are not retroactively updated.
-
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
-```
-
-If the pricing page is temporarily unavailable, SpecGantry continues using the most recently cached rates and shows you when they were last updated. Re-run `/update-pricing` when connectivity is restored.
 
 ---
 

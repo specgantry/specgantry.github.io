@@ -1,7 +1,7 @@
 {
   "fetched_at": "2026-06-06T17:00:00Z",
   "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
-  "_note": "Seeded with known rates. Auto-updated by the spec-gantry-costs MCP server on startup and via /update-pricing.",
+  "_note": "Seeded with known rates. Auto-updated by the spec-gantry-costs MCP server on startup.",
   "rates": {
     "claude-haiku-4-5-20251001": {
       "input_per_1m": 1.00,

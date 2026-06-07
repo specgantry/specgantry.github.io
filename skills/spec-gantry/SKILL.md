@@ -350,7 +350,7 @@ Run **classify_and_route** with the description.
 **[?]**
 ```
 /spec-gantry     Dashboard & entry point    /track-cost    Cost breakdown
-/update-pricing  Refresh rates
 ```
+If cost entries show fallback rates, restart Claude Code to refresh pricing.
 
 **[X]** `Run /spec-gantry anytime to return.`

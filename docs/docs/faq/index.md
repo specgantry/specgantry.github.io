@@ -32,7 +32,7 @@ Claude Code manages plugins automatically:
 
 ### Can I use SpecGantry offline?
 
-Yes. SpecGantry runs entirely within Claude Code and your local project directory. The only network activity is the model invocations themselves — Claude Code's normal operation. The one exception is `/update-pricing`, which fetches current rates from Anthropic's pricing page.
+Yes. SpecGantry runs entirely within Claude Code and your local project directory. The only network activity is the model invocations themselves — Claude Code's normal operation. Pricing rates are fetched automatically from Anthropic's pricing page when the MCP server starts.
 
 ### Do I need git?
 
@@ -239,7 +239,7 @@ The ideation agent uses a lighter, faster model. Architecture, spec, and develop
 
 ### How do I refresh the pricing rates?
 
-Run `/update-pricing`. SpecGantry fetches the latest rates from Anthropic's pricing page and updates its local cache. If the page is temporarily unavailable, it shows the current cached rates and their age so you can see when they were last confirmed.
+Restart Claude Code. The MCP server fetches the latest rates from Anthropic's pricing page automatically on startup. If `/track-cost` shows `pricing_source: fallback` on any entry, a restart will resolve it.
 
 ### Can I export a cost report?
 

@@ -107,15 +107,10 @@ Read the Action parameter:
   - `feature`: `null`
 
 **Artifact Validation (upon completion):**
-- Verify `specs/ideation-artifact.md` exists
-- Verify it contains all sections: Project Vision, Problem Validation, Users and Scale, Constraints, Risks, Definition of Done, Feasibility Assessment, Recommendation
-- Verify no section is empty or contains only placeholder text
+- Verify `specs/ideation-artifact.md` exists and is non-empty — the ideation-agent owns section completeness
 
 **State Validation (post-artifact):**
-- Read `specs/project-state.yaml`, verify it now contains:
-  - `phase_gates.ideation_complete: true`
-  - `ideation_recommendation` field with value: `proceed` | `clarify` | `escalate`
-  - If `clarify` or `escalate`: verify `ideation_blockers` list is non-empty
+- Read `specs/project-state.yaml` — only the `ideation_recommendation` and `ideation_blockers` fields; do not re-verify section content the agent already validated
 
 **State Update:**
 - If recommendation is `proceed`: **auto-invoke** `start_architecture` (do not return to caller)
@@ -166,17 +161,10 @@ Halt (return to caller, do not auto-advance)
   - `feature`: `null`
 
 **Artifact Validation (upon completion):**
-- Verify `specs/architecture-spec.md` exists
-- Verify it contains all sections: Tech Stack, System Boundaries, API Contracts, Core Data Model, Non-Functional Requirements, Guardrails, Feature Backlog
-- Verify each section has substantial content (not just placeholder)
-- Verify Guardrails section includes mandatory Project Structure rules
+- Verify `specs/architecture-spec.md` exists and is non-empty — the architecture-agent owns section completeness and guardrail content
 
 **State Validation (post-artifact):**
-- Read `specs/project-state.yaml`, verify:
-  - `phase_gates.architecture_complete: true`
-  - `domains:` list is non-empty and each domain has `name` and `description`
-  - `backlog:` list is non-empty and each feature has: `id`, `title`, `domain` (must match a confirmed domain), `assignee`, `status`, `size`, `depends_on`, `phase`
-  - All dependencies in `depends_on` lists reference features that exist in backlog
+- Read `specs/project-state.yaml` — only verify `phase_gates.architecture_complete: true`, `domains` list is non-empty, and `backlog` list is non-empty; do not re-read architecture-spec.md contents
 
 **State Update:**
 - Set `phase_gates.architecture_complete: true` (if not already set)
@@ -247,17 +235,9 @@ Halt.
   - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
-- Verify `specs/features/[ID]/feature-spec.md` exists
-- Verify it contains all 6 sections: Scope, API/Interface Contract, Data, Implementation Plan, Test Plan, Non-Functional Considerations, Guardrail Compliance
-- Verify each section has substantial content (minimum 50 characters)
-- Scan Guardrail Compliance section: report any `VIOLATION:` markers
-- If violations found: list them specifically, halt (do not auto-advance)
-
-**State Validation (post-artifact, Gap 5):**
-- Read `specs/features/[ID]/state.yaml`, verify:
-  - `feature_spec_complete: true`
-  - `spec_reviewed: true` (developer self-reviewed)
-  - `phase_gates` section is present with correct boolean values
+- Verify `specs/features/[ID]/feature-spec.md` exists — the feature-spec-agent owns section completeness and guardrail compliance; do not re-read full contents
+- Verify `specs/features/[ID]/state.yaml` has `feature_spec_complete: true` and `spec_reviewed: true` — read only these two flags
+- If any `VIOLATION:` marker was reported by the agent: list them, halt (do not auto-advance)
 
 **State Update:**
 - Remove `.claude/features/[ID].lock` file
@@ -363,13 +343,13 @@ Halt.
 3. Verify `specs/features/[ID]/feature-spec.md` exists and is valid (Gap 5)
 4. Verify `specs/architecture-spec.md` exists
 
+**Idempotency Check — FIRST (before any expensive scans):**
+- If `dev_complete: true` and `tests_passing: true`, return success (already done)
+- If `dev_complete: true` but `tests_passing: false`, auto-invoke `resume_testing`
+
 **Concurrency Check (Gap 16):**
 - Check for `.claude/features/[ID].lock` file
 - If exists, halt with lock message
-
-**Dependency Gate (Gap 2):**
-- Re-check dependencies (redundancy removed per Gap 8 — actually, keep for safety in case state changed)
-- For each dependency in `depends_on`: verify `deployment_status: complete`
 
 **All-Specs-Reviewed Gate (Gap 9 — scoped):**
 - Read all feature states in backlog with status: "in_progress", "ready_to_review"
@@ -386,9 +366,10 @@ Run /spec-gantry → [review] each pending spec.
 ```
 Halt.
 
-**Cross-Feature Contract Validation Gate (Gap 2):**
-- Read all `specs/features/*/feature-spec.md` files for features with status: "in_progress", "completed", "ready_to_deploy"
-- Extract `## API / Interface Contract` sections from each
+**Cross-Feature Contract Validation Gate:**
+- Read `specs/features/[ID]/feature-spec.md`, extract its `## API / Interface Contract` section
+- **Skip this gate entirely** if that section is empty, contains only "—" or "None", or is marked "No external interfaces"
+- Otherwise: read all OTHER `specs/features/*/feature-spec.md` files for features with status: "in_progress", "completed", "ready_to_deploy"; extract their `## API / Interface Contract` sections
 - Check for conflicts:
   - Same HTTP method + path in two different features
   - Same function/event name with different signatures
@@ -409,10 +390,6 @@ Run /spec-gantry to return to dashboard.
 ```
 Halt.
 
-**Idempotency Check (Gap 15):**
-- If `dev_complete: true` and `tests_passing: true`, return success (already done)
-- If `dev_complete: true` but `tests_passing: false`, auto-invoke `resume_testing`
-
 **Execute:**
 > ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:development:dev-agent`. Do NOT write implementation code yourself. The dev agent owns all code changes and interacts with the codebase.
 
@@ -429,12 +406,7 @@ Halt.
   - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
-- Verify `specs/features/[ID]/dev-artifact.yaml` exists
-- Verify it is valid YAML with schema:
-  - `overall_status` field with value: `pass` | `fail` | `blocked`
-  - `tests_summary`: object with test counts
-  - `coverage`: percentage or omitted
-  - `warnings`: array (may be empty)
+- Verify `specs/features/[ID]/dev-artifact.yaml` exists and `overall_status` is `pass` — do not re-read entire file contents, just confirm the file exists and the status field; the dev-agent owns validation of its own output
 - If `overall_status: fail` or `blocked`: report failures/blockers, halt
 
 **State Update:**
@@ -455,17 +427,17 @@ Halt.
 3. Verify `specs/features/[ID]/feature-spec.md` exists and is valid
 4. Verify `feature_spec_complete: true` and `spec_reviewed: true`
 
+**Idempotency Check — FIRST:**
+- Same as start_development
+
 **Concurrency Check (Gap 16):**
 - Check for `.claude/features/[ID].lock`
 
 **All-Specs-Reviewed Gate (Gap 9):**
 - Same as start_development
 
-**Cross-Feature Contract Validation Gate (Gap 2):**
-- Same as start_development
-
-**Idempotency Check (Gap 15):**
-- Same as start_development
+**Cross-Feature Contract Validation Gate:**
+- Same as start_development (includes API-contract skip condition)
 
 **Execute:**
 > ⛔ DELEGATION RULE: Use the **Agent tool** with `subagent_type: spec-gantry:development:dev-agent`. Do NOT write implementation code yourself.
@@ -518,8 +490,7 @@ Halt.
   - `feature`: `[ID]`
 
 **Artifact Validation (upon completion, Gap 3):**
-- Verify `specs/features/[ID]/dev-artifact.yaml` still valid
-- Verify `overall_status: pass` (all tests passing)
+- Verify `overall_status: pass` in `specs/features/[ID]/dev-artifact.yaml` — read only this field
 - If `overall_status: fail`: list failing tests with names, halt
 
 **State Update:**
@@ -693,11 +664,23 @@ Requires full architecture review:
 
 ## Performance Optimizations
 
-**Gap 11 & 12: Caching & Minimal I/O**
-- Read architecture-spec.md once at action start, pass through context
-- Read project-state.yaml once, extract all needed info upfront
-- When feature state needed, read it once and pass through action chain
-- Avoid redundant state reads within same action
+**Idempotency First**
+- In `start_development` and `resume_development`, the idempotency check runs BEFORE any cross-feature scans
+- If work is already done, return immediately — never scan feature specs unnecessarily
+
+**Sub-agent Owns Its Output**
+- The orchestrator does NOT re-read and re-verify full artifact contents after a sub-agent returns
+- Only check: does the file exist? What is the single status/flag field?
+- Sub-agents (ideation, architecture, feature-spec, dev, test) are responsible for validating their own output before setting state flags; the orchestrator trusts those flags
+
+**API-Contract Scan: Skip When Not Applicable**
+- Before running the cross-feature contract scan, check if the current feature's `## API / Interface Contract` section is empty or contains no interfaces
+- If so, skip the scan entirely — there is nothing to conflict
+- Only read other features' specs when the current feature actually exposes or consumes interfaces
+
+**Minimal State Reads**
+- Read only the specific fields needed for each check — never read a full file just to verify one flag
+- Read `project-state.yaml` once at action start; pass extracted values through the action rather than re-reading
 
 **Gap 10: Test Skipping**
 - Before invoking test-agent in `resume_testing`, check `tests_passing: true`
@@ -705,11 +688,11 @@ Requires full architecture review:
 
 **Gap 9: Scoped Gate Checks**
 - All-specs-reviewed gate only checks features with status: "in_progress", "ready_to_review"
-- Skips "pending", "deferred", "deployed", "blocked" (reduces unnecessary checks)
+- Skips "pending", "deferred", "deployed", "blocked"
 
-**Gap 8: Eliminated Redundant Gates**
-- Dependency gate only checked before `start_feature_spec`/`resume_feature_spec`
-- Not re-checked in `start_development` (already validated in spec phase)
+**Gap 8: No Dependency Re-check in Development**
+- Dependency gate is checked once in `start_feature_spec`/`resume_feature_spec`
+- Not re-checked in `start_development` — dependencies cannot change between spec and dev phases in the same session
 
 ---
 

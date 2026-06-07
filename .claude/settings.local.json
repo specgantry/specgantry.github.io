@@ -14,7 +14,9 @@
       "Read(//Users/I519286/Documents/Code/Calc/specs/**)",
       "Bash(./release.sh *)",
       "Bash(cp /Users/I519286/Documents/Code/specgantry.github.io/mcp/server.js /Users/I519286/.claude/plugins/marketplaces/spec-gantry/mcp/server.js)",
-      "Bash(cp /Users/I519286/Documents/Code/specgantry.github.io/mcp/server.js /Users/I519286/.claude/plugins/cache/spec-gantry/spec-gantry/1.6.1/mcp/server.js)"
+      "Bash(cp /Users/I519286/Documents/Code/specgantry.github.io/mcp/server.js /Users/I519286/.claude/plugins/cache/spec-gantry/spec-gantry/1.6.1/mcp/server.js)",
+      "Bash(cp /Users/I519286/Documents/Code/specgantry.github.io/agents/orchestrator/orchestrator-agent.md /Users/I519286/.claude/plugins/marketplaces/spec-gantry/agents/orchestrator/orchestrator-agent.md)",
+      "Bash(cp /Users/I519286/Documents/Code/specgantry.github.io/agents/orchestrator/orchestrator-agent.md /Users/I519286/.claude/plugins/cache/spec-gantry/spec-gantry/1.6.2/agents/orchestrator/orchestrator-agent.md)"
     ]
   }
 }

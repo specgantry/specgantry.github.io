@@ -16,4 +16,4 @@ Proceed? [Y/N]
 
 On N: `Cancelled.`
 
-On Y: invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: reverse_engineer`, `project_name: [name or blank]`, `release_label: [label]`.
+On Y: invoke `spec-gantry:reverse-engineer:reverse-engineer-subagent` with `project_name: [name or blank]`, `release_label: [label]`, `project_dir: [absolute cwd]`. After it returns, run `/spec-gantry` to continue.

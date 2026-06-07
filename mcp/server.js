@@ -516,7 +516,6 @@ const AGENT_MAP = {
   'spec-gantry:development:test-subagent': { phase: 'test', model: 'claude-haiku-4-5-20251001' },
   'spec-gantry:deployment:deployment-subagent': { phase: 'deployment', model: 'claude-sonnet-4-6' },
   'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
-  'spec-gantry:orchestrator:orchestrator-agent': { phase: 'orchestration', model: 'claude-sonnet-4-6' },
 };
 
 // Infer feature ID from the subagent's transcript: look for current_feature in state files

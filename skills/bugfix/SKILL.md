@@ -18,6 +18,6 @@ Confirm:
    Proceed? [Y/N]
 ```
 
-On Y: invoke `spec-gantry:orchestrator:orchestrator-agent` with `Action: classify_and_route`, `description: [description]`, `pre_classified: bug_fix`.
+On Y: write BUGFIX-NNN state.yaml (`hot_path:true`, `feature_spec_complete:true`, `spec_reviewed:true`) · set `current_feature: BUGFIX-NNN` in `.claude/local-state.yaml` · invoke `spec-gantry:development:dev-subagent` with `project_dir: [absolute cwd]` · after it returns invoke `spec-gantry:development:test-subagent` with `project_dir: [absolute cwd]` · run `/spec-gantry` to continue.
 
 On N: `Cancelled.`

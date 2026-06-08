@@ -6,7 +6,12 @@ allowed-tools: Read
 
 # Track Cost
 
-Render **UI_HEADER** (defined in spec-gantry/SKILL.md).
+Render **UI_HEADER** (defined in spec-gantry/SKILL.md) — same header as the main dashboard:
+```
+`SpecGantry v[version]  |  [project.name or "New Project"]`
+`[████░░░░░░]  [n]/[total] deployed`
+`──────────────────────────────────────────────────────────`
+```
 
 Read `specs/cost-log.ndjson`. If absent or empty: show "No cost data recorded yet." then render **QUICKBAR**.
 
@@ -47,5 +52,7 @@ If any entry has `pricing_source: fallback`, show after the tables:
 ⚠ Some cost entries used fallback rates — figures may be approximate.
   Restart Claude Code to refresh pricing from Anthropic.
 ```
+
+`Press Enter to return`
 
 Render **QUICKBAR** (defined in spec-gantry/SKILL.md).

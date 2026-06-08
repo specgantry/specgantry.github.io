@@ -20,6 +20,9 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
 # Plugin manifest files
@@ -30,22 +33,54 @@ GETTING_STARTED="docs/docs/getting-started/index.md"
 SKILL_FILE="skills/spec-gantry/SKILL.md"
 SKILLS_GUIDE="docs/docs/skills/index.md"
 
-# Functions
+# Logging helpers
+STEP=0
+
+print_header() {
+  echo ""
+  echo -e "${BOLD}${BLUE}╔══════════════════════════════════════════════════╗${NC}"
+  echo -e "${BOLD}${BLUE}║         SpecGantry Release Script                ║${NC}"
+  echo -e "${BOLD}${BLUE}╚══════════════════════════════════════════════════╝${NC}"
+  echo ""
+}
+
+print_step() {
+  ((STEP++))
+  echo -e "\n${BOLD}${CYAN}── Step $STEP: $1${NC}"
+}
+
 log_info() {
-  echo -e "${BLUE}→${NC} $1"
+  echo -e "   ${DIM}▸${NC} $1"
+}
+
+log_detail() {
+  echo -e "   ${DIM}  $1${NC}"
 }
 
 log_success() {
-  echo -e "${GREEN}✓${NC} $1"
+  echo -e "   ${GREEN}✓${NC} $1"
 }
 
 log_warning() {
-  echo -e "${YELLOW}⚠${NC} $1"
+  echo -e "   ${YELLOW}⚠${NC}  $1"
 }
 
 log_error() {
-  echo -e "${RED}✗${NC} $1"
+  echo -e "\n   ${RED}✗  Error: $1${NC}\n"
   exit 1
+}
+
+print_summary() {
+  local version=$1
+  echo ""
+  echo -e "${BOLD}${GREEN}╔══════════════════════════════════════════════════╗${NC}"
+  echo -e "${BOLD}${GREEN}║   Release v${version} complete!${NC}"
+  echo -e "${BOLD}${GREEN}╚══════════════════════════════════════════════════╝${NC}"
+  echo ""
+  echo -e "   ${DIM}Release:${NC}  https://github.com/specgantry/specgantry.github.io/releases/tag/v${version}"
+  echo -e "   ${DIM}Website:${NC}  https://specgantry.github.io"
+  echo -e "   ${DIM}Install:${NC}  claude plugin install spec-gantry"
+  echo ""
 }
 
 show_help() {
@@ -58,7 +93,7 @@ USAGE:
   ./release.sh              Auto-increment and release
   ./release.sh --help       Show this help message
   ./release.sh --current    Show current version
-  ./release.sh vX.Y.Z       Release specific version (e.g., 1.0.0)
+  ./release.sh vX.Y.Z       Release specific version (e.g., v1.0.0)
 
 AUTO-INCREMENT PATTERN:
   0.0.1 → 0.0.2 → ... → 0.0.9
@@ -68,18 +103,13 @@ AUTO-INCREMENT PATTERN:
   1.0.9 → 1.1.0
   etc.
 
-EXAMPLES:
-  ./release.sh              (auto-increment patch: 0.0.1 → 0.0.2)
-  ./release.sh --current    (show current version)
-  ./release.sh v1.0.0       (release v1.0.0 specifically)
-
 PROCESS:
-  1. Stages any uncommitted changes
-  2. Updates version in .claude-plugin/plugin.json
-  3. Commits all changes
-  4. Tags release in git
-  5. Pushes commits and tags to GitHub
-  6. Release page created automatically
+  1. Validates branch and pre-conditions
+  2. Updates version in all manifest and doc files
+  3. Verifies version sync across manifests
+  4. Commits all changes
+  5. Tags release in git
+  6. Pushes commits and tags to GitHub
 
 For more info, visit: https://github.com/specgantry/specgantry.github.io
 EOF
@@ -93,21 +123,17 @@ increment_version() {
   local version=$1
   local major minor patch
 
-  # Parse version
   major=$(echo "$version" | cut -d. -f1)
   minor=$(echo "$version" | cut -d. -f2)
   patch=$(echo "$version" | cut -d. -f3)
 
-  # Increment patch
   ((patch++))
 
-  # Handle overflow: patch 10 → 0, increment minor
   if [ "$patch" -eq 10 ]; then
     patch=0
     ((minor++))
   fi
 
-  # Handle overflow: minor 10 → 0, increment major
   if [ "$minor" -eq 10 ]; then
     minor=0
     ((major++))
@@ -118,83 +144,129 @@ increment_version() {
 
 validate_version() {
   local version=$1
-
   if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     log_error "Invalid version format: $version. Use: vX.Y.Z (e.g., v1.0.0)"
+  fi
+}
+
+verify_version_sync() {
+  local expected=$1
+  local all_ok=true
+
+  print_step "Verifying version sync"
+
+  local files=(
+    "$MANIFEST_FILE"
+    "$MARKETPLACE_FILE"
+  )
+
+  for file in "${files[@]}"; do
+    local found
+    found=$(grep -o '"version": "[^"]*"' "$file" | head -1 | cut -d'"' -f4)
+    if [ "$found" = "$expected" ]; then
+      log_success "$file → $found"
+    else
+      log_warning "$file → $found (expected $expected)"
+      all_ok=false
+    fi
+  done
+
+  if [ "$all_ok" = false ]; then
+    log_error "Version mismatch detected after update. Aborting release."
   fi
 }
 
 release() {
   local version=$1
 
-  log_info "Preparing release: $version"
+  print_header
 
-  # Check branch
-  local branch=$(git rev-parse --abbrev-ref HEAD)
+  echo -e "   ${BOLD}Releasing:${NC}  v${version}"
+  echo -e "   ${DIM}$(date '+%Y-%m-%d %H:%M:%S')${NC}"
+
+  # Step 1: Pre-flight checks
+  print_step "Pre-flight checks"
+
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD)
   if [ "$branch" != "main" ]; then
     log_error "Must be on 'main' branch. Currently on: $branch"
   fi
+  log_success "Branch: $branch"
 
-  # Check for uncommitted changes — they'll be included in the release commit
-  if ! git diff-index --quiet HEAD --; then
-    log_warning "Uncommitted changes detected. Including in release commit."
-  fi
-
-  # Check if tag exists
   if git rev-parse "v$version" &> /dev/null; then
     log_error "Tag v$version already exists"
   fi
+  log_success "Tag v$version is available"
 
-  # Update version in both manifests and docs pages
-  log_info "Updating version in $MANIFEST_FILE, $MARKETPLACE_FILE, $LANDING_PAGE, $GETTING_STARTED, $SKILL_FILE, and $SKILLS_GUIDE"
-
-  # Use sed to update version (works on both macOS and Linux)
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
-    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
-    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$LANDING_PAGE"
-    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$GETTING_STARTED"
-    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$SKILL_FILE"
-    sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$SKILLS_GUIDE"
+  if ! git diff-index --quiet HEAD --; then
+    log_warning "Uncommitted changes detected — will be included in release commit"
+    git diff-index --name-only HEAD -- | while read -r f; do
+      log_detail "modified: $f"
+    done
   else
-    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MANIFEST_FILE"
-    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$MARKETPLACE_FILE"
-    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$LANDING_PAGE"
-    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$GETTING_STARTED"
-    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$SKILL_FILE"
-    sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$SKILLS_GUIDE"
+    log_success "Working tree clean"
   fi
 
-  log_success "Version updated to $version"
+  # Step 2: Update versions
+  print_step "Updating version to $version"
 
-  # Commit — stage all changes (new files, modifications, deletions)
-  log_info "Creating commit"
+  local sed_files=(
+    "$MANIFEST_FILE:json"
+    "$MARKETPLACE_FILE:json"
+    "$LANDING_PAGE:semver"
+    "$GETTING_STARTED:semver"
+    "$SKILL_FILE:semver"
+    "$SKILLS_GUIDE:semver"
+  )
+
+  for entry in "${sed_files[@]}"; do
+    local file="${entry%%:*}"
+    local mode="${entry##*:}"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      if [ "$mode" = "json" ]; then
+        sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$file"
+      else
+        sed -i '' "s/v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/v$version/g" "$file"
+      fi
+    else
+      if [ "$mode" = "json" ]; then
+        sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$version\"/" "$file"
+      else
+        sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$version/g" "$file"
+      fi
+    fi
+    log_success "Updated $file"
+  done
+
+  # Step 3: Verify sync
+  verify_version_sync "$version"
+
+  # Step 4: Commit
+  print_step "Creating release commit"
   git add -A .
+  local changed_files
+  changed_files=$(git diff --cached --name-only)
+  echo "$changed_files" | while read -r f; do
+    log_detail "staged: $f"
+  done
   git commit -m "Release v$version"
-  log_success "Commit created"
+  log_success "Commit created: $(git rev-parse --short HEAD)"
 
-  # Push to main
-  log_info "Pushing to main"
+  # Step 5: Push to main
+  print_step "Pushing to main"
   git push origin main
-  log_success "Pushed to main"
+  log_success "Pushed to origin/main"
 
-  # Create tag
-  log_info "Creating git tag v$version"
+  # Step 6: Tag and push
+  print_step "Tagging and pushing v$version"
   git tag -a "v$version" -m "Release v$version"
-  log_success "Tag created"
-
-  # Push tag
-  log_info "Pushing tag to GitHub"
+  log_success "Tag created: v$version"
   git push origin "v$version"
   log_success "Tag pushed to GitHub"
 
-  # Summary
-  echo ""
-  log_success "Release v$version complete!"
-  echo ""
-  echo "Release page: https://github.com/specgantry/specgantry.github.io/releases/tag/v$version"
-  echo "Website: https://specgantry.github.io"
-  echo "Install: claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry"
+  print_summary "$version"
 }
 
 # Main
@@ -205,24 +277,21 @@ main() {
       exit 0
       ;;
     --current)
-      local current=$(get_current_version)
+      local current
+      current=$(get_current_version)
       echo "Current version: $current"
       exit 0
       ;;
     v*)
-      # Explicit version provided
       local version="${1#v}"
       validate_version "$version"
       release "$version"
       ;;
     "")
-      # Auto-increment
-      local current=$(get_current_version)
-      log_info "Current version: $current"
-
-      local next=$(increment_version "$current")
-      log_info "Next version: $next"
-
+      local current
+      current=$(get_current_version)
+      local next
+      next=$(increment_version "$current")
       release "$next"
       ;;
     *)

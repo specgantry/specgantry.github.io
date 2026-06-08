@@ -12,7 +12,7 @@ const https = require('https');
 const http = require('http');
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
-// All log output goes to stderr AND to PROJECT_DIR/logs/spec-gantry-costs.log.
+// All log output goes to stderr AND to PROJECT_DIR/.claude/mcp-logs/spec-gantry-costs.log.
 // The log file is easy to find and tail; stderr is for Claude Code's MCP viewer.
 // Set SPEC_GANTRY_LOG_LEVEL env var to control verbosity:
 //   error  — failures only (silent on success)
@@ -20,7 +20,7 @@ const http = require('http');
 //   debug  — full detail: resolved paths, token counts, every tool call in/out
 const LEVELS = { error: 0, info: 1, debug: 2 };
 const LOG_LEVEL = LEVELS[process.env.SPEC_GANTRY_LOG_LEVEL] ?? LEVELS.info;
-const LOG_FILE = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), 'logs', 'spec-gantry-costs.log');
+const LOG_FILE = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), '.claude', 'mcp-logs', 'spec-gantry-costs.log');
 
 // Ensure log directory exists (best-effort — never throw)
 try { fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true }); } catch { /* ignore */ }

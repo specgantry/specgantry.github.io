@@ -65,9 +65,9 @@ Then render the full dashboard below it so the user sees live pipeline state bef
 
 **HEADER** (first):
 ```
-SpecGantry v[version]  |  [project.name or "New Project"]
-[████░░░░░░]  [n]/[total] deployed
-──────────────────────────────────────────────────────────
+`SpecGantry v[version]  |  [project.name or "New Project"]`
+`[████░░░░░░]  [n]/[total] deployed`
+`──────────────────────────────────────────────────────────`
 ```
 Progress bar: 10 chars total — `█` for each deployed feature, `░` for remaining. Example: 2/5 deployed → `[████░░░░░░]`.
 
@@ -82,20 +82,20 @@ Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complet
 ```
 ⚡ Next
 
-  [1] Deploy FEATURE-002 · Lexer / tokeniser  ↳ tests passing, awaiting TL
-  [2] Pick up FEATURE-003 · Expression parser  ↳ next in dependency chain
+  `[1]` Deploy FEATURE-002 · Lexer / tokeniser  ↳ tests passing, awaiting TL
+  `[2]` Pick up FEATURE-003 · Expression parser  ↳ next in dependency chain
 ```
-- TL with a deployable feature: always show `[1] Deploy FEATURE-NNN` as first option — selecting it goes directly to `deploy_feature` with that feature, no picker
-- TL with 2+ deployable features: show `[1] Deploy a feature` — selecting it shows the FEATURE PICKER filtered to deployable features
-- Developer with `current_feature` set: show `[1] Continue [phase] for [feature]`
-- Unclaimed features available: show `Pick up FEATURE-NNN`
+- TL with a deployable feature: always show `[1]` Deploy FEATURE-NNN as first option — selecting it goes directly to `deploy_feature` with that feature, no picker
+- TL with 2+ deployable features: show `[1]` Deploy a feature — selecting it shows the FEATURE PICKER filtered to deployable features
+- Developer with `current_feature` set: show `[1]` Continue [phase] for [feature]
+- Unclaimed features available: show Pick up FEATURE-NNN
 - No next action: show `⚡ Next: nothing pending — use [+] to add new work`
 
 **QUICKBAR** — render on every screen, always as the last line before any options or prompt. Use the correct variant based on role and project state:
 
-- TL, project active: `── [A]rch  [B]acklog  [P]roject  [$]Cost  [+]New work  [?]Help  [X]Exit ──`
-- Developer: `── [A]rch  [$]Cost  [?]Help  [X]Exit ──`
-- No project: `── [$]Cost  [?]Help  [X]Exit ──`
+- TL, project active: ── `[A]`rch  `[B]`acklog  `[P]`roject  `[$]`Cost  `[+]`New work  `[?]`Help  `[X]`Exit ──
+- Developer: ── `[A]`rch  `[$]`Cost  `[?]`Help  `[X]`Exit ──
+- No project: ── `[$]`Cost  `[?]`Help  `[X]`Exit ──
 
 `[+]` visible to TL only when `architecture_complete:true` and ≥1 feature `deployment_status:complete`.
 `[$]` always visible — invokes `/track-cost` inline.
@@ -109,12 +109,12 @@ This means the quickbar appears at the bottom of the main dashboard, at the bott
 
 **FEATURE PICKER** — used whenever the user must choose a feature (unclaimed features, deploy target, backlog actions):
 ```
-  [001]  User Auth            S  auth-core    ready to pick up
-  [002]  Login / JWT          S  auth-core    ready to pick up
-  [003]  Password reset       S  auth-core    ready to pick up
-  [004]  Product catalogue    M  catalogue    ready to pick up
+  `[001]`  User Auth            S  auth-core    ready to pick up
+  `[002]`  Login / JWT          S  auth-core    ready to pick up
+  `[003]`  Password reset       S  auth-core    ready to pick up
+  `[004]`  Product catalogue    M  catalogue    ready to pick up
 
-Enter feature ID (e.g. 001), or press Enter to return:  >
+Enter feature ID (e.g. 001), or press Enter to return:  `>`
 ```
 Features with the same `assignment_group` are shown consecutively. Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid input, re-prompt. On Enter with no input, return to dashboard.
 
@@ -145,14 +145,14 @@ Re-read all state files before routing. **One subagent per `/spec-gantry` call �
 **View A:**
 ```
 Existing codebase detected — no SpecGantry project found.
-  [1] Start new project
-  [2] Analyse existing codebase
+  `[1]` Start new project
+  `[2]` Analyse existing codebase
 ```
 
 **View H:**
 ```
 All [n] features deployed.
-Describe next work (bug / improvement / new feature / change), or X to exit:  >
+Describe next work (bug / improvement / new feature / change), or `X` to exit:  `>`
 ```
 
 ---
@@ -162,9 +162,9 @@ Describe next work (bug / improvement / new feature / change), or X to exit:  >
 ### init_project
 Collect inputs (re-prompt on blank):
 ```
-Project name (max 60 chars):  >
-Project vision (2–4 sentences):  >
-Release label (default: v1.0):  >
+Project name (max 60 chars):  `>`
+Project vision (2–4 sentences):  `>`
+Release label (default: v1.0):  `>`
 ```
 Write `specs/project-state.yaml`:
 ```yaml
@@ -266,9 +266,9 @@ Present classification + one-sentence reason. Let user confirm or change.
 Confirm:
 ```
 Analysing codebase at: [cwd]
-Project name (blank to infer):  >
-Release label (default: v1.0):  >
-Proceed? [Y/N]
+Project name (blank to infer):  `>`
+Release label (default: v1.0):  `>`
+Proceed? `[Y]`/`[N]`
 ```
 **Gate:** source files exist · `architecture_complete` not true
 **Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · pass `project_name`, `release_label`, `project_dir`

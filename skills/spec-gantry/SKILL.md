@@ -78,14 +78,15 @@ Progress bar: 10 chars total — `█` for each deployed feature, `░` for rema
 Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
 Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
-**⚡ Next** — always rendered between PIPELINE and QUICKBAR. Show 1–4 numbered actions, most urgent first. Each action must be concrete and immediately executable — not a hint. Examples:
+**⚡ Next** — always rendered between PIPELINE and QUICKBAR. Show 1–4 numbered actions, most urgent first. Each action must be concrete and immediately executable — not a hint. Selecting `[1]` or `[2]` **is** the action — never follow a ⚡ Next selection with a secondary picker for the same item. Examples:
 ```
 ⚡ Next
 
   [1] Deploy FEATURE-002 · Lexer / tokeniser  ↳ tests passing, awaiting TL
   [2] Pick up FEATURE-003 · Expression parser  ↳ next in dependency chain
 ```
-- TL with a deployable feature: always show `[1] Deploy FEATURE-NNN` as first option
+- TL with a deployable feature: always show `[1] Deploy FEATURE-NNN` as first option — selecting it goes directly to `deploy_feature` with that feature, no picker
+- TL with 2+ deployable features: show `[1] Deploy a feature` — selecting it shows the FEATURE PICKER filtered to deployable features
 - Developer with `current_feature` set: show `[1] Continue [phase] for [feature]`
 - Unclaimed features available: show `Pick up FEATURE-NNN`
 - No next action: show `⚡ Next: nothing pending — use [+] to add new work`
@@ -240,6 +241,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### deploy_feature
 **Gate:** `role:tl` · feature in backlog · `tests_passing:true` · `dev_complete:true`
 **Idempotency:** `deployment_status:complete` → re-render dashboard · stop
+**Feature selection:** if exactly 1 deployable feature → use it directly, no picker. If 2+ deployable features → show FEATURE PICKER filtered to deployable features only.
 **Lock:** create `.claude/features/[ID].lock`
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · pass `feature_id`, `project_dir`
 **After:** read `deployment_status`; if `blocked` → halt with blockers; else remove lock · set `status:deployed` + `deployment_status:complete` + `deployed_at:[today]` · re-render dashboard · ⏸ pause

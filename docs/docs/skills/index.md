@@ -40,7 +40,7 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.8.4  |  Acme Platform
+SpecGantry v1.8.5  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -131,7 +131,7 @@ Token counts are the exact values from the API, not estimates. Input, output, ca
 ### Example Output
 
 ```
-SpecGantry v1.8.4  |  Acme Platform
+SpecGantry v1.8.5  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 

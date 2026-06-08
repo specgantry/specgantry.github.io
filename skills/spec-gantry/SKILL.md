@@ -78,13 +78,15 @@ Progress bar: 10 chars total — `█` for each deployed feature, `░` for rema
 Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
 Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
-**QUICKBAR** (last):
+**QUICKBAR** — render on every screen, always as the last line before any options or prompt:
 ```
 ── [A]rch  [B]acklog  [P]roject  [+]New work  [?]Help  [X]Exit ──  (tl, project active)
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────  (dev)
 ── [?]Help  [X]Exit ───────────────────────────────────────────────  (no project)
 ```
 `[+]` visible to TL only when `architecture_complete:true` and ≥1 feature `deployment_status:complete`.
+
+This means the quickbar appears at the bottom of the main dashboard, at the bottom of sub-menus ([B]acklog, [P]roject), and before any "press Enter to return" or options prompt. It is always the last thing rendered before user input.
 
 **GATE_FORMAT:**
 ```

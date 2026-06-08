@@ -13,6 +13,16 @@ Perspectives on structured development in the age of AI coding assistants — wh
 
 <div class="blog-listing">
 
+  <a href="/blog/realtime-cost-tracking" class="blog-listing-card">
+    <div class="blog-listing-meta">
+      <span class="blog-tag">Economics</span>
+      <span class="blog-date">June 8, 2026</span>
+    </div>
+    <h2 class="blog-listing-title">AI Development Costs Are Visible — If You Track Them at the Right Level</h2>
+    <p class="blog-listing-excerpt">Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself — and why a separate reporting layer always arrives too late.</p>
+    <span class="blog-read-more">Read the post →</span>
+  </a>
+
   <a href="/blog/why-ai-needs-guardrails" class="blog-listing-card">
     <div class="blog-listing-meta">
       <span class="blog-tag">Process</span>

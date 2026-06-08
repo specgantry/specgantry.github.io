@@ -242,9 +242,9 @@ Yes — during the spec phase, select Abandon to return the feature to the backl
 
 ### How does cost tracking work?
 
-SpecGantry tracks token usage automatically at the end of every agent session — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
+SpecGantry tracks token usage automatically at the end of every agent run — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
 
-Run `/track-cost` to see the full breakdown by phase and feature.
+Run `/track-cost` for a navigable cost dashboard with four views: summary by phase, by feature, by release, and by model. Switch between views by typing `1`, `2`, or `3` — the menu persists across views so you don't need to navigate back.
 
 ### Why are my costs higher than expected?
 
@@ -303,13 +303,20 @@ The spec contains a violation. Read the violation message — it names the speci
 
 ### How do I control the MCP server log level? {#mcp-log-level}
 
-The cost-tracking MCP server logs at `info` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change it:
+SpecGantry writes two separate log files to `.claude/logs/` in your project directory:
+
+| Log file | What it contains |
+|----------|-----------------|
+| `spec-gantry-costs.log` | Cost entries, token counts, pricing fetch results |
+| `spec-gantry-hooks.log` | Agent lifecycle events: start, stop, agent gating |
+
+Both log at `info` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change verbosity:
 
 | Value | What you see |
 |-------|-------------|
-| `error` | Failures only — silent on success |
-| `info` | Key lifecycle events: startup, pricing fetch, cost recorded **(default)** |
-| `debug` | Full detail: resolved paths, token counts, every tool call in and out |
+| `error` | Failures only **(default)** |
+| `info` | Key lifecycle events |
+| `debug` | Full detail: resolved paths, token counts, every tool call |
 
 Add it to your shell profile so it persists across sessions:
 
@@ -318,9 +325,7 @@ Add it to your shell profile so it persists across sessions:
 export SPEC_GANTRY_LOG_LEVEL=debug
 ```
 
-Then restart your terminal (or run `source ~/.zshrc`) and reopen Claude Code. The MCP server picks up the env var from your shell environment automatically.
-
-To check what the server is logging, look at the log file written to your project's `logs/spec-gantry-costs.log`, or open Claude Code's MCP viewer to see stderr output in real time.
+Then restart your terminal and reopen Claude Code.
 
 ### Plugin stopped working after a Claude Code update
 

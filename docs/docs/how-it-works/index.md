@@ -234,12 +234,19 @@ SpecGantry saves progress after every question and every section. If a session i
 
 ## Cost Visibility {#cost-tracking}
 
-SpecGantry tracks the real cost of every agent session automatically. Token usage is stored in `specs/cost-log.ndjson` alongside your other project files.
+SpecGantry tracks the real cost of every agent run automatically — no manual steps required. Token usage is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
 
-Run `[$] Cost` from the action bar — or `/track-cost` directly — for a full breakdown by phase and feature. Pricing rates are fetched automatically from Anthropic's pricing page on startup.
+Run `[$] Cost` from the action bar — or `/track-cost` directly — for a navigable cost dashboard with four views:
+
+- **Summary** (default) — spend by phase for the current release
+- **By Feature** — total spend per feature across all phases
+- **By Release** — cumulative spend per deployed release, full project history
+- **By Model** — spend by model tier, most expensive first
+
+Pricing rates are fetched automatically from Anthropic's pricing page on startup. Token counts are exact API values — not estimates.
 
 <div class="info">
-  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over time.
+  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over the full project lifetime.
 </div>
 
 ---

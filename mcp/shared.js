@@ -15,14 +15,18 @@ const http = require('http');
 // Call initLogger(filename) once at startup to set the log file.
 // server.js uses spec-gantry-costs.log; hooks.js uses spec-gantry-hooks.log.
 const LEVELS = { error: 0, info: 1, debug: 2 };
-const LOG_LEVEL = LEVELS[process.env.SPEC_GANTRY_LOG_LEVEL] ?? LEVELS.info;
-const LOG_DIR = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), '.claude', 'mcp-logs');
+const LOG_LEVEL = LEVELS[process.env.SPEC_GANTRY_LOG_LEVEL] ?? LEVELS.error;
+const LOG_DIR = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), '.claude', 'logs');
 
-let LOG_FILE = path.join(LOG_DIR, 'spec-gantry.log'); // default, overridden by initLogger
+let LOG_FILE = path.join(LOG_DIR, 'spec-gantry.log'); // overridden by initLogger
 
 function initLogger(filename) {
   LOG_FILE = path.join(LOG_DIR, filename);
   try { fs.mkdirSync(LOG_DIR, { recursive: true }); } catch { /* ignore */ }
+}
+
+function setLogFile(filename) {
+  LOG_FILE = path.join(LOG_DIR, filename);
 }
 
 function log(level, ...args) {
@@ -317,7 +321,7 @@ function readStdin() {
 }
 
 module.exports = {
-  initLogger, log, logError, logInfo, logDebug,
+  initLogger, setLogFile, log, logError, logInfo, logDebug,
   CLAUDE_HOME, PLUGIN_DIR, RATES_CACHE, PROJECT_DIR, PRICING_URL,
   AGENT_MAP, PROJECT_LEVEL_PHASES, FALLBACK_RATES,
   loadCachedRates, getRatesForModel, refreshPricing, atomicWriteJson,

@@ -10,7 +10,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is for reviewing AI spend.
+SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is your real-time cost dashboard.
 
 ---
 
@@ -19,7 +19,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
-| **track-cost** | `/track-cost` | Full cost breakdown by phase and feature |
+| **track-cost** | `/track-cost` | Cost breakdown by phase, feature, release, and model |
 
 ---
 
@@ -44,8 +44,8 @@ Two states depending on where you are in the pipeline.
 **State 1 — No features yet** (ideation, architecture in progress, or no project):
 
 ```
-SpecGantry v1.9.6  |  My App
-[░░░░░░░░░░]  0 / 0 features deployed  |  release 1.0.0
+SpecGantry v1.9.7  |  My App
+[░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Architecture in progress — 3/5 topics complete.
 ──────────────────────────────────────────────────────────
@@ -58,25 +58,41 @@ SpecGantry v1.9.6  |  My App
 
 **State 2 — Feature pipeline active:**
 
+The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
+
 ```
-SpecGantry v1.9.6  |  Acme Platform
-[████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
+SpecGantry v1.9.7  |  Acme Platform
+[██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-  001  User Auth       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
-  002  Search API      ✅ Spec  ✅ Rev  🔄 Build  ○ Tests   ○ Done
-  003  Notifications   🔄 Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
-  004  Export PDF      ⏳ Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+                              Spec Rev Build Test Deploy
+  [001]  User Auth             ✅   ✅   ✅   ✅    ✅
+  [002]  Search API            ✅   ✅   🔄   ○     ○
+  [003]  Notifications         🔄   ○    ○    ○     ○
+  [004]  Export PDF            ⏳   ○    ○    ○     ○
+  [005]  Analytics             🔴   ○    ○    ○     ○   depends on 003,004
 ──────────────────────────────────────────────────────────
-  [1] Continue spec for Notifications [A] Architecture
-  [2] Pick up Export PDF              [P] Project
+  Type a feature ID to pick it up     [A] Architecture
+  [1] Continue spec – FEATURE-003     [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
+Enter feature ID or action:  `>`
 ```
 
-The left column of the action bar shows 1–4 contextual numbered actions — the most useful things you can do right now. The right column is always-present lettered commands.
+Type a feature number directly (e.g. `004`) to pick it up. Blocked features show their dependency inline. The left column shows the most useful contextual actions for your current role and state.
+
+**Pipeline stage icons:**
+
+| Icon | Meaning |
+|------|---------|
+| `✅` | Complete |
+| `🔄` | Active / in progress |
+| `👤` | Waiting for your action |
+| `🔴` | Blocked by a dependency |
+| `⏳` | Not started, ready to pick up |
+| `○` | Not yet reached |
 
 ---
 
@@ -86,7 +102,7 @@ The left column of the action bar shows 1–4 contextual numbered actions — th
 
 **Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written.
 
-**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically.
+**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically. The full pipeline dashboard is visible immediately.
 
 **Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
 
@@ -100,7 +116,7 @@ The left column of the action bar shows 1–4 contextual numbered actions — th
 |---------|-----|-------------|
 | `[A]` Architecture | Both | View the full architecture spec. Visible once architecture is complete. |
 | `[P]` Project | Both | Manage backlog — prioritize, assign, defer, group-assign. Edit project name and vision. |
-| `[$]` Cost | Both | Full cost breakdown by phase and feature |
+| `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, feature, release, and model |
 | `[+]` New work | Both | Describe a bug, improvement, new feature, or change. Visible once architecture is complete. |
 | `[?]` Help | Both | Quick reference and docs link |
 | `[X]` Exit | Both | Return to normal Claude Code |
@@ -135,44 +151,109 @@ All progress is saved after every question and every section. Every `/spec-gantr
 
 ## /track-cost {#track-cost}
 
-**See exactly what your AI development sessions cost, by phase and feature.**
+**See exactly what your AI development is costing — in real time, broken down every way that matters.**
 
 ```
 /track-cost
 ```
 
-SpecGantry tracks token usage automatically after every agent session. `/track-cost` renders that data as two tables — a summary by phase across the whole project, and a per-feature breakdown showing which phase ran and what it cost.
+SpecGantry captures token usage automatically after every agent run. No manual steps, no estimates — real API counts. `/track-cost` renders that data as a navigable cost dashboard with four views.
+
+Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. Your whole team has shared visibility into AI spend over the full project lifetime.
 
 ---
 
-### Example Output
+### The Cost Dashboard
+
+**Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v1.9.6  |  Acme Platform
-[████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
+SpecGantry v1.9.7  |  Acme Platform
+[██░░░░░░░░]  2/8 features deployed
 ──────────────────────────────────────────────────────────
 
-By Phase
-Phase           Sessions   Tokens       Cost
-──────────────────────────────────────────────
-ideation             1      4,404      $0.47
-architecture         1      8,201      $0.82
-feature_spec         3     14,209      $1.43
-development          2     31,445      $3.14
-test                 2      6,112      $0.31
-deployment           1      3,890      $0.39
-──────────────────────────────────────────────
-Total               10     68,261      $6.56
+Cost Summary  |  release 1.0.0
 
-By Feature
-Feature          Phase          Model         Tokens       Cost
-────────────────────────────────────────────────────────────────
-FEATURE-001      feature_spec   sonnet-4-6    4,896      $0.49
-FEATURE-001      development    sonnet-4-6   18,201      $1.82
-FEATURE-001      test           haiku-4-5     3,112      $0.16
-────────────────────────────────────────────────────────────────
-FEATURE-001 total                            26,209      $2.47
+Phase           Tokens       Cost
+────────────────────────────────
+ideation         4,404      $0.47
+architecture     8,201      $0.82
+feature_spec    14,209      $1.43
+development     31,445      $3.14
+test             6,112      $0.31
+deployment       3,890      $0.39
+────────────────────────────────
+Total           68,261      $6.56
+
+──────────────────────────────────────────────────────────
+  [1] By feature    [2] By release    [3] By model
+                                      [X] Return
+──────────────────────────────────────────────────────────
+Enter option:  `>`
 ```
+
+The menu bar persists across all views — switch between breakdowns without going back to the summary first.
+
+---
+
+**[1] By Feature** — total spend per feature across all phases:
+
+```
+Cost by Feature  |  release 1.0.0
+
+Feature          Tokens       Cost
+───────────────────────────────────
+FEATURE-001      26,209      $2.47
+FEATURE-002      18,441      $1.84
+FEATURE-003       9,112      $0.46
+───────────────────────────────────
+Total            53,762      $4.77
+```
+
+Project-level phases (ideation, architecture) are excluded here — they belong to the project, not individual features.
+
+---
+
+**[2] By Release** — cumulative spend per deployed release:
+
+```
+Cost by Release
+
+Release      Tokens       Cost
+──────────────────────────────
+1.0.0        80,601      $7.79
+1.1.0        42,340      $4.12
+──────────────────────────────
+Total       122,941     $11.91
+```
+
+Shows full project history across all releases — useful for understanding how development costs evolve over time.
+
+---
+
+**[3] By Model** — spend per model, most expensive first:
+
+```
+Cost by Model  |  release 1.0.0
+
+Model           Tokens       Cost
+──────────────────────────────────
+sonnet-4-6      62,301      $6.23
+haiku-4-5       18,300      $0.92
+──────────────────────────────────
+Total           80,601      $7.79
+```
+
+Useful for understanding whether your spend profile aligns with what you'd expect — heavy Sonnet usage during complex development phases, lighter Haiku usage for ideation and test.
+
+---
+
+### How Cost Tracking Works
+
+- The `SubagentStop` hook fires automatically when each SpecGantry agent completes
+- Token counts are read directly from the agent's transcript — exact API values, not estimates
+- Cost is computed using live pricing rates fetched from Anthropic's pricing page on startup (fallback rates used if the fetch fails)
+- One entry is appended to `specs/cost-log.ndjson` per agent run — never overwritten
 
 ### If No Data Appears
 
@@ -194,7 +275,7 @@ Team Lead:
 
 Developers:
   git pull
-  /spec-gantry → detects project → pick a feature
+  /spec-gantry → detects project → type feature ID to pick up
               → write spec, build, test
 ```
 
@@ -228,6 +309,17 @@ Team Lead (once all features pass tests):
               → SpecGantry generates deploy.sh covering all features
               → Reviews deploy-artifact.md
               → Runs specs/deploy.sh
+```
+
+### Reviewing Project Costs
+
+```
+Anyone:
+  /track-cost          → summary by phase
+  → type 1             → breakdown by feature
+  → type 2             → breakdown by release
+  → type 3             → breakdown by model
+  → type X             → return to main dashboard
 ```
 
 ---

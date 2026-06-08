@@ -8,7 +8,7 @@
 const path = require('path');
 const fs   = require('fs');
 const {
-  initLogger, logError, logInfo, logDebug,
+  initLogger, setLogFile, logError, logInfo, logDebug,
   CLAUDE_HOME, PROJECT_DIR,
   AGENT_MAP, PROJECT_LEVEL_PHASES,
   sumTokensFromTranscript, inferFeatureFromTranscript,
@@ -126,7 +126,10 @@ async function hookSubagentStop() {
 
   try {
     appendCostLog(entry, projectDir);
-    logInfo(`SubagentStop: cost recorded — ${mapping.phase}${feature ? ' / ' + feature : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+    // Cost entry goes to the costs log; switch file for this write then switch back
+    setLogFile('spec-gantry-costs.log');
+    logInfo(`Cost recorded — ${mapping.phase}${feature ? ' / ' + feature : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+    setLogFile('spec-gantry-hooks.log');
   } catch (err) {
     logError('SubagentStop: failed to write cost-log.ndjson:', err.message);
   }

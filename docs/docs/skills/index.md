@@ -40,7 +40,7 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.8.6  |  Acme Platform
+SpecGantry v1.8.7  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -122,38 +122,37 @@ All progress is saved after every question and every section. Every `/spec-gantr
 /track-cost
 ```
 
-SpecGantry tracks token usage automatically after every agent session. `/track-cost` renders that data as a full breakdown — by project phase, by feature, with each cost component in its own column.
-
-Token counts are the exact values from the API, not estimates. Input, output, cache write, and cache read are shown separately because each is billed at a different rate and each tells a different story about where work is being done.
+SpecGantry tracks token usage automatically after every agent session. `/track-cost` renders that data as two tables — a summary by phase across the whole project, and a per-feature breakdown showing which phase ran and what it cost.
 
 ---
 
 ### Example Output
 
 ```
-SpecGantry v1.8.6  |  Acme Platform
-Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.8.7  |  Acme Platform
+[████░░░░░░]  2 / 6 deployed  ·  $7.79
+──────────────────────────────────────────────────────────
 
-Cost Breakdown
+By Phase
+Phase           Sessions   Tokens       Cost
+──────────────────────────────────────────────
+ideation             1      4,404      $0.47
+architecture         1      8,201      $0.82
+feature_spec         3     14,209      $1.43
+development          2     31,445      $3.14
+test                 2      6,112      $0.31
+deployment           1      3,890      $0.39
+──────────────────────────────────────────────
+Total               10     68,261      $6.56
 
-  Project phases
-  ─────────────────────────────────────────────────────────────
-  ideation     haiku-4-5     $0.0000   $0.0000   $0.0001   $0.0001
-  architecture sonnet-4-6    $0.0002   $0.0003   $0.0004   $0.0010
-                                                  Subtotal  $0.0011
-
-  FEATURE-001 · User Auth
-  ─────────────────────────────────────────────────────────────
-  feature_spec sonnet-4-6    $0.0600   $0.2820   $0.1137   $0.4557
-  development  sonnet-4-6    $0.1062   $0.4618   $0.1404   $0.7084
-  test         haiku-4-5     $0.1122   $0.4910   $0.1457   $0.7489
-                                                  Subtotal  $1.9130
-
-  ─────────────────────────────────────────────────────────────
-  Total  4,160,786 tokens  ·  $1.91
-  ─────────────────────────────────────────────────────────────
-  Rates as of 2026-06-06  ·  restart Claude Code to refresh
+By Feature
+Feature          Phase          Model         Tokens       Cost
+────────────────────────────────────────────────────────────────
+FEATURE-001      feature_spec   sonnet-4-6    4,896      $0.49
+FEATURE-001      development    sonnet-4-6   18,201      $1.82
+FEATURE-001      test           haiku-4-5     3,112      $0.16
+────────────────────────────────────────────────────────────────
+FEATURE-001 total                            26,209      $2.47
 
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```

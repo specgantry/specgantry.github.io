@@ -206,7 +206,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Idempotency:** `spec_reviewed:true` → re-render dashboard · stop; `feature_spec_complete:true` → re-render dashboard · stop
 **Lock:** create `.claude/features/[ID].lock`
 **Dependency gate:** all `depends_on` features must have `deployment_status:complete`
-**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · pass `project_dir`
+**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · pass `feature_id`, `project_dir`
 **After:** verify `feature_spec_complete:true` · remove lock · re-render dashboard · stop
 
 ---
@@ -214,7 +214,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### review_feature_spec
 **Gate:** `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false`
 **Idempotency:** `spec_reviewed:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · pass `project_dir`
+**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · pass `feature_id`, `project_dir`
 **After:** if `spec_reviewed:true` → re-render dashboard · stop; else re-render dashboard · stop
 
 ---
@@ -225,7 +225,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Lock:** create `.claude/features/[ID].lock`
 **All-specs-reviewed gate:** halt if any active feature has `feature_spec_complete:true` and `spec_reviewed:false`
 **API contract gate:** read `## API / Interface Contract` from current + all active feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership; reset `spec_reviewed:false` on conflicting features
-**Invoke:** `spec-gantry:development:dev-subagent` · pass `project_dir`
+**Invoke:** `spec-gantry:development:dev-subagent` · pass `feature_id`, `project_dir`
 **After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · re-render dashboard · stop
 
 ---
@@ -233,7 +233,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### resume_testing
 **Gate:** `current_feature` set · `dev_complete:true`
 **Idempotency:** `tests_passing:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:development:test-subagent` · pass `project_dir`
+**Invoke:** `spec-gantry:development:test-subagent` · pass `feature_id`, `project_dir`
 **After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature` · re-render dashboard · ⏸ pause — role boundary: developer done, TL must trigger deployment
 
 ---

@@ -78,6 +78,18 @@ Progress bar: 10 chars total — `█` for each deployed feature, `░` for rema
 Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
 Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
+**⚡ Next** — always rendered between PIPELINE and QUICKBAR. Show 1–4 numbered actions, most urgent first. Each action must be concrete and immediately executable — not a hint. Examples:
+```
+⚡ Next
+
+  [1] Deploy FEATURE-002 · Lexer / tokeniser  ↳ tests passing, awaiting TL
+  [2] Pick up FEATURE-003 · Expression parser  ↳ next in dependency chain
+```
+- TL with a deployable feature: always show `[1] Deploy FEATURE-NNN` as first option
+- Developer with `current_feature` set: show `[1] Continue [phase] for [feature]`
+- Unclaimed features available: show `Pick up FEATURE-NNN`
+- No next action: show `⚡ Next: nothing pending — use [+] to add new work`
+
 **QUICKBAR** — render on every screen, always as the last line before any options or prompt:
 ```
 ── [A]rch  [B]acklog  [P]roject  [+]New work  [?]Help  [X]Exit ──  (tl, project active)

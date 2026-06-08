@@ -40,7 +40,7 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.8.3  |  Acme Platform
+SpecGantry v1.8.4  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -52,13 +52,10 @@ Feature Pipeline
   003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
   004  Export PDF      ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
-  Currently working on: FEATURE-003  ·  Notifications
-  Phase: Feature Spec  ·  section 2 of 6 in progress
-
 ⚡ Next
 
   [1] Continue spec for Notifications  ↳ section 2 of 6 in progress
-  [2] Pick up Export PDF and start the feature spec  ↳ reporting · small
+  [2] Pick up Export PDF               ↳ reporting · small
 
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
@@ -134,7 +131,7 @@ Token counts are the exact values from the API, not estimates. Input, output, ca
 ### Example Output
 
 ```
-SpecGantry v1.8.3  |  Acme Platform
+SpecGantry v1.8.4  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.91
 ──────────────────────────────────────────────────────────────────────
 

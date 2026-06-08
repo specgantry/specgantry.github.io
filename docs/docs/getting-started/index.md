@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.8.3`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.8.4`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -141,7 +141,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.8.3  |  New Project
+SpecGantry v1.8.4  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -159,7 +159,7 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.8.3  |  New Project
+SpecGantry v1.8.4  |  New Project
 Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
 ──────────────────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -179,7 +179,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.8.3  |  Acme Platform
+SpecGantry v1.8.4  |  Acme Platform
 Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -259,7 +259,7 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.8.3  |  My App
+SpecGantry v1.8.4  |  My App
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -271,13 +271,10 @@ Feature Pipeline
   003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
   004  Search          ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
-  Currently working on: FEATURE-003  ·  Notifications
-  Phase: Feature Spec  ·  section 4 of 6 in progress
-
 ⚡ Next
 
   [1] Continue spec for Notifications  ↳ section 4 of 6 in progress
-  [2] Pick up Search and start the feature spec  ↳ search · small
+  [2] Pick up Search                   ↳ search · small
 
 ── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
 ```
@@ -289,8 +286,7 @@ Feature Pipeline
 | Header line | Project name, version, overall progress, running total cost |
 | Role line | Your current role in this project |
 | Feature Pipeline | Every feature and its live status across all five stages |
-| Context strip | Where you are right now within your active feature |
-| ⚡ Next | The 1–4 most useful actions at this moment, with one-line context |
+| ⚡ Next | The 1–4 most useful actions right now — select by number |
 | Quick-bar | Always-available commands — same position every time |
 
 **Pipeline stage icons:**

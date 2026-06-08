@@ -93,6 +93,16 @@ This means the quickbar appears at the bottom of the main dashboard, at the bott
 ✗ [gate] FAILED · [condition] · [resolution]
 ```
 
+**FEATURE PICKER** — used whenever the user must choose a feature (unclaimed features, deploy target, backlog actions):
+```
+  [001]  User Auth            S  auth       ready to pick up
+  [002]  Search API           M  core       ready to pick up
+  [003]  Notifications        M  messaging  ready to pick up
+
+Enter feature ID (e.g. 001), or press Enter to return:  >
+```
+Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid input, re-prompt. On Enter with no input, return to dashboard.
+
 ---
 
 ## Routing — First Match
@@ -110,8 +120,8 @@ Re-read all state files before routing. One subagent per invocation — never ch
 | 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** |
 | 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** |
 | 8 | `current_feature` set · `tests_passing:true` · `deployment_status` not complete | Show "ready — notify TL to deploy" |
-| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** (prompt which) |
-| 10 | No `current_feature` · unclaimed features exist | List features; on pick: set `current_feature` → **feature_spec** |
+| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker |
+| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** |
 | 11 | All features deployed · `[+]` pressed | **classify_and_route** |
 | 12 | All features deployed | View H → **classify_and_route** |
 
@@ -251,7 +261,7 @@ Proceed? [Y/N]
 ## Quick-Bar Actions
 
 **[A]** Display `specs/architecture-spec.md` in full, then re-render pipeline.
-**[B]** *(TL)* Backlog table from `project-state.yaml`. Options: reorder / defer / reassign.
+**[B]** *(TL)* Display backlog using FEATURE PICKER format. After selection, show options: `[R]eorder · [D]efer · [A]ssign · Enter to return`.
 **[P]** *(TL)* Project menu: add feature / defer / reassign / graduate bugfix / edit name or vision.
 **[+]** *(TL, ≥1 deployed)* Prompt for next work → **classify_and_route**.
 **[?]** `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.

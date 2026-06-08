@@ -107,25 +107,25 @@ Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid 
 
 ## Routing — First Match
 
-Re-read all state files before routing. **Auto-proceed** only where marked — all other transitions render the dashboard and stop, waiting for the user to act.
+Re-read all state files before routing. **One subagent per `/spec-gantry` call — never invoke an action from within another action.** Every action ends by updating state, re-rendering the dashboard, and stopping. The routing table picks up from current state on the next invocation.
 
-| # | Condition | Action | Flow |
-|---|-----------|--------|------|
-| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | auto |
-| 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | pause |
-| 2 | TL · `ideation_complete:false` | **start_ideation** | auto |
-| 3 | TL · `ideation_complete:true` · `architecture_complete:false` | **start_architecture** | ⏸ pause — ideation→architecture boundary |
-| 4 | `current_feature` set · `feature_spec_complete:false` | **feature_spec** | auto |
-| 5 | `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false` | **review_feature_spec** | auto |
-| 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** | auto → dev+test chain |
-| 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** | auto (dev→test, no decision needed) |
-| 8 | `current_feature` set · `tests_passing:true` · not deployed | Dashboard: "ready to deploy" | ⏸ pause — role change: dev done, TL deploys |
-| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker | ⏸ pause — TL explicit trigger |
-| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** | ⏸ pause — architecture→feature boundary or between features |
-| 11 | All features deployed · `[+]` pressed | **classify_and_route** | ⏸ pause — confirm classification before proceeding |
-| 12 | All features deployed | View H → **classify_and_route** | ⏸ pause |
+| # | Condition | Action | Pause after? |
+|---|-----------|--------|-------------|
+| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | no — moves straight to ideation setup |
+| 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
+| 2 | TL · `ideation_complete:false` | **start_ideation** | yes ⏸ |
+| 3 | TL · `ideation_complete:true` · `architecture_complete:false` | **start_architecture** | yes ⏸ — ideation→architecture boundary |
+| 4 | `current_feature` set · `feature_spec_complete:false` | **feature_spec** | yes ⏸ |
+| 5 | `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false` | **review_feature_spec** | yes ⏸ |
+| 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** | yes ⏸ |
+| 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** | yes ⏸ |
+| 8 | `current_feature` set · `tests_passing:true` · not deployed | Show "ready to deploy" message | yes ⏸ — role boundary |
+| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker | yes ⏸ |
+| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** | yes ⏸ |
+| 11 | All features deployed · `[+]` pressed | **classify_and_route** | yes ⏸ |
+| 12 | All features deployed | View H → **classify_and_route** | yes ⏸ |
 
-**Pause** means: render full dashboard + ⚡ Next options, then stop. Wait for user to invoke `/spec-gantry` or press a quickbar key. Never auto-advance past a pause point.
+**⏸ Pause = re-render full dashboard + stop.** Do not proceed to the next action. Wait for the user to run `/spec-gantry` again.
 
 **View A:**
 ```
@@ -174,15 +174,15 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 
 ### start_ideation
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
-**Idempotency:** `ideation_complete:true` → **start_architecture**
+**Idempotency:** `ideation_complete:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:ideation:ideation-subagent` · pass `vision_statement`, `project_dir`
-**After:** read `ideation_recommendation`; if `proceed` → re-render dashboard with ⚡ Next: "Start architecture" then ⏸ pause; if `clarify/escalate` → halt with blockers
+**After:** read `ideation_recommendation`; if `proceed` → re-render dashboard with ⚡ Next: "Start architecture" · stop; if `clarify/escalate` → halt with blockers
 
 ---
 
 ### start_architecture
 **Gate:** `role:tl` · `ideation_complete:true` · `ideation_recommendation:proceed`
-**Idempotency:** `architecture_complete:true` → return
+**Idempotency:** `architecture_complete:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:architecture:architecture-subagent` · pass `project_dir`
 **After:** verify `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — role boundary: TL hands off to developers
 
@@ -190,36 +190,36 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 
 ### feature_spec
 **Gate:** `current_feature` set · in backlog · `architecture_complete:true` · `feature_spec_complete:false`
-**Idempotency:** `spec_reviewed:true` → **development**; `feature_spec_complete:true` → **review_feature_spec**
+**Idempotency:** `spec_reviewed:true` → re-render dashboard · stop; `feature_spec_complete:true` → re-render dashboard · stop
 **Lock:** create `.claude/features/[ID].lock`
 **Dependency gate:** all `depends_on` features must have `deployment_status:complete`
 **Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · pass `project_dir`
-**After:** verify `feature_spec_complete:true` · remove lock · auto-proceed → **review_feature_spec**
+**After:** verify `feature_spec_complete:true` · remove lock · re-render dashboard · stop
 
 ---
 
 ### review_feature_spec
 **Gate:** `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false`
-**Idempotency:** `spec_reviewed:true` → **development**
+**Idempotency:** `spec_reviewed:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · pass `project_dir`
-**After:** if `spec_reviewed:true` → auto-proceed → **development**; else re-render dashboard · ⏸ pause
+**After:** if `spec_reviewed:true` → re-render dashboard · stop; else re-render dashboard · stop
 
 ---
 
 ### development
 **Gate:** `current_feature` set · `spec_reviewed:true` · `dev_complete:false`
-**Idempotency:** `dev_complete:true` + `tests_passing:true` → return; `dev_complete:true` only → **resume_testing**
+**Idempotency:** `dev_complete:true` + `tests_passing:true` → re-render dashboard · stop; `dev_complete:true` only → re-render dashboard · stop
 **Lock:** create `.claude/features/[ID].lock`
 **All-specs-reviewed gate:** halt if any active feature has `feature_spec_complete:true` and `spec_reviewed:false`
 **API contract gate:** read `## API / Interface Contract` from current + all active feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership; reset `spec_reviewed:false` on conflicting features
 **Invoke:** `spec-gantry:development:dev-subagent` · pass `project_dir`
-**After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · auto-proceed → **resume_testing**
+**After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · re-render dashboard · stop
 
 ---
 
 ### resume_testing
 **Gate:** `current_feature` set · `dev_complete:true`
-**Idempotency:** `tests_passing:true` → return
+**Idempotency:** `tests_passing:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:development:test-subagent` · pass `project_dir`
 **After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature` · re-render dashboard · ⏸ pause — role boundary: developer done, TL must trigger deployment
 
@@ -227,7 +227,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 
 ### deploy_feature
 **Gate:** `role:tl` · feature in backlog · `tests_passing:true` · `dev_complete:true`
-**Idempotency:** `deployment_status:complete` → return
+**Idempotency:** `deployment_status:complete` → re-render dashboard · stop
 **Lock:** create `.claude/features/[ID].lock`
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · pass `feature_id`, `project_dir`
 **After:** read `deployment_status`; if `blocked` → halt with blockers; else remove lock · set `status:deployed` + `deployment_status:complete` + `deployed_at:[today]` · re-render dashboard · ⏸ pause

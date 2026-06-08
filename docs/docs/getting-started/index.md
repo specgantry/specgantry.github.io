@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.8.9`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.0`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -141,9 +141,9 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.8.9  |  New Project
-Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.9.0  |  New Project
+[░░░░░░░░░░]  0 / 0 deployed
+──────────────────────────────────────────────────────────
 Role: Team Lead / Architect
 
 No project found in this directory.
@@ -151,7 +151,7 @@ No project found in this directory.
   [1] Start a new project
   [2] Analyze this existing codebase and generate a spec
 
-── [?]Help  [X]Exit ──────────────────────────────────────────────────
+── [$]Cost  [?]Help  [X]Exit ─────────────────────────────
 ```
 
 Select `[1]`. You'll answer a few questions about your project — name, vision, and release label. Takes about 5 minutes, then SpecGantry moves straight into ideation.
@@ -159,9 +159,9 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.8.9  |  New Project
-Progress  [░░░░░░░░░░]  0 / 0 features complete  ·  Total spend: $0.00
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.9.0  |  New Project
+[░░░░░░░░░░]  0 / 0 deployed
+──────────────────────────────────────────────────────────
 Role: Team Lead / Architect
 
 No project found in this directory.
@@ -169,7 +169,7 @@ No project found in this directory.
   [1] Start a new project
   [2] Analyze this existing codebase and generate a spec
 
-── [?]Help  [X]Exit ──────────────────────────────────────────────────
+── [$]Cost  [?]Help  [X]Exit ─────────────────────────────
 ```
 
 Select `[2]` to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written. Takes 10–15 minutes.
@@ -179,22 +179,22 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.8.9  |  Acme Platform
-Progress  [████░░░░░░]  3 / 8 features complete  ·  Total spend: $2.14
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.9.0  |  Acme Platform
+[████░░░░░░]  3 / 8 deployed
+──────────────────────────────────────────────────────────
 Role: Developer
 
 Feature Pipeline
 
-  001  Auth Module       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
-  002  Payment Gateway   ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.91  alice
+  001  Auth Module       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
+  002  Payment Gateway   ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done  alice
   003  Notifications     ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
 ⚡ Next
 
-  [1] Pick up Notifications and start the feature spec  ↳ messaging · medium
+  [1] Pick up Notifications  ↳ messaging · medium
 
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
+── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
 ```
 
 Pick a feature from the `⚡ Next` actions and the feature spec phase begins immediately.
@@ -259,15 +259,15 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.8.9  |  My App
-Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.9.0  |  My App
+[████░░░░░░]  2 / 6 deployed
+──────────────────────────────────────────────────────────
 Role: Developer
 
 Feature Pipeline
 
-  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
-  002  Profile API     ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.21
+  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
+  002  Profile API     ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done
   003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
   004  Search          ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
@@ -276,7 +276,7 @@ Feature Pipeline
   [1] Continue spec for Notifications  ↳ section 4 of 6 in progress
   [2] Pick up Search                   ↳ search · small
 
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
+── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
 ```
 
 **What each area shows:**

@@ -40,15 +40,15 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.8.9  |  Acme Platform
-Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
-──────────────────────────────────────────────────────────────────────
+SpecGantry v1.9.0  |  Acme Platform
+[████░░░░░░]  2 / 6 deployed
+──────────────────────────────────────────────────────────
 Role: Developer
 
 Feature Pipeline
 
-  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done   $0.43
-  002  Search API      ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done   $0.28
+  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
+  002  Search API      ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done
   003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
   004  Export PDF      ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
 
@@ -57,7 +57,7 @@ Feature Pipeline
   [1] Continue spec for Notifications  ↳ section 2 of 6 in progress
   [2] Pick up Export PDF               ↳ reporting · small
 
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
+── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
 ```
 
 The dashboard is the same entry point for every role. What you see reflects who you are and where the project is.
@@ -130,7 +130,7 @@ SpecGantry tracks token usage automatically after every agent session. `/track-c
 ### Example Output
 
 ```
-SpecGantry v1.8.9  |  Acme Platform
+SpecGantry v1.9.0  |  Acme Platform
 [████░░░░░░]  2 / 6 deployed  ·  $7.79
 ──────────────────────────────────────────────────────────
 

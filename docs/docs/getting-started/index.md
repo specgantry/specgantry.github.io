@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.1`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.2`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -141,7 +141,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.9.1  |  New Project
+SpecGantry v1.9.2  |  New Project
 [░░░░░░░░░░]  0 / 0 deployed
 ──────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -159,7 +159,7 @@ Select `[1]`. You'll answer a few questions about your project — name, vision,
 ### Existing Codebase
 
 ```
-SpecGantry v1.9.1  |  New Project
+SpecGantry v1.9.2  |  New Project
 [░░░░░░░░░░]  0 / 0 deployed
 ──────────────────────────────────────────────────────────
 Role: Team Lead / Architect
@@ -179,7 +179,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.9.1  |  Acme Platform
+SpecGantry v1.9.2  |  Acme Platform
 [████░░░░░░]  3 / 8 deployed
 ──────────────────────────────────────────────────────────
 Role: Developer
@@ -259,7 +259,7 @@ project-root/
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
 
 ```
-SpecGantry v1.9.1  |  My App
+SpecGantry v1.9.2  |  My App
 [████░░░░░░]  2 / 6 deployed
 ──────────────────────────────────────────────────────────
 Role: Developer
@@ -283,7 +283,7 @@ Feature Pipeline
 
 | Area | Purpose |
 |------|---------|
-| Header line | Project name, version, overall progress, running total cost |
+| Header line | Project name, version, and overall deployment progress |
 | Role line | Your current role in this project |
 | Feature Pipeline | Every feature and its live status across all five stages |
 | ⚡ Next | The 1–4 most useful actions right now — select by number |

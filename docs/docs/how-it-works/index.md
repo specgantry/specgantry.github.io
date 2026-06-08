@@ -142,7 +142,7 @@ The Team Lead owns the project-level phases and the overall pipeline.
 - Deploy completed features
 - View the full cost breakdown across the project
 
-**Dashboard view:** All features and their pipeline status, specs awaiting attention, any open architecture questions, and cost data.
+**Dashboard view:** All features and their pipeline status, specs awaiting attention, any open architecture questions, and cost on demand via `[$]Cost`.
 
 ---
 
@@ -172,11 +172,9 @@ This applies to all phases: if you complete 3 of 5 ideation topics before contex
 
 ## Cost Visibility {#cost-tracking}
 
-SpecGantry tracks the real cost of every agent session automatically. When any agent finishes, token usage is captured and stored in `specs/cost-log.json` alongside your other project files.
+SpecGantry tracks the real cost of every agent session automatically. When any agent finishes, token usage is captured and stored in `specs/cost-log.ndjson` alongside your other project files.
 
-Token counts are the exact values from the API — not estimates. All four token types are recorded separately (input, output, cache write, cache read) because each is billed at a different rate and each tells a different story about where time and money are being spent.
-
-The dashboard shows a per-feature cost alongside each pipeline row. Run `/track-cost` for a full breakdown by phase and feature, with each cost component in its own column. This makes it immediately visible when cache costs are dominating — which is common for agents working with large codebases or long conversations.
+Run `[$]Cost` from the dashboard quickbar — or `/track-cost` directly — for a full breakdown by phase and feature. Token counts are the exact values from the API, not estimates.
 
 Pricing rates are fetched automatically from Anthropic's pricing page when SpecGantry starts. If `/track-cost` shows fallback rates, restart Claude Code to refresh.
 

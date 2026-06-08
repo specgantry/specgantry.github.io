@@ -40,7 +40,7 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.9.1  |  Acme Platform
+SpecGantry v1.9.2  |  Acme Platform
 [████░░░░░░]  2 / 6 deployed
 ──────────────────────────────────────────────────────────
 Role: Developer
@@ -130,8 +130,8 @@ SpecGantry tracks token usage automatically after every agent session. `/track-c
 ### Example Output
 
 ```
-SpecGantry v1.9.1  |  Acme Platform
-[████░░░░░░]  2 / 6 deployed  ·  $7.79
+SpecGantry v1.9.2  |  Acme Platform
+[████░░░░░░]  2 / 6 deployed
 ──────────────────────────────────────────────────────────
 
 By Phase
@@ -155,7 +155,7 @@ FEATURE-001      test           haiku-4-5     3,112      $0.16
 ────────────────────────────────────────────────────────────────
 FEATURE-001 total                            26,209      $2.47
 
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────────
+── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────
 ```
 
 ### If No Data Appears

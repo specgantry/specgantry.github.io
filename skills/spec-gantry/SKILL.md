@@ -66,9 +66,10 @@ Then render the full dashboard below it so the user sees live pipeline state bef
 **HEADER** (first):
 ```
 SpecGantry v[version]  |  [project.name or "New Project"]
-[██████████]  [n]/[total] deployed  ·  $[sum cost-log.ndjson total_cost_usd]
+[████░░░░░░]  [n]/[total] deployed  ·  $[sum cost-log.ndjson total_cost_usd]
 ──────────────────────────────────────────────────────────
 ```
+Progress bar: 10 chars total — `█` for each deployed feature, `░` for remaining. Example: 2/5 deployed → `[████░░░░░░]`.
 
 **PIPELINE** — one row per active feature:
 ```

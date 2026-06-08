@@ -91,12 +91,12 @@ Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complet
 - Unclaimed features available: show `Pick up FEATURE-NNN`
 - No next action: show `⚡ Next: nothing pending — use [+] to add new work`
 
-**QUICKBAR** — render on every screen, always as the last line before any options or prompt:
-```
-── [A]rch  [B]acklog  [P]roject  [$]Cost  [+]New work  [?]Help  [X]Exit ──  (tl, project active)
-── [A]rch  [$]Cost  [?]Help  [X]Exit ──────────────────────────────────────  (dev)
-── [$]Cost  [?]Help  [X]Exit ───────────────────────────────────────────────  (no project)
-```
+**QUICKBAR** — render on every screen, always as the last line before any options or prompt. Use the correct variant based on role and project state:
+
+- TL, project active: `── [A]rch  [B]acklog  [P]roject  [$]Cost  [+]New work  [?]Help  [X]Exit ──`
+- Developer: `── [A]rch  [$]Cost  [?]Help  [X]Exit ──`
+- No project: `── [$]Cost  [?]Help  [X]Exit ──`
+
 `[+]` visible to TL only when `architecture_complete:true` and ≥1 feature `deployment_status:complete`.
 `[$]` always visible — invokes `/track-cost` inline.
 

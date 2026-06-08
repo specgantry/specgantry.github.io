@@ -44,7 +44,7 @@ Two states depending on where you are in the pipeline.
 **State 1 — No features yet** (ideation, architecture in progress, or no project):
 
 ```
-SpecGantry v1.9.4  |  My App
+SpecGantry v1.9.5  |  My App
 [░░░░░░░░░░]  0 / 0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Architecture in progress — 3/5 topics complete.
@@ -59,7 +59,7 @@ SpecGantry v1.9.4  |  My App
 **State 2 — Feature pipeline active:**
 
 ```
-SpecGantry v1.9.4  |  Acme Platform
+SpecGantry v1.9.5  |  Acme Platform
 [████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   001  User Auth       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
@@ -148,7 +148,7 @@ SpecGantry tracks token usage automatically after every agent session. `/track-c
 ### Example Output
 
 ```
-SpecGantry v1.9.4  |  Acme Platform
+SpecGantry v1.9.5  |  Acme Platform
 [████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
 

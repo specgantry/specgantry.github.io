@@ -532,26 +532,21 @@ const AGENT_MAP = {
   'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
 };
 
-// Infer feature ID from the subagent's transcript: look for FEATURE-/BUGFIX- patterns
-// in user messages, checking the initial prompt first then falling back to all messages.
+// Infer feature ID from the subagent's transcript: look for FEATURE- patterns
+// in the initial user message only (parentUuid === null) — this is the orchestrator's
+// prompt which always contains the feature_id explicitly.
+// The second-pass fallback (scanning all messages) is intentionally omitted — it
+// picks up FEATURE-NNN strings from injected SKILL.md context and backlog state,
+// producing false matches like FEATURE-003 during ideation or wrong-feature tagging.
 function inferFeatureFromTranscript(transcriptPath) {
   try {
     const lines = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
     const parsed = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
 
-    // First pass: initial user message (parentUuid === null) — most reliable
     for (const r of parsed) {
       if (r.type === 'user' && r.parentUuid === null) {
         const text = JSON.stringify(r.message || '');
-        const m = text.match(/(FEATURE-\d+(?:-v\d+)?|BUGFIX-\d+)/);
-        if (m) return m[1];
-      }
-    }
-    // Second pass: any user message — catches cases where feature_id is in a follow-up
-    for (const r of parsed) {
-      if (r.type === 'user') {
-        const text = JSON.stringify(r.message || '');
-        const m = text.match(/(FEATURE-\d+(?:-v\d+)?|BUGFIX-\d+)/);
+        const m = text.match(/(FEATURE-\d+(?:-v\d+)?)/);
         if (m) return m[1];
       }
     }

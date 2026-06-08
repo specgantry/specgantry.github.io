@@ -93,11 +93,12 @@ Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complet
 
 **QUICKBAR** — render on every screen, always as the last line before any options or prompt:
 ```
-── [A]rch  [B]acklog  [P]roject  [+]New work  [?]Help  [X]Exit ──  (tl, project active)
-── [A]rch  [?]Help  [X]Exit ──────────────────────────────────────  (dev)
-── [?]Help  [X]Exit ───────────────────────────────────────────────  (no project)
+── [A]rch  [B]acklog  [P]roject  [$]Cost  [+]New work  [?]Help  [X]Exit ──  (tl, project active)
+── [A]rch  [$]Cost  [?]Help  [X]Exit ──────────────────────────────────────  (dev)
+── [$]Cost  [?]Help  [X]Exit ───────────────────────────────────────────────  (no project)
 ```
 `[+]` visible to TL only when `architecture_complete:true` and ≥1 feature `deployment_status:complete`.
+`[$]` always visible — invokes `/track-cost` inline.
 
 This means the quickbar appears at the bottom of the main dashboard, at the bottom of sub-menus ([B]acklog, [P]roject), and before any "press Enter to return" or options prompt. It is always the last thing rendered before user input.
 
@@ -280,6 +281,7 @@ Proceed? [Y/N]
 **[A]** Display `specs/architecture-spec.md` in full, then re-render pipeline.
 **[B]** *(TL)* Display backlog grouped by `assignment_group`, sorted by group then dependency order. After selection, show options: `[R]eorder · [D]efer · [A]ssign · [G]roup-assign · Enter to return`. `[G]roup-assign` assigns all features in the same group to one developer in a single action.
 **[P]** *(TL)* Project menu: add feature / defer / reassign / graduate bugfix / edit name or vision.
+**[$]** Invoke `/track-cost` — show full cost breakdown by phase and feature.
 **[+]** *(TL, ≥1 deployed)* Prompt for next work → **classify_and_route**.
 **[?]** `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.
 **[X]** `Run /spec-gantry anytime to return.`

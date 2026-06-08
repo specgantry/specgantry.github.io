@@ -40,7 +40,7 @@ You never need to remember separate commands for different workflows. One comman
 ### The Dashboard
 
 ```
-SpecGantry v1.8.8  |  Acme Platform
+SpecGantry v1.8.9  |  Acme Platform
 Progress  [████░░░░░░]  2 / 6 features complete  ·  Total spend: $1.82
 ──────────────────────────────────────────────────────────────────────
 Role: Developer
@@ -83,8 +83,9 @@ The dashboard is the same entry point for every role. What you see reflects who 
 | Command | Who | What it does |
 |---------|-----|-------------|
 | `[A]rch` | Both | View the full architecture spec |
-| `[B]acklog` | Team Lead | Manage backlog — prioritize, assign, defer, reassign |
+| `[B]acklog` | Team Lead | Manage backlog — prioritize, assign, defer, group-assign |
 | `[P]roject` | Team Lead | Add features, graduate bug fixes, edit project details |
+| `[$]Cost` | Both | Full cost breakdown by phase and feature |
 | `[+] New work` | Team Lead | Describe a bug, improvement, new feature, or change |
 | `[?]Help` | Both | Quick reference and docs link |
 | `[X]Exit` | Both | Return to normal Claude Code |
@@ -129,7 +130,7 @@ SpecGantry tracks token usage automatically after every agent session. `/track-c
 ### Example Output
 
 ```
-SpecGantry v1.8.8  |  Acme Platform
+SpecGantry v1.8.9  |  Acme Platform
 [████░░░░░░]  2 / 6 deployed  ·  $7.79
 ──────────────────────────────────────────────────────────
 

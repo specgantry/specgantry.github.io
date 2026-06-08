@@ -107,23 +107,25 @@ Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid 
 
 ## Routing — First Match
 
-Re-read all state files before routing. One subagent per invocation — never chain. After a subagent returns, re-render and stop.
+Re-read all state files before routing. **Auto-proceed** only where marked — all other transitions render the dashboard and stop, waiting for the user to act.
 
-| # | Condition | Action |
-|---|-----------|--------|
-| 1 | No `.claude/local-state.yaml` · no source files | **init_project** |
-| 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
-| 2 | TL · `ideation_complete:false` | **start_ideation** |
-| 3 | TL · `ideation_complete:true` · `architecture_complete:false` | **start_architecture** |
-| 4 | `current_feature` set · `feature_spec_complete:false` | **feature_spec** |
-| 5 | `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false` | **review_feature_spec** |
-| 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** |
-| 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** |
-| 8 | `current_feature` set · `tests_passing:true` · `deployment_status` not complete | Show "ready — notify TL to deploy" |
-| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker |
-| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** |
-| 11 | All features deployed · `[+]` pressed | **classify_and_route** |
-| 12 | All features deployed | View H → **classify_and_route** |
+| # | Condition | Action | Flow |
+|---|-----------|--------|------|
+| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | auto |
+| 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | pause |
+| 2 | TL · `ideation_complete:false` | **start_ideation** | auto |
+| 3 | TL · `ideation_complete:true` · `architecture_complete:false` | **start_architecture** | ⏸ pause — ideation→architecture boundary |
+| 4 | `current_feature` set · `feature_spec_complete:false` | **feature_spec** | auto |
+| 5 | `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false` | **review_feature_spec** | auto |
+| 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** | auto → dev+test chain |
+| 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** | auto (dev→test, no decision needed) |
+| 8 | `current_feature` set · `tests_passing:true` · not deployed | Dashboard: "ready to deploy" | ⏸ pause — role change: dev done, TL deploys |
+| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker | ⏸ pause — TL explicit trigger |
+| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** | ⏸ pause — architecture→feature boundary or between features |
+| 11 | All features deployed · `[+]` pressed | **classify_and_route** | ⏸ pause — confirm classification before proceeding |
+| 12 | All features deployed | View H → **classify_and_route** | ⏸ pause |
+
+**Pause** means: render full dashboard + ⚡ Next options, then stop. Wait for user to invoke `/spec-gantry` or press a quickbar key. Never auto-advance past a pause point.
 
 **View A:**
 ```
@@ -174,7 +176,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
 **Idempotency:** `ideation_complete:true` → **start_architecture**
 **Invoke:** `spec-gantry:ideation:ideation-subagent` · pass `vision_statement`, `project_dir`
-**After:** read `ideation_recommendation`; if `proceed` → **start_architecture**; else halt with blockers
+**After:** read `ideation_recommendation`; if `proceed` → re-render dashboard with ⚡ Next: "Start architecture" then ⏸ pause; if `clarify/escalate` → halt with blockers
 
 ---
 
@@ -182,7 +184,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `role:tl` · `ideation_complete:true` · `ideation_recommendation:proceed`
 **Idempotency:** `architecture_complete:true` → return
 **Invoke:** `spec-gantry:architecture:architecture-subagent` · pass `project_dir`
-**After:** verify `architecture_complete:true`
+**After:** verify `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — role boundary: TL hands off to developers
 
 ---
 
@@ -192,7 +194,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Lock:** create `.claude/features/[ID].lock`
 **Dependency gate:** all `depends_on` features must have `deployment_status:complete`
 **Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · pass `project_dir`
-**After:** verify `feature_spec_complete:true` · remove lock → **development**
+**After:** verify `feature_spec_complete:true` · remove lock · auto-proceed → **review_feature_spec**
 
 ---
 
@@ -200,7 +202,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false`
 **Idempotency:** `spec_reviewed:true` → **development**
 **Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · pass `project_dir`
-**After:** if `spec_reviewed:true` → **development**; else return
+**After:** if `spec_reviewed:true` → auto-proceed → **development**; else re-render dashboard · ⏸ pause
 
 ---
 
@@ -211,7 +213,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **All-specs-reviewed gate:** halt if any active feature has `feature_spec_complete:true` and `spec_reviewed:false`
 **API contract gate:** read `## API / Interface Contract` from current + all active feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership; reset `spec_reviewed:false` on conflicting features
 **Invoke:** `spec-gantry:development:dev-subagent` · pass `project_dir`
-**After:** read `overall_status`; if `blocked/fail` → halt; else remove lock → **resume_testing**
+**After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · auto-proceed → **resume_testing**
 
 ---
 
@@ -219,7 +221,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `current_feature` set · `dev_complete:true`
 **Idempotency:** `tests_passing:true` → return
 **Invoke:** `spec-gantry:development:test-subagent` · pass `project_dir`
-**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature`
+**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature` · re-render dashboard · ⏸ pause — role boundary: developer done, TL must trigger deployment
 
 ---
 
@@ -228,7 +230,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Idempotency:** `deployment_status:complete` → return
 **Lock:** create `.claude/features/[ID].lock`
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · pass `feature_id`, `project_dir`
-**After:** read `deployment_status`; if `blocked` → halt with blockers; else remove lock · set `status:deployed` + `deployment_status:complete` + `deployed_at:[today]`
+**After:** read `deployment_status`; if `blocked` → halt with blockers; else remove lock · set `status:deployed` + `deployment_status:complete` + `deployed_at:[today]` · re-render dashboard · ⏸ pause
 
 ---
 
@@ -237,10 +239,10 @@ Prompt: `Describe the work (bug / improvement / new feature / change):  >`
 Classify into one of: `bug_fix | enhancement | new_feature | project_change`
 Present classification + one-sentence reason. Let user confirm or change.
 
-- `bug_fix` → write `specs/features/BUGFIX-NNN/state.yaml` (`hot_path:true`, `feature_spec_complete:true`, `spec_reviewed:true`) · set `current_feature` · **development** → **resume_testing**
-- `enhancement` → identify target feature, create v2 entry → **feature_spec**
-- `new_feature` → if new domain needed: **start_ideation** → **start_architecture** (amendment); else assign FEATURE-NNN → **feature_spec**
-- `project_change` → **start_ideation** (focused) → **start_architecture** (amendment) · reset `spec_reviewed:false` on affected domain features
+- `bug_fix` → write `specs/features/BUGFIX-NNN/state.yaml` (`hot_path:true`, `feature_spec_complete:true`, `spec_reviewed:true`) · set `current_feature` · re-render dashboard · ⏸ pause — developer picks it up via `/spec-gantry`
+- `enhancement` → identify target feature, create v2 entry · re-render dashboard · ⏸ pause — developer picks it up
+- `new_feature` → if new domain needed: re-render · ⏸ pause before **start_ideation**; else assign FEATURE-NNN · re-render · ⏸ pause — developer picks it up
+- `project_change` → re-render · ⏸ pause before **start_ideation** (focused)
 
 ---
 
@@ -254,7 +256,7 @@ Proceed? [Y/N]
 ```
 **Gate:** source files exist · `architecture_complete` not true
 **Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · pass `project_name`, `release_label`, `project_dir`
-**After:** verify `architecture_complete:true` · set `current_feature:null`
+**After:** verify `architecture_complete:true` · set `current_feature:null` · re-render dashboard · ⏸ pause — role boundary: TL hands off to developers
 
 ---
 

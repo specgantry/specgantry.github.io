@@ -53,7 +53,23 @@ Incorporate feedback. Write confirmed domains to `specs/project-state.yaml → d
 
 ## Step 4 — Generate feature backlog
 
-Decompose the architecture into features. Assign each to a confirmed domain. Estimate size: `S / M / L`. Identify dependencies. Present table for TL review and edit. On confirm, write to `specs/project-state.yaml → backlog` (each entry: id, title, domain, assignee:null, status:pending, size, depends_on:[]).
+Decompose the architecture into features. Assign each to a confirmed domain. Estimate size: `S / M / L`. Identify dependencies.
+
+**Assignment grouping:** reason about which features share implementation boundaries — same module, same API layer, same data model, or overlapping file ownership. Group those features together under a short `assignment_group` label (e.g. `auth-core`, `payments`, `search`). Features in the same group should preferably go to the same developer to avoid merge conflicts in the codebase. A feature with no shared boundary gets its own group.
+
+Present table for TL review and edit:
+```
+ID    Title                  Domain    Size  Depends on  Assignment group
+────────────────────────────────────────────────────────────────────────
+001   User registration      auth      M     —           auth-core
+002   Login / JWT            auth      S     001         auth-core
+003   Password reset         auth      S     001         auth-core
+004   Product catalogue      shop      M     —           catalogue
+005   Cart & checkout        shop      L     004         cart-payments
+006   Payment gateway        shop      M     005         cart-payments
+```
+
+On confirm, write to `specs/project-state.yaml → backlog` (each entry: `id`, `title`, `domain`, `assignment_group`, `assignee:null`, `status:pending`, `size`, `depends_on:[]`).
 
 ## Step 5 — Write guardrails
 

@@ -33,7 +33,7 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 
 | File | Owned by | Key fields |
 |------|----------|------------|
-| `specs/project-state.yaml` | ideation + architecture subagents | `phase_gates`, `backlog`, `domains` |
+| `specs/project-state.yaml` | ideation + architecture subagents | `phase_gates`, `backlog`, `domains`; backlog entries include `assignment_group` |
 | `.claude/local-state.yaml` | this skill | `role`, `current_feature` |
 | `specs/features/[ID]/state.yaml` | feature-spec subagent | `feature_spec_complete`, `spec_reviewed`, `dev_complete`, `tests_passing`, `deployment_status` |
 | `specs/features/[ID]/dev-artifact.yaml` | dev + test subagents | `overall_status` |
@@ -108,13 +108,14 @@ This means the quickbar appears at the bottom of the main dashboard, at the bott
 
 **FEATURE PICKER** — used whenever the user must choose a feature (unclaimed features, deploy target, backlog actions):
 ```
-  [001]  User Auth            S  auth       ready to pick up
-  [002]  Search API           M  core       ready to pick up
-  [003]  Notifications        M  messaging  ready to pick up
+  [001]  User Auth            S  auth-core    ready to pick up
+  [002]  Login / JWT          S  auth-core    ready to pick up
+  [003]  Password reset       S  auth-core    ready to pick up
+  [004]  Product catalogue    M  catalogue    ready to pick up
 
 Enter feature ID (e.g. 001), or press Enter to return:  >
 ```
-Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid input, re-prompt. On Enter with no input, return to dashboard.
+Features with the same `assignment_group` are shown consecutively. Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid input, re-prompt. On Enter with no input, return to dashboard.
 
 ---
 
@@ -277,7 +278,7 @@ Proceed? [Y/N]
 ## Quick-Bar Actions
 
 **[A]** Display `specs/architecture-spec.md` in full, then re-render pipeline.
-**[B]** *(TL)* Display backlog using FEATURE PICKER format. After selection, show options: `[R]eorder · [D]efer · [A]ssign · Enter to return`.
+**[B]** *(TL)* Display backlog grouped by `assignment_group`, sorted by group then dependency order. After selection, show options: `[R]eorder · [D]efer · [A]ssign · [G]roup-assign · Enter to return`. `[G]roup-assign` assigns all features in the same group to one developer in a single action.
 **[P]** *(TL)* Project menu: add feature / defer / reassign / graduate bugfix / edit name or vision.
 **[+]** *(TL, ≥1 deployed)* Prompt for next work → **classify_and_route**.
 **[?]** `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.

@@ -13,7 +13,7 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 
 You analyse an existing repository and produce a complete SpecGantry project structure from what already exists.
 
-Inputs: `project_name` (or infer) · `release_label` (default: v1.0)
+Inputs: `project_name` (or infer)
 
 ## HARD GATE
 
@@ -64,7 +64,7 @@ project:
   name: "[name]"
   vision: "[inferred]"
   created: [YYYY-MM-DD]
-  release: [label]
+  release: "1.0.0"
 phase_gates:
   ideation_complete: true
   architecture_complete: true

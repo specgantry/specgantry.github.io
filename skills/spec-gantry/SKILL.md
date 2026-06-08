@@ -33,20 +33,18 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 
 | File | Owned by | Key fields |
 |------|----------|------------|
-| `specs/project-state.yaml` | ideation + architecture subagents | `phase_gates`, `backlog`, `domains`; backlog entries include `assignment_group` |
+| `specs/project-state.yaml` | ideation + architecture subagents | `phase_gates`, `backlog`, `domains`; `project.release` (current deployed semver e.g. `"1.0.0"`); backlog entries include `assignment_group`, `last_release`, `change_type` |
 | `.claude/local-state.yaml` | this skill | `role`, `current_feature` |
 | `specs/features/[ID]/state.yaml` | feature-spec subagent | `feature_spec_complete`, `spec_reviewed`, `dev_complete`, `tests_passing`, `deployment_status` |
 | `specs/features/[ID]/dev-artifact.yaml` | dev + test subagents | `overall_status` |
 | `.claude/features/[ID].lock` | this skill | concurrency guard, stale after 5 min |
-| `specs/cost-log.ndjson` | MCP hook (automatic) | one entry per subagent session |
+| `specs/cost-log.ndjson` | MCP hook (automatic) | one entry per subagent session; includes `release` field |
 
 ---
 
 ## UI
 
-Render on every response:
-
-**After every subagent returns** — before any gate check or next-phase logic — re-read all state files and render the full dashboard (HEADER + PIPELINE + QUICKBAR). This paints the updated pipeline at every major transition so the user can follow progress. Add a one-line transition note above the header:
+Render the full dashboard on every response. After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes:
 
 ```
 ✓ [phase] complete  ·  [feature or project level]
@@ -61,53 +59,124 @@ Examples:
 ✓ Tests passed  ·  FEATURE-003 ready to deploy
 ```
 
-Then render the full dashboard below it so the user sees live pipeline state before the next action begins.
+---
 
-**HEADER** (first):
-```
-`SpecGantry v[version]  |  [project.name or "New Project"]`
-`[████░░░░░░]  [n]/[total] deployed`
-`──────────────────────────────────────────────────────────`
-```
-Progress bar: 10 chars total — `█` for each deployed feature, `░` for remaining. Example: 2/5 deployed → `[████░░░░░░]`.
+### HEADER
 
-**PIPELINE** — one row per active feature:
+Always rendered first, same in both states:
+
 ```
-[ID]  [title 24ch]  [Spec][Rev][Build][Test][Deploy]
+SpecGantry v[version]  |  [project.name or "New Project"]
+[████░░░░░░]  [n]/[total] features deployed  |  release [project.release]
+──────────────────────────────────────────────────────────
 ```
+
+Progress bar: 10 chars — `█` per deployed feature, `░` remaining. Before first deployment: all `░`. When any features have in-flight work: append `· release [next_version] in progress` to the second line.
+
+---
+
+### STATE 1 — No features in pipeline
+
+Used when: no project exists, or ideation/architecture still in progress.
+
+Middle section shows current phase status:
+
+```
+  [phase indicator]
+```
+
+Examples:
+```
+  No project found in this directory.
+```
+```
+  Ideation in progress — 3/5 categories answered.
+```
+```
+  Architecture in progress — 2/5 topics complete.
+```
+
+---
+
+### STATE 2 — Feature pipeline active
+
+Used when: `architecture_complete:true` and backlog has ≥1 feature.
+
+Middle section shows one row per feature:
+
+```
+  [ID]  [title 24ch]  [Spec][Rev][Build][Test][Deploy]
+```
+
 Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
 Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
-**⚡ Next** — always rendered between PIPELINE and QUICKBAR. Show 1–4 numbered actions, most urgent first. Each action must be concrete and immediately executable — not a hint. Selecting `[1]` or `[2]` **is** the action — never follow a ⚡ Next selection with a secondary picker for the same item. Examples:
+---
+
+### ACTION BAR
+
+Always the last element rendered. Two columns — left is contextual numbered actions (1–4, most urgent first), right is fixed lettered commands stacked vertically. Both columns share the bounding lines.
+
 ```
-⚡ Next
-
-  `[1]` Deploy FEATURE-002 · Lexer / tokeniser  ↳ tests passing, awaiting TL
-  `[2]` Pick up FEATURE-003 · Expression parser  ↳ next in dependency chain
+──────────────────────────────────────────────────────────────────────
+  `[1]` [action one]                  `[A]` Architecture
+  `[2]` [action two]                  `[P]` Project
+  `[3]` [action three]                `[$]` Cost
+                                      `[+]` New work
+                                      `[?]` Help
+                                      `[X]` Exit
+──────────────────────────────────────────────────────────────────────
 ```
-- TL with a deployable feature: always show `[1]` Deploy FEATURE-NNN as first option — selecting it goes directly to `deploy_feature` with that feature, no picker
-- TL with 2+ deployable features: show `[1]` Deploy a feature — selecting it shows the FEATURE PICKER filtered to deployable features
-- Developer with `current_feature` set: show `[1]` Continue [phase] for [feature]
-- Unclaimed features available: show Pick up FEATURE-NNN
-- No next action: show `⚡ Next: nothing pending — use [+] to add new work`
 
-**QUICKBAR** — render on every screen, always as the last line before any options or prompt. Use the correct variant based on role and project state:
+**Left column — numbered actions by state:**
 
-- TL, project active: ── `[A]`rch  `[B]`acklog  `[P]`roject  `[$]`Cost  `[+]`New work  `[?]`Help  `[X]`Exit ──
-- Developer: ── `[A]`rch  `[$]`Cost  `[?]`Help  `[X]`Exit ──
-- No project: ── `[$]`Cost  `[?]`Help  `[X]`Exit ──
+No project:
+- `[1]` Start new project
+- `[2]` Analyse existing codebase  _(only if source files exist)_
 
-`[+]` visible to TL only when `architecture_complete:true` and ≥1 feature `deployment_status:complete`.
-`[$]` always visible — invokes `/track-cost` inline.
+Ideation/architecture in progress (TL):
+- `[1]` Continue [ideation / architecture]
 
-This means the quickbar appears at the bottom of the main dashboard, at the bottom of sub-menus ([B]acklog, [P]roject), and before any "press Enter to return" or options prompt. It is always the last thing rendered before user input.
+Architecture complete, unclaimed features (developer):
+- `[1]` Pick up [FEATURE-NNN · title]  _(next in dependency order)_
+- `[2]` Pick up [FEATURE-NNN · title]  _(second available)_
 
-**GATE_FORMAT:**
+Feature in progress (developer, `current_feature` set):
+- `[1]` Continue [phase] for [FEATURE-NNN]
+
+All features tested, awaiting deploy (TL):
+- `[1]` Deploy release [next_version]
+
+Some features tested, others not (TL):
+- `[1]` Continue — [n] features still need build/test  _(informational, not selectable)_
+
+All features deployed:
+- `[1]` Describe next work  _(→ classify_and_route)_
+
+**Right column — visibility rules:**
+- `[A]` Architecture — visible when `architecture_complete:true`
+- `[P]` Project — always visible
+- `[$]` Cost — always visible
+- `[+]` New work — visible when `architecture_complete:true`
+- `[?]` Help — always visible
+- `[X]` Exit — always visible
+
+Right column items not yet applicable (e.g. `[A]` before architecture exists) are omitted — do not show greyed or disabled entries.
+
+---
+
+### GATE_FORMAT
+
 ```
 ✗ [gate] FAILED · [condition] · [resolution]
 ```
 
-**FEATURE PICKER** — used whenever the user must choose a feature (unclaimed features, deploy target, backlog actions):
+---
+
+### FEATURE PICKER
+
+Used when the user must choose from multiple features:
+
 ```
   `[001]`  User Auth            S  auth-core    ready to pick up
   `[002]`  Login / JWT          S  auth-core    ready to pick up
@@ -134,8 +203,9 @@ Re-read all state files before routing. **One subagent per `/spec-gantry` call �
 | 5 | `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false` | **review_feature_spec** | yes ⏸ |
 | 6 | `current_feature` set · `spec_reviewed:true` · `dev_complete:false` | **development** | yes ⏸ |
 | 7 | `current_feature` set · `dev_complete:true` · `tests_passing:false` | **resume_testing** | yes ⏸ |
-| 8 | `current_feature` set · `tests_passing:true` · not deployed | Show "ready to deploy" message | yes ⏸ — role boundary |
-| 9 | TL · any feature `tests_passing:true` · not deployed | **deploy_feature** — show feature picker | yes ⏸ |
+| 8 | `current_feature` set · `tests_passing:true` · not deployed | Show "ready to deploy" message — cleared for TL to trigger release when all features ready | yes ⏸ — role boundary |
+| 9 | TL · all backlog features have `tests_passing:true` and `deployment_status` not complete | **deploy_release** | yes ⏸ |
+| 9b | TL · some features `tests_passing:true` · some still `tests_passing:false` or `dev_complete:false` | Show blocking message — list outstanding features | yes ⏸ |
 | 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** | yes ⏸ |
 | 11 | All features deployed · `[+]` pressed | **classify_and_route** | yes ⏸ |
 | 12 | All features deployed | View H → **classify_and_route** | yes ⏸ |
@@ -151,8 +221,8 @@ Existing codebase detected — no SpecGantry project found.
 
 **View H:**
 ```
-All [n] features deployed.
-Describe next work (bug / improvement / new feature / change), or `X` to exit:  `>`
+All [n] features deployed — release [project.release].
+Describe next work (bug fix / improvement / new feature / architectural change), or `X` to exit:  `>`
 ```
 
 ---
@@ -164,7 +234,6 @@ Collect inputs (re-prompt on blank):
 ```
 Project name (max 60 chars):  `>`
 Project vision (2–4 sentences):  `>`
-Release label (default: v1.0):  `>`
 ```
 Write `specs/project-state.yaml`:
 ```yaml
@@ -172,13 +241,12 @@ project:
   name: "[name]"
   vision: "[vision]"
   created: [YYYY-MM-DD]
-  release: [label]
+  release: "1.0.0"
 phase_gates:
   ideation_complete: false
   architecture_complete: false
 domains: []
 backlog: []
-releases: []
 ```
 Write `.claude/local-state.yaml`: `role: tl` · `current_feature: null`
 Create `.claude/features/.gitkeep`.
@@ -190,7 +258,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### start_ideation
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
 **Idempotency:** `ideation_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:ideation:ideation-subagent` · pass `vision_statement`, `project_dir`
+**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Running ideation for [project.name]"` · pass `vision_statement`, `project_dir`
 **After:** read `ideation_recommendation`; if `proceed` → re-render dashboard with ⚡ Next: "Start architecture" · stop; if `clarify/escalate` → halt with blockers
 
 ---
@@ -198,7 +266,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### start_architecture
 **Gate:** `role:tl` · `ideation_complete:true` · `ideation_recommendation:proceed`
 **Idempotency:** `architecture_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:architecture:architecture-subagent` · pass `project_dir`
+**Invoke:** `spec-gantry:architecture:architecture-subagent` · description: `"Generating architecture for [project.name]"` · pass `project_dir`
 **After:** verify `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — role boundary: TL hands off to developers
 
 ---
@@ -208,7 +276,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Idempotency:** `spec_reviewed:true` → re-render dashboard · stop; `feature_spec_complete:true` → re-render dashboard · stop
 **Lock:** create `.claude/features/[ID].lock`
 **Dependency gate:** all `depends_on` features must have `deployment_status:complete`
-**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · pass `feature_id`, `project_dir`
+**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · description: `"Writing feature spec for [feature_id]"` · pass `feature_id`, `project_dir`
 **After:** verify `feature_spec_complete:true` · remove lock · re-render dashboard · stop
 
 ---
@@ -216,7 +284,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### review_feature_spec
 **Gate:** `current_feature` set · `feature_spec_complete:true` · `spec_reviewed:false`
 **Idempotency:** `spec_reviewed:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · pass `feature_id`, `project_dir`
+**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` (mode: review) · description: `"Reviewing feature spec for [feature_id]"` · pass `feature_id`, `project_dir`
 **After:** if `spec_reviewed:true` → re-render dashboard · stop; else re-render dashboard · stop
 
 ---
@@ -227,7 +295,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Lock:** create `.claude/features/[ID].lock`
 **All-specs-reviewed gate:** halt if any active feature has `feature_spec_complete:true` and `spec_reviewed:false`
 **API contract gate:** read `## API / Interface Contract` from current + all active feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership; reset `spec_reviewed:false` on conflicting features
-**Invoke:** `spec-gantry:development:dev-subagent` · pass `feature_id`, `project_dir`
+**Invoke:** `spec-gantry:development:dev-subagent` · description: `"Implementing [feature_id]"` · pass `feature_id`, `project_dir`
 **After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · re-render dashboard · stop
 
 ---
@@ -235,30 +303,70 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 ### resume_testing
 **Gate:** `current_feature` set · `dev_complete:true`
 **Idempotency:** `tests_passing:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:development:test-subagent` · pass `feature_id`, `project_dir`
-**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature` · re-render dashboard · ⏸ pause — role boundary: developer done, TL must trigger deployment
+**Invoke:** `spec-gantry:development:test-subagent` · description: `"Running tests for [feature_id]"` · pass `feature_id`, `project_dir`
+**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · clear `current_feature` · re-render dashboard · ⏸ pause — role boundary: TL triggers `deploy_release` once all features pass
 
 ---
 
-### deploy_feature
-**Gate:** `role:tl` · feature in backlog · `tests_passing:true` · `dev_complete:true`
-**Idempotency:** `deployment_status:complete` → re-render dashboard · stop
-**Feature selection:** if exactly 1 deployable feature → use it directly, no picker. If 2+ deployable features → show FEATURE PICKER filtered to deployable features only.
-**Lock:** create `.claude/features/[ID].lock`
-**Invoke:** `spec-gantry:deployment:deployment-subagent` · pass `feature_id`, `project_dir`
-**After:** read `deployment_status`; if `blocked` → halt with blockers; else remove lock · set `status:deployed` + `deployment_status:complete` + `deployed_at:[today]` · re-render dashboard · ⏸ pause
+### deploy_release
+**Gate:** `role:tl` · all backlog features `dev_complete:true` · all backlog features `tests_passing:true`
+**Idempotency:** all features `deployment_status:complete` → re-render dashboard · stop
+
+Confirm with TL before proceeding:
+```
+Ready to deploy — [n] features included
+  [Y] Deploy  [X] Cancel
+```
+**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying full system"` · pass `project_dir`
+**After:** read `deployment_status` from any backlog entry; if `blocked` → halt with blockers from `specs/deploy-artifact.md`; else re-render dashboard · ⏸ pause
 
 ---
 
 ### classify_and_route
-Prompt: `Describe the work (bug / improvement / new feature / change):  >`
-Classify into one of: `bug_fix | enhancement | new_feature | project_change`
-Present classification + one-sentence reason. Let user confirm or change.
+Prompt: `Describe the next work (bug fix / improvement / new feature / architectural change):  >`
 
-- `bug_fix` → write `specs/features/BUGFIX-NNN/state.yaml` (`hot_path:true`, `feature_spec_complete:true`, `spec_reviewed:true`) · set `current_feature` · re-render dashboard · ⏸ pause — developer picks it up via `/spec-gantry`
-- `enhancement` → identify target feature, create v2 entry · re-render dashboard · ⏸ pause — developer picks it up
-- `new_feature` → if new domain needed: re-render · ⏸ pause before **start_ideation**; else assign FEATURE-NNN · re-render · ⏸ pause — developer picks it up
-- `project_change` → re-render · ⏸ pause before **start_ideation** (focused)
+**Step 1 — Classify.** Determine the type:
+- `bug_fix` — something built and deployed is broken
+- `enhancement` — an existing feature needs to do more or work differently
+- `new_feature` — a net-new capability not covered by any existing feature
+- `project_change` — infrastructure, data model, or cross-cutting scope change
+
+**Step 2 — Map to features.** SpecGantry analyses the description against the current backlog and feature specs to determine the mapping — the TL does not need to specify this.
+- `bug_fix` / `enhancement` → read all feature specs to identify which feature(s) own the described behaviour. If the description spans multiple features, include all of them. Do not ask the TL — derive it from the specs.
+- `new_feature` → determine if it fits an existing domain or requires a new one. Propose a feature title and domain derived from the architecture spec.
+- `project_change` → identify which existing features are impacted by reading the architecture spec and feature specs.
+
+**Step 3 — Confirm with TL:**
+```
+  Type: bug_fix
+  Affects:
+    · FEATURE-001 User Authentication — session expiry logic incorrect
+    · FEATURE-003 Session Management — related TTL handling
+  [Y] Confirm  [E] Edit  [X] Cancel
+```
+For `new_feature`:
+```
+  Type: new_feature
+  New feature: OAuth Provider Integration · domain: auth
+  [Y] Confirm  [E] Edit  [X] Cancel
+```
+
+**Step 4 — Update state and route.**
+
+`bug_fix` or `enhancement` — for each affected feature:
+- Write `change_type: [type]` to its backlog entry in `specs/project-state.yaml`
+- Reset **all** phase flags in `specs/features/[ID]/state.yaml`:
+  `feature_spec_complete:false · spec_reviewed:false · dev_complete:false · tests_passing:false · deployment_status:null`
+- Set `current_feature` to the first affected feature (if multiple, developer picks up each in turn)
+- Re-render · ⏸
+
+`new_feature`:
+- Always route to **start_architecture** (amendment mode) — the architecture subagent assigns the FEATURE-NNN ID, title, domain, size, dependencies, and assignment group, and appends the entry to the backlog. If a new domain is needed it extends the architecture spec first; if it fits an existing domain it appends directly to the backlog.
+- Re-render · ⏸ after architecture completes
+
+`project_change`:
+- Mark impacted features with `spec_reviewed:false` (specs must be re-reviewed after architecture updates)
+- Re-render · ⏸ before **start_architecture**
 
 ---
 
@@ -267,21 +375,19 @@ Confirm:
 ```
 Analysing codebase at: [cwd]
 Project name (blank to infer):  `>`
-Release label (default: v1.0):  `>`
 Proceed? `[Y]`/`[N]`
 ```
 **Gate:** source files exist · `architecture_complete` not true
-**Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · pass `project_name`, `release_label`, `project_dir`
+**Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · description: `"Reverse engineering existing codebase"` · pass `project_name`, `project_dir`
 **After:** verify `architecture_complete:true` · set `current_feature:null` · re-render dashboard · ⏸ pause — role boundary: TL hands off to developers
 
 ---
 
 ## Quick-Bar Actions
 
-**[A]** Display `specs/architecture-spec.md` in full, then re-render pipeline.
-**[B]** *(TL)* Display backlog grouped by `assignment_group`, sorted by group then dependency order. After selection, show options: `[R]eorder · [D]efer · [A]ssign · [G]roup-assign · Enter to return`. `[G]roup-assign` assigns all features in the same group to one developer in a single action.
-**[P]** *(TL)* Project menu: add feature / defer / reassign / graduate bugfix / edit name or vision.
-**[$]** Invoke `/track-cost` — show full cost breakdown by phase and feature.
-**[+]** *(TL, ≥1 deployed)* Prompt for next work → **classify_and_route**.
-**[?]** `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.
-**[X]** `Run /spec-gantry anytime to return.`
+**`[A]`** Display `specs/architecture-spec.md` in full, then re-render dashboard. Visible when `architecture_complete:true`.
+**`[P]`** Project menu: view/edit project name and vision · manage backlog (reorder, defer, reassign, group-assign) · add feature. Visible always.
+**`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and feature. Visible always.
+**`[+]`** Prompt for next work → **classify_and_route**. Visible when `architecture_complete:true`.
+**`[?]`** Help: `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.
+**`[X]`** Exit: `Run /spec-gantry anytime to return.`

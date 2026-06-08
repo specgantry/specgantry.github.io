@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.3`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.4`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -68,11 +68,6 @@ In your terminal:
 claude plugin update spec-gantry@spec-gantry
 ```
 
-Or from within Claude Code:
-```
-/plugin update spec-gantry@spec-gantry
-```
-
 Check the current version anytime:
 ```bash
 claude plugin list
@@ -89,20 +84,7 @@ claude plugin uninstall spec-gantry
 claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
 ```
 
-The first command removes the plugin and all its skills and agents. The second removes the marketplace registration. Your project's `specs/` files are not touched — they stay in your repository.
-
-If you only want to uninstall the plugin without removing the marketplace (for example, to reinstall cleanly), run just the first command:
-
-```bash
-claude plugin uninstall spec-gantry
-```
-
-To reinstall after uninstalling, use the standard install sequence:
-
-```bash
-claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry
-```
+Your project's `specs/` files are not touched — they stay in your repository.
 
 ---
 
@@ -141,36 +123,21 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.9.3  |  New Project
-[░░░░░░░░░░]  0 / 0 deployed
+SpecGantry v1.9.4  |  New Project
+[░░░░░░░░░░]  0 / 0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-Role: Team Lead / Architect
-
-No project found in this directory.
-
-  [1] Start a new project
-  [2] Analyze this existing codebase and generate a spec
-
-── [$]Cost  [?]Help  [X]Exit ─────────────────────────────
+  No project found in this directory.
+──────────────────────────────────────────────────────────
+  [1] Start new project               [P] Project
+  [2] Analyse existing codebase       [$] Cost
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
 ```
 
-Select `[1]`. You'll answer a few questions about your project — name, vision, and release label. Takes about 5 minutes, then SpecGantry moves straight into ideation.
+Select `[1]`. You'll answer two questions — project name and vision. No version number needed; every project starts at `1.0.0`. SpecGantry moves straight into ideation.
 
 ### Existing Codebase
-
-```
-SpecGantry v1.9.3  |  New Project
-[░░░░░░░░░░]  0 / 0 deployed
-──────────────────────────────────────────────────────────
-Role: Team Lead / Architect
-
-No project found in this directory.
-
-  [1] Start a new project
-  [2] Analyze this existing codebase and generate a spec
-
-── [$]Cost  [?]Help  [X]Exit ─────────────────────────────
-```
 
 Select `[2]` to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written. Takes 10–15 minutes.
 
@@ -179,25 +146,23 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.9.3  |  Acme Platform
-[████░░░░░░]  3 / 8 deployed
+SpecGantry v1.9.4  |  Acme Platform
+[████░░░░░░]  3 / 8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-Role: Developer
-
-Feature Pipeline
-
-  001  Auth Module       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
-  002  Payment Gateway   ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done  alice
-  003  Notifications     ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
-
-⚡ Next
-
-  [1] Pick up Notifications  ↳ messaging · medium
-
-── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
+  001  Auth Module       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
+  002  Payment Gateway   ✅ Spec  ✅ Rev  🔄 Build  ○ Tests   ○ Done
+  003  Notifications     ⏳ Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+──────────────────────────────────────────────────────────
+  [1] Pick up Notifications           [A] Architecture
+  [2] Pick up Search                  [P] Project
+                                      [$] Cost
+                                      [+] New work
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
 ```
 
-Pick a feature from the `⚡ Next` actions and the feature spec phase begins immediately.
+Select a feature from the numbered actions and the feature spec phase begins immediately.
 
 ---
 
@@ -208,23 +173,23 @@ Pick a feature from the `⚡ Next` actions and the feature spec phase begins imm
 1. **Run `/spec-gantry`** — select Start New Project
 2. **Complete Ideation** (10–20 min) — answer questions about your project vision, constraints, and risks
 3. **Complete Architecture** (20–30 min) — define tech stack, system boundaries, API contracts, and guardrails
-4. **Review the generated backlog** — prioritize, assign, reorder
+4. **Review the generated backlog** — prioritize, assign, reorder via `[P] Project`
 5. **Commit `specs/` to git** — developers can now pull and join
 
 ### If You're a Developer
 
 1. **Pull the repository** after the Team Lead commits `specs/`
 2. **Run `/spec-gantry`** — it detects the project and sets your role
-3. **Pick a feature** from the backlog
+3. **Pick a feature** from the numbered actions
 4. **Write the feature spec** (5–15 min) — guided by the feature-spec agent
-5. **Build** — implement against your approved spec
+5. **Build and test** — implement against your approved spec
 
 ### If You're Solo
 
 1. **Run `/spec-gantry`** and start as Team Lead
 2. **Complete both Ideation and Architecture** yourself
 3. **Switch to Developer role** — work features from the backlog
-4. Both hats, one person, full discipline
+4. **Deploy** when all features pass tests — the whole system ships as one release
 
 ---
 
@@ -239,11 +204,14 @@ project-root/
 │   ├── ideation-artifact.md        # Project vision & validated assumptions
 │   ├── architecture-spec.md        # Tech stack, system design, guardrails
 │   ├── cost-log.ndjson             # Token usage and cost per agent session
+│   ├── deploy.sh                   # Generated deployment script (whole system)
+│   ├── deploy.sh.old               # Previous deployment script (backup)
+│   ├── deploy-artifact.md          # Deployment validation summary
 │   └── features/
 │       ├── FEATURE-001/
-│       │   ├── feature-spec.md     # Feature specification (6 sections)
-│       │   ├── deploy.sh           # Generated deployment script
-│       │   └── deploy-artifact.md  # Deployment validation summary
+│       │   ├── feature-spec.md     # Feature specification + Change History
+│       │   ├── state.yaml          # Phase progress flags
+│       │   └── dev-artifact.yaml   # Build notes and test results
 │       └── FEATURE-002/
 │           └── ...
 ```
@@ -256,38 +224,33 @@ project-root/
 
 ## The Dashboard Explained
 
-Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. Here's what a developer sees mid-project:
+Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. There are two states:
+
+### State 1 — No features yet
+
+Shown during ideation, architecture, or when no project exists. The middle section shows the current phase status.
+
+### State 2 — Feature pipeline active
+
+Shown once architecture is complete and the backlog has features:
 
 ```
-SpecGantry v1.9.3  |  My App
-[████░░░░░░]  2 / 6 deployed
+SpecGantry v1.9.4  |  My App
+[████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-Role: Developer
-
-Feature Pipeline
-
-  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
-  002  Profile API     ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done
-  003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
-  004  Search          ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
-
-⚡ Next
-
-  [1] Continue spec for Notifications  ↳ section 4 of 6 in progress
-  [2] Pick up Search                   ↳ search · small
-
-── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
+  001  User Auth       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
+  002  Profile API     ✅ Spec  ✅ Rev  🔄 Build  ○ Tests   ○ Done
+  003  Notifications   🔄 Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+  004  Search          ⏳ Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+──────────────────────────────────────────────────────────
+  [1] Continue spec for Notifications [A] Architecture
+  [2] Pick up Search                  [P] Project
+                                      [$] Cost
+                                      [+] New work
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
 ```
-
-**What each area shows:**
-
-| Area | Purpose |
-|------|---------|
-| Header line | Project name, version, and overall deployment progress |
-| Role line | Your current role in this project |
-| Feature Pipeline | Every feature and its live status across all five stages |
-| ⚡ Next | The 1–4 most useful actions right now — select by number |
-| Quick-bar | Always-available commands — same position every time |
 
 **Pipeline stage icons:**
 
@@ -300,21 +263,30 @@ Feature Pipeline
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
 
+**Action bar columns:**
+
+| Left column | Right column |
+|---|---|
+| Numbered contextual actions (1–4) — change based on your role and project state | Fixed lettered commands — always available |
+
 ---
 
 ## Common First-Run Questions
 
-**"Can I skip ideation?"**  
+**"Can I skip ideation?"**
 No. Ideation answers fundamental questions about the project. Without it, architecture has no context to work from.
 
-**"Can I use SpecGantry with an existing project?"**  
-Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate an architecture spec, domain breakdown, and feature backlog. See [How It Works →](/docs/how-it-works)
+**"Can I use SpecGantry with an existing project?"**
+Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture spec and feature backlog.
 
-**"What if I'm working solo?"**  
-SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. Many solo developers find that the ideation questions alone clarify their thinking significantly.
+**"What if I'm working solo?"**
+SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. The ideation questions alone often clarify thinking significantly.
 
-**"How much does it cost to run SpecGantry?"**  
-It depends on project size and complexity. A complete ideation + architecture session typically runs $0.50–$2.00. Run `/track-cost` at any point for a live breakdown by phase and feature.
+**"How much does it cost to run SpecGantry?"**
+It depends on project size and complexity. A complete ideation + architecture session typically runs $0.50–$2.00. Run `[$] Cost` at any point for a live breakdown by phase and feature.
+
+**"When can I deploy?"**
+Only after all features have been built and tested. The first deployment ships the complete system as release `1.0.0`.
 
 ---
 
@@ -325,7 +297,7 @@ It depends on project size and complexity. A complete ideation + architecture se
     <div class="next-step-icon">⚙️</div>
     <div>
       <strong>How It Works</strong>
-      <span>Understand all five phases, phase gates, and roles in detail.</span>
+      <span>Understand all phases, phase gates, release versioning, and roles in detail.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">

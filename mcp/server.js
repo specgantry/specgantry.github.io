@@ -214,6 +214,19 @@ function atomicWriteJson(filePath, data) {
   fs.renameSync(tmp, filePath);
 }
 
+// ─── Project release reader ───────────────────────────────────────────────────
+// Reads project.release from specs/project-state.yaml using a simple regex —
+// no YAML parser needed, the field is always a single quoted/unquoted string.
+function readProjectRelease(projectDir) {
+  try {
+    const yaml = fs.readFileSync(
+      path.join(projectDir, 'specs', 'project-state.yaml'), 'utf8'
+    );
+    const m = yaml.match(/^\s+release:\s+"?([^"\n]+)"?/m);
+    return m ? m[1].trim() : null;
+  } catch { return null; }
+}
+
 // ─── cost-log.ndjson management ──────────────────────────────────────────────
 // NDJSON (newline-delimited JSON): one entry per line.
 // fs.appendFileSync is atomic for small writes on most OSes — no read-modify-write
@@ -399,6 +412,7 @@ async function toolRecordAgentCost(args) {
     agent: agentType || `agent-${agentId}`,
     model,
     feature: feature || null,
+    release: readProjectRelease(PROJECT_DIR),
     date: new Date().toISOString().slice(0, 10),
     input_tokens,
     output_tokens,
@@ -656,7 +670,15 @@ async function runHookMode() {
 
   // Use model from transcript if available (more accurate than frontmatter default)
   const model = tokens.model || mapping.model;
-  const feature = inferFeatureFromTranscript(resolvedTranscript);
+
+  // Only infer feature ID for feature-level phases — project-level phases (ideation,
+  // architecture, reverse_engineer) never belong to a feature, and their transcripts
+  // contain SKILL.md context that includes example FEATURE-NNN strings which would
+  // produce false matches.
+  const PROJECT_LEVEL_PHASES = new Set(['ideation', 'architecture', 'reverse_engineer']);
+  const feature = PROJECT_LEVEL_PHASES.has(mapping.phase)
+    ? null
+    : inferFeatureFromTranscript(resolvedTranscript);
 
   logDebug('Hook: tokens:', JSON.stringify(tokens), 'model:', model, 'feature:', feature);
 
@@ -674,6 +696,7 @@ async function runHookMode() {
     agent: agentType,          // always fully-qualified type (consistent with tool path)
     model,
     feature: feature || null,
+    release: readProjectRelease(cwd || PROJECT_DIR),
     date: new Date().toISOString().slice(0, 10),
     input_tokens: tokens.input_tokens,
     output_tokens: tokens.output_tokens,

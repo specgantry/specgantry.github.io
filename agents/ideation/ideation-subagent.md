@@ -51,7 +51,7 @@ Write to artifact under `## Feasibility Assessment` and `## Recommendation`:
 - `clarify` — list specific questions that must be answered first
 - `escalate` — significant risk requiring stakeholder input
 
-Write `## Out of Scope (v1)` from the Definition of Done answers.
+Write `## Out of Scope (v1.0.0)` from the Definition of Done answers.
 
 ## Step 4 — Write completion flag
 

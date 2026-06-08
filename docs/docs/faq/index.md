@@ -93,7 +93,7 @@ claude plugin install spec-gantry
 
 ### I'm starting a new project. What do I do?
 
-Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer the initial questions. Takes 5–10 minutes.
+Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version `1.0.0` automatically. Takes 5–10 minutes.
 
 ### I'm joining a team. What do I do?
 
@@ -109,11 +109,15 @@ Yes, if you want SpecGantry's structure — architecture documentation, a featur
 
 ### Can a Developer see the architecture spec?
 
-Yes, read-only. Developers need the architecture context to write feature specs that fit the system. Select `[A]rchitecture` from the dashboard to view it. They cannot modify it.
+Yes, read-only. Developers need the architecture context to write feature specs that fit the system. Select `[A]` Architecture from the action bar to view it.
 
 ### Can a Team Lead build features?
 
-SpecGantry is designed for clear role separation — Team Leads own project-level phases, developers own feature-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.
+SpecGantry is designed for clear role separation — Team Leads own project-level phases and deployment, developers own feature-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.
+
+### Can a Developer deploy?
+
+No. Deployment is a Team Lead responsibility. The TL triggers the release once all features pass tests — this deploys the entire system as a single release.
 
 ### What if the Team Lead leaves?
 
@@ -129,11 +133,19 @@ Yes. Each developer works on different features — features are isolated from e
 
 ### Can I skip ideation?
 
-No. Ideation validates the project problem and captures constraints before any architecture decisions are made. It's the foundation the architecture phase builds on. Without a completed ideation, the architecture session has no project context to work from.
+No. Ideation validates the project problem and captures constraints before any architecture decisions are made. Without a completed ideation, the architecture session has no project context to work from.
 
 ### Can I skip the feature spec?
 
 No. The feature spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete, has zero guardrail violations, and has been self-reviewed before development can begin.
+
+### When can I deploy?
+
+Only after all features in the backlog have been built and tested. The deployment gate blocks until every feature has `tests_passing: true`. This ensures the first release contains a complete, coherent system rather than a partial build.
+
+### Can I deploy individual features?
+
+No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all features in dependency order within the appropriate architectural components.
 
 ### How long does each phase take?
 
@@ -143,7 +155,8 @@ No. The feature spec gate is the core of what SpecGantry enforces. No spec means
 | Architecture | 20–40 minutes |
 | Feature Spec | 5–15 minutes per feature |
 | Build | Depends on complexity |
-| Deploy | 5–10 minutes |
+| Test | Minutes (automated) |
+| Deploy release | 5–10 minutes (whole system) |
 
 ### Can multiple phases overlap?
 
@@ -151,11 +164,19 @@ Feature-level phases run in parallel across different features. Multiple develop
 
 ### What happens after all features are deployed?
 
-SpecGantry enters project-complete mode and asks what you want to work on next. Describe a bug, an improvement, a new capability, or a broader change. SpecGantry classifies it, confirms with you, and routes it to the right workflow. See [How It Works → Post-Completion](/docs/how-it-works#post-completion-classify-and-route) for details.
+SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and feature specs to identify which features are affected, confirms with you, and re-enters the pipeline. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
 
-### What is a versioned feature (FEATURE-NNN-v2)?
+### What is a versioned feature?
 
-When you describe an enhancement to a completed feature, SpecGantry archives the original and creates a new version with a full spec cycle. The dashboard shows the active version with the archived original collapsed underneath. Only active features count toward the progress total.
+There are no separately versioned features. Features keep the same `FEATURE-NNN` identity forever. When a bug fix or enhancement changes a feature, the spec is updated inline — changed lines are annotated with the release version (e.g. `` `__1.1.0__` ``), old text is struck through, and a row is appended to the spec's Change History table. This keeps the full audit trail inside the spec itself.
+
+### How does release versioning work?
+
+Every project starts at `1.0.0`. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all features in the release — `project_change` bumps major, `enhancement` or `new_feature` bumps minor, `bug_fix` bumps patch. The initial release always deploys as `1.0.0`.
+
+### Who decides which features are affected by a bug fix?
+
+SpecGantry does. When you describe new work via `[+] New work`, SpecGantry reads the backlog and all feature specs to determine which features own the described behaviour. It presents the mapping for your confirmation before touching any state — you don't need to identify the target features yourself.
 
 ### What's a "guardrail violation"?
 
@@ -213,7 +234,7 @@ Contact your Team Lead or use `/spec-gantry` and select the feature to revisit a
 
 ### Can I move a feature back to pending?
 
-Yes — during the spec phase, select Abandon to return the feature to the backlog unassigned. From later phases, the Team Lead can reassign or defer features through the `[B]acklog` menu.
+Yes — during the spec phase, select Abandon to return the feature to the backlog unassigned. From later phases, the Team Lead can reassign or defer features through `[P] Project`.
 
 ---
 

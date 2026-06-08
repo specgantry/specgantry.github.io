@@ -35,14 +35,31 @@ Confirm: `📐 [FEATURE-ID]: [title]  ·  Domain: [domain]  ·  Size: [size]  ·
 ## Step 2 — Load or resume spec file
 
 Read `specs/features/[ID]/feature-spec.md`.
-- **Exists:** tell developer which sections remain. Resume from first incomplete one.
-- **Not found:** create with skeleton (all 6 sections `_not yet written_`, Guardrail Compliance `_pending_`). Write to disk.
+- **Not found:** create with skeleton (all 6 sections `_not yet written_`, Change History with initial row, Guardrail Compliance `_pending_`). Write to disk. Proceed to Step 3 (full session).
+- **Exists, change cycle:** `feature_spec_complete:false` after a prior completed deployment — read `project.release` from `specs/project-state.yaml`. Show:
+  ```
+  📝 Change cycle for [FEATURE-ID] — Release [release]
+  ```
+  Display the existing `## Change History` table. Proceed to Step 3 (change-cycle mode).
+- **Exists, resuming:** tell developer which sections remain. Resume from first incomplete one (full session mode).
 
 ## Step 3 — Six-section session
 
-For each incomplete section: present its question, receive the answer, run the guardrail check for that section, then **write the file before moving to the next section**. If a guardrail conflict is found: display it and do not write until the developer resolves it.
+**Full session mode** (new spec or resuming incomplete spec): for each incomplete section: present its question, receive the answer, run the guardrail check for that section, then **write the file before moving to the next section**. If a guardrail conflict is found: display it and do not write until the developer resolves it.
 
-Sections and their guardrail focus:
+**Change-cycle mode** (existing spec, new release): for each section, show the current content and ask:
+```
+Any changes to this section for [release]? [Y/N]
+```
+- `N` → skip, no changes.
+- `Y` → guide the update inline. Strike through replaced text with `~~old text~~` and append `` `__[release]__` `` on the same line. New text gets `` `__[release]__` `` appended. Write section before moving on.
+
+After all sections in change-cycle mode, append a new row to `## Change History`:
+```
+| [release] | [today] | [one-line summary of what changed] | [bug_fix/enhancement/new_feature/project_change] |
+```
+
+Sections and their guardrail focus (apply in both modes):
 
 | # | Section | Question | Guardrail check |
 |---|---------|----------|-----------------|
@@ -53,9 +70,39 @@ Sections and their guardrail focus:
 | 5 | Test Plan | Unit tests, integration tests, edge cases. | — |
 | 6 | Non-Functional Considerations | Performance, security, observability. **Required:** list every secret/credential/env var this feature needs by name (e.g. `DATABASE_URL`). If none: state "No secrets required." | If feature touches external services or credentials and no env vars are listed: block. |
 
+**Spec skeleton** (used when creating a new spec file):
+```markdown
+## Scope
+_not yet written_
+
+## API / Interface Contract
+_not yet written_
+
+## Data
+_not yet written_
+
+## Implementation Plan
+_not yet written_
+
+## Test Plan
+_not yet written_
+
+## Non-Functional Considerations
+_not yet written_
+
+## Change History
+
+| Release | Date       | Summary                | Type |
+|---------|------------|------------------------|------|
+| 1.0.0   | YYYY-MM-DD | Initial implementation | —    |
+
+## Guardrail Compliance
+_pending_
+```
+
 ## Step 4 — Guardrail compliance
 
-After all six sections, evaluate each guardrail from `architecture-spec.md → ## Guardrails`. Write:
+After all sections, evaluate each guardrail from `architecture-spec.md → ## Guardrails`. Write:
 ```markdown
 ## Guardrail Compliance
 - ✓ [guardrail] — [how this spec complies]

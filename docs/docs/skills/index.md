@@ -18,7 +18,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, bug fixes, everything |
+| **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
 | **track-cost** | `/track-cost` | Full cost breakdown by phase and feature |
 
 ---
@@ -39,73 +39,91 @@ You never need to remember separate commands for different workflows. One comman
 
 ### The Dashboard
 
+Two states depending on where you are in the pipeline.
+
+**State 1 — No features yet** (ideation, architecture in progress, or no project):
+
 ```
-SpecGantry v1.9.3  |  Acme Platform
-[████░░░░░░]  2 / 6 deployed
+SpecGantry v1.9.4  |  My App
+[░░░░░░░░░░]  0 / 0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-Role: Developer
-
-Feature Pipeline
-
-  001  User Auth       ✅ Spec  ✅ Review  ✅ Build  ✅ Tests  ✅ Done
-  002  Search API      ✅ Spec  ✅ Review  🔄 Build  ○ Tests   ○ Done
-  003  Notifications   🔄 Spec  ○ Review   ○ Build   ○ Tests   ○ Done
-  004  Export PDF      ⏳ Spec  ○ Review   ○ Build   ○ Tests   ○ Done
-
-⚡ Next
-
-  [1] Continue spec for Notifications  ↳ section 2 of 6 in progress
-  [2] Pick up Export PDF               ↳ reporting · small
-
-── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────────────
+  Architecture in progress — 3/5 topics complete.
+──────────────────────────────────────────────────────────
+  [1] Continue architecture           [P] Project
+                                      [$] Cost
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
 ```
 
-The dashboard is the same entry point for every role. What you see reflects who you are and where the project is.
+**State 2 — Feature pipeline active:**
+
+```
+SpecGantry v1.9.4  |  Acme Platform
+[████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
+──────────────────────────────────────────────────────────
+  001  User Auth       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
+  002  Search API      ✅ Spec  ✅ Rev  🔄 Build  ○ Tests   ○ Done
+  003  Notifications   🔄 Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+  004  Export PDF      ⏳ Spec  ○ Rev   ○ Build   ○ Tests   ○ Done
+──────────────────────────────────────────────────────────
+  [1] Continue spec for Notifications [A] Architecture
+  [2] Pick up Export PDF              [P] Project
+                                      [$] Cost
+                                      [+] New work
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
+```
+
+The left column of the action bar shows 1–4 contextual numbered actions — the most useful things you can do right now. The right column is always-present lettered commands.
 
 ---
 
 ### What /spec-gantry Handles
 
-**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name, vision, release label) and moves straight into ideation. No separate setup command needed.
+**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves straight into ideation.
 
 **Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written.
 
-**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically. The pipeline shows exactly what's been done and what's available to pick up.
+**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically.
 
-**Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically at each step.
+**Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
 
-**Bug fixes and new work** — Once at least one feature is deployed, the `[+] New work` quick-bar action lets the Team Lead describe a bug, improvement, or new requirement. SpecGantry classifies it and confirms before routing to the right workflow.
+**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new feature, or architectural change. SpecGantry analyses the backlog and feature specs to determine which features are affected — you just describe the work.
 
 ---
 
-### Quick-bar Commands
+### Action Bar Commands
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]rch` | Both | View the full architecture spec |
-| `[B]acklog` | Team Lead | Manage backlog — prioritize, assign, defer, group-assign |
-| `[P]roject` | Team Lead | Add features, graduate bug fixes, edit project details |
-| `[$]Cost` | Both | Full cost breakdown by phase and feature |
-| `[+] New work` | Team Lead | Describe a bug, improvement, new feature, or change |
-| `[?]Help` | Both | Quick reference and docs link |
-| `[X]Exit` | Both | Return to normal Claude Code |
-
-`[+] New work` appears when `architecture_complete` is true and at least one feature has been deployed.
+| `[A]` Architecture | Both | View the full architecture spec. Visible once architecture is complete. |
+| `[P]` Project | Both | Manage backlog — prioritize, assign, defer, group-assign. Edit project name and vision. |
+| `[$]` Cost | Both | Full cost breakdown by phase and feature |
+| `[+]` New work | Both | Describe a bug, improvement, new feature, or change. Visible once architecture is complete. |
+| `[?]` Help | Both | Quick reference and docs link |
+| `[X]` Exit | Both | Return to normal Claude Code |
 
 ---
 
 ### Classifying New Work
 
-When you use `[+] New work` or when all features are deployed, SpecGantry asks what you want to work on next and classifies your description into one of four types — confirming with you before doing anything:
+When you use `[+] New work` or when all features are deployed, SpecGantry asks what you want to work on next. It then:
+
+1. **Classifies** the type of work
+2. **Maps it to features** — reads the backlog and all feature specs to determine which existing features are affected, or what new feature to create. You don't need to specify this.
+3. **Confirms** the mapping with you before touching any state
+4. **Routes** — resets phase flags and re-enters the pipeline
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that was working is now broken — goes straight to development, spec phases bypassed |
-| `enhancement` | An existing feature needs to do more or work differently — creates a new versioned spec cycle |
-| `new_feature` | A net-new capability with no backlog entry — goes through the full feature pipeline |
-| `project_change` | Cross-cutting: infrastructure, auth, data model, multi-feature scope — goes through architecture first |
+| `bug_fix` | Something that was working is now broken — full spec → build → test cycle on the affected feature |
+| `enhancement` | An existing feature needs to do more or work differently — same cycle, spec updated with change annotations |
+| `new_feature` | A net-new capability — architecture agent runs first to assign the feature ID and update the backlog |
+| `project_change` | Cross-cutting: infrastructure, data model, multi-feature scope — architecture agent runs first |
 
-SpecGantry always confirms its classification and the reason before proceeding.
+SpecGantry always confirms its classification and feature mapping before proceeding.
 
 ---
 
@@ -130,8 +148,8 @@ SpecGantry tracks token usage automatically after every agent session. `/track-c
 ### Example Output
 
 ```
-SpecGantry v1.9.3  |  Acme Platform
-[████░░░░░░]  2 / 6 deployed
+SpecGantry v1.9.4  |  Acme Platform
+[████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
 
 By Phase
@@ -154,8 +172,6 @@ FEATURE-001      development    sonnet-4-6   18,201      $1.82
 FEATURE-001      test           haiku-4-5     3,112      $0.16
 ────────────────────────────────────────────────────────────────
 FEATURE-001 total                            26,209      $2.47
-
-── [A]rch  [$]Cost  [?]Help  [X]Exit ─────────────────────────
 ```
 
 ### If No Data Appears
@@ -171,15 +187,14 @@ Cost tracking starts automatically once your first agent session completes. If t
 ```
 Team Lead:
   /spec-gantry → [1] Start new project
-              → Enter name, vision, release label
+              → Enter name and vision
               → Answer ideation questions  (~15 min)
               → Define architecture        (~30 min)
               → Commit specs/ to git
 
 Developers:
   git pull
-  /spec-gantry → detects project → role: developer
-              → pick a feature from ⚡ Next
+  /spec-gantry → detects project → pick a feature
               → write spec, build, test
 ```
 
@@ -199,9 +214,20 @@ Team Lead:
 Team Lead:
   /spec-gantry → [+] New work
               → Describe the bug
-              → SpecGantry classifies as bug_fix, confirms
-              → Development begins immediately (spec phases bypassed)
-              → Tests required before deployment
+              → SpecGantry identifies affected feature, confirms
+              → Developer picks it up — full spec → build → test cycle
+              → All features tested → TL deploys new release
+```
+
+### Deploying a Release
+
+```
+Team Lead (once all features pass tests):
+  /spec-gantry → [1] Deploy release 1.0.0
+              → Confirm
+              → SpecGantry generates deploy.sh covering all features
+              → Reviews deploy-artifact.md
+              → Runs specs/deploy.sh
 ```
 
 ---

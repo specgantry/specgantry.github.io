@@ -80,6 +80,7 @@ Append `## Guardrails` to `specs/architecture-spec.md`:
 - AI/LLM prompts as `.md` files with `{{placeholder}}` syntax under `/src/ai/`
 - Config under `/src/config/`; secrets in `/src/.env` — never hardcoded
 - Build output to `/dist/`
+- **Runtime writable storage under `/data/`** — any file the app writes at runtime (databases, uploads, generated outputs, caches) must go here. Subdirs by type: `/data/db/`, `/data/uploads/`, `/data/cache/`, etc. `/data/` must be treated as a persistent volume mount in all deployment targets — never assume it survives a redeploy unless mounted.
 
 **Project-specific guardrails:** derive from the architecture session (auth requirements, data access rules, timeout constraints, etc.). List each as a concrete rule.
 

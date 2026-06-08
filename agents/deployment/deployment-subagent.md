@@ -65,6 +65,7 @@ Write `specs/deploy.sh`:
 - `#!/bin/bash` and `set -e` at the top
 - Header comment: `# SpecGantry deploy script — Release [next_version] — [date]`
 - One clearly labelled section per architectural component (e.g. `# --- Database migrations ---`, `# --- API service ---`, `# --- Frontend ---`)
+- **`/data/` volume:** include a dedicated `# --- Runtime storage ---` section that creates required subdirs under `/data/` (e.g. `mkdir -p /data/db /data/uploads`) and emits a `# MANUAL:` note listing `/data/` as a required persistent volume mount for the deployment target (Docker volume, cloud storage mount, etc.)
 - Within each section, steps from all relevant features in deployment order
 - Concrete shell commands where possible
 - `# MANUAL: [instruction]` for steps that cannot be automated

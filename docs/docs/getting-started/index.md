@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.5`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.6`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -123,7 +123,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.9.5  |  New Project
+SpecGantry v1.9.6  |  New Project
 [░░░░░░░░░░]  0 / 0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -146,7 +146,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically:
 
 ```
-SpecGantry v1.9.5  |  Acme Platform
+SpecGantry v1.9.6  |  Acme Platform
 [████░░░░░░]  3 / 8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   001  Auth Module       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done
@@ -235,7 +235,7 @@ Shown during ideation, architecture, or when no project exists. The middle secti
 Shown once architecture is complete and the backlog has features:
 
 ```
-SpecGantry v1.9.5  |  My App
+SpecGantry v1.9.6  |  My App
 [████░░░░░░]  2 / 6 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   001  User Auth       ✅ Spec  ✅ Rev  ✅ Build  ✅ Tests  ✅ Done

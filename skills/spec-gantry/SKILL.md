@@ -39,6 +39,9 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 | `specs/features/[ID]/dev-artifact.yaml` | dev + test subagents | `overall_status` |
 | `.claude/features/[ID].lock` | this skill | concurrency guard, stale after 5 min |
 | `specs/cost-log.ndjson` | MCP hook (automatic) | one entry per subagent session; includes `release` field |
+| `specs/scratchpad/*` | any agent (scratch/intermediate) | ephemeral research, notes, or intermediate outputs in any format — not part of the spec |
+
+Any scratch, intermediate, or research files written during a session (e.g. by a general-purpose agent doing exploration) **must** be placed under `specs/scratchpad/`. Create the directory if it does not exist. Pass this instruction to every subagent you spawn.
 
 ---
 
@@ -71,7 +74,7 @@ SpecGantry v[version]  |  [project.name or "New Project"]
 ──────────────────────────────────────────────────────────
 ```
 
-Progress bar: 10 chars — `█` per deployed feature, `░` remaining. Before first deployment: all `░`. When any features have in-flight work: append `· release [next_version] in progress` to the second line.
+Progress bar: 10 chars — use the Unicode FULL BLOCK character `█` (U+2588) per deployed feature, and LIGHT SHADE `░` (U+2591) for remaining. Before first deployment: all `░`. When any features have in-flight work: append `· release [next_version] in progress` to the second line. Do not substitute these characters with any other symbols.
 
 ---
 
@@ -102,56 +105,75 @@ Examples:
 
 Used when: `architecture_complete:true` and backlog has ≥1 feature.
 
-Middle section shows one row per feature:
+The pipeline table and action bar are one unified view — there is no separate feature picker screen. Everything is actionable from the front page.
+
+Middle section — feature table:
 
 ```
-  [ID]  [title 24ch]  [Spec][Rev][Build][Test][Deploy]
+                              Spec Rev Build Test Deploy
+  [001]  Data layer – Config   ⏳   ○    ○    ○     ○
+  [002]  Data layer – IndexedB ⏳   ○    ○    ○     ○
+  [003]  Proxy service         ⏳   ○    ○    ○     ○
+  [004]  Discovery engine      🔴   ○    ○    ○     ○   depends on 003
+  [005]  Drafting engine       🔴   ○    ○    ○     ○   depends on 004,001
+  [006]  App shell             ✅   ✅   ✅   ✅    ✅
 ```
 
-Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
-Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
+- Always render the column header row above the feature rows
+- Always render ALL features from the backlog — never omit any
+- Feature IDs shown as `[NNN]` (bare number) — directly typeable by the user
+- Blocked features show `depends on NNN[,NNN]` inline at end of row
+- Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
+- Flags: Spec=`feature_spec_complete` · Rev=`spec_reviewed` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
 
 ---
 
 ### ACTION BAR
 
-Always the last element rendered. Two columns — left is contextual numbered actions (1–4, most urgent first), right is fixed lettered commands stacked vertically. Both columns share the bounding lines.
+Always the last element rendered. Two columns — left is contextual actions, right is fixed lettered commands. In State 2 the action bar always ends with a live input prompt.
 
+**State 1 (no pipeline active):**
 ```
 ──────────────────────────────────────────────────────────────────────
-  `[1]` [action one]                  `[A]` Architecture
-  `[2]` [action two]                  `[P]` Project
-  `[3]` [action three]                `[$]` Cost
-                                      `[+]` New work
-                                      `[?]` Help
+  `[1]` [action one]                  `[P]` Project
+  `[2]` [action two]                  `[?]` Help
                                       `[X]` Exit
 ──────────────────────────────────────────────────────────────────────
 ```
 
-**Left column — numbered actions by state:**
+**State 2 (pipeline active):**
+```
+──────────────────────────────────────────────────────────────────────
+  Type a feature ID to pick it up     `[A]` Architecture
+  `[1]` [contextual action]           `[P]` Project
+  `[2]` [contextual action]           `[$]` Cost
+                                      `[+]` New work
+                                      `[?]` Help
+                                      `[X]` Exit
+──────────────────────────────────────────────────────────────────────
+Enter feature ID or action:  `>`
+```
+
+**Left column — contextual actions by state:**
 
 No project:
 - `[1]` Start new project
-- `[2]` Analyse existing codebase  _(only if source files exist)_
+- `[2]` Analyse existing codebase _(only if source files exist)_
 
 Ideation/architecture in progress (TL):
 - `[1]` Continue [ideation / architecture]
 
-Architecture complete, unclaimed features (developer):
-- `[1]` Pick up [FEATURE-NNN · title]  _(next in dependency order)_
-- `[2]` Pick up [FEATURE-NNN · title]  _(second available)_
-
-Feature in progress (developer, `current_feature` set):
-- `[1]` Continue [phase] for [FEATURE-NNN]
+Feature in progress (`current_feature` set):
+- `[1]` Continue [phase] for FEATURE-NNN
 
 All features tested, awaiting deploy (TL):
 - `[1]` Deploy release [next_version]
 
 Some features tested, others not (TL):
-- `[1]` Continue — [n] features still need build/test  _(informational, not selectable)_
+- `[1]` Continue — [n] features still need build/test _(informational, not selectable)_
 
 All features deployed:
-- `[1]` Describe next work  _(→ classify_and_route)_
+- `[1]` Describe next work _(→ classify_and_route)_
 
 **Right column — visibility rules:**
 - `[A]` Architecture — visible when `architecture_complete:true`
@@ -161,7 +183,18 @@ All features deployed:
 - `[?]` Help — always visible
 - `[X]` Exit — always visible
 
-Right column items not yet applicable (e.g. `[A]` before architecture exists) are omitted — do not show greyed or disabled entries.
+Right column items not yet applicable are omitted — do not show greyed or disabled entries.
+
+**Input handling (State 2 prompt):**
+- Bare number (`001`, `1`) or full ID (`FEATURE-001`) → pick up that feature → route to its current phase
+- Blocked feature typed → show one-line blocker, re-render dashboard
+- Lettered command (`A`, `P`, `$`, `+`, `?`, `X`) → execute that action
+- Invalid input → re-render dashboard with one-line error above header
+
+**STRICT OUTPUT RULES — no exceptions:**
+- Render the full dashboard FIRST on every response, before any other output
+- Never show a separate feature picker screen — the table IS the picker
+- Never append advice, roadmaps, recommendations, or commentary
 
 ---
 
@@ -170,22 +203,6 @@ Right column items not yet applicable (e.g. `[A]` before architecture exists) ar
 ```
 ✗ [gate] FAILED · [condition] · [resolution]
 ```
-
----
-
-### FEATURE PICKER
-
-Used when the user must choose from multiple features:
-
-```
-  `[001]`  User Auth            S  auth-core    ready to pick up
-  `[002]`  Login / JWT          S  auth-core    ready to pick up
-  `[003]`  Password reset       S  auth-core    ready to pick up
-  `[004]`  Product catalogue    M  catalogue    ready to pick up
-
-Enter feature ID (e.g. 001), or press Enter to return:  `>`
-```
-Features with the same `assignment_group` are shown consecutively. Accept bare numbers (`001`, `1`, `003`) or full IDs (`FEATURE-001`). On invalid input, re-prompt. On Enter with no input, return to dashboard.
 
 ---
 
@@ -206,7 +223,7 @@ Re-read all state files before routing. **One subagent per `/spec-gantry` call �
 | 8 | `current_feature` set · `tests_passing:true` · not deployed | Show "ready to deploy" message — cleared for TL to trigger release when all features ready | yes ⏸ — role boundary |
 | 9 | TL · all backlog features have `tests_passing:true` and `deployment_status` not complete | **deploy_release** | yes ⏸ |
 | 9b | TL · some features `tests_passing:true` · some still `tests_passing:false` or `dev_complete:false` | Show blocking message — list outstanding features | yes ⏸ |
-| 10 | No `current_feature` · unclaimed features exist | Show feature picker → set `current_feature` → **feature_spec** | yes ⏸ |
+| 10 | No `current_feature` · user types a feature ID · feature is unclaimed and unblocked | set `current_feature` → **feature_spec** | yes ⏸ |
 | 11 | All features deployed · `[+]` pressed | **classify_and_route** | yes ⏸ |
 | 12 | All features deployed | View H → **classify_and_route** | yes ⏸ |
 

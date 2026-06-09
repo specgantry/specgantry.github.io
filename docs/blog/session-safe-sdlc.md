@@ -13,9 +13,9 @@ permalink: /blog/session-safe-sdlc/
 
 There's a failure mode in AI-assisted development that doesn't get discussed much, because it doesn't look like a failure when it happens. It looks like a restart.
 
-A developer is mid-way through guiding the architecture agent through a system design. Forty minutes in. The key constraints are established, the domain structure is clear, and the agent is mid-sentence on the service boundary definitions. Then: context limit. Network drop. End of day. The session closes.
+A developer is mid-way through ideation — the single session that matures the idea and shapes the system. Forty minutes in. The key constraints are established, the domain structure is clear, and the agent is mid-sentence on the service boundary definitions. Then: context limit. Network drop. End of day. The session closes.
 
-The next day, the developer opens a new session. The architecture agent has no memory of yesterday. All the established constraints, the domain structure, the half-completed boundary definitions — gone. The developer either recreates the full context from scratch (which takes time and doesn't reproduce exactly), or continues with an incomplete picture (which produces incorrect output and corrupts the architecture spec).
+The next day, the developer opens a new session. The ideation agent has no memory of yesterday. All the established constraints, the domain structure, the half-completed boundary definitions — gone. The developer either recreates the full context from scratch (which takes time and doesn't reproduce exactly), or continues with an incomplete picture (which produces incorrect output and corrupts the architecture spec).
 
 Neither outcome is acceptable for a production project. And yet this is the default behavior of every AI coding assistant that doesn't explicitly address session continuity.
 
@@ -63,10 +63,9 @@ Not at the end of the session. Not when the artifact is "complete." After every 
 
 In SpecGantry, this is implemented as a hard invariant across every agent:
 
-- The ideation agent writes each answer to `ideation-artifact.md` immediately after it's confirmed. If the session closes after question 8, the artifact contains exactly questions 1–8. The next session reads the artifact, sees 8 answers, and starts with question 9.
-- The architecture agent writes each completed section to `architecture-spec.md` as it's finalized. Mid-session interruption leaves a partial spec with everything up to the interruption intact.
-- The feature-spec agent writes each of the six sections to `feature-spec.md` as they're completed. A session that ends after section 4 leaves a spec with sections 1–4 that the next session can read and continue from section 5.
-- The orchestrator logs every phase transition to `project-state.yaml`. The current phase, the cleared features, the in-progress features — all persisted, so a restarted session doesn't re-run phases that already completed.
+- The ideation agent writes each answer to `architecture-spec.md` immediately after it's confirmed — Beat 1 answers first, then Beat 2 system-shaping decisions. If the session closes mid-ideation, the artifact contains exactly what was answered. The next session reads the file, sees what's there, and continues from the next unanswered topic.
+- The feature-spec agent writes each of the five sections to `feature-spec.md` as they're completed. A session that ends after section 3 leaves a spec with sections 1–3 that the next session can read and continue from section 4.
+- The orchestrator logs every phase transition to `project-state.yaml`. The current phase, the cleared components, the in-progress components — all persisted, so a restarted session doesn't re-run phases that already completed.
 
 The result: sessions are **interruption-safe at the question level**. Any interruption — network drop, context limit, end of day, crash — loses at most one in-progress answer. Everything before that is on disk.
 
@@ -140,12 +139,12 @@ For concreteness, here's the file system that SpecGantry maintains per project:
 
 ```
 specs/
-  ideation-artifact.md       ← Q&A from ideation, written answer by answer
-  architecture-spec.md       ← Full system design, written section by section
-  project-state.yaml         ← Phase status, domain list, feature backlog
+  architecture-spec.md       ← Vision, system design, domain sections — written section by section
+  integration-scenarios.md   ← Cross-component scenarios seeded during ideation, grows with every spec
+  project-state.yaml         ← Phase status, domain list, component backlog
   features/
     [feature_id]/
-      feature-spec.md        ← Six-section spec, written section by section
+      feature-spec.md        ← Five-section spec, written section by section
 ```
 
 Every agent reads its input from this structure before doing anything. Every agent writes to its artifact immediately after each unit of progress. No state lives only in the context window.

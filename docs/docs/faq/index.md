@@ -273,7 +273,7 @@ Common reasons totals are higher than expected:
 - **Cache writes** — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper
 - **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
 
-The ideation agent uses a lighter, faster model. Architecture, spec, and development agents use a more capable model that costs more per token.
+The ideation, spec, and development agents use a capable model (Sonnet) that costs more per token. The unit test agent uses a lighter, faster model (Haiku).
 
 ### How do I refresh the pricing rates?
 

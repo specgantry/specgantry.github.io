@@ -41,15 +41,15 @@ You never need to remember separate commands for different workflows. One comman
 
 Two states depending on where you are in the pipeline.
 
-**State 1 — No features yet** (ideation, architecture in progress, or no project):
+**State 1 — No features yet** (ideation in progress, or no project):
 
 ```
-SpecGantry v1.9.9  |  My App
+SpecGantry v2.0.0  |  My App
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-  Architecture in progress — 3/5 topics complete.
+  Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
-  [1] Continue architecture           [P] Project
+  [1] Continue ideation               [P] Project
                                       [$] Cost
                                       [?] Help
                                       [X] Exit
@@ -61,7 +61,7 @@ SpecGantry v1.9.9  |  My App
 The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
 
 ```
-SpecGantry v1.9.9  |  Acme Platform
+SpecGantry v2.0.0  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec Build Test Deploy
@@ -141,8 +141,8 @@ When you use `[+] New work` or when all features are deployed, SpecGantry asks w
 |---|---|
 | `bug_fix` | Something that was working is now broken — full spec → build → test cycle on the affected feature |
 | `enhancement` | An existing feature needs to do more or work differently — same cycle, spec updated with change annotations |
-| `new_feature` | A net-new capability — architecture agent runs first to assign the feature ID and update the backlog |
-| `project_change` | Cross-cutting: infrastructure, data model, multi-feature scope — architecture agent runs first |
+| `new_feature` | A net-new capability — ideation agent runs in amendment mode to assign a component ID and update the backlog |
+| `project_change` | Cross-cutting: infrastructure, data model, multi-feature scope — ideation agent runs in amendment mode first |
 
 SpecGantry always confirms its classification and feature mapping before proceeding.
 
@@ -173,7 +173,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 **Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v1.9.9  |  Acme Platform
+SpecGantry v2.0.0  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed
 ──────────────────────────────────────────────────────────
 
@@ -181,14 +181,14 @@ Cost Summary  |  release 1.0.0
 
 Phase           Tokens       Cost
 ────────────────────────────────
-ideation         4,404      $0.47
-architecture     8,201      $0.82
+ideation        12,605      $1.26
 feature_spec    14,209      $1.43
 development     31,445      $3.14
 test             6,112      $0.31
+integration      4,890      $0.49
 deployment       3,890      $0.39
 ────────────────────────────────
-Total           68,261      $6.56
+Total           73,151      $7.02
 
 ──────────────────────────────────────────────────────────
   [1] By feature    [2] By release    [3] By model
@@ -215,7 +215,7 @@ FEATURE-003       9,112      $0.46
 Total            53,762      $4.77
 ```
 
-Project-level phases (ideation, architecture) are excluded here — they belong to the project, not individual features.
+Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual features.
 
 ---
 
@@ -249,7 +249,7 @@ haiku-4-5       18,300      $0.92
 Total           80,601      $7.79
 ```
 
-Useful for understanding whether your spend profile aligns with what you'd expect — heavy Sonnet usage during complex development phases, lighter Haiku usage for ideation and test.
+Useful for understanding whether your spend profile aligns with what you'd expect — heavy Sonnet usage during ideation, spec, and development phases, lighter Haiku usage for unit tests.
 
 ---
 

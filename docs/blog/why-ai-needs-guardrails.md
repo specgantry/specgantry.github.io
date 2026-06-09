@@ -104,7 +104,7 @@ The right structure for AI-assisted development isn't the heavyweight processes 
 
 2. **Formalizes architecture decisions as rules.** The system design is a living contract between the architect and the development team. It needs to be inspectable, version-controlled, and actively enforced — not a slide deck from the kickoff meeting.
 
-3. **Requires a written spec before code.** Not a novel — a spec. Six sections, 30 minutes to write, covering scope, interfaces, data, implementation plan, test cases, and non-functional considerations. This is the minimum that gives an AI coding assistant the context to implement something correctly.
+3. **Requires a written spec before code.** Not a novel — a spec. Five sections, 30 minutes to write, covering scope, interfaces, data, implementation plan, and test cases. This is the minimum that gives an AI coding assistant the context to implement something correctly.
 
 4. **Tracks cost and progress transparently.** AI-assisted development has real financial costs that vary significantly by how you use it. Visibility into token usage by phase, feature, and developer turns AI cost from a mystery into a managed resource.
 

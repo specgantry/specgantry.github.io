@@ -102,11 +102,11 @@ An append-only record of token usage and cost for every agent session. Each entr
 | Action | Team Lead | Developer |
 |--------|-----------|-----------|
 | Run ideation | ✅ | ❌ |
-| Run architecture | ✅ | ❌ |
+| Run integration tests | ✅ | ❌ |
 | Manage backlog (`[P]` Project) | ✅ | ✅ (view) |
 | View architecture spec | ✅ | ✅ (read-only) |
-| Write feature spec | ✅ | ✅ |
-| Build feature | ✅ | ✅ |
+| Write component spec | ✅ | ✅ |
+| Build component | ✅ | ✅ |
 | Deploy release | ✅ | ❌ |
 | View cost data | ✅ | ✅ |
 

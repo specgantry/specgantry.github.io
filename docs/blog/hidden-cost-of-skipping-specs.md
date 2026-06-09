@@ -134,7 +134,7 @@ Retroactive docs also don't serve the primary purpose of a spec: to create a rev
 
 ## What Changes With Enforced Specs
 
-The phrase "enforced specs" sounds heavyweight. The reality is lightweight but hard: before any code is written, there's a document that answers six questions about the feature. Thirty minutes. Six sections. Verified against architecture.
+The phrase "enforced specs" sounds heavyweight. The reality is lightweight but hard: before any code is written, there's a document that answers five questions about the component. Thirty minutes. Five sections. Verified against architecture.
 
 What changes:
 

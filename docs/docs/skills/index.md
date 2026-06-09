@@ -44,7 +44,7 @@ Two states depending on where you are in the pipeline.
 **State 1 — No features yet** (ideation, architecture in progress, or no project):
 
 ```
-SpecGantry v1.9.8  |  My App
+SpecGantry v1.9.9  |  My App
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Architecture in progress — 3/5 topics complete.
@@ -61,7 +61,7 @@ SpecGantry v1.9.8  |  My App
 The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
 
 ```
-SpecGantry v1.9.8  |  Acme Platform
+SpecGantry v1.9.9  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec Build Test Deploy
@@ -70,9 +70,13 @@ SpecGantry v1.9.8  |  Acme Platform
   [003]  Notifications         🔄   ○    ○     ○
   [004]  Export PDF            ⏳   ○    ○     ○
   [005]  Analytics             🔴   ○    ○     ○   depends on 003,004
+  ────────────────────────────────────────────────
+  Integration tests            ○
+  Deploy release               ○
 ──────────────────────────────────────────────────────────
   Type a feature ID to pick it up     [A] Architecture
-  [1] Continue spec – FEATURE-003     [P] Project
+  [1] Continue spec – FEATURE-003     [I] Integration scenarios
+                                      [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
@@ -114,10 +118,11 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]` Architecture | Both | View the full architecture spec. Visible once architecture is complete. |
+| `[A]` Architecture | Both | View the full architecture spec. Visible whenever `architecture-spec.md` exists — including mid-ideation. |
+| `[I]` Integration scenarios | Both | View `integration-scenarios.md` — scenarios, assertions, run history. Visible once seeded during ideation. |
 | `[P]` Project | Both | Manage backlog — prioritize, assign, defer, group-assign. Edit project name and vision. |
 | `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, feature, release, and model |
-| `[+]` New work | Both | Describe a bug, improvement, new feature, or change. Visible once architecture is complete. |
+| `[+]` New work | Both | Describe a bug, improvement, new feature, or change. Visible once ideation is complete. |
 | `[?]` Help | Both | Quick reference and docs link |
 | `[X]` Exit | Both | Return to normal Claude Code |
 
@@ -168,7 +173,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 **Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v1.9.8  |  Acme Platform
+SpecGantry v1.9.9  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed
 ──────────────────────────────────────────────────────────
 
@@ -269,14 +274,15 @@ Cost tracking starts automatically once your first agent session completes. If t
 Team Lead:
   /spec-gantry → [1] Start new project
               → Enter name and vision
-              → Answer ideation questions  (~15 min)
-              → Define architecture        (~30 min)
+              → Beat 1: mature the idea  (~10 min)
+              → Beat 2: shape the system (~15 min)
+              → architecture-spec.md + backlog written
               → Commit specs/ to git
 
 Developers:
   git pull
-  /spec-gantry → detects project → type feature ID to pick up
-              → write spec, build, test
+  /spec-gantry → detects project → type component ID to pick up
+              → domain elaboration (first of domain) → write spec → build → test
 ```
 
 ### Onboarding an Existing Codebase
@@ -295,18 +301,20 @@ Team Lead:
 Team Lead:
   /spec-gantry → [+] New work
               → Describe the bug
-              → SpecGantry identifies affected feature, confirms
+              → SpecGantry identifies affected component, confirms
               → Developer picks it up — full spec → build → test cycle
-              → All features tested → TL deploys new release
+              → All components tested → TL runs integration tests → deploy
 ```
 
 ### Deploying a Release
 
 ```
-Team Lead (once all features pass tests):
-  /spec-gantry → [1] Deploy release 1.0.0
+Team Lead (once all components pass unit tests):
+  /spec-gantry → [1] Run integration tests
+              → Scenarios execute against real system
+              → All pass → [1] Deploy release 1.0.0
               → Confirm
-              → SpecGantry generates deploy.sh covering all features
+              → SpecGantry generates deploy.sh
               → Reviews deploy-artifact.md
               → Runs specs/deploy.sh
 ```

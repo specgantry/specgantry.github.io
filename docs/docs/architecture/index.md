@@ -38,9 +38,9 @@ After SpecGantry runs, your project contains a `specs/` directory committed to g
 
 ```
 specs/
-├── project-state.yaml              # Project metadata, backlog, current release version
-├── ideation-artifact.md            # Ideation output and feasibility assessment
-├── architecture-spec.md            # System architecture, guardrails, and domains
+├── project-state.yaml              # Project metadata, backlog, phase gates, current release version
+├── architecture-spec.md            # Single source of truth — vision, constraints, tech stack, guardrails, domain sections
+├── integration-scenarios.md        # Living document — cross-component scenarios, assertions, run history
 ├── cost-log.ndjson                 # Token usage and cost per agent session
 ├── deploy.sh                       # Generated deployment script (whole system)
 ├── deploy.sh.old                   # Previous deployment script (backup)
@@ -48,7 +48,7 @@ specs/
 └── features/
     ├── FEATURE-001/
     │   ├── state.yaml              # Phase progress flags
-    │   ├── feature-spec.md         # Six-section specification + Change History
+    │   ├── feature-spec.md         # Five-section component spec (cross-references architecture-spec.md)
     │   └── dev-artifact.yaml       # Build notes and test results
     └── FEATURE-002/
         └── ...
@@ -69,17 +69,17 @@ specs/
 
 The project registry. Contains the project name and vision, phase completion status, the list of architectural domains, and the full feature backlog with each feature's status, size, domain, assignee, and dependencies.
 
-### `specs/ideation-artifact.md`
-
-The output of the Ideation phase. Documents the problem being solved, user context, constraints, key risks, and the feasibility recommendation that unlocked the architecture phase.
-
 ### `specs/architecture-spec.md`
 
-The output of the Architecture phase. Covers tech stack decisions, component boundaries, API contracts, core data model, and non-functional requirements. The **Guardrails** section lists every enforceable rule that feature specs must honor.
+The single source of truth for the system. Written during ideation and extended just-in-time as domains are elaborated. Contains vision, constraints, tech stack, system boundaries, guardrails, backlog summary, and a `## Domain: [name]` section for each domain that has been picked up. Component specs reference this document rather than duplicating it.
+
+### `specs/integration-scenarios.md`
+
+A living document. Seeded during ideation with obvious cross-component flows. Extended by each component spec with scenarios involving its interface. Enriched and executed during integration testing. The `## Run History` section grows with every run — it is never overwritten. This document is the audit trail of the system's functional health across releases.
 
 ### `specs/features/FEATURE-XXX/feature-spec.md`
 
-A six-section specification for a single feature: scope, API/interface contracts, data ownership, an ordered implementation plan, a test plan, and non-functional considerations including all required environment variable names for secrets. The spec also contains a **Change History** table that records every release in which the feature changed — initial build and all subsequent bug fixes or enhancements. A guardrail compliance section must be clean before development begins.
+A five-section specification for a single component: scope, interface contract (delta from domain section), data (delta from domain data model), implementation plan, and test plan including integration scenario hooks. The spec also contains a Change History table recording every release in which the component changed. A guardrail compliance section must be clean before build begins.
 
 ### `specs/deploy.sh`
 
@@ -123,16 +123,16 @@ SpecGantry uses phase gates to ensure each phase is genuinely complete before th
 A gate failure tells you exactly what's missing:
 
 ```
-✗ Gate check failed: feature_spec → build
+✗ Gate check failed: component_spec → build
 
   Required                                    Status
   ──────────────────────────────────────────────────
   feature-spec.md exists                   →  ✓
-  All 6 sections present                   →  ✓
+  All 5 sections present                   →  ✓
   Guardrail compliance section present     →  ✓
   Zero violations                          →  ✗
 
-  Action: Resolve the violation in section 2 (API Contract).
+  Action: Resolve the violation in section 2 (Interface Contract).
 
   Run /spec-gantry to return to the dashboard.
 ```

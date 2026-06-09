@@ -12,11 +12,11 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 
 | Type | Phase | Model |
 |------|-------|-------|
-| `spec-gantry:ideation:ideation-subagent` | ideation | haiku-4-5-20251001 |
-| `spec-gantry:architecture:architecture-subagent` | architecture | sonnet-4-6 |
+| `spec-gantry:ideation:ideation-subagent` | ideation + architecture | sonnet-4-6 |
 | `spec-gantry:feature-spec:feature-spec-subagent` | feature_spec | sonnet-4-6 |
 | `spec-gantry:development:dev-subagent` | development | sonnet-4-6 |
 | `spec-gantry:development:test-subagent` | test | haiku-4-5-20251001 |
+| `spec-gantry:integration-test:integration-test-subagent` | integration_test | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
 | `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | sonnet-4-6 |
 
@@ -33,7 +33,9 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 
 | File | Owned by | Key fields |
 |------|----------|------------|
-| `specs/project-state.yaml` | ideation + architecture subagents | `phase_gates`, `backlog`, `domains`; `project.release` (current deployed semver e.g. `"1.0.0"`); backlog entries include `assignment_group`, `last_release`, `change_type` |
+| `specs/project-state.yaml` | ideation subagent | `phase_gates`, `backlog`, `domains`; `project.release`; backlog entries include `assignment_group`, `last_release`, `change_type` |
+| `specs/architecture-spec.md` | ideation subagent | single source of truth — vision, constraints, tech stack, system boundaries, guardrails, backlog summary, domain sections; **never duplicated in component specs** |
+| `specs/integration-scenarios.md` | ideation subagent (seed) · feature-spec subagent (extend) · integration-test subagent (results) | living document — cross-component scenarios, assertions, run history |
 | `.claude/local-state.yaml` | this skill | `role`; `active_features` (list of feature IDs currently in-flight) |
 | `specs/features/[ID]/state.yaml` | feature-spec subagent | `feature_spec_complete`, `dev_complete`, `tests_passing`, `deployment_status` |
 | `specs/features/[ID]/dev-artifact.yaml` | dev + test subagents | `overall_status` |
@@ -56,10 +58,11 @@ Render the full dashboard on every response. After every subagent returns, re-re
 
 Examples:
 ```
-✓ Ideation complete  ·  proceeding to architecture
-✓ Feature spec complete  ·  FEATURE-003 Notifications
+✓ Ideation complete  ·  system shaped — 6 components across 3 domains
+✓ Component spec complete  ·  FEATURE-003 Notifications
 ✓ Build complete  ·  FEATURE-003 running tests
-✓ Tests passed  ·  FEATURE-003 ready to deploy
+✓ Tests passed  ·  FEATURE-003 ready
+✓ Integration tests passed  ·  ready to deploy
 ```
 
 ---
@@ -80,7 +83,7 @@ Progress bar: 10 chars — use the Unicode FULL BLOCK character `█` (U+2588) p
 
 ### STATE 1 — No features in pipeline
 
-Used when: no project exists, or ideation/architecture still in progress.
+Used when: no project exists, or ideation still in progress.
 
 Middle section shows current phase status:
 
@@ -93,10 +96,10 @@ Examples:
   No project found in this directory.
 ```
 ```
-  Ideation in progress — 3/5 categories answered.
+  Ideation in progress — Beat 1: 2/4 topics answered.
 ```
 ```
-  Architecture in progress — 2/5 topics complete.
+  Ideation in progress — Beat 2: 2/4 topics complete.
 ```
 
 ---
@@ -107,7 +110,7 @@ Used when: `architecture_complete:true` and backlog has ≥1 feature.
 
 The pipeline table and action bar are one unified view — there is no separate feature picker screen. Everything is actionable from the front page.
 
-Middle section — feature table:
+Middle section — feature table + project-level status:
 
 ```
                               Spec Build Test Deploy
@@ -117,14 +120,20 @@ Middle section — feature table:
   [004]  Discovery engine      🔴   ○    ○     ○   depends on 003
   [005]  Drafting engine       🔴   ○    ○     ○   depends on 004,001
   [006]  App shell             ✅   ✅   ✅    ✅
+  ──────────────────────────────────────────────────
+  Integration tests            ○
+  Deploy release               ○
 ```
 
 - Always render the column header row above the feature rows
 - Always render ALL features from the backlog — never omit any
+- Always render the two project-level rows (Integration tests, Deploy release) below the separator
 - Feature IDs shown as `[NNN]` (bare number) — directly typeable by the user
 - Blocked features show `depends on NNN[,NNN]` inline at end of row
 - Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
-- Flags: Spec=`feature_spec_complete` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
+- Component flags: Spec=`feature_spec_complete` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
+- Integration tests icon: ⏳ when all components `tests_passing:true` · 🔄 running · ✅ `integration_tests_passing:true` · ○ otherwise
+- Deploy release icon: ⏳ when `integration_tests_passing:true` · ✅ all deployed · ○ otherwise
 
 ---
 
@@ -160,23 +169,27 @@ No project:
 - `[1]` Start new project
 - `[2]` Analyse existing codebase _(only if source files exist)_
 
-Ideation/architecture in progress (TL):
-- `[1]` Continue [ideation / architecture]
+Ideation in progress (TL):
+- `[1]` Continue ideation
 
 Feature in progress (`active_features` non-empty):
 - `[1]` Continue [phase] for FEATURE-NNN _(first active feature needing action)_
 
-All features tested, awaiting deploy (TL):
+All components tested, awaiting integration test (TL):
+- `[1]` Run integration tests
+
+Integration tests passed, awaiting deploy (TL):
 - `[1]` Deploy release [next_version]
 
-Some features tested, others not (TL):
-- `[1]` Continue — [n] features still need build/test _(informational, not selectable)_
+Some components tested, others not (TL):
+- `[1]` Continue — [n] components still need build/test _(informational, not selectable)_
 
 All features deployed:
 - `[1]` Describe next work _(→ classify_and_route)_
 
 **Right column — visibility rules:**
-- `[A]` Architecture — visible when `architecture_complete:true`
+- `[A]` Architecture — visible when `specs/architecture-spec.md` exists (even mid-ideation)
+- `[I]` Integration scenarios — visible when `specs/integration-scenarios.md` exists
 - `[P]` Project — always visible
 - `[$]` Cost — always visible
 - `[+]` New work — visible when `architecture_complete:true`
@@ -208,27 +221,27 @@ Right column items not yet applicable are omitted — do not show greyed or disa
 
 ## Routing — First Match
 
-Re-read all state files before routing. **Multiple features can be in-flight simultaneously — one `/spec-gantry` call per feature per phase.** The orchestrator fans out lifecycles independently; each feature advances through its own Spec → Build → Test cycle in parallel. Every action ends by updating state, re-rendering the dashboard, and stopping. The routing table picks up from current state on the next invocation.
+Re-read all state files before routing. **Multiple components can be in-flight simultaneously.** Every action ends by updating state, re-rendering the dashboard, and stopping.
 
 | # | Condition | Action | Pause after? |
 |---|-----------|--------|-------------|
-| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | no — moves straight to ideation setup |
+| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | no — moves straight to ideation |
 | 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
-| 2 | TL · `ideation_complete:false` | **start_ideation** | yes ⏸ |
-| 3 | TL · `ideation_complete:true` · `architecture_complete:false` | **start_architecture** | yes ⏸ — ideation→architecture boundary |
-| 4 | User picks feature ID · `feature_spec_complete:false` | **feature_spec** | yes ⏸ |
-| 5 | User picks feature ID · `feature_spec_complete:true` · `dev_complete:false` | **development** | yes ⏸ |
-| 6 | User picks feature ID · `dev_complete:true` · `tests_passing:false` | **resume_testing** | yes ⏸ |
-| 7 | User picks feature ID · `tests_passing:true` · not deployed | Show "ready to deploy" — cleared for TL to trigger release when all features ready | yes ⏸ |
-| 8 | TL · all backlog features `tests_passing:true` · `deployment_status` not complete | **deploy_release** | yes ⏸ |
-| 8b | TL · some features `tests_passing:true` · some still in progress | Show blocking message — list outstanding features | yes ⏸ |
-| 9 | No feature picked · user types a feature ID · feature is unblocked | route to its current phase | yes ⏸ |
+| 2 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
+| 3 | User picks component ID · `feature_spec_complete:false` | **feature_spec** | yes ⏸ |
+| 4 | User picks component ID · `feature_spec_complete:true` · `dev_complete:false` | **development** | yes ⏸ |
+| 5 | User picks component ID · `dev_complete:true` · `tests_passing:false` | **resume_testing** | yes ⏸ |
+| 6 | User picks component ID · `tests_passing:true` | Show "component ready" | yes ⏸ |
+| 7 | TL · all backlog components `tests_passing:true` · `integration_tests_passing:false` | **run_integration_tests** | yes ⏸ |
+| 7b | TL · some components still in progress | Show blocking message — list outstanding components | yes ⏸ |
+| 8 | TL · `integration_tests_passing:true` · deployment not complete | **deploy_release** | yes ⏸ |
+| 9 | No component picked · user types a component ID · unblocked | route to its current phase | yes ⏸ |
 | 10 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
 | 11 | All features deployed | View H → **classify_and_route** | yes ⏸ |
 
-**⏸ Pause = re-render full dashboard + stop.** Do not proceed to the next action. Wait for the user to run `/spec-gantry` again.
+**⏸ Pause = re-render full dashboard + stop.**
 
-**Parallel lifecycle:** There is no single `current_feature` lock. Multiple features can each be at any phase simultaneously. The dashboard shows all in-flight features with 🔄. When the user types a feature ID, route to that feature's current phase immediately. If two features are both ready for build, the developer can pick them up in separate sessions — each locks only its own `.claude/features/[ID].lock`.
+**Parallel lifecycle:** No single `current_feature` lock. Multiple components advance independently. Each locks only its own `.claude/features/[ID].lock`.
 
 **View A:**
 ```
@@ -263,6 +276,7 @@ project:
 phase_gates:
   ideation_complete: false
   architecture_complete: false
+  integration_tests_passing: false
 domains: []
 backlog: []
 ```
@@ -275,17 +289,9 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 
 ### start_ideation
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
-**Idempotency:** `ideation_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Running ideation for [project.name]"` · pass `vision_statement`, `project_dir`
-**After:** read `ideation_recommendation`; if `proceed` → re-render dashboard with ⚡ Next: "Start architecture" · stop; if `clarify/escalate` → halt with blockers
-
----
-
-### start_architecture
-**Gate:** `role:tl` · `ideation_complete:true` · `ideation_recommendation:proceed`
-**Idempotency:** `architecture_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:architecture:architecture-subagent` · description: `"Generating architecture for [project.name]"` · pass `project_dir`
-**After:** verify `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — role boundary: TL hands off to developers
+**Idempotency:** `ideation_complete:true` AND `architecture_complete:true` → re-render dashboard · stop
+**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `vision_statement`, `project_dir`
+**After:** verify `ideation_complete:true` and `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — TL hands off to developers
 
 ---
 
@@ -314,12 +320,20 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `dev_complete:true`
 **Idempotency:** `tests_passing:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:development:test-subagent` · description: `"Running tests for [feature_id]"` · pass `feature_id`, `project_dir`
-**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready_to_deploy` in backlog · remove feature ID from `active_features` in `.claude/local-state.yaml` · re-render dashboard · ⏸ pause — TL triggers `deploy_release` once all features pass
+**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready` in backlog · remove feature ID from `active_features` in `.claude/local-state.yaml` · re-render dashboard · ⏸ pause
+
+---
+
+### run_integration_tests
+**Gate:** `role:tl` · all backlog components `tests_passing:true` · `integration_tests_passing:false`
+**Idempotency:** `integration_tests_passing:true` → re-render dashboard · stop
+**Invoke:** `spec-gantry:integration-test:integration-test-subagent` · description: `"Running integration tests"` · pass `project_dir`
+**After:** if any scenario failed → halt with failure summary from `specs/integration-scenarios.md`; else re-render dashboard · ⏸ pause — TL triggers deploy
 
 ---
 
 ### deploy_release
-**Gate:** `role:tl` · all backlog features `tests_passing:true`
+**Gate:** `role:tl` · `integration_tests_passing:true`
 **Idempotency:** all features `deployment_status:complete` → re-render dashboard · stop
 
 Confirm with TL before proceeding:
@@ -371,12 +385,13 @@ For `new_feature`:
 - Re-render · ⏸
 
 `new_feature`:
-- Always route to **start_architecture** (amendment mode) — the architecture subagent assigns the FEATURE-NNN ID, title, domain, size, dependencies, and assignment group, and appends the entry to the backlog. If a new domain is needed it extends the architecture spec first; if it fits an existing domain it appends directly to the backlog.
-- Re-render · ⏸ after architecture completes
+- Always route to **start_ideation** (amendment mode) — the ideation subagent assigns the FEATURE-NNN ID, title, domain, size, dependencies, and assignment group, and appends to the backlog. If a new domain is needed it extends the architecture spec first; if it fits an existing domain it appends directly.
+- Re-render · ⏸ after ideation completes
 
 `project_change`:
 - Mark impacted features with `feature_spec_complete:false` (specs must be re-done after architecture updates)
-- Re-render · ⏸ before **start_architecture**
+- Reset `integration_tests_passing:false` in `specs/project-state.yaml`
+- Re-render · ⏸ before **start_ideation** (amendment mode)
 
 ---
 
@@ -395,7 +410,8 @@ Proceed? `[Y]`/`[N]`
 
 ## Quick-Bar Actions
 
-**`[A]`** Display `specs/architecture-spec.md` in full, then re-render dashboard. Visible when `architecture_complete:true`.
+**`[A]`** Display `specs/architecture-spec.md` in full, then re-render dashboard. Visible when `specs/architecture-spec.md` exists (including mid-ideation).
+**`[I]`** Display `specs/integration-scenarios.md` in full, then re-render dashboard. Visible when `specs/integration-scenarios.md` exists.
 **`[P]`** Project menu: view/edit project name and vision · manage backlog (reorder, defer, reassign, group-assign) · add feature. Visible always.
 **`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and feature. Visible always.
 **`[+]`** Prompt for next work → **classify_and_route**. Visible when `architecture_complete:true`.

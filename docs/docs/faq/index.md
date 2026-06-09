@@ -133,7 +133,11 @@ Yes. Each developer works on different features — features are isolated from e
 
 ### Can I skip ideation?
 
-No. Ideation validates the project problem and captures constraints before any architecture decisions are made. Without a completed ideation, the architecture session has no project context to work from.
+No. Ideation produces `architecture-spec.md` and the component backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation.
+
+### Is there a separate architecture phase?
+
+No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a component backlog. There is no separate step to complete before components can be picked up.
 
 ### Can I skip the feature spec?
 
@@ -141,7 +145,7 @@ No. The feature spec gate is the core of what SpecGantry enforces. No spec means
 
 ### When can I deploy?
 
-Once all features in the backlog have passing tests. The deployment gate blocks until every feature has `tests_passing: true`. This ensures every release contains a complete, coherent system.
+Once integration tests pass. Individual component unit tests are necessary but not sufficient — the system must be functionally solid end-to-end. The deployment gate requires `integration_tests_passing:true`, which means all component unit tests passed AND all critical cross-component scenarios in `integration-scenarios.md` passed.
 
 ### Can I deploy individual features?
 
@@ -151,20 +155,34 @@ No. SpecGantry deploys the entire system as a single release. This is intentiona
 
 | Phase | Typical Time |
 |-------|-------------|
-| Ideation | 10–20 minutes |
-| Architecture | 20–40 minutes |
-| Feature Spec | 5–15 minutes per feature |
+| Ideation (idea maturation + system shaping) | 15–30 minutes |
+| Component Spec | 5–15 min per component (+5 min domain elaboration on first of each domain) |
 | Build | Depends on complexity |
-| Test | Minutes (automated) |
+| Unit Test | Minutes (automated) |
+| Integration Test | Minutes to tens of minutes (depends on scenario count) |
 | Deploy release | 5–10 minutes (whole system) |
 
 ### Can multiple phases overlap?
 
-Yes — both across features and within a session. Multiple features run their Spec → Build → Test lifecycle in parallel. You can have one feature in Build while another is still in Spec. Within a single feature, phases are sequential — spec before build, build before test. Project-level phases are also sequential — ideation before architecture, architecture before any feature work.
+Yes — components run their Spec → Build → Test lifecycle in parallel. You can have one component in Build while another is still in Spec. Within a single component, phases are sequential. Ideation must complete before any component work begins.
+
+### Why does architecture feel lighter than expected?
+
+By design. The initial system shaping (Beat 2 of ideation) only covers what must exist before any component work begins: tech stack, system boundaries, guardrails, and a dependency-ordered backlog. Detailed domain elaboration — data model, interface contracts, domain NFRs — happens just-in-time when the first component of each domain is picked up. You only elaborate what you actually build.
+
+### What is domain elaboration?
+
+When you pick up the first component of a domain, three quick architecture questions elaborate that domain before the spec begins: data model, interface contracts, and domain-specific constraints. The answers are appended to `architecture-spec.md` and used as context for the spec. Subsequent components in the same domain skip this step.
+
+### How should components be sized?
+
+Components are building blocks, not micro-tasks. A component should represent a meaningful vertical slice of the system — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but it ships as a unit with one spec.
+
+When in doubt, err toward fewer, larger components. You can always scope further via `[+] New work` after deployment.
 
 ### What happens after all features are deployed?
 
-SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and feature specs to identify which features are affected, confirms with you, and re-enters the pipeline. You can also use `[+] New work` at any point mid-pipeline — you don't have to wait until everything is deployed. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
+SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and component specs to identify what's affected, confirms with you, and re-enters the pipeline. You can also use `[+] New work` at any point mid-pipeline. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
 
 ### What is a versioned feature?
 
@@ -195,20 +213,21 @@ Options to resolve a violation:
 
 ## Specs and Approval
 
-### What makes a good feature spec?
+### What makes a good component spec?
 
-A spec clear enough that any developer could pick it up and build the same thing. SpecGantry guides you through six sections:
+A spec clear enough that any developer could pick it up and build the same thing. SpecGantry guides you through five sections:
 
 1. **Scope** — What it does and explicitly what it doesn't do
-2. **API / Interface Contract** — Every endpoint, function, or event with types
-3. **Data** — What data the feature owns, reads, and writes
+2. **Interface Contract** — What it exposes or consumes (delta from the domain section in architecture-spec.md)
+3. **Data** — What data it owns or accesses (delta from the domain data model)
 4. **Implementation Plan** — Ordered tasks, each achievable in one session
-5. **Test Plan** — Unit tests, integration tests, edge cases
-6. **Non-Functional Considerations** — Performance, security, env var names for all credentials
+5. **Test Plan** — Unit tests, integration hooks, edge cases
+
+The spec also notes which integration scenarios in `integration-scenarios.md` this component participates in.
 
 ### Does the Team Lead have to review every spec?
 
-No. The developer self-reviews at the end of the spec phase — after completing all six sections and passing the guardrail check, the developer confirms the spec is ready to build. That's the final gate before development begins. There is no separate TL review step.
+No. The developer self-reviews at the end of the spec phase — after completing all five sections and passing the guardrail check, the developer confirms the spec is ready to build. That's the final gate before development begins. There is no separate TL review step.
 
 ### Can I edit a spec after starting to build?
 

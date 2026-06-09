@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: How It Works
-description: A complete walkthrough of SpecGantry's pipeline, roles, phase gates, release versioning, and cost visibility.
+description: A complete walkthrough of SpecGantry's pipeline — from raw idea to deployed system.
 prev_page: "Getting Started"
 prev_page_url: "/docs/getting-started"
 next_page: "Skills Guide"
@@ -16,27 +16,24 @@ A complete walkthrough of the pipeline, roles, and what happens at each phase.
 
 ## The Pipeline at a Glance
 
-SpecGantry enforces a structured development process split across two levels:
-
 ```
-PROJECT LEVEL ──────────────────────────────────────────────────────
-  Phase 1: Ideation     (Team Lead / Architect)
-  Phase 2: Architecture (Team Lead / Architect)
+IDEATION ────────────────────────────────────────────────────
+  Mature the idea + shape the system
+  Output: architecture-spec.md · component backlog · integration-scenarios.md (seeded)
 
-  ── Architecture committed to git ──
+COMPONENT LOOP (parallel, dependency-ordered) ───────────────
+  Spec   — component spec + domain elaboration (first of each domain)
+  Build  — TDD implementation
+  Test   — unit + component tests  →  technically solid
 
-FEATURE LEVEL (runs in parallel across features) ────────────────────
-  Phase 3: Feature Spec   (Developer)
-  Phase 4: Build          (Developer)
-  Phase 5: Test           (Developer)
+INTEGRATION TEST ────────────────────────────────────────────
+  Execute critical cross-component scenarios  →  functionally solid
 
-  ── All features built and tested ──
-
-RELEASE LEVEL ───────────────────────────────────────────────────────
-  Phase 6: Deploy         (Team Lead) — whole system, one release
+DEPLOY ──────────────────────────────────────────────────────
+  Deployment script + release
 ```
 
-Project-level phases are sequential — ideation must complete before architecture, architecture before any feature work. At the feature level, multiple features run their Spec → Build → Test lifecycle in parallel and independently. Deployment collects them all once every feature passes tests.
+Components run in parallel and in dependency order — data-layer components first, consumers after. The integration test phase runs once, after all components pass their unit tests. Deployment is gated on integration tests passing, not on individual component tests.
 
 ---
 
@@ -56,88 +53,105 @@ Project-level phases are sequential — ideation must complete before architectu
 
 ## The Phases {#phases}
 
-### Phase 1 — Ideation
+### Phase 1 — Ideation {#ideation}
 
 **Who:** Team Lead / Architect
-**Time:** 10–20 minutes
-**Output:** `specs/ideation-artifact.md`
+**Time:** 15–30 minutes
+**Output:** `specs/architecture-spec.md` · component backlog in `specs/project-state.yaml` · `specs/integration-scenarios.md` (seeded)
 
-Before any design work begins, SpecGantry helps you validate the problem. The ideation agent asks targeted questions about your project — tailored to your domain and context, not a generic checklist.
+Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.
 
-The conversation covers the real problem you're solving, your users and scale, existing constraints, the biggest technical risks, and what a successful first release looks like.
+**Beat 1 — Mature the idea**
 
-After the session, SpecGantry produces a feasibility assessment: **proceed**, **clarify**, or **escalate**. If anything other than proceed, SpecGantry surfaces the specific blockers and holds the pipeline until they're resolved.
+SpecGantry acts as a thinking partner, not an interviewer. It reads your vision and reacts to it using one of three stances:
+
+- **"Yes, and…"** — affirms the direction and extends it with something you may not have considered
+- **"Fine, but…"** — accepts the premise but surfaces a tradeoff, constraint, or risk it creates
+- **"What about…"** — probes a gap or edge case the vision didn't address
+
+Four topics, one question each: vision, problem & users, constraints, risks & out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on.
+
+**Beat 2 — Shape the system**
+
+Directly from the matured idea, SpecGantry proposes the system shape — tech stack, component boundaries, guardrails, and a dependency-ordered component backlog. Each topic is a proposal for you to confirm or redirect, not an open-ended question. Four more topics: tech stack, system boundaries, guardrails, component backlog.
+
+Everything is written to `specs/architecture-spec.md` after every answer. A crash mid-session loses at most one exchange.
+
+`specs/integration-scenarios.md` is seeded during Beat 2 with the obvious end-to-end flows visible from the system boundaries. It grows as component specs are written.
+
+**Component granularity — Goldilocks rule:**
+Components are building blocks, not micro-tasks. A component is a vertical slice — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but ships as a unit with one spec. When in doubt, merge — a component can always be extended later via `[+] New work`.
 
 ---
 
-### Phase 2 — Architecture
-
-**Who:** Team Lead / Architect
-**Time:** 20–40 minutes
-**Output:** `specs/architecture-spec.md` + feature backlog
-
-With a validated idea, the architecture agent helps you design the system. Questions are derived from your ideation session — your specific tech stack, your boundaries, your risks.
-
-The session produces:
-- A system architecture covering tech stack, component boundaries, API contracts, data model, and non-functional requirements
-- **Guardrails** — enforceable rules that every feature spec must honor
-- A **feature backlog** — the system decomposed into sized, prioritized, dependency-aware features with assignment groups
-
-The architecture agent owns the backlog. It assigns every feature its ID (`FEATURE-NNN`), title, domain, size, dependencies, and assignment group. Developers never manually create or number features.
-
-Once the architecture is committed to git, developers can pull and start picking up features.
-
----
-
-### Phase 3 — Feature Spec {#spec-gate}
+### Phase 2 — Component Spec {#spec-gate}
 
 **Who:** Developer
-**Time:** 5–15 minutes per feature
+**Time:** 5–15 minutes per component (+5 min domain elaboration on first component of each domain)
 **Output:** `specs/features/FEATURE-NNN/feature-spec.md`
 
 No code is written until a complete spec exists.
 
-The feature-spec agent guides the developer through a six-section specification:
+**Domain elaboration (first component of a domain):** if this is the first component picked up in its domain, three quick architecture questions elaborate that domain before the spec begins — data model, interface contract, domain-specific constraints. The answers are appended to `architecture-spec.md` as a `## Domain: [name]` section and used as context for the spec. Subsequent components in the same domain skip this step.
 
-1. **Scope** — what it does and explicitly what it doesn't
-2. **API / Interface Contract** — endpoints, function signatures, events
-3. **Data** — ownership, reads, writes, mapping to the core data model
-4. **Implementation Plan** — ordered tasks, each achievable in one session
-5. **Test Plan** — unit, integration, edge cases
-6. **Non-Functional Considerations** — performance, security, all required environment variable names
+**Cross-reference, don't duplicate:** the component spec references `architecture-spec.md` for anything already defined there — tech stack, guardrails, domain data model, interface contracts. The spec only adds what is specific to this component. This keeps both documents slim.
 
-Each section is written to disk immediately — sessions resume from the next incomplete section if interrupted.
+The spec covers five sections:
 
-After all six sections, SpecGantry checks the spec against every architecture guardrail. Any violation blocks the gate until resolved. The developer then self-reviews the completed spec before development begins — this is the final confirmation before build starts.
+1. **Scope** — what this component does and explicitly does not do, within its domain
+2. **Interface Contract** — what it exposes or consumes beyond what's in the domain section
+3. **Data** — what data it owns or accesses beyond what's in the domain data model
+4. **Implementation Plan** — ordered tasks, each completable in one session
+5. **Test Plan** — unit tests, integration hooks, edge cases; notes which integration scenarios this component participates in
 
-The spec also contains a **Change History** table. On the initial build this records `1.0.0 — Initial implementation`. Every future change cycle appends a new row with the release version, date, summary, and change type.
+Each section is written to disk immediately — sessions resume from the next incomplete section.
+
+After all sections, guardrails from `architecture-spec.md` are checked. Any violation blocks the spec until resolved. The developer self-reviews and confirms before build begins.
+
+After self-review, the spec agent updates `specs/integration-scenarios.md` — appending any new cross-component scenarios this component's interface reveals.
 
 ---
 
-### Phase 4 — Build
+### Phase 3 — Build {#build}
 
 **Who:** Developer
-**Time:** Depends on feature complexity
-**Output:** Source code
+**Time:** Depends on component complexity
+**Output:** Source code committed
 
-The build phase turns the approved spec into working code. The dev agent works through the implementation plan in order, staying within the architecture guardrails.
+The build phase turns the confirmed spec into working code. The dev agent works through the implementation plan in order, within the architecture guardrails. Tests are written alongside code — TDD, not deferred.
 
 Key behaviors:
-- Architecture guardrails apply throughout — conflicts are surfaced and stopped, not silently worked around
-- Secrets and credentials must come from environment variables declared in the spec — no literal values in source files
-- Tests are written alongside code
+- Stays within this component's domain boundary
+- Respects every guardrail in `architecture-spec.md`
+- Secrets and credentials come from environment variables declared in the spec — no literal values in source
 
 ---
 
-### Phase 5 — Test
+### Phase 4 — Unit Test {#unit-test}
 
 **Who:** Developer (automated)
 **Time:** Minutes
-**Output:** Test results in `dev-artifact.yaml`
+**Output:** `dev-artifact.yaml` with test results
 
-The test agent runs the full test suite. If any tests fail, it runs once more — this distinguishes hard failures from flaky tests. Hard failures block the pipeline. Flaky tests are flagged without blocking.
+The test agent runs the component's test suite. Hard failures block the pipeline. Flaky tests are flagged without blocking. A component is **technically solid** once it passes.
 
-The developer is done once tests pass — the feature is removed from the active list and the TL is notified it is ready.
+Multiple components run through this cycle in parallel. A component that passes is ready — the developer moves on. The integration test phase collects them all once every component passes.
+
+---
+
+### Phase 5 — Integration Test {#integration-test}
+
+**Who:** Team Lead (triggers once, automated)
+**Time:** Minutes to tens of minutes depending on scenario count
+**Output:** `specs/integration-scenarios.md` updated with results
+
+Once every component passes its unit tests, the TL triggers integration testing. The integration test agent reads `architecture-spec.md` and `integration-scenarios.md`, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.
+
+`specs/integration-scenarios.md` is a **living document**. It was seeded during ideation with the obvious cross-component flows. It grew as each component spec was written, with scenarios contributed by each component's interface. By the time integration testing runs, it reflects the full system's understanding of critical paths.
+
+Results are written back to `integration-scenarios.md` per scenario, and a run summary is appended to the `## Run History` section. This becomes the audit trail of functional health across releases.
+
+The system is **functionally solid** once all scenarios pass.
 
 ---
 
@@ -147,29 +161,29 @@ The developer is done once tests pass — the feature is removed from the active
 **Time:** 5–10 minutes
 **Output:** `specs/deploy.sh` + `specs/deploy-artifact.md`
 
-**The deployment gate requires all features to have passing tests before a release.** This is enforced — a single feature that hasn't passed tests blocks the entire deployment.
+**The deployment gate requires integration tests to pass.** Individual component unit tests are necessary but not sufficient — the system must be functionally solid end-to-end before a release.
 
 The deployment agent:
-1. Verifies every feature has `overall_status: pass` in its dev artifact
-2. Computes the next release version automatically from the change types in the backlog
-3. Resolves deployment order via dependency graph
+1. Verifies `integration_tests_passing:true`
+2. Computes the next release version from change types in the backlog
+3. Resolves deployment order via the dependency graph
 4. Backs up the previous `deploy.sh` to `deploy.sh.old`
-5. Generates a single `deploy.sh` covering all features, organised by architectural component
+5. Generates a single `deploy.sh` covering all components
 6. Validates the script with `bash -n`
 7. Writes `deploy-artifact.md` summarising the release
-8. Marks all features deployed and updates `project.release`
+8. Marks all components deployed and updates `project.release`
 
-Every release deploys the **entire system** — not individual features. This is intentional: cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit.
+Every release deploys the **entire system** — not individual components.
 
 ---
 
 ## Release Versioning {#versioning}
 
-SpecGantry uses standard X.Y.Z semver. The version is a project-level concept — not per-feature.
+SpecGantry uses standard X.Y.Z semver. The version is a project-level concept — not per-component.
 
 - Every project starts at `1.0.0`
 - The version only changes when a release is deployed
-- The bump is computed automatically from the highest-severity change type across all features in the release:
+- The bump is computed automatically from the highest-severity change type across all components in the release:
 
 | Change type | Bump | Example |
 |---|---|---|
@@ -177,7 +191,7 @@ SpecGantry uses standard X.Y.Z semver. The version is a project-level concept �
 | `enhancement` or `new_feature` | minor | `1.0.0` → `1.1.0` |
 | `bug_fix` only | patch | `1.0.0` → `1.0.1` |
 
-The initial release always deploys as `1.0.0` — no bump is applied.
+The initial release always deploys as `1.0.0`.
 
 ---
 
@@ -185,63 +199,75 @@ The initial release always deploys as `1.0.0` — no bump is applied.
 
 ### Team Lead / Architect
 
-**Responsibilities:**
-- Lead Ideation and Architecture sessions
-- Manage the backlog via `[P] Project`
-- Trigger deployments — the only role that can run `deploy_release`
-- Classify and route new work after deployment
-- View cost breakdown
+- Runs ideation — the only person who shapes the system
+- Manages the backlog via `[P] Project`
+- Triggers integration tests once all components pass
+- Triggers deployments
+- Classifies and routes new work after deployment
 
 ### Developer
 
-**Responsibilities:**
-- Pick features from the backlog
-- Write feature specs
-- Build and test against the spec
-- Signal readiness — tests passing clears the feature for TL to deploy
+- Picks components from the backlog
+- Writes component specs (triggers domain elaboration on first component of each domain)
+- Builds and tests against the spec
+- A passing component test signals readiness — integration testing and deployment are TL territory
+
+---
+
+## The Architecture Artifact {#architecture-artifact}
+
+`specs/architecture-spec.md` is the single source of truth for the system. It contains:
+
+- **Vision** — what the system is, who it's for, why it's worth building
+- **Problem & Users** — user population, use case, success criteria
+- **Constraints** — hard stops that architecture must respect
+- **Risks & Out of Scope** — top risks with mitigations, explicit v1 deferral list
+- **Tech Stack** — confirmed choices per layer
+- **System Boundaries** — top-level components and communication patterns
+- **Guardrails** — enforceable rules every component must respect
+- **Feature Backlog** — human-readable summary (machine-readable form in `project-state.yaml`)
+- **Domain sections** — `## Domain: [name]` sections added just-in-time as each domain's first component is picked up
+
+Component specs **reference** this document rather than duplicating it. This keeps both the architecture and component specs slim.
+
+---
+
+## The Integration Scenarios Document {#integration-scenarios}
+
+`specs/integration-scenarios.md` is a living document that grows through the pipeline:
+
+1. **Seeded during ideation** — obvious end-to-end flows visible from the system boundaries
+2. **Extended during component specs** — each component spec contributes scenarios involving its interface
+3. **Enriched before integration testing** — the integration test agent adds concrete assertions where needed
+4. **Executed during integration testing** — real system, no mocks; results written per scenario
+5. **Updated on every run** — `## Run History` section appended, never overwritten
+
+By the time a release deploys, the document is a complete picture of what critical paths the system handles and their test history.
 
 ---
 
 ## Handling Changes After Deployment {#post-deployment}
 
-When all features are deployed, SpecGantry enters post-deployment mode and asks what you want to work on next. The TL describes the work; SpecGantry does the analysis.
-
-### How classify_and_route works
-
-1. **Classify** the type: `bug_fix`, `enhancement`, `new_feature`, or `project_change`
-2. **Map to features** — SpecGantry reads the backlog and all feature specs to determine which existing features are affected, or what new feature needs creating. The TL does not need to specify this — SpecGantry derives it from the specs
-3. **Confirm** — presents the mapping for TL approval
-4. **Route** — resets all phase flags on affected features and re-enters the pipeline
+Use `[+] New work` at any point to describe new work — bug fix, enhancement, new component, or architectural change. SpecGantry classifies the work, reads the backlog and component specs to determine what's affected, confirms with you, and re-enters the pipeline.
 
 | Type | What happens |
 |---|---|
-| `bug_fix` | Target feature identified from specs. All phase flags reset — full spec → build → test cycle. |
-| `enhancement` | Same as bug_fix — spec updated with change annotations, rebuilt, retested. |
-| `new_feature` | Architecture agent runs in amendment mode to assign FEATURE-NNN, update backlog. Then normal pipeline. |
-| `project_change` | Architecture agent runs first. Impacted feature specs marked for re-spec. |
-
-For `bug_fix` and `enhancement`, the feature spec is updated inline — changed lines are annotated with `` `__[release]__` `` and old text is struck through. A new row is appended to the spec's Change History table.
+| `bug_fix` | Affected component identified from specs. All phase flags reset — full spec → build → test cycle. Integration tests re-run before next deploy. |
+| `enhancement` | Same as bug_fix — spec updated with change annotations. |
+| `new_feature` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture spec. Then normal pipeline. |
+| `project_change` | Ideation agent runs in amendment mode first. Impacted component specs reset for re-spec. Integration tests reset. |
 
 ---
 
 ## Session Safety & Resumption
 
-SpecGantry saves progress after every question and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, architecture, and feature spec.
+SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, component spec, build, and test.
 
 ---
 
 ## Cost Visibility {#cost-tracking}
 
-SpecGantry tracks the real cost of every agent run automatically — no manual steps required. Token usage is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
-
-Run `[$] Cost` from the action bar — or `/track-cost` directly — for a navigable cost dashboard with four views:
-
-- **Summary** (default) — spend by phase for the current release
-- **By Feature** — total spend per feature across all phases
-- **By Release** — cumulative spend per deployed release, full project history
-- **By Model** — spend by model tier, most expensive first
-
-Pricing rates are fetched automatically from Anthropic's pricing page on startup. Token counts are exact API values — not estimates.
+SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson` and committed to git. Run `[$] Cost` or `/track-cost` for a breakdown by phase, component, release, and model.
 
 <div class="info">
   <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over the full project lifetime.

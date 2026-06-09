@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.8`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v1.9.9`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -123,7 +123,7 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v1.9.8  |  New Project
+SpecGantry v1.9.9  |  New Project
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -145,18 +145,22 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every feature, its current phase, and what you can pick up:
 
 ```
-SpecGantry v1.9.8  |  Acme Platform
+SpecGantry v1.9.9  |  Acme Platform
 [█░░░░░░░░░]  1/10 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Rev Build Test Deploy
-  [001]  Auth Module           ✅   ✅   ✅   ✅    ✅
-  [002]  Payment Gateway       ✅   ✅   🔄   ○     ○
-  [003]  Notifications         ⏳   ○    ○    ○     ○
-  [004]  Search                ⏳   ○    ○    ○     ○
-  [005]  Reporting             🔴   ○    ○    ○     ○   depends on 003,004
+                              Spec Build Test Deploy
+  [001]  Auth Module           ✅   ✅   ✅    ✅
+  [002]  Payment Gateway       ✅   🔄   ○     ○
+  [003]  Notifications         ⏳   ○    ○     ○
+  [004]  Search                ⏳   ○    ○     ○
+  [005]  Reporting             🔴   ○    ○     ○   depends on 003,004
+  ────────────────────────────────────────────────
+  Integration tests            ○
+  Deploy release               ○
 ──────────────────────────────────────────────────────────
   Type a feature ID to pick it up     [A] Architecture
-  [1] Continue build – FEATURE-002    [P] Project
+  [1] Continue build – FEATURE-002    [I] Integration scenarios
+                                      [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
@@ -174,10 +178,9 @@ Type a feature number (e.g. `003`) to pick it up and begin the feature spec phas
 ### If You're the Team Lead / Architect
 
 1. **Run `/spec-gantry`** — select Start New Project
-2. **Complete Ideation** (10–20 min) — answer questions about your project vision, constraints, and risks
-3. **Complete Architecture** (20–30 min) — define tech stack, system boundaries, API contracts, and guardrails
-4. **Review the generated backlog** — prioritize, assign, reorder via `[P] Project`
-5. **Commit `specs/` to git** — developers can now pull and join
+2. **Complete Ideation** (15–30 min) — Beat 1 matures the idea; Beat 2 shapes the system (tech stack, boundaries, guardrails, component backlog). Both happen in one conversation.
+3. **Review the generated backlog** — prioritize, assign, reorder via `[P] Project`
+4. **Commit `specs/` to git** — developers can now pull and join
 
 ### If You're a Developer
 
@@ -190,9 +193,9 @@ Type a feature number (e.g. `003`) to pick it up and begin the feature spec phas
 ### If You're Solo
 
 1. **Run `/spec-gantry`** and start as Team Lead
-2. **Complete both Ideation and Architecture** yourself
-3. **Switch to Developer role** — work features from the dashboard
-4. **Deploy** when all features pass tests — the whole system ships as one release
+2. **Complete Ideation** yourself — both idea maturation and system shaping happen in one session
+3. **Switch to Developer role** — work components from the dashboard
+4. **Run integration tests** once all components pass — then deploy as one release
 
 ---
 
@@ -204,8 +207,8 @@ After SpecGantry runs, your project contains a `specs/` directory to commit to g
 project-root/
 ├── specs/
 │   ├── project-state.yaml          # Project metadata and backlog
-│   ├── ideation-artifact.md        # Project vision & validated assumptions
-│   ├── architecture-spec.md        # Tech stack, system design, guardrails
+│   ├── architecture-spec.md        # Vision, tech stack, system design, guardrails, domain sections
+│   ├── integration-scenarios.md    # Living document — cross-component scenarios and run history
 │   ├── cost-log.ndjson             # Token usage and cost per agent run
 │   ├── deploy.sh                   # Generated deployment script (whole system)
 │   ├── deploy.sh.old               # Previous deployment script (backup)
@@ -213,7 +216,7 @@ project-root/
 │   ├── scratchpad/                 # Intermediate agent notes (not spec artifacts)
 │   └── features/
 │       ├── FEATURE-001/
-│       │   ├── feature-spec.md     # Feature specification + Change History
+│       │   ├── feature-spec.md     # Component specification + Change History
 │       │   ├── state.yaml          # Phase progress flags
 │       │   └── dev-artifact.yaml   # Build notes and test results
 │       └── FEATURE-002/
@@ -248,13 +251,12 @@ Every `/spec-gantry` invocation re-reads all state and renders the full dashboar
 Shown during ideation, architecture, or when no project exists. The middle section shows the current phase status:
 
 ```
-SpecGantry v1.9.8  |  My App
+SpecGantry v1.9.9  |  My App
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-  Architecture in progress — 3/5 topics complete.
+  Ideation in progress — Beat 1: 2/4 topics answered.
 ──────────────────────────────────────────────────────────
-  [1] Continue architecture           [P] Project
-                                      [$] Cost
+  [1] Continue ideation               [P] Project
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
@@ -265,18 +267,22 @@ SpecGantry v1.9.8  |  My App
 Shown once architecture is complete. The pipeline table and feature picker are unified — every feature is visible and directly actionable from the same screen:
 
 ```
-SpecGantry v1.9.8  |  My App
+SpecGantry v1.9.9  |  My App
 [██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Rev Build Test Deploy
-  [001]  User Auth             ✅   ✅   ✅   ✅    ✅
-  [002]  Profile API           ✅   ✅   🔄   ○     ○
-  [003]  Notifications         🔄   ○    ○    ○     ○
-  [004]  Search                ⏳   ○    ○    ○     ○
-  [005]  Reporting             🔴   ○    ○    ○     ○   depends on 003,004
+                              Spec Build Test Deploy
+  [001]  User Auth             ✅   ✅   ✅    ✅
+  [002]  Profile API           ✅   🔄   ○     ○
+  [003]  Notifications         🔄   ○    ○     ○
+  [004]  Search                ⏳   ○    ○     ○
+  [005]  Reporting             🔴   ○    ○     ○   depends on 003,004
+  ────────────────────────────────────────────────
+  Integration tests            ○
+  Deploy release               ○
 ──────────────────────────────────────────────────────────
   Type a feature ID to pick it up     [A] Architecture
-  [1] Continue spec – FEATURE-003     [P] Project
+  [1] Continue spec – FEATURE-003     [I] Integration scenarios
+                                      [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
@@ -303,7 +309,7 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 ## Common First-Run Questions
 
 **"Can I skip ideation?"**
-No. Ideation answers fundamental questions about the project. Without it, architecture has no context to work from.
+No. Ideation produces `architecture-spec.md` and the component backlog — the pipeline cannot start without them. There is no separate architecture phase; ideation does both in one conversation.
 
 **"Can I use SpecGantry with an existing project?"**
 Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture spec and feature backlog.
@@ -315,7 +321,7 @@ SpecGantry works great for solo developers. Complete both the Team Lead and Deve
 It depends on project size and complexity. A complete ideation + architecture session typically runs $0.50–$2.00. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, feature, release, and model.
 
 **"When can I deploy?"**
-Only after all features have been built and tested. The first deployment ships the complete system as release `1.0.0`.
+Once all components pass unit tests and integration tests pass. The TL triggers integration testing first — all critical cross-component scenarios must pass before the deployment gate opens.
 
 ---
 

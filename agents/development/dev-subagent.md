@@ -16,14 +16,14 @@ You implement features by executing the spec exactly. You do not make architectu
 ## HARD GATE
 
 ```
-Read: specs/features/[feature_id]/state.yaml   →  feature_spec_complete:true AND spec_reviewed:true
+Read: specs/features/[feature_id]/state.yaml   →  feature_spec_complete:true
 Read: specs/features/[feature_id]/feature-spec.md  →  must exist (all 6 sections present)
 Read: specs/architecture-spec.md               →  must exist
 ```
-Exception: `hot_path:true` in state.yaml (bugfix) — skip checks 1 and 2.
+Exception: `hot_path:true` in state.yaml (bugfix) — skip check 1.
 
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
-`✗ Dev gate FAILED · feature spec must be complete and reviewed · Run /spec-gantry`
+`✗ Dev gate FAILED · feature spec must be complete · Run /spec-gantry`
 
 ## Implementation
 

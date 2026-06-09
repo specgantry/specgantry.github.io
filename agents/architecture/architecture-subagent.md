@@ -55,6 +55,12 @@ Incorporate feedback. Write confirmed domains to `specs/project-state.yaml → d
 
 Decompose the architecture into features. Assign each to a confirmed domain. Estimate size: `S / M / L`. Identify dependencies.
 
+**Feature granularity — think at the right level:** A feature represents a meaningful, independently deliverable unit of work — not every variant, language, or minor configuration difference. Before creating separate features, ask: do these share the same implementation file, the same data model, and the same deployment concern? If yes, they are one feature, not many. Group variations, permutations, and closely related capabilities into a single feature with a clear scope. Only split into separate features when the pieces have genuinely different domains, different dependencies, or can ship independently without the others.
+
+Bad example: "Display greeting in English", "Display greeting in French", "Display greeting in Spanish" → three features. These are one feature: "Multi-language greeting display".
+
+Good example: "User registration", "Payment gateway" → two features. Different domains, different dependencies, different ownership.
+
 **Assignment grouping:** reason about which features share implementation boundaries — same module, same API layer, same data model, or overlapping file ownership. Group those features together under a short `assignment_group` label (e.g. `auth-core`, `payments`, `search`). Features in the same group should preferably go to the same developer to avoid merge conflicts in the codebase. A feature with no shared boundary gets its own group.
 
 Present table for TL review and edit:

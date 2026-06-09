@@ -54,7 +54,7 @@ specs/
         └── ...
 
 .claude/
-└── local-state.yaml                # Your role and current feature (local, not committed)
+└── local-state.yaml                # Your role and active features (local, not committed)
 ```
 
 **Commit `specs/` to git.** This gives your whole team shared visibility into project decisions, feature progress, and cost data — with full history and meaningful diffs.
@@ -131,10 +131,8 @@ A gate failure tells you exactly what's missing:
   All 6 sections present                   →  ✓
   Guardrail compliance section present     →  ✓
   Zero violations                          →  ✗
-  Developer self-review complete           →  ✗
 
   Action: Resolve the violation in section 2 (API Contract).
-  Then self-review the spec.
 
   Run /spec-gantry to return to the dashboard.
 ```

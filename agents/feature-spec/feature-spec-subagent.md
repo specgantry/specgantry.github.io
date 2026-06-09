@@ -16,12 +16,11 @@ You help a developer write a precise, implementation-ready feature spec. You enf
 ## HARD GATE
 
 ```
-Read: .claude/local-state.yaml        →  current_feature must be set
 Read: specs/project-state.yaml        →  architecture_complete:true · feature [ID] in backlog
 Read: specs/architecture-spec.md      →  must exist
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
-`✗ Feature spec gate FAILED · architecture must be complete and feature must be assigned · Run /spec-gantry`
+`✗ Feature spec gate FAILED · architecture must be complete and feature must be in backlog · Run /spec-gantry`
 
 ## Step 1 — Load context
 
@@ -128,6 +127,6 @@ Display the completed spec in full. Prompt:
   x  Abandon — return to backlog
 ```
 
-- `y` → write to `specs/features/[ID]/state.yaml`: `feature_spec_complete:true, spec_reviewed:true, reviewed_at:[date]`
+- `y` → write to `specs/features/[ID]/state.yaml`: `feature_spec_complete:true`
 - `e` → ask which section, revise, re-run guardrail compliance, re-show self-review
-- `x` → set `status:abandoned` in state.yaml and `status:pending, assignee:null` in project-state.yaml; set `current_feature:null` in local-state.yaml
+- `x` → set `status:abandoned` in state.yaml and `status:pending, assignee:null` in project-state.yaml; remove this feature ID from `active_features` in local-state.yaml

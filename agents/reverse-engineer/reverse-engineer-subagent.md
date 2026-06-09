@@ -78,7 +78,7 @@ backlog: [list of features with id, title, domain, assignee:null, status:pending
 **`.claude/local-state.yaml`:**
 ```yaml
 role: tl
-current_feature: null
+active_features: []
 ```
 
 ## Step 4 — Confirm

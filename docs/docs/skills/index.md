@@ -44,7 +44,7 @@ Two states depending on where you are in the pipeline.
 **State 1 — No features yet** (ideation, architecture in progress, or no project):
 
 ```
-SpecGantry v1.9.7  |  My App
+SpecGantry v1.9.8  |  My App
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Architecture in progress — 3/5 topics complete.
@@ -61,15 +61,15 @@ SpecGantry v1.9.7  |  My App
 The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
 
 ```
-SpecGantry v1.9.7  |  Acme Platform
+SpecGantry v1.9.8  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Rev Build Test Deploy
-  [001]  User Auth             ✅   ✅   ✅   ✅    ✅
-  [002]  Search API            ✅   ✅   🔄   ○     ○
-  [003]  Notifications         🔄   ○    ○    ○     ○
-  [004]  Export PDF            ⏳   ○    ○    ○     ○
-  [005]  Analytics             🔴   ○    ○    ○     ○   depends on 003,004
+                              Spec Build Test Deploy
+  [001]  User Auth             ✅   ✅   ✅    ✅
+  [002]  Search API            ✅   🔄   ○     ○
+  [003]  Notifications         🔄   ○    ○     ○
+  [004]  Export PDF            ⏳   ○    ○     ○
+  [005]  Analytics             🔴   ○    ○     ○   depends on 003,004
 ──────────────────────────────────────────────────────────
   Type a feature ID to pick it up     [A] Architecture
   [1] Continue spec – FEATURE-003     [P] Project
@@ -106,7 +106,7 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 
 **Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
 
-**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new feature, or architectural change. SpecGantry analyses the backlog and feature specs to determine which features are affected — you just describe the work.
+**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new feature, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and feature specs to determine which features are affected — you just describe the work.
 
 ---
 
@@ -168,7 +168,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 **Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v1.9.7  |  Acme Platform
+SpecGantry v1.9.8  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed
 ──────────────────────────────────────────────────────────
 

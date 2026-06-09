@@ -36,9 +36,7 @@ RELEASE LEVEL ──────────────────────
   Phase 6: Deploy         (Team Lead) — whole system, one release
 ```
 
-Each phase must be fully complete before the next begins. SpecGantry verifies this automatically — you can't skip ahead.
-
-**Key constraint:** the first deployment only happens once all features have been built and tested. This guarantees every release contains a complete, coherent system — not a partial build.
+Project-level phases are sequential — ideation must complete before architecture, architecture before any feature work. At the feature level, multiple features run their Spec → Build → Test lifecycle in parallel and independently. Deployment collects them all once every feature passes tests.
 
 ---
 
@@ -97,7 +95,7 @@ Once the architecture is committed to git, developers can pull and start picking
 **Time:** 5–15 minutes per feature
 **Output:** `specs/features/FEATURE-NNN/feature-spec.md`
 
-No code is written until a complete, reviewed spec exists.
+No code is written until a complete spec exists.
 
 The feature-spec agent guides the developer through a six-section specification:
 
@@ -110,7 +108,7 @@ The feature-spec agent guides the developer through a six-section specification:
 
 Each section is written to disk immediately — sessions resume from the next incomplete section if interrupted.
 
-After all six sections, SpecGantry checks the spec against every architecture guardrail. Any violation blocks the gate until resolved. The developer then self-reviews the completed spec before development begins.
+After all six sections, SpecGantry checks the spec against every architecture guardrail. Any violation blocks the gate until resolved. The developer then self-reviews the completed spec before development begins — this is the final confirmation before build starts.
 
 The spec also contains a **Change History** table. On the initial build this records `1.0.0 — Initial implementation`. Every future change cycle appends a new row with the release version, date, summary, and change type.
 
@@ -139,7 +137,7 @@ Key behaviors:
 
 The test agent runs the full test suite. If any tests fail, it runs once more — this distinguishes hard failures from flaky tests. Hard failures block the pipeline. Flaky tests are flagged without blocking.
 
-The developer is done once tests pass — `current_feature` is cleared and the TL is notified the feature is ready.
+The developer is done once tests pass — the feature is removed from the active list and the TL is notified it is ready.
 
 ---
 
@@ -149,7 +147,7 @@ The developer is done once tests pass — `current_feature` is cleared and the T
 **Time:** 5–10 minutes
 **Output:** `specs/deploy.sh` + `specs/deploy-artifact.md`
 
-**The deployment gate requires all features to have passing tests before the first release.** This is enforced — a single untested feature blocks the entire deployment.
+**The deployment gate requires all features to have passing tests before a release.** This is enforced — a single feature that hasn't passed tests blocks the entire deployment.
 
 The deployment agent:
 1. Verifies every feature has `overall_status: pass` in its dev artifact
@@ -220,7 +218,7 @@ When all features are deployed, SpecGantry enters post-deployment mode and asks 
 | `bug_fix` | Target feature identified from specs. All phase flags reset — full spec → build → test cycle. |
 | `enhancement` | Same as bug_fix — spec updated with change annotations, rebuilt, retested. |
 | `new_feature` | Architecture agent runs in amendment mode to assign FEATURE-NNN, update backlog. Then normal pipeline. |
-| `project_change` | Architecture agent runs first. Impacted feature specs marked for re-review. |
+| `project_change` | Architecture agent runs first. Impacted feature specs marked for re-spec. |
 
 For `bug_fix` and `enhancement`, the feature spec is updated inline — changed lines are annotated with `` `__[release]__` `` and old text is struck through. A new row is appended to the spec's Change History table.
 

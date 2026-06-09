@@ -137,11 +137,11 @@ No. Ideation validates the project problem and captures constraints before any a
 
 ### Can I skip the feature spec?
 
-No. The feature spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete, has zero guardrail violations, and has been self-reviewed before development can begin.
+No. The feature spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.
 
 ### When can I deploy?
 
-Only after all features in the backlog have been built and tested. The deployment gate blocks until every feature has `tests_passing: true`. This ensures the first release contains a complete, coherent system rather than a partial build.
+Once all features in the backlog have passing tests. The deployment gate blocks until every feature has `tests_passing: true`. This ensures every release contains a complete, coherent system.
 
 ### Can I deploy individual features?
 
@@ -160,11 +160,11 @@ No. SpecGantry deploys the entire system as a single release. This is intentiona
 
 ### Can multiple phases overlap?
 
-Feature-level phases run in parallel across different features. Multiple developers can be in different phases on different features simultaneously. Within a single feature, phases are sequential — spec before build, build before deploy. Project-level phases are also sequential — ideation before architecture.
+Yes — both across features and within a session. Multiple features run their Spec → Build → Test lifecycle in parallel. You can have one feature in Build while another is still in Spec. Within a single feature, phases are sequential — spec before build, build before test. Project-level phases are also sequential — ideation before architecture, architecture before any feature work.
 
 ### What happens after all features are deployed?
 
-SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and feature specs to identify which features are affected, confirms with you, and re-enters the pipeline. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
+SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and feature specs to identify which features are affected, confirms with you, and re-enters the pipeline. You can also use `[+] New work` at any point mid-pipeline — you don't have to wait until everything is deployed. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
 
 ### What is a versioned feature?
 
@@ -208,13 +208,11 @@ A spec clear enough that any developer could pick it up and build the same thing
 
 ### Does the Team Lead have to review every spec?
 
-The developer self-reviews. After completing all six sections, the developer confirms they can build it as written — that's the final gate before development begins.
-
-The Team Lead sees in-progress specs on their dashboard and can review them asynchronously. If they spot a concern, they can return the spec to the developer for revision.
+No. The developer self-reviews at the end of the spec phase — after completing all six sections and passing the guardrail check, the developer confirms the spec is ready to build. That's the final gate before development begins. There is no separate TL review step.
 
 ### Can I edit a spec after starting to build?
 
-Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. Editing resets the self-review confirmation — you must re-review before building can resume. The spec and the implementation should always agree.
+Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. Editing resets `feature_spec_complete` — you must re-confirm the spec before building can resume. The spec and the implementation should always agree.
 
 ---
 

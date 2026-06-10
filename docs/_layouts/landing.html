@@ -60,7 +60,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v2.0.2 · Production Ready
+          Claude Code Plugin · v2.0.3 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -90,11 +90,11 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.2</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.3</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.2</span>  |  Acme Platform</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.3</span>  |  Acme Platform</div>
             <div class="terminal-line output">  [████░░░░░░]  2 / 6 deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">                         Spec   Dev  Deploy</div>
@@ -177,13 +177,19 @@
                 <span class="gate-icon">🔒</span>
                 <span class="gate-label">Gate</span>
               </div>
+              <div class="phase-arrow">→</div>
+              <div class="phase-node phase-spec-color">
+                <div class="phase-num">02</div>
+                <div class="phase-name">Component Spec</div>
+                <div class="phase-output">component-spec.md</div>
+              </div>
             </div>
           </div>
 
           <!-- Divider -->
           <div class="pipeline-divider">
             <div class="divider-line"></div>
-            <div class="divider-label">Team Lead commits specs/ → developers pull → component work begins in parallel</div>
+            <div class="divider-label">Team Lead commits specs/ → developers pull → builds begin in parallel</div>
             <div class="divider-line"></div>
           </div>
 
@@ -194,17 +200,6 @@
               <span>Developers (parallel, dependency-ordered)</span>
             </div>
             <div class="pipeline-phases">
-              <div class="phase-node phase-spec-color">
-                <div class="phase-num">02</div>
-                <div class="phase-name">Component Spec</div>
-                <div class="phase-output">component-spec.md</div>
-              </div>
-              <div class="phase-arrow">→</div>
-              <div class="phase-gate">
-                <span class="gate-icon">🔒</span>
-                <span class="gate-label">Gate</span>
-              </div>
-              <div class="phase-arrow">→</div>
               <div class="phase-node phase-build-color">
                 <div class="phase-num">03a</div>
                 <div class="phase-name">Build + Unit Test</div>

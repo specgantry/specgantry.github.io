@@ -54,7 +54,7 @@ Content safety and code review catch problems *after the code is written*. By th
 
 1. **What problem is this solving, exactly?** (Ideation)
 2. **Does this fit the system we've agreed to build?** (Architecture)
-3. **What does "done" look like, specifically enough that you could verify it?** (Feature Spec)
+3. **What does "done" look like, specifically enough that you could verify it?** (Component Spec)
 
 If you can't answer these three questions before writing code, writing the code is premature — regardless of how fast the AI can produce it.
 
@@ -70,11 +70,11 @@ Consider: a developer picks up a "user authentication" feature. They write a spe
 
 The code works. It passes the developer's own tests. But it can't be merged without significant rework, and the rework will take longer than building it correctly the first time would have.
 
-**Architecture guardrails prevent this.** When the architect defines the system — tech stack, service boundaries, API contracts, data model, security requirements — and those decisions are formalized as *enforceable rules*, every feature spec gets checked against them before development begins. The misalignment is caught in 5 minutes of spec review, not 2 days of development.
+**Architecture guardrails prevent this.** When the architect defines the system — tech stack, service boundaries, API contracts, data model, security requirements — and those decisions are formalized as *enforceable rules*, every component spec gets checked against them before development begins. The misalignment is caught in 5 minutes of spec review, not 2 days of development.
 
 The catch is that "architecture guardrails" are only useful if they're actually enforced. A document in Confluence that everyone knows exists and nobody reads in practice is not a guardrail. It's decorative.
 
-This is why SpecGantry's architecture guardrails are checked automatically against every feature spec — not by the developer remembering to check, but by the system refusing to let the spec pass if there's a violation.
+This is why SpecGantry's architecture guardrails are checked automatically against every component spec — not by the developer remembering to check, but by the system refusing to let the spec pass if there's a violation.
 
 ---
 
@@ -104,7 +104,7 @@ The right structure for AI-assisted development isn't the heavyweight processes 
 
 2. **Formalizes architecture decisions as rules.** The system design is a living contract between the architect and the development team. It needs to be inspectable, version-controlled, and actively enforced — not a slide deck from the kickoff meeting.
 
-3. **Requires a written spec before code.** Not a novel — a spec. Five sections, 30 minutes to write, covering scope, interfaces, data, implementation plan, and test cases. This is the minimum that gives an AI coding assistant the context to implement something correctly.
+3. **Requires a written spec before code.** Not a novel — a spec. Five sections, 30 minutes to write, covering scope, interfaces, data, feature list, and test cases. This is the minimum that gives an AI coding assistant the context to implement something correctly.
 
 4. **Tracks cost and progress transparently.** AI-assisted development has real financial costs that vary significantly by how you use it. Visibility into token usage by phase, feature, and developer turns AI cost from a mystery into a managed resource.
 
@@ -118,9 +118,9 @@ SpecGantry enforces all four of these properties as hard gates in a Claude Code 
 
 The ideation agent generates targeted questions from your project description — not a fixed script, but questions tailored to the domain, scale, and constraints of what you've described. By the end of ideation, the feasibility assessment either clears you to proceed, asks you to clarify specific questions, or flags that there's a risk that needs stakeholder input before design begins.
 
-The architecture agent translates the validated project vision into a concrete system design — tech stack, service boundaries, API contracts, data model — and then derives **project domains** from the natural divisions of the system. These domains become the bounded contexts that feature specs must stay within. Every architecture decision is written as a guardrail.
+The architecture agent translates the validated project vision into a concrete system design — tech stack, service boundaries, API contracts, data model — and then derives **project domains** from the natural divisions of the system. These domains become the bounded contexts that component specs must stay within. Every architecture decision is written as a guardrail.
 
-The feature-spec agent loads the architecture spec before writing a single word. Every answer is checked against the guardrails in real time. Violations are flagged immediately, not at the end. The spec cannot be marked complete with any unresolved violation.
+The component-spec agent loads the architecture spec before writing a single word. Every answer is checked against the guardrails in real time. Violations are flagged immediately, not at the end. The spec cannot be marked complete with any unresolved violation.
 
 And the pipeline is session-safe: every question, every section, every answer is written to disk immediately. Network drops, context resets, end of day — the next session picks up at the next unanswered question.
 
@@ -136,7 +136,7 @@ This argument is most persuasive before you've run a team at scale with AI assis
 
 AI makes good problems faster to solve. It also makes bad problems faster to discover you've been solving. The difference, in both cases, is whether you defined the problem clearly before you started.
 
-Guardrails aren't about limiting what AI can do. They're about giving AI the context it needs to do the right thing. A feature spec isn't a leash on the model — it's the information the model needs to implement correctly.
+Guardrails aren't about limiting what AI can do. They're about giving AI the context it needs to do the right thing. A component spec isn't a leash on the model — it's the information the model needs to implement correctly.
 
 More tokens won't solve a missing spec. Better guardrails will.
 

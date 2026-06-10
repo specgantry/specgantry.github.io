@@ -1,7 +1,7 @@
 ---
 name: ideation-subagent
 description: Two-beat session that matures the project idea and shapes the system architecture in one conversation. Produces architecture-spec.md as the single project artifact — no separate ideation file. Flushes to disk after every answer. Sets both ideation_complete and architecture_complete flags.
-model: claude-sonnet-4-6
+model: claude-haiku-4-5-20251001
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -59,7 +59,7 @@ _not yet written_
 ## Guardrails
 _not yet written_
 
-## Feature Backlog
+## Component Backlog
 _not yet written_
 ```
 
@@ -67,7 +67,9 @@ _not yet written_
 
 ## Beat 1 — Mature the idea
 
-You are a thinking partner, not an interviewer. For each topic: read what the TL wrote in the vision, then react before asking. Use one of these stances — pick whichever fits:
+**Opening move (before any topic):** Read `project.vision` from `specs/project-state.yaml`. Before asking anything, write a brief synthesis — 2–3 sentences — of what you understand the idea to be, what strikes you as most interesting about it, and what the most important unstated assumption or risk is. This is not a question. It shows you engaged with the idea. Then proceed to Topic 1.
+
+For each topic: react before asking. Use one of these stances — pick whichever fits:
 
 - **"Yes, and…"** — affirm the direction and extend it with something they may not have considered
 - **"Fine, but…"** — accept the premise but surface a tradeoff, constraint, or risk it creates
@@ -80,7 +82,7 @@ The synthesis is what architecture uses. Make it crisp and decision-useful.
 **Topics (in order):**
 
 ### Topic 1 — Vision
-Read `project.vision` from `specs/project-state.yaml`. React to it. Ask one question that sharpens the core value proposition or surfaces the most important unstated assumption.
+React to the opening synthesis. Ask one question that sharpens the core value proposition or surfaces the most important unstated assumption.
 
 Write to `## Vision`: a 2–3 sentence synthesis of what this system actually is, who it's for, and what makes it worth building. This is the north star for every future decision.
 
@@ -128,9 +130,9 @@ Based on the constraints and vision, propose a concrete stack. Name specific tec
 Write to `## Tech Stack`: the confirmed stack. One clear choice per layer. No alternatives or maybes — decisions only.
 
 ### Topic 6 — System Boundaries
-From the tech stack and problem shape, propose the top-level components (e.g. "API server, React frontend, PostgreSQL, background job worker"). Describe how they communicate. Ask: "Does this match how you see the system, or is there a component missing or wrong?"
+From the tech stack and problem shape, propose the top-level architectural components (e.g. "Auth service, React frontend, PostgreSQL, background job worker"). Describe how they communicate. Ask: "Does this match how you see the system, or is there a component missing or wrong?"
 
-Write to `## System Boundaries`: components, communication patterns, layer boundaries. This defines domain boundaries for the backlog.
+Write to `## System Boundaries`: components, communication patterns, layer boundaries. This defines the component boundaries for the backlog.
 
 Seed `specs/integration-scenarios.md` now — create it if it doesn't exist:
 ```markdown
@@ -160,30 +162,59 @@ Write to `## Guardrails`:
 
 **Project-specific guardrails:** derive from tech stack and system boundaries. Concrete and enforceable — no vague rules.
 
-### Topic 8 — Feature Backlog
-From the system boundaries and problem shape, decompose the system into components (features). Present a proposed backlog and ask the TL to confirm, merge, split, or reorder.
+### Topic 8 — Component Backlog
 
-**Lean backlog rule (primary constraint):** minimise the number of features. Every feature is a coordination cost — spec, build, test, and integration overhead multiplies with count. Before adding a feature, ask: can this be merged into an adjacent one without losing clarity? If yes, merge it. Target the smallest backlog that delivers the full outcome.
+From the system boundaries and problem shape, decompose the system into **architectural components**. Each component is the unit of developer ownership — a named, cohesive slice of the system that one developer will own end-to-end. Within each component, SpecGantry will identify the internal features (implementation tasks) that compose it; the TL only sees and approves the component list.
 
-**Goldilocks rule:** each component is a vertical slice a developer can complete in 1–3 sessions and demonstrate independently. Components can have internally separated code but ship as a unit and can always be extended later. When in doubt, merge — never split unless forced by a hard dependency or an unacceptably large scope.
+**Lean component rule (primary constraint):** minimise the number of components. Every component is a coordination cost — spec, build, test, and integration overhead multiplies with count. Before adding a component, ask: can this be merged into an adjacent one without losing clarity? If yes, merge it. Target the smallest backlog that delivers the full outcome.
+
+**Right-sizing rule:** each component is a vertical slice a developer can complete in 2–5 sessions. It may contain 1–4 internal features. When in doubt, merge — never split unless forced by a hard dependency or an unacceptably large scope.
 
 **Dependency ordering:** data-layer components first — their schema unblocks everything that consumes it.
 
-**Assignment grouping:** components that share implementation boundaries get the same `assignment_group`.
+**Internal feature decomposition:** for each component, identify the internal features that compose it. Features are not visible to the TL — they are SpecGantry's implementation plan. Each feature is a focused coding task completable in one session. Determine feature dependencies within the component (which features must go first). Features across components follow the component dependency order.
 
-Present the lean proposal. Show the count prominently:
+Present the lean proposal to the TL. Show only components — not internal features:
 ```
-Proposed backlog — [n] features  (target: as few as possible)
+Proposed components — [n] total  (target: as few as possible)
 
-ID    Title                  Domain    Size  Depends on  Group
-──────────────────────────────────────────────────────────────
-001   [title]                [domain]  M     —           [group]
+ID      Title                  Domain    Size  Depends on
+──────────────────────────────────────────────────────────
+COMP-001  [title]              [domain]  M     —
+COMP-002  [title]              [domain]  L     COMP-001
 ...
 ```
 
-If the count exceeds 6, explicitly challenge each feature: "Can [X] be merged into [Y]?" before presenting to TL.
+If the count exceeds 6, explicitly challenge each component: "Can [X] be merged into [Y]?" before presenting to TL.
 
-On confirm, write to `## Feature Backlog` in `architecture-spec.md` (human-readable summary) AND write the machine-readable form to `specs/project-state.yaml → backlog`.
+On TL confirm:
+
+1. Write to `## Component Backlog` in `architecture-spec.md` — the component table above (human-readable, component-level only).
+
+2. Write the machine-readable form to `specs/project-state.yaml → backlog`. Each entry includes the internal feature decomposition:
+```yaml
+backlog:
+  - id: COMP-001
+    title: "[title]"
+    domain: "[domain]"
+    assignee: null
+    status: pending
+    size: M
+    depends_on: []
+    spec_complete: false
+    dev_complete: false
+    tests_passing: false
+    deployment_status: null
+    features:
+      - id: FEAT-001-A
+        title: "[feature title]"
+        depends_on: []
+      - id: FEAT-001-B
+        title: "[feature title]"
+        depends_on: [FEAT-001-A]
+```
+
+3. Set `backlog_approved: false` in `specs/project-state.yaml → phase_gates` — the TL must explicitly approve the component list before specs begin (see Step 3).
 
 ---
 
@@ -193,24 +224,51 @@ From the backlog, confirm 3–6 domains with a recommended build order (data-lay
 
 ---
 
-## Step 3 — Write completion flags
+## Step 3 — Backlog approval gate
+
+Present the component table to the TL for explicit sign-off:
+
+```
+✓ System shaped — [n] components across [m] domains
+
+  Component backlog:
+
+  ID        Title                  Domain    Size  Depends on
+  ────────────────────────────────────────────────────────────
+  COMP-001  [title]                [domain]  M     —
+  COMP-002  [title]                [domain]  L     COMP-001
+  ...
+
+  Build order: COMP-001 → COMP-002 → ...
+
+  [Y] Approve — begin spec writing   [E] Edit backlog   [X] Hold
+```
+
+- `E` → ask what to change (merge, split, rename, reorder), revise backlog entries in `architecture-spec.md` and `project-state.yaml`, re-show approval gate
+- `X` → write completion flags with `backlog_approved:false`, stop
+- `Y` → set `backlog_approved:true` in `specs/project-state.yaml → phase_gates`, proceed to Step 4
+
+---
+
+## Step 4 — Write completion flags
 
 Edit `specs/project-state.yaml` — update only:
 ```yaml
 phase_gates:
   ideation_complete: true
   architecture_complete: true
+  backlog_approved: true
 ideation_recommendation: proceed
 ```
 
 Show the TL:
 ```
-✓ System shaped — [n] components across [m] domains
+✓ Backlog approved — [n] components across [m] domains
 
   Architecture written to specs/architecture-spec.md
   Integration scenarios seeded at specs/integration-scenarios.md
 
-  Developers can now pick up components from the dashboard.
+  SpecGantry will now write specs for all [n] components.
 ```
 
 ---
@@ -227,6 +285,7 @@ When invoked with existing `architecture_complete:true` and a new requirement:
    [description]
    ### Superseded decisions (if any)
    ```
-4. Append new domains/features to state files if needed
+4. Append new domains/components to state files if needed; include internal feature decomposition for any new component
 5. Update `specs/integration-scenarios.md` — add any new cross-component flows that the change introduces
 6. Preserve `architecture_complete:true`
+7. If new components were added: set `backlog_approved:false` and re-run Step 3 approval gate for the amended backlog

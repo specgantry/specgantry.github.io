@@ -1,6 +1,6 @@
 ---
 name: reverse-engineer-subagent
-description: Analyses an existing codebase and synthesises a complete spec-gantry project structure — architecture spec, ideation artifact, and feature backlog derived from the actual code. Invoked by /spec-gantry when an existing codebase is detected without SpecGantry artifacts.
+description: Analyses an existing codebase and synthesises a complete spec-gantry project structure — architecture spec and component backlog derived from the actual code. Invoked by /spec-gantry when an existing codebase is detected without SpecGantry artifacts.
 model: claude-sonnet-4-6
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -31,19 +31,19 @@ Read silently (do not print file contents). Collect:
 1. **Tech stack** — check package.json, go.mod, Cargo.toml, pyproject.toml, Makefile, Dockerfile
 2. **Project name** — from package.json→name, go.mod→module last segment, directory name, or input
 3. **Structure** — list top-level directories; infer role of each (API, UI, data, infra, tests)
-4. **Feature signals** — route definitions, service/controller files, test file names, significant functions; group into 4–8 candidate features
+4. **Component signals** — route definitions, service/controller files, test file names, significant functions; group into 3–6 candidate architectural components with their internal features
 5. **Completion level** — estimate what's built vs. stubbed
 6. **Guardrail candidates** — patterns enforced in existing code (auth middleware, error handling, logging)
 
-## Step 2 — Present and confirm feature list
+## Step 2 — Present and confirm component list
 
-Show inferred features for TL review:
+Show inferred components for TL review (components only — not internal features):
 ```
-Inferred features from codebase:
+Inferred components from codebase:
 
-  #   ID            Title                    Domain        Size
-  ──────────────────────────────────────────────────────────────
-  1   FEATURE-001   [inferred title]         [domain]      M
+  ID        Title                    Domain        Size
+  ──────────────────────────────────────────────────────
+  COMP-001  [inferred title]         [domain]      M
   ...
 
 Edit, reorder, add, or remove before confirming.  [OK / edit]
@@ -54,9 +54,7 @@ Incorporate feedback. Finalize list.
 
 Write these files (create `specs/` directory if needed):
 
-**`specs/ideation-artifact.md`** — synthesised from codebase analysis. Fill all sections (Project Vision, Problem Validation, Users & Scale, Constraints, Risks, Definition of Done, Feasibility Assessment, Recommendation: proceed).
-
-**`specs/architecture-spec.md`** — synthesised from code. Fill all topics (Tech Stack, System Boundaries, API Contracts, Core Data Model, Non-Functional Requirements, Guardrails, Feature Backlog).
+**`specs/architecture-spec.md`** — synthesised from code. Fill all sections: Vision, Problem & Users, Constraints, Risks & Out of Scope, Tech Stack, System Boundaries, Guardrails, Component Backlog (component-level table only).
 
 **`specs/project-state.yaml`** — complete project state:
 ```yaml
@@ -68,17 +66,37 @@ project:
 phase_gates:
   ideation_complete: true
   architecture_complete: true
+  backlog_approved: true
+  integration_tests_passing: false
 ideation_recommendation: proceed
 domains: [list]
-backlog: [list of features with id, title, domain, assignee:null, status:pending, size, depends_on]
+backlog:
+  - id: COMP-001
+    title: "[title]"
+    domain: "[domain]"
+    assignee: null
+    status: pending
+    size: M
+    depends_on: []
+    spec_complete: false
+    dev_complete: false
+    tests_passing: false
+    deployment_status: null
+    features:
+      - id: FEAT-001-A
+        title: "[inferred feature]"
+        depends_on: []
 ```
 
-**`specs/features/[ID]/state.yaml`** for each feature — all phase gates false, status:pending.
+**`specs/components/[COMP-ID]/state.yaml`** for each component — all phase gates false, status:pending.
 
 **`.claude/local-state.yaml`:**
 ```yaml
 role: tl
-active_features: []
+active_components: []
+spec_phase_complete: false
+build_phase_confirmed: false
+integration_phase_confirmed: false
 ```
 
 ## Step 4 — Confirm
@@ -86,7 +104,7 @@ active_features: []
 ```
 ✓ Spec generated from existing codebase
 
-  [n] features identified across [m] domains
+  [n] components identified across [m] domains
   Architecture spec written to specs/architecture-spec.md
-  Run /spec-gantry to begin the feature development pipeline.
+  Run /spec-gantry to begin the component development pipeline.
 ```

@@ -19,7 +19,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
-| **track-cost** | `/track-cost` | Cost breakdown by phase, feature, release, and model |
+| **track-cost** | `/track-cost` | Cost breakdown by phase, component, release, and model |
 
 ---
 
@@ -31,7 +31,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 /spec-gantry
 ```
 
-Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, joining a team mid-flight, picking up a feature, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
+Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, joining a team mid-flight, picking up a component, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
 
 You never need to remember separate commands for different workflows. One command, every time.
 
@@ -41,11 +41,11 @@ You never need to remember separate commands for different workflows. One comman
 
 Two states depending on where you are in the pipeline.
 
-**State 1 — No features yet** (ideation in progress, or no project):
+**State 1 — No components yet** (ideation in progress, or no project):
 
 ```
-SpecGantry v2.0.1  |  My App
-[░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  My App
+[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
@@ -56,36 +56,37 @@ SpecGantry v2.0.1  |  My App
 ──────────────────────────────────────────────────────────
 ```
 
-**State 2 — Feature pipeline active:**
+**State 2 — Component pipeline active:**
 
-The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
+The pipeline table and component picker are unified. Every component is visible, its status is shown across all pipeline stages, and you can act on any component directly from the same screen — no navigation required.
 
 ```
-SpecGantry v2.0.1  |  Acme Platform
-[██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  Acme Platform
+[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Build Test Deploy
-  [001]  User Auth             ✅   ✅   ✅    ✅
-  [002]  Search API            ✅   🔄   ○     ○
-  [003]  Notifications         🔄   ○    ○     ○
-  [004]  Export PDF            ⏳   ○    ○     ○
-  [005]  Analytics             🔴   ○    ○     ○   depends on 003,004
-  ────────────────────────────────────────────────
+                              Spec  Dev  Deploy  Assignee
+  [001]  User Auth             ✅    ✅     ✅    alice
+  [002]  Search API            ✅    🔄     ○     bob
+  [003]  Notifications         🔄    ○      ○     carol
+  [004]  Export PDF            ⏳    ○      ○     unassigned
+  [005]  Analytics             🔴    ○      ○     —          depends on 003,004
+  ────────────────────────────────────────────
+  Gap merge                    ○
   Integration tests            ○
   Deploy release               ○
 ──────────────────────────────────────────────────────────
-  Type a feature ID to pick it up     [A] Architecture
-  [1] Continue spec – FEATURE-003     [I] Integration scenarios
+  Type a component ID to pick it up   [A] Architecture
+  [1] Continue spec – COMP-003        [I] Integration scenarios
                                       [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
-Enter feature ID or action:  `>`
+Enter component ID or action:  `>`
 ```
 
-Type a feature number directly (e.g. `004`) to pick it up. Blocked features show their dependency inline. The left column shows the most useful contextual actions for your current role and state.
+Type a component number directly (e.g. `004`) to pick it up. Blocked components show their dependency inline. The left column shows the most useful contextual actions for your current role and state.
 
 **Pipeline stage icons:**
 
@@ -104,13 +105,13 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 
 **Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves straight into ideation.
 
-**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written.
+**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written.
 
 **Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically. The full pipeline dashboard is visible immediately.
 
-**Full feature lifecycle** — From picking a feature through spec, build, test, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
+**Full component lifecycle** — From claiming a component through spec, development, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
 
-**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new feature, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and feature specs to determine which features are affected — you just describe the work.
+**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new component, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and component specs to determine what's affected — you just describe the work.
 
 ---
 
@@ -120,9 +121,9 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 |---------|-----|-------------|
 | `[A]` Architecture | Both | View the full architecture spec. Visible whenever `architecture-spec.md` exists — including mid-ideation. |
 | `[I]` Integration scenarios | Both | View `integration-scenarios.md` — scenarios, assertions, run history. Visible once seeded during ideation. |
-| `[P]` Project | Both | Manage backlog — prioritize, assign, defer, group-assign. Edit project name and vision. |
-| `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, feature, release, and model |
-| `[+]` New work | Both | Describe a bug, improvement, new feature, or change. Visible once ideation is complete. |
+| `[P]` Project | Both | Manage backlog — prioritize, assign, defer. Edit project name and vision. |
+| `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, component, release, and model |
+| `[+]` New work | Both | Describe a bug, improvement, new component, or change. Visible once ideation is complete. |
 | `[?]` Help | Both | Quick reference and docs link |
 | `[X]` Exit | Both | Return to normal Claude Code |
 
@@ -130,21 +131,21 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 
 ### Classifying New Work
 
-When you use `[+] New work` or when all features are deployed, SpecGantry asks what you want to work on next. It then:
+When you use `[+] New work` or when all components are deployed, SpecGantry asks what you want to work on next. It then:
 
 1. **Classifies** the type of work
-2. **Maps it to features** — reads the backlog and all feature specs to determine which existing features are affected, or what new feature to create. You don't need to specify this.
+2. **Maps it to components** — reads the backlog and all component specs to determine which existing components are affected, or what new component to create. You don't need to specify this.
 3. **Confirms** the mapping with you before touching any state
 4. **Routes** — resets phase flags and re-enters the pipeline
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that was working is now broken — full spec → build → test cycle on the affected feature |
-| `enhancement` | An existing feature needs to do more or work differently — same cycle, spec updated with change annotations |
-| `new_feature` | A net-new capability — ideation agent runs in amendment mode to assign a component ID and update the backlog |
-| `project_change` | Cross-cutting: infrastructure, data model, multi-feature scope — ideation agent runs in amendment mode first |
+| `bug_fix` | Something that was working is now broken — full spec → dev cycle on the affected component |
+| `enhancement` | An existing component needs to do more or work differently — same cycle, spec updated with change annotations |
+| `new_component` | A net-new capability — ideation agent runs in amendment mode to assign a component ID and update the backlog |
+| `project_change` | Cross-cutting: infrastructure, data model, multi-component scope — ideation agent runs in amendment mode first |
 
-SpecGantry always confirms its classification and feature mapping before proceeding.
+SpecGantry always confirms its classification and component mapping before proceeding.
 
 ---
 
@@ -173,26 +174,25 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 **Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v2.0.1  |  Acme Platform
-[██░░░░░░░░]  2/8 features deployed
+SpecGantry v2.0.2  |  Acme Platform
+[██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 
 Cost Summary  |  release 1.0.0
 
-Phase           Tokens       Cost
-────────────────────────────────
-ideation        12,605      $1.26
-feature_spec    14,209      $1.43
-development     31,445      $3.14
-test             6,112      $0.31
-integration      4,890      $0.49
-deployment       3,890      $0.39
-────────────────────────────────
-Total           73,151      $7.02
+Phase               Tokens       Cost
+──────────────────────────────────────
+ideation            12,605      $1.26
+component_spec      14,209      $1.43
+development         31,445      $3.14
+integration_test     6,112      $0.61
+deployment           3,890      $0.39
+──────────────────────────────────────
+Total               68,261      $6.83
 
 ──────────────────────────────────────────────────────────
-  [1] By feature    [2] By release    [3] By model
-                                      [X] Return
+  [1] By component    [2] By release    [3] By model
+                                        [X] Return
 ──────────────────────────────────────────────────────────
 Enter option:  `>`
 ```
@@ -201,21 +201,21 @@ The menu bar persists across all views — switch between breakdowns without goi
 
 ---
 
-**[1] By Feature** — total spend per feature across all phases:
+**[1] By Component** — total spend per component across all phases:
 
 ```
-Cost by Feature  |  release 1.0.0
+Cost by Component  |  release 1.0.0
 
-Feature          Tokens       Cost
+Component        Tokens       Cost
 ───────────────────────────────────
-FEATURE-001      26,209      $2.47
-FEATURE-002      18,441      $1.84
-FEATURE-003       9,112      $0.46
+COMP-001         26,209      $2.47
+COMP-002         18,441      $1.84
+COMP-003          9,112      $0.46
 ───────────────────────────────────
 Total            53,762      $4.77
 ```
 
-Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual features.
+Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual components.
 
 ---
 
@@ -249,7 +249,7 @@ haiku-4-5       18,300      $0.92
 Total           80,601      $7.79
 ```
 
-Useful for understanding whether your spend profile aligns with what you'd expect — heavy Sonnet usage during ideation, spec, and development phases, lighter Haiku usage for unit tests.
+Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.
 
 ---
 
@@ -277,12 +277,13 @@ Team Lead:
               → Beat 1: mature the idea  (~10 min)
               → Beat 2: shape the system (~15 min)
               → architecture-spec.md + backlog written
+              → [Y] Approve backlog
               → Commit specs/ to git
 
 Developers:
   git pull
-  /spec-gantry → detects project → type component ID to pick up
-              → domain elaboration (first of domain) → write spec → build → test
+  /spec-gantry → detects project → type component ID to claim it
+              → domain elaboration (first of domain) → write spec → develop (TDD)
 ```
 
 ### Onboarding an Existing Codebase
@@ -302,15 +303,16 @@ Team Lead:
   /spec-gantry → [+] New work
               → Describe the bug
               → SpecGantry identifies affected component, confirms
-              → Developer picks it up — full spec → build → test cycle
-              → All components tested → TL runs integration tests → deploy
+              → Developer picks it up — full spec → dev cycle
+              → All components pass → TL runs gap merge (if needed) → integration tests → deploy
 ```
 
 ### Deploying a Release
 
 ```
 Team Lead (once all components pass unit tests):
-  /spec-gantry → [1] Run integration tests
+  /spec-gantry → gap merge runs automatically (if gap specs exist)
+              → [1] Run integration tests
               → Scenarios execute against real system
               → All pass → [1] Deploy release 1.0.0
               → Confirm
@@ -324,7 +326,7 @@ Team Lead (once all components pass unit tests):
 ```
 Anyone:
   /track-cost          → summary by phase
-  → type 1             → breakdown by feature
+  → type 1             → breakdown by component
   → type 2             → breakdown by release
   → type 3             → breakdown by model
   → type X             → return to main dashboard

@@ -27,7 +27,7 @@ Traditional software development costs map cleanly to time. Hours times rates eq
 
 Token costs don't work that way. They're:
 
-**Invisible in the moment.** When a developer is deep in a complex feature spec with an AI assistant, they're thinking about the spec — not the fact that each turn of a long conversation adds input tokens because the full context is re-sent on every call.
+**Invisible in the moment.** When a developer is deep in a complex component spec with an AI assistant, they're thinking about the spec — not the fact that each turn of a long conversation adds input tokens because the full context is re-sent on every call.
 
 **Nonlinear.** A well-structured 10-turn session might cost a fraction of what a poorly-structured 40-turn session costs. A developer who restarts an agent session five times while working through a complex architecture decision is spending more than one who completes it in one focused session. Neither developer has any visibility into this.
 
@@ -63,9 +63,9 @@ Concretely, that means:
 
 **Knowing cost by phase.** If your architecture sessions are consistently more expensive than your development sessions, that might be fine — architecture is complex. Or it might mean your architecture sessions are running too long because the design questions aren't resolved before the session starts.
 
-**Knowing cost by feature.** A feature that cost $50 to develop is a different story than a feature that cost $8. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles the feature went through. You can't improve what you can't measure.
+**Knowing cost by component.** A component that cost $50 to develop is a different story than one that cost $8. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can't improve what you can't measure.
 
-**Knowing cost by model.** Different SpecGantry agents use different models — ideation uses Haiku (lightweight, fast), architecture and development use Sonnet (capable, more expensive). If your model spend profile looks wrong — too much Sonnet in phases that should be Haiku — that's actionable information.
+**Knowing cost by model.** Different SpecGantry agents use different models — ideation uses Haiku (lightweight, fast), while component spec, development, integration test, and deployment use Sonnet (capable, more expensive). If your model spend profile looks wrong — too much Sonnet in phases that should be Haiku — that's actionable information.
 
 **Knowing cost by release.** As your project matures and the codebase grows, per-feature costs may increase because agents are working against more context. Tracking cost per release lets you spot this trend early.
 
@@ -83,9 +83,9 @@ The consequence of that premise is that cost data is:
 
 **Real token counts.** The cost log uses the actual `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, and `cache_read_input_tokens` values from the API response — not estimates, not approximations. Cache writes and cache reads are tracked separately because they have different cost profiles, and conflating them obscures where spend is actually coming from.
 
-**Structured by the pipeline.** Because every agent invocation goes through the SpecGantry pipeline, every cost entry is tagged with its phase (`ideation`, `architecture`, `feature_spec`, `development`, `test`, `deployment`), its feature ID where applicable, its model, and the current release version. The structure that makes the pipeline work is the same structure that makes cost reporting meaningful.
+**Structured by the pipeline.** Because every agent invocation goes through the SpecGantry pipeline, every cost entry is tagged with its phase (`ideation`, `architecture`, `component_spec`, `development`, `integration_test`, `deployment`), its component ID where applicable, its model, and the current release version. The structure that makes the pipeline work is the same structure that makes cost reporting meaningful.
 
-**In git.** `specs/cost-log.ndjson` is committed alongside your architecture spec and feature specs. The whole team sees the same cost history. It survives machine changes, team member turnover, and project handoffs.
+**In git.** `specs/cost-log.ndjson` is committed alongside your architecture spec and component specs. The whole team sees the same cost history. It survives machine changes, team member turnover, and project handoffs.
 
 **Priced at current rates.** The MCP server fetches live pricing from Anthropic's pricing page on startup and caches it. If the fetch fails, it falls back to known rates. Cost entries show whether live or fallback pricing was used.
 
@@ -98,28 +98,27 @@ Running `/track-cost` from anywhere in Claude Code opens a dedicated cost dashbo
 ```
 Cost Summary  |  release 1.1.0
 
-Phase           Tokens       Cost
-────────────────────────────────
-ideation         4,404      $0.47
-architecture     8,201      $0.82
-feature_spec    14,209      $1.43
-development     31,445      $3.14
-test             6,112      $0.31
-deployment       3,890      $0.39
-────────────────────────────────
-Total           68,261      $6.56
+Phase               Tokens       Cost
+──────────────────────────────────────
+ideation             4,404      $0.47
+component_spec      14,209      $1.43
+development         31,445      $3.14
+integration_test     6,112      $0.61
+deployment           3,890      $0.39
+──────────────────────────────────────
+Total               60,060      $6.04
 ```
 
 From there, three drill-down views are one keypress away:
 
-**By Feature** — which features cost the most, without the phase noise:
+**By Component** — which components cost the most, without the phase noise:
 
 ```
-Feature          Tokens       Cost
+Component        Tokens       Cost
 ───────────────────────────────────
-FEATURE-001      26,209      $2.47
-FEATURE-002      18,441      $1.84
-FEATURE-003       9,112      $0.46
+COMP-001         26,209      $2.47
+COMP-002         18,441      $1.84
+COMP-003          9,112      $0.46
 ```
 
 **By Release** — how costs have evolved across the project lifetime:
@@ -150,11 +149,11 @@ Most AI development tools solve one problem. Code generation tools help you writ
 
 SpecGantry is intentionally all three, because they can't actually be separated cleanly in AI-assisted development.
 
-**Cost tracking only makes sense with pipeline structure.** A cost entry that says "you spent $3.14 on development" is marginally useful. A cost entry that says "you spent $3.14 on `development` phase for `FEATURE-007` in `release 1.1.0` using `claude-sonnet-4-6`" is actionable. That specificity comes directly from the pipeline structure — phases, features, releases — that SpecGantry enforces.
+**Cost tracking only makes sense with pipeline structure.** A cost entry that says "you spent $3.14 on development" is marginally useful. A cost entry that says "you spent $3.14 on `development` phase for `COMP-007` in `release 1.1.0` using `claude-sonnet-4-6`" is actionable. That specificity comes directly from the pipeline structure — phases, components, releases — that SpecGantry enforces.
 
-**Project management only works if the pipeline is real.** Knowing that FEATURE-007 is "in development" means nothing if "in development" just means someone is editing files. SpecGantry's pipeline gates — spec before build, spec reviewed before development, tests passing before deployment — mean the status is trustworthy. The Team Lead's dashboard reflects actual state, not developer self-reporting.
+**Project management only works if the pipeline is real.** Knowing that COMP-007 is "in development" means nothing if "in development" just means someone is editing files. SpecGantry's pipeline gates — spec before build, spec reviewed before development, tests passing before deployment — mean the status is trustworthy. The Team Lead's dashboard reflects actual state, not developer self-reporting.
 
-**Development quality requires cost awareness.** When developers know that their spec revision cycles are visible in the cost log, there's a natural incentive to get specs right the first time. When a Team Lead can see that a particular feature cost three times more than comparable features to build, that's a conversation worth having — was the feature genuinely harder, or did the development cycle include a lot of rework?
+**Development quality requires cost awareness.** When developers know that their spec revision cycles are visible in the cost log, there's a natural incentive to get specs right the first time. When a Team Lead can see that a particular component cost three times more than comparable components to build, that's a conversation worth having — was the component genuinely harder, or did the development cycle include a lot of rework?
 
 ---
 
@@ -165,7 +164,7 @@ The cost tracking argument applies as much to solo developers as to teams — ar
 For a solo developer building an enterprise application, SpecGantry's cost visibility answers questions like:
 
 - Is my architecture too complex for what I'm actually building? (Compare architecture cost vs. total project cost.)
-- Am I spending too many tokens on feature spec revisions? (Feature cost per phase.)
+- Am I spending too many tokens on component spec revisions? (Component cost per phase.)
 - Did this new release cost more than the initial build? (By release view.)
 - Am I using the right model for each phase? (By model view.)
 

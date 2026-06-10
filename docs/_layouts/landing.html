@@ -60,7 +60,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v2.0.1 · Production Ready
+          Claude Code Plugin · v2.0.2 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -90,23 +90,22 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.1</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.2</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.1</span>  |  Acme Platform</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.2</span>  |  Acme Platform</div>
             <div class="terminal-line output">  [████░░░░░░]  2 / 6 deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">                         Spec Build Test Deploy</div>
-            <div class="terminal-line output">  001  User Auth         ✅   ✅   ✅    ✅</div>
-            <div class="terminal-line output">  002  Search API        ✅   🔄   ○     ○</div>
-            <div class="terminal-line output">  003  Notify            🔄   ○    ○     ○</div>
+            <div class="terminal-line output">                         Spec   Dev  Deploy</div>
+            <div class="terminal-line output">  001  User Auth         ✅    ✅     ✅</div>
+            <div class="terminal-line output">  002  Search API        ✅    🔄     ○</div>
+            <div class="terminal-line output">  003  Notify            🔄    ○      ○</div>
             <div class="terminal-line output">  ─────────────────────────────────────────</div>
             <div class="terminal-line output">  Integration tests    ○</div>
             <div class="terminal-line output">  Deploy release       ○</div>
             <div class="terminal-line output"></div>
-            <div class="terminal-line output">  [1] Continue spec – FEATURE-003</div>
-            <div class="terminal-line output">  [2] Continue build – FEATURE-002</div>
+            <div class="terminal-line output">  [1] Continue spec – COMP-003</div>
             <div class="terminal-line output"></div>
             <div class="terminal-line output">── [A]rch  [I]nteg  [$]Cost  [?]Help  [X]Exit ────────</div>
             <div class="terminal-line cursor-line"><span class="cursor">▌</span></div>
@@ -156,7 +155,7 @@
     <section class="section-pipeline">
       <div class="section-inner">
         <div class="section-label center">The Solution</div>
-        <h2 class="center">Four phases. Hard gates between every one.</h2>
+        <h2 class="center">Five phases. Hard gates between every one.</h2>
         <p class="section-sub center">No skipping. No "we'll write the spec later." Every phase gate reads the
           filesystem — the pipeline advances only when the artifact actually exists on disk.</p>
 
@@ -198,7 +197,7 @@
               <div class="phase-node phase-spec-color">
                 <div class="phase-num">02</div>
                 <div class="phase-name">Component Spec</div>
-                <div class="phase-output">feature-spec.md</div>
+                <div class="phase-output">component-spec.md</div>
               </div>
               <div class="phase-arrow">→</div>
               <div class="phase-gate">
@@ -272,7 +271,7 @@
           <div class="feat-card">
             <div class="feat-icon">🏗️</div>
             <h3>Architecture as a Living Guardrail</h3>
-            <p>The Team Lead defines the architecture once. Every feature spec is automatically checked against it.
+            <p>The Team Lead defines the architecture once. Every component spec is automatically checked against it.
               Violations are flagged before a line of code is written.</p>
           </div>
           <div class="feat-card">
@@ -309,7 +308,7 @@
           <div class="feat-card">
             <div class="feat-icon">🔍</div>
             <h3>Reverse-Engineer Existing Code</h3>
-            <p>Have an existing codebase? SpecGantry analyzes it and generates an architecture spec and feature backlog.
+            <p>Have an existing codebase? SpecGantry analyzes it and generates an architecture spec and component backlog.
               Bring structure to legacy projects.</p>
           </div>
         </div>

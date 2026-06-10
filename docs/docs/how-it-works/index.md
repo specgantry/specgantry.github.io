@@ -21,10 +21,15 @@ IDEATION ───────────────────────�
   Mature the idea + shape the system
   Output: architecture-spec.md · component backlog · integration-scenarios.md (seeded)
 
+BACKLOG APPROVAL ─────────────────────────────────────────────
+  Team Lead reviews and approves the component list before spec work begins
+
 COMPONENT LOOP (parallel, dependency-ordered) ───────────────
   Spec   — component spec + domain elaboration (first of each domain)
-  Build  — TDD implementation
-  Test   — unit + component tests  →  technically solid
+  Dev    — TDD implementation + unit/component tests  →  technically solid
+
+GAP MERGE (auto, if needed) ─────────────────────────────────
+  Merge any gap specs written during build back into component and architecture specs
 
 INTEGRATION TEST ────────────────────────────────────────────
   Execute critical cross-component scenarios  →  functionally solid
@@ -33,7 +38,7 @@ DEPLOY ────────────────────────�
   Deployment script + release
 ```
 
-Components run in parallel and in dependency order — data-layer components first, consumers after. The integration test phase runs once, after all components pass their unit tests. Deployment is gated on integration tests passing, not on individual component tests.
+Components run in parallel and in dependency order — data-layer components first, consumers after. If any gap specs were written during build, they are merged automatically before integration testing begins. Integration testing runs once, after all components pass their unit tests. Deployment is gated on integration tests passing.
 
 ---
 
@@ -84,11 +89,28 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
 
 ---
 
+### Backlog Approval Gate {#backlog-approval}
+
+**Who:** Team Lead / Architect
+**Time:** 2–5 minutes
+**Output:** `backlog_approved: true` in `specs/project-state.yaml`
+
+After Beat 2, SpecGantry presents the component list — IDs, titles, domains, sizes, and dependencies — for the Team Lead's review. No spec writing begins until the TL explicitly approves the backlog.
+
+Options at the approval prompt:
+- **`[Y] Approve`** — sets `backlog_approved:true`; component specs can now be started
+- **`[E] Edit`** — re-enters ideation in amendment mode to adjust the component list, then returns to the approval prompt
+- **`[X] Hold`** — leaves `backlog_approved:false`; returns to the dashboard
+
+This gate ensures developers never pick up a component from a backlog the TL hasn't signed off on.
+
+---
+
 ### Phase 2 — Component Spec {#spec-gate}
 
 **Who:** Developer
 **Time:** 5–15 minutes per component (+5 min domain elaboration on first component of each domain)
-**Output:** `specs/features/FEATURE-NNN/feature-spec.md`
+**Output:** `specs/components/COMP-NNN/component-spec.md`
 
 No code is written until a complete spec exists.
 
@@ -101,7 +123,7 @@ The spec covers five sections:
 1. **Scope** — what this component does and explicitly does not do, within its domain
 2. **Interface Contract** — what it exposes or consumes beyond what's in the domain section
 3. **Data** — what data it owns or accesses beyond what's in the domain data model
-4. **Implementation Plan** — ordered tasks, each completable in one session
+4. **Features** — ordered internal tasks (feature list from the backlog), grouped into parallel tiers
 5. **Test Plan** — unit tests, integration hooks, edge cases; notes which integration scenarios this component participates in
 
 Each section is written to disk immediately — sessions resume from the next incomplete section.
@@ -112,40 +134,67 @@ After self-review, the spec agent updates `specs/integration-scenarios.md` — a
 
 ---
 
-### Phase 3 — Build {#build}
+### Phase 3 — Development {#build}
 
 **Who:** Developer
 **Time:** Depends on component complexity
-**Output:** Source code committed
+**Output:** Source code committed · `specs/components/COMP-NNN/dev-artifact.yaml`
 
-The build phase turns the confirmed spec into working code. The dev agent works through the implementation plan in order, within the architecture guardrails. Tests are written alongside code — TDD, not deferred.
+The development phase turns the confirmed spec into working code using TDD — tests are written first, implementation follows. The dev agent works through each feature in the order defined by the spec's feature tiers.
+
+For each feature within the component:
+1. **Write unit tests first** — derived from the Test Plan; tests must fail before any implementation code exists
+2. **Implement** — write the minimum code to make the tests pass
+3. **Verify** — run the tests and confirm green before moving to the next feature
+
+After all features are implemented, the full test suite runs as the final build gate. Hard failures block the pipeline; flaky tests are recorded but not blocking.
 
 Key behaviors:
 - Stays within this component's domain boundary
 - Respects every guardrail in `architecture-spec.md`
-- Secrets and credentials come from environment variables declared in the spec — no literal values in source
+- Secrets and credentials come from environment variables — no literal values in source
+- Commits in pairs: `test(COMP-NNN)` first, then `feat(COMP-NNN)`
+
+A component is **technically solid** once it passes the final test gate. Both `dev_complete` and `tests_passing` are set together at this point.
 
 ---
 
-### Phase 4 — Unit Test {#unit-test}
+### Gap Specs {#gap-specs}
 
-**Who:** Developer (automated)
-**Time:** Minutes
-**Output:** `dev-artifact.yaml` with test results
+If during development the spec is discovered to be incomplete, incorrect, or causes side-effects on another component's interface, the developer does **not** edit `component-spec.md` or `architecture-spec.md` directly. Instead, a gap spec is written:
 
-The test agent runs the component's test suite. Hard failures block the pipeline. Flaky tests are flagged without blocking. A component is **technically solid** once it passes.
+**File:** `specs/components/COMP-NNN/gap-YYYY-MM-DD.md`
 
-Multiple components run through this cycle in parallel. A component that passes is ready — the developer moves on. The integration test phase collects them all once every component passes.
+The gap spec records: what changed, which files were affected, side-effects on other components (if any), and a recommended spec update. The main specs remain frozen while other developers may still be building against them.
+
+Multiple gap specs can accumulate across components during parallel build. They are resolved before integration testing begins.
 
 ---
 
-### Phase 5 — Integration Test {#integration-test}
+### Gap Merge (Automatic) {#gap-merge}
+
+**Who:** Automated (triggered before integration tests)
+**Time:** 2–5 minutes
+**Output:** Updated `component-spec.md` and/or `architecture-spec.md` · gap files deleted
+
+Before integration testing begins, SpecGantry checks for unmerged gap specs across all components. If any exist, the component-spec subagent is invoked in gap-merge mode before integration testing proceeds:
+
+1. Each gap file is applied in chronological order — component spec edits in place, architecture changes appended as amendment blocks
+2. Side-effects listed in the gap are checked against other components; minimal corrections applied only where a contract was broken
+3. Each gap file is deleted after successful merge
+4. A summary is returned to the Team Lead: how many gaps merged, what changed, any side-effects resolved
+
+If no gaps exist, integration testing proceeds immediately with no delay.
+
+---
+
+### Phase 4 — Integration Test {#integration-test}
 
 **Who:** Team Lead (triggers once, automated)
 **Time:** Minutes to tens of minutes depending on scenario count
 **Output:** `specs/integration-scenarios.md` updated with results
 
-Once every component passes its unit tests, the TL triggers integration testing. The integration test agent reads `architecture-spec.md` and `integration-scenarios.md`, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.
+Once every component passes its unit tests (and any gap specs are merged), the TL triggers integration testing. The integration test agent reads `architecture-spec.md` and `integration-scenarios.md`, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.
 
 `specs/integration-scenarios.md` is a **living document**. It was seeded during ideation with the obvious cross-component flows. It grew as each component spec was written, with scenarios contributed by each component's interface. By the time integration testing runs, it reflects the full system's understanding of critical paths.
 
@@ -155,7 +204,7 @@ The system is **functionally solid** once all scenarios pass.
 
 ---
 
-### Phase 6 — Deploy Release {#deploy}
+### Phase 5 — Deploy Release {#deploy}
 
 **Who:** Team Lead
 **Time:** 5–10 minutes
@@ -188,7 +237,7 @@ SpecGantry uses standard X.Y.Z semver. The version is a project-level concept �
 | Change type | Bump | Example |
 |---|---|---|
 | `project_change` | major | `1.0.0` → `2.0.0` |
-| `enhancement` or `new_feature` | minor | `1.0.0` → `1.1.0` |
+| `enhancement` or `new_component` | minor | `1.0.0` → `1.1.0` |
 | `bug_fix` only | patch | `1.0.0` → `1.0.1` |
 
 The initial release always deploys as `1.0.0`.
@@ -200,17 +249,19 @@ The initial release always deploys as `1.0.0`.
 ### Team Lead / Architect
 
 - Runs ideation — the only person who shapes the system
+- Approves the component backlog before spec work begins
 - Manages the backlog via `[P] Project`
-- Triggers integration tests once all components pass
+- Triggers integration tests once all components pass their unit tests
 - Triggers deployments
 - Classifies and routes new work after deployment
 
 ### Developer
 
-- Picks components from the backlog
+- Claims or is assigned components from the approved backlog
 - Writes component specs (triggers domain elaboration on first component of each domain)
-- Builds and tests against the spec
-- A passing component test signals readiness — integration testing and deployment are TL territory
+- Implements using TDD — tests first, then implementation, then full suite gate
+- Writes gap specs for any mid-build discoveries; does not modify main specs directly
+- A passing component signals readiness — integration testing and deployment are TL territory
 
 ---
 
@@ -225,8 +276,9 @@ The initial release always deploys as `1.0.0`.
 - **Tech Stack** — confirmed choices per layer
 - **System Boundaries** — top-level components and communication patterns
 - **Guardrails** — enforceable rules every component must respect
-- **Feature Backlog** — human-readable summary (machine-readable form in `project-state.yaml`)
+- **Component Backlog** — human-readable summary (machine-readable form in `project-state.yaml`)
 - **Domain sections** — `## Domain: [name]` sections added just-in-time as each domain's first component is picked up
+- **Amendment blocks** — appended by gap merge; never overwrite prior content
 
 Component specs **reference** this document rather than duplicating it. This keeps both the architecture and component specs slim.
 
@@ -252,16 +304,16 @@ Use `[+] New work` at any point to describe new work — bug fix, enhancement, n
 
 | Type | What happens |
 |---|---|
-| `bug_fix` | Affected component identified from specs. All phase flags reset — full spec → build → test cycle. Integration tests re-run before next deploy. |
+| `bug_fix` | Affected component identified from specs. All phase flags reset — full spec → dev cycle. Integration tests re-run before next deploy. |
 | `enhancement` | Same as bug_fix — spec updated with change annotations. |
-| `new_feature` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture spec. Then normal pipeline. |
+| `new_component` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture spec. Then normal pipeline. |
 | `project_change` | Ideation agent runs in amendment mode first. Impacted component specs reset for re-spec. Integration tests reset. |
 
 ---
 
 ## Session Safety & Resumption
 
-SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, component spec, build, and test.
+SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, component spec, development, and integration test.
 
 ---
 

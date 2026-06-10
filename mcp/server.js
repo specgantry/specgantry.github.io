@@ -20,8 +20,8 @@ const {
 
 // ─── Tool: record_agent_cost ──────────────────────────────────────────────────
 async function toolRecordAgentCost(args) {
-  const { toolUseId, phase, model, feature = null } = args;
-  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, feature }));
+  const { toolUseId, phase, model, component = null } = args;
+  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, component }));
 
   if (!toolUseId || !phase || !model) {
     logError('record_agent_cost: missing required fields');
@@ -47,7 +47,7 @@ async function toolRecordAgentCost(args) {
   const agentType = Object.keys(AGENT_MAP).find(k => AGENT_MAP[k].phase === phase) || `agent-${agentId}`;
 
   // Sum tokens directly — record_agent_cost is called by the orchestrator which already
-  // knows phase/model, so we don't need inferFeatureFromTranscript here.
+  // knows phase/model, so we don't need inferComponentFromTranscript here.
   const lines = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
   let input_tokens = 0, output_tokens = 0, cache_creation_tokens = 0, cache_read_tokens = 0;
   for (const line of lines) {
@@ -64,10 +64,10 @@ async function toolRecordAgentCost(args) {
   }
 
   const tokens = { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens };
-  const entry  = buildCostEntry({ phase, agentType, model, feature, projectDir: PROJECT_DIR, tokens });
+  const entry  = buildCostEntry({ phase, agentType, model, component, projectDir: PROJECT_DIR, tokens });
 
   appendCostLog(entry);
-  logInfo(`Cost recorded: ${phase}${feature ? ' / ' + feature : ''} — ${input_tokens + output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+  logInfo(`Cost recorded: ${phase}${component ? ' / ' + component : ''} — ${input_tokens + output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
 
   return { ok: true, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost_usd: entry.total_cost_usd };
 }
@@ -86,9 +86,9 @@ const TOOLS = {
       required: ['toolUseId', 'phase', 'model'],
       properties: {
         toolUseId: { type: 'string', description: 'The id field of the Agent tool_use call — looks like toolu_bdrk_...' },
-        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, architecture, feature_spec, development, test, deployment' },
+        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, component_spec, development, test, deployment' },
         model:     { type: 'string', description: 'Exact model ID from the agent frontmatter, e.g. claude-sonnet-4-6' },
-        feature:   { type: 'string', description: 'Feature ID (FEATURE-001) or null for project-level phases', nullable: true },
+        component: { type: 'string', description: 'Component ID (COMP-001) or null for project-level phases', nullable: true },
       },
     },
     handler: toolRecordAgentCost,

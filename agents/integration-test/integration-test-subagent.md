@@ -16,9 +16,9 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 ## HARD GATE
 
 ```
-Read: specs/project-state.yaml           →  all backlog components have tests_passing:true
-Read: specs/integration-scenarios.md     →  must exist and contain at least one scenario in ## Critical Scenarios
-Read: specs/architecture-spec.md         →  must exist
+Read: specs/project-state.yaml       →  all backlog components have tests_passing:true
+Read: specs/integration-scenarios.md →  must exist and contain at least one scenario in ## Critical Scenarios
+Read: specs/architecture-spec.md     →  must exist
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 `✗ Integration test gate FAILED · all components must pass unit tests and integration-scenarios.md must exist · Run /spec-gantry`
@@ -30,7 +30,7 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 Read once:
 - `specs/architecture-spec.md` — system boundaries, tech stack, guardrails
 - `specs/integration-scenarios.md` — all critical scenarios with their assertions
-- All `specs/features/*/feature-spec.md` files — component interface contracts and test plans
+- All `specs/components/*/component-spec.md` files — component interface contracts and test plans
 
 Confirm:
 ```
@@ -98,7 +98,6 @@ phase_gates:
 
   Failed scenarios:
   · [scenario name] — [failed assertion + observed value]
-  · [scenario name] — [failed assertion + observed value]
 
   Passing scenarios:
   · [scenario name]
@@ -120,7 +119,7 @@ After the run (pass or fail), append a run summary to `specs/integration-scenari
 ### [YYYY-MM-DD] — [pass | fail]
 - Scenarios: [n] total, [n] passed, [n] failed
 - Release: [project.release from project-state.yaml]
-- Notes: [any relevant context — e.g. "first full run", "after FEATURE-003 fix"]
+- Notes: [any relevant context]
 ```
 
-This section grows with every run and is never overwritten — it's the audit trail of how integration health evolved.
+This section grows with every run and is never overwritten.

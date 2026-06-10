@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.1`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.2`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -123,12 +123,13 @@ SpecGantry detects your situation automatically and guides you from there.
 ### New Project (Empty Folder)
 
 ```
-SpecGantry v2.0.1  |  New Project
-[░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  New Project
+[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
 ──────────────────────────────────────────────────────────
   [1] Start new project               [P] Project
+                                      [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
@@ -138,38 +139,39 @@ Select `[1]`. You'll answer two questions — project name and vision. No versio
 
 ### Existing Codebase
 
-Select `[2]` to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and feature backlog. You review and confirm before anything is written. Takes 10–15 minutes.
+Select `[2]` to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written. Takes 10–15 minutes.
 
 ### Joining a Team
 
-If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every feature, its current phase, and what you can pick up:
+If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every component, its current phase, and what you can pick up:
 
 ```
-SpecGantry v2.0.1  |  Acme Platform
-[█░░░░░░░░░]  1/10 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  Acme Platform
+[█░░░░░░░░░]  1/10 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Build Test Deploy
-  [001]  Auth Module           ✅   ✅   ✅    ✅
-  [002]  Payment Gateway       ✅   🔄   ○     ○
-  [003]  Notifications         ⏳   ○    ○     ○
-  [004]  Search                ⏳   ○    ○     ○
-  [005]  Reporting             🔴   ○    ○     ○   depends on 003,004
-  ────────────────────────────────────────────────
+                              Spec  Dev  Deploy  Assignee
+  [001]  Auth Module           ✅    ✅     ✅    alice
+  [002]  Payment Gateway       ✅    🔄     ○     bob
+  [003]  Notifications         🔄    ○      ○     carol
+  [004]  Search                ⏳    ○      ○     unassigned
+  [005]  Reporting             🔴    ○      ○     —          depends on 003,004
+  ────────────────────────────────────────────
+  Gap merge                    ○
   Integration tests            ○
   Deploy release               ○
 ──────────────────────────────────────────────────────────
-  Type a feature ID to pick it up     [A] Architecture
-  [1] Continue build – FEATURE-002    [I] Integration scenarios
+  Type a component ID to pick it up   [A] Architecture
+  [1] Continue dev – COMP-002         [I] Integration scenarios
                                       [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
-Enter feature ID or action:  `>`
+Enter component ID or action:  `>`
 ```
 
-Type a feature number (e.g. `003`) to pick it up and begin the feature spec phase immediately.
+Type a component number (e.g. `003`) to pick it up and begin the component spec phase immediately.
 
 ---
 
@@ -179,23 +181,24 @@ Type a feature number (e.g. `003`) to pick it up and begin the feature spec phas
 
 1. **Run `/spec-gantry`** — select Start New Project
 2. **Complete Ideation** (15–30 min) — Beat 1 matures the idea; Beat 2 shapes the system (tech stack, boundaries, guardrails, component backlog). Both happen in one conversation.
-3. **Review the generated backlog** — prioritize, assign, reorder via `[P] Project`
+3. **Approve the component backlog** — review the proposed components and select `[Y] Approve`; spec work cannot begin until you do
 4. **Commit `specs/` to git** — developers can now pull and join
 
 ### If You're a Developer
 
 1. **Pull the repository** after the Team Lead commits `specs/`
 2. **Run `/spec-gantry`** — it detects the project and sets your role
-3. **Type a feature ID** to pick it up from the pipeline dashboard
-4. **Write the feature spec** (5–15 min) — guided by the feature-spec agent
-5. **Build and test** — implement against your approved spec
+3. **Type a component ID** to claim it from the pipeline dashboard
+4. **Write the component spec** (5–15 min) — guided by the component-spec agent
+5. **Build and test** — implement against your approved spec using TDD
 
 ### If You're Solo
 
 1. **Run `/spec-gantry`** and start as Team Lead
 2. **Complete Ideation** yourself — both idea maturation and system shaping happen in one session
-3. **Switch to Developer role** — work components from the dashboard
-4. **Run integration tests** once all components pass — then deploy as one release
+3. **Approve the backlog** — then switch to Developer role
+4. **Work components from the dashboard** using TDD
+5. **Run integration tests** once all components pass — then deploy as one release
 
 ---
 
@@ -206,20 +209,20 @@ After SpecGantry runs, your project contains a `specs/` directory to commit to g
 ```
 project-root/
 ├── specs/
-│   ├── project-state.yaml          # Project metadata and backlog
+│   ├── project-state.yaml          # Project metadata and component backlog
 │   ├── architecture-spec.md        # Vision, tech stack, system design, guardrails, domain sections
 │   ├── integration-scenarios.md    # Living document — cross-component scenarios and run history
 │   ├── cost-log.ndjson             # Token usage and cost per agent run
 │   ├── deploy.sh                   # Generated deployment script (whole system)
 │   ├── deploy.sh.old               # Previous deployment script (backup)
 │   ├── deploy-artifact.md          # Deployment validation summary
-│   ├── scratchpad/                 # Intermediate agent notes (not spec artifacts)
-│   └── features/
-│       ├── FEATURE-001/
-│       │   ├── feature-spec.md     # Component specification + Change History
+│   └── components/
+│       ├── COMP-001/
+│       │   ├── component-spec.md   # Component specification + Change History
 │       │   ├── state.yaml          # Phase progress flags
-│       │   └── dev-artifact.yaml   # Build notes and test results
-│       └── FEATURE-002/
+│       │   ├── dev-artifact.yaml   # Build notes and test results
+│       │   └── gap-YYYY-MM-DD.md  # Gap spec (if written during build; deleted after merge)
+│       └── COMP-002/
 │           └── ...
 ├── src/                            # Your application source code
 │   ├── config/                     # App configuration and env templates
@@ -233,7 +236,7 @@ project-root/
 ```
 
 <div class="info">
-  <strong>Commit <code>specs/</code> to git.</strong> This is how your team shares project decisions, tracks feature progress, and maintains a history of architecture choices and costs. Each developer's local role settings stay on their own machine and are not committed.
+  <strong>Commit <code>specs/</code> to git.</strong> This is how your team shares project decisions, tracks component progress, and maintains a history of architecture choices and costs. Each developer's local role settings stay on their own machine and are not committed.
 </div>
 
 <div class="info">
@@ -246,49 +249,51 @@ project-root/
 
 Every `/spec-gantry` invocation re-reads all state and renders the full dashboard. There are two states:
 
-### State 1 — No features yet
+### State 1 — No components yet
 
-Shown during ideation, architecture, or when no project exists. The middle section shows the current phase status:
+Shown during ideation, or when no project exists. The middle section shows the current phase status:
 
 ```
-SpecGantry v2.0.1  |  My App
-[░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  My App
+[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
 ──────────────────────────────────────────────────────────
   [1] Continue ideation               [P] Project
+                                      [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 ```
 
-### State 2 — Feature pipeline active
+### State 2 — Component pipeline active
 
-Shown once architecture is complete. The pipeline table and feature picker are unified — every feature is visible and directly actionable from the same screen:
+Shown once the backlog is approved. The pipeline table and component picker are unified — every component is visible and directly actionable from the same screen:
 
 ```
-SpecGantry v2.0.1  |  My App
-[██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
+SpecGantry v2.0.2  |  My App
+[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec Build Test Deploy
-  [001]  User Auth             ✅   ✅   ✅    ✅
-  [002]  Profile API           ✅   🔄   ○     ○
-  [003]  Notifications         🔄   ○    ○     ○
-  [004]  Search                ⏳   ○    ○     ○
-  [005]  Reporting             🔴   ○    ○     ○   depends on 003,004
-  ────────────────────────────────────────────────
+                              Spec  Dev  Deploy  Assignee
+  [001]  User Auth             ✅    ✅     ✅    alice
+  [002]  Profile API           ✅    🔄     ○     bob
+  [003]  Notifications         🔄    ○      ○     carol
+  [004]  Search                ⏳    ○      ○     unassigned
+  [005]  Reporting             🔴    ○      ○     —          depends on 003,004
+  ────────────────────────────────────────────
+  Gap merge                    ○
   Integration tests            ○
   Deploy release               ○
 ──────────────────────────────────────────────────────────
-  Type a feature ID to pick it up     [A] Architecture
-  [1] Continue spec – FEATURE-003     [I] Integration scenarios
+  Type a component ID to pick it up   [A] Architecture
+  [1] Continue spec – COMP-003        [I] Integration scenarios
                                       [P] Project
                                       [$] Cost
                                       [+] New work
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
-Enter feature ID or action:  `>`
+Enter component ID or action:  `>`
 ```
 
 **Pipeline stage icons:**
@@ -302,7 +307,7 @@ Enter feature ID or action:  `>`
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
 
-Type a feature number directly (e.g. `004`) to pick it up. Blocked features show their dependency inline — no separate screen needed.
+Type a component number directly (e.g. `004`) to pick it up. Blocked components show their dependency inline — no separate screen needed.
 
 ---
 
@@ -312,16 +317,16 @@ Type a feature number directly (e.g. `004`) to pick it up. Blocked features show
 No. Ideation produces `architecture-spec.md` and the component backlog — the pipeline cannot start without them. There is no separate architecture phase; ideation does both in one conversation.
 
 **"Can I use SpecGantry with an existing project?"**
-Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture spec and feature backlog.
+Yes. Run `/spec-gantry` — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture spec and component backlog.
 
 **"What if I'm working solo?"**
 SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. The ideation questions alone often clarify thinking significantly.
 
 **"How much does it cost to run SpecGantry?"**
-It depends on project size and complexity. A complete ideation + architecture session typically runs $0.50–$2.00. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, feature, release, and model.
+It depends on project size and complexity. A complete ideation session typically runs $0.50–$2.00. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, component, release, and model.
 
 **"When can I deploy?"**
-Once all components pass unit tests and integration tests pass. The TL triggers integration testing first — all critical cross-component scenarios must pass before the deployment gate opens.
+Once all components pass their unit tests and integration tests pass. The TL triggers integration testing first — all critical cross-component scenarios must pass before the deployment gate opens.
 
 ---
 
@@ -332,7 +337,7 @@ Once all components pass unit tests and integration tests pass. The TL triggers 
     <div class="next-step-icon">⚙️</div>
     <div>
       <strong>How It Works</strong>
-      <span>Understand all phases, phase gates, release versioning, and roles in detail.</span>
+      <span>Understand all phases, phase gates, gap specs, release versioning, and roles in detail.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">

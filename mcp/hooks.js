@@ -11,7 +11,7 @@ const {
   initLogger, setLogFile, logError, logInfo, logDebug,
   CLAUDE_HOME, PROJECT_DIR,
   AGENT_MAP, PROJECT_LEVEL_PHASES,
-  sumTokensFromTranscript, inferFeatureFromTranscript,
+  sumTokensFromTranscript, inferComponentFromTranscript,
   projectSlug, buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
@@ -116,19 +116,19 @@ async function hookSubagentStop() {
 
   const tokens  = sumTokensFromTranscript(resolvedTranscript);
   const model   = tokens.model || mapping.model;
-  const feature = PROJECT_LEVEL_PHASES.has(mapping.phase)
+  const component = PROJECT_LEVEL_PHASES.has(mapping.phase)
     ? null
-    : inferFeatureFromTranscript(resolvedTranscript, projectDir);
+    : inferComponentFromTranscript(resolvedTranscript, projectDir);
 
-  logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'feature:', feature);
+  logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'component:', component);
 
-  const entry = buildCostEntry({ phase: mapping.phase, agentType, model, feature, projectDir, tokens });
+  const entry = buildCostEntry({ phase: mapping.phase, agentType, model, component, projectDir, tokens });
 
   try {
     appendCostLog(entry, projectDir);
     // Cost entry goes to the costs log; switch file for this write then switch back
     setLogFile('spec-gantry-costs.log');
-    logInfo(`Cost recorded — ${mapping.phase}${feature ? ' / ' + feature : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+    logInfo(`Cost recorded — ${mapping.phase}${component ? ' / ' + component : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
     setLogFile('spec-gantry-hooks.log');
   } catch (err) {
     logError('SubagentStop: failed to write cost-log.ndjson:', err.message);

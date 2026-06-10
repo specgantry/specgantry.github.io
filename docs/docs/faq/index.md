@@ -97,11 +97,11 @@ Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts
 
 ### I'm joining a team. What do I do?
 
-Get the project repository from your Team Lead (it should include the `specs/` folder), then open it in Claude Code and run `/spec-gantry`. It detects the project, sets your role as Developer, and shows you the backlog.
+Get the project repository from your Team Lead (it should include the `specs/` folder), then open it in Claude Code and run `/spec-gantry`. It detects the project, sets your role as Developer, and shows you the component backlog.
 
 ### I have an existing codebase. Should I reverse-engineer it?
 
-Yes, if you want SpecGantry's structure — architecture documentation, a feature backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.
+Yes, if you want SpecGantry's structure — architecture documentation, a component backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.
 
 ---
 
@@ -109,15 +109,15 @@ Yes, if you want SpecGantry's structure — architecture documentation, a featur
 
 ### Can a Developer see the architecture spec?
 
-Yes, read-only. Developers need the architecture context to write feature specs that fit the system. Select `[A]` Architecture from the action bar to view it.
+Yes, read-only. Developers need the architecture context to write component specs that fit the system. Select `[A]` Architecture from the action bar to view it.
 
-### Can a Team Lead build features?
+### Can a Team Lead build components?
 
-SpecGantry is designed for clear role separation — Team Leads own project-level phases and deployment, developers own feature-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.
+SpecGantry is designed for clear role separation — Team Leads own project-level phases and deployment, developers own component-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.
 
 ### Can a Developer deploy?
 
-No. Deployment is a Team Lead responsibility. The TL triggers the release once all features pass tests — this deploys the entire system as a single release.
+No. Deployment is a Team Lead responsibility. The TL triggers the release once all components pass tests and integration testing is complete — this deploys the entire system as a single release.
 
 ### What if the Team Lead leaves?
 
@@ -125,7 +125,7 @@ Another person can take over as Team Lead by updating their local role setting a
 
 ### Can multiple developers work in parallel?
 
-Yes. Each developer works on different features — features are isolated from each other in separate directories. Each developer has their own local role settings that stay on their machine. Spec files are committed per-feature, so parallel work doesn't conflict.
+Yes. Each developer works on different components — components are isolated from each other in separate directories. Each developer has their own local role settings that stay on their machine. Spec files are committed per-component, so parallel work doesn't conflict.
 
 ---
 
@@ -139,32 +139,47 @@ No. Ideation produces `architecture-spec.md` and the component backlog — neith
 
 No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a component backlog. There is no separate step to complete before components can be picked up.
 
-### Can I skip the feature spec?
+### Does the Team Lead need to approve the backlog?
 
-No. The feature spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.
+Yes. After ideation, SpecGantry presents the proposed component list for the TL's review. No component spec work can begin until the TL explicitly approves with `[Y] Approve`. This is a hard gate — `backlog_approved:true` must be set in `project-state.yaml`.
+
+### Can I skip the component spec?
+
+No. The component spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.
 
 ### When can I deploy?
 
 Once integration tests pass. Individual component unit tests are necessary but not sufficient — the system must be functionally solid end-to-end. The deployment gate requires `integration_tests_passing:true`, which means all component unit tests passed AND all critical cross-component scenarios in `integration-scenarios.md` passed.
 
-### Can I deploy individual features?
+### Can I deploy individual components?
 
-No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all features in dependency order within the appropriate architectural components.
+No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all components in dependency order.
+
+### What are gap specs and when are they written?
+
+Gap specs are delta documents written during development when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects on another component's interface. Rather than editing the main spec while other developers may still be building against it, the developer writes a `gap-YYYY-MM-DD.md` file recording what changed, files affected, side-effects, and a recommended spec update.
+
+Gap specs are merged automatically before integration testing begins. If no gaps exist, integration testing proceeds immediately.
+
+### What happens during gap merge?
+
+Before integration tests run, SpecGantry checks for unmerged gap specs across all components. If any exist, they are merged in chronological order: component spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content), side-effects on other components are checked and minimal corrections applied. Each gap file is deleted after it is merged. The TL receives a summary of what changed before integration testing proceeds.
 
 ### How long does each phase take?
 
 | Phase | Typical Time |
 |-------|-------------|
 | Ideation (idea maturation + system shaping) | 15–30 minutes |
+| Backlog approval | 2–5 minutes |
 | Component Spec | 5–15 min per component (+5 min domain elaboration on first of each domain) |
-| Build | Depends on complexity |
-| Unit Test | Minutes (automated) |
+| Development (TDD + full test gate) | Depends on complexity |
+| Gap merge (if gaps exist) | 2–5 minutes |
 | Integration Test | Minutes to tens of minutes (depends on scenario count) |
 | Deploy release | 5–10 minutes (whole system) |
 
 ### Can multiple phases overlap?
 
-Yes — components run their Spec → Build → Test lifecycle in parallel. You can have one component in Build while another is still in Spec. Within a single component, phases are sequential. Ideation must complete before any component work begins.
+Yes — components run their Spec → Development lifecycle in parallel. You can have one component in development while another is still in spec. Within a single component, phases are sequential. Ideation and backlog approval must complete before any component work begins.
 
 ### Why does architecture feel lighter than expected?
 
@@ -178,36 +193,36 @@ When you pick up the first component of a domain, three quick architecture quest
 
 Components are building blocks, not micro-tasks. A component should represent a meaningful vertical slice of the system — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but it ships as a unit with one spec.
 
-When in doubt, err toward fewer, larger components. You can always scope further via `[+] New work` after deployment.
+When in doubt, err toward fewer, larger components. You can always add scope via `[+] New work` after deployment.
 
-### What happens after all features are deployed?
+### What happens after all components are deployed?
 
 SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[+] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and component specs to identify what's affected, confirms with you, and re-enters the pipeline. You can also use `[+] New work` at any point mid-pipeline. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
 
-### What is a versioned feature?
+### How do components stay versioned over time?
 
-There are no separately versioned features. Features keep the same `FEATURE-NNN` identity forever. When a bug fix or enhancement changes a feature, the spec is updated inline — changed lines are annotated with the release version (e.g. `` `__1.1.0__` ``), old text is struck through, and a row is appended to the spec's Change History table. This keeps the full audit trail inside the spec itself.
+Components keep the same `COMP-NNN` identity forever. When a bug fix or enhancement changes a component, the spec is updated inline — changed lines are annotated with the release version (e.g. `` `__1.1.0__` ``), old text is struck through, and a row is appended to the spec's Change History table. This keeps the full audit trail inside the spec itself.
 
 ### How does release versioning work?
 
-Every project starts at `1.0.0`. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all features in the release — `project_change` bumps major, `enhancement` or `new_feature` bumps minor, `bug_fix` bumps patch. The initial release always deploys as `1.0.0`.
+Every project starts at `1.0.0`. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all components in the release — `project_change` bumps major, `enhancement` or `new_component` bumps minor, `bug_fix` bumps patch. The initial release always deploys as `1.0.0`.
 
-### Who decides which features are affected by a bug fix?
+### Who decides which components are affected by a bug fix?
 
-SpecGantry does. When you describe new work via `[+] New work`, SpecGantry reads the backlog and all feature specs to determine which features own the described behaviour. It presents the mapping for your confirmation before touching any state — you don't need to identify the target features yourself.
+SpecGantry does. When you describe new work via `[+] New work`, SpecGantry reads the backlog and all component specs to determine which components own the described behaviour. It presents the mapping for your confirmation before touching any state — you don't need to identify the target components yourself.
 
 ### What's a "guardrail violation"?
 
-A guardrail is a rule from the architecture that applies to all features. Examples:
+A guardrail is a rule from the architecture that applies to all components. Examples:
 - "All API endpoints must use JWT authentication"
 - "No direct database access from the UI layer"
 - "All external API calls must have a timeout of 5 seconds or less"
 
-During the Feature Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one — for example, defining a public endpoint with no auth — the violation is written to the spec file and the gate fails until it's resolved.
+During the Component Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one — for example, defining a public endpoint with no auth — the violation is written to the spec file and the gate fails until it's resolved.
 
 Options to resolve a violation:
 1. Revise the spec to comply with the guardrail
-2. Ask the Team Lead to update the guardrail in the architecture spec (which affects all future features)
+2. Ask the Team Lead to update the guardrail in the architecture spec (which affects all future components)
 
 ---
 
@@ -220,18 +235,22 @@ A spec clear enough that any developer could pick it up and build the same thing
 1. **Scope** — What it does and explicitly what it doesn't do
 2. **Interface Contract** — What it exposes or consumes (delta from the domain section in architecture-spec.md)
 3. **Data** — What data it owns or accesses (delta from the domain data model)
-4. **Implementation Plan** — Ordered tasks, each achievable in one session
+4. **Features** — Ordered internal tasks grouped into parallel tiers
 5. **Test Plan** — Unit tests, integration hooks, edge cases
 
 The spec also notes which integration scenarios in `integration-scenarios.md` this component participates in.
 
-### Does the Team Lead have to review every spec?
+### Does the Team Lead have to review every component spec?
 
 No. The developer self-reviews at the end of the spec phase — after completing all five sections and passing the guardrail check, the developer confirms the spec is ready to build. That's the final gate before development begins. There is no separate TL review step.
 
 ### Can I edit a spec after starting to build?
 
-Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. Editing resets `feature_spec_complete` — you must re-confirm the spec before building can resume. The spec and the implementation should always agree.
+Yes. Return to `/spec-gantry`, select the component, and choose to edit the spec. Editing resets `spec_complete` — you must re-confirm the spec before building can resume. The spec and the implementation should always agree.
+
+### Can I edit a spec while another developer is building against it?
+
+The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — this keeps the main spec stable for anyone else building in parallel. Gap specs are merged before integration testing begins.
 
 ---
 
@@ -241,17 +260,17 @@ Yes. Return to `/spec-gantry`, select the feature, and choose to edit the spec. 
 
 All progress is saved after every question. Closing Claude Code at any point loses nothing. The next `/spec-gantry` picks up at the next unanswered question.
 
-### Can I have multiple features in progress?
+### Can I have multiple components in progress?
 
-Yes. You can switch between features from the dashboard. You might have one feature in Build while starting the spec on another.
+Yes. You can switch between components from the dashboard. You might have one component in development while starting the spec on another.
 
 ### How do I restart a phase?
 
-Contact your Team Lead or use `/spec-gantry` and select the feature to revisit a completed phase. Phase state can be reset through the project menu when appropriate.
+Use `/spec-gantry` and select the component to revisit a completed phase. Phase state can be reset through the project menu when appropriate. Contact your Team Lead for resets that affect project-level gates.
 
-### Can I move a feature back to pending?
+### Can I move a component back to pending?
 
-Yes — during the spec phase, select Abandon to return the feature to the backlog unassigned. From later phases, the Team Lead can reassign or defer features through `[P] Project`.
+Yes — during the spec phase, select Abandon to return the component to the backlog unassigned. From later phases, the Team Lead can reassign or defer components through `[P] Project`.
 
 ---
 
@@ -261,7 +280,7 @@ Yes — during the spec phase, select Abandon to return the feature to the backl
 
 SpecGantry tracks token usage automatically at the end of every agent run — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
 
-Run `/track-cost` for a navigable cost dashboard with four views: summary by phase, by feature, by release, and by model. Switch between views by typing `1`, `2`, or `3` — the menu persists across views so you don't need to navigate back.
+Run `/track-cost` for a navigable cost dashboard with four views: summary by phase, by component, by release, and by model. Switch between views by typing `1`, `2`, or `3` — the menu persists across views so you don't need to navigate back.
 
 ### Why are my costs higher than expected?
 
@@ -269,11 +288,9 @@ Run `/track-cost` and look at the Cache Write and Cache Read columns — these o
 
 Common reasons totals are higher than expected:
 - **Large codebase** — reverse-engineering or building against a large existing project means more context per turn
-- **Long conversations** — agents working through complex features accumulate context over many turns
+- **Long conversations** — agents working through complex components accumulate context over many turns
 - **Cache writes** — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper
 - **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
-
-The ideation, spec, and development agents use a capable model (Sonnet) that costs more per token. The unit test agent uses a lighter, faster model (Haiku).
 
 ### How do I refresh the pricing rates?
 
@@ -310,7 +327,7 @@ If `/track-cost` shows no data after completing a phase:
 
 Re-run it. The dashboard re-reads all state from disk on every invocation — most inconsistencies self-correct. If the problem persists, check whether the `specs/` files are as expected and try again.
 
-### Feature is stuck — can't advance
+### Component is stuck — can't advance
 
 Read the gate failure message in the dashboard. It will list exactly which conditions are unmet and what action to take to resolve each one. Address each item and run `/spec-gantry` again.
 
@@ -327,7 +344,7 @@ SpecGantry writes two separate log files to `.claude/logs/` in your project dire
 | `spec-gantry-costs.log` | Cost entries, token counts, pricing fetch results |
 | `spec-gantry-hooks.log` | Agent lifecycle events: start, stop, agent gating |
 
-Both log at `info` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change verbosity:
+Both log at `error` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change verbosity:
 
 | Value | What you see |
 |-------|-------------|

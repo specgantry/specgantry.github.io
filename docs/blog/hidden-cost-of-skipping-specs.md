@@ -25,17 +25,17 @@ The hidden cost of skipping specs is real, quantifiable, and consistently undere
 
 Let's work through the math.
 
-A feature spec for a medium-complexity feature — scope, API contract, data model, implementation plan, test cases, non-functional considerations — takes an experienced developer 15–30 minutes to write, guided by the feature-spec agent. Call it 30 minutes with review.
+A component spec for a medium-complexity component — scope, API contract, data model, feature list, test cases, non-functional considerations — takes an experienced developer 15–30 minutes to write, guided by the component-spec agent. Call it 30 minutes with review.
 
 A medium-complexity feature implementation takes roughly a day to build. Call it 8 hours.
 
 If the implementation is correct — spec-aligned, architecture-compliant, reviewable without major changes — the 30 minutes was overhead. The team shipped a feature and the spec was a cost of $0.30 in tokens and 30 minutes of a developer's time.
 
-If the implementation is wrong — misunderstood requirements, architecture violation, conflicting API contract with another feature — what happens?
+If the implementation is wrong — misunderstood requirements, architecture violation, conflicting API contract with another component — what happens?
 
 **Discovery at code review (best case):** 2 hours of review discussion, 3–5 hours of rework, 1 hour of re-review. Call it 8 hours total. The feature cost 8 hours to build and 8 more hours to fix. 2× the original cost.
 
-**Discovery after integration:** The misaligned feature has been built against. Another feature made assumptions about this one's behavior. Now you're fixing both. 16+ hours total. 2–3× the original cost.
+**Discovery after integration:** The misaligned component has been built against. Another component made assumptions about this one's behavior. Now you're fixing both. 16+ hours total. 2–3× the original cost.
 
 **Discovery after deploy:** User reports unexpected behavior. Incident triage, root cause, hotfix, deploy, verify. 24+ hours across multiple people. 3–5× the original cost.
 
@@ -43,7 +43,7 @@ The spec cost: 30 minutes.
 
 The rework cost: 8–24+ hours.
 
-The break-even point is if your implementation is wrong about 5% of the time. In practice, without a spec, misalignment rates are 20–30% — especially when multiple developers are building features in parallel against a system design that's never been formally documented.
+The break-even point is if your implementation is wrong about 5% of the time. In practice, without a spec, misalignment rates are 20–30% — especially when multiple developers are building components in parallel against a system design that's never been formally documented.
 
 ---
 
@@ -91,7 +91,7 @@ With 6 developers:
 
 You're spending integration effort untangling misaligned features on roughly three out of every four development cycles. Most of this cost is invisible — it shows up as "slow code review," "complex integration work," or "the sprint felt hard but hard to say why."
 
-**Specs reduce the per-feature misalignment rate.** They don't eliminate it — you can still spec the wrong thing — but they make the interpretation explicit and reviewable before implementation. The misalignment rate drops from 20–30% to roughly 5%.
+**Specs reduce the per-component misalignment rate.** They don't eliminate it — you can still spec the wrong thing — but they make the interpretation explicit and reviewable before implementation. The misalignment rate drops from 20–30% to roughly 5%.
 
 At 5% per developer:
 - 1 - (0.95)^4 = 19% chance of a problem per cycle
@@ -109,16 +109,16 @@ When an AI coding assistant implements a feature incorrectly, the tokens consume
 
 Consider:
 - Architecture session: $0.60
-- Feature spec session (one feature): $0.25
-- Feature implementation (one feature): $0.45
-- Total per feature (correct): $0.70
+- Component spec session (one component): $0.25
+- Component development (one component): $0.45
+- Total per component (correct): $0.70
 
 With a 25% misalignment rate and a full rework:
-- Expected extra cost per feature: 0.25 × $0.45 = ~$0.11
+- Expected extra cost per component: 0.25 × $0.45 = ~$0.11
 
-With 20 features in a typical project: $2.20 in wasted token spend from misaligned implementations. Not a lot by itself. But multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.
+With 20 components in a typical project: $2.20 in wasted token spend from misaligned implementations. Not a lot by itself. But multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.
 
-The more important point is visibility. Most teams don't know what their AI-assisted development actually costs, let alone where the spend goes. Tracking token usage by phase and feature makes the rework cost visible — and visible costs get managed.
+The more important point is visibility. Most teams don't know what their AI-assisted development actually costs, let alone where the spend goes. Tracking token usage by phase and component makes the rework cost visible — and visible costs get managed.
 
 ---
 
@@ -138,13 +138,13 @@ The phrase "enforced specs" sounds heavyweight. The reality is lightweight but h
 
 What changes:
 
-**Interpretations become reviewable.** The feature-spec agent surfaces the developer's interpretation before implementation. The interpretation can be caught, corrected, and clarified before it's written in code.
+**Interpretations become reviewable.** The component-spec agent surfaces the developer's interpretation before implementation. The interpretation can be caught, corrected, and clarified before it's written in code.
 
 **Architecture compliance is verified automatically.** The spec agent reads the architecture spec and checks every API contract, data model reference, and service boundary. Violations are flagged in the spec, not in code review.
 
 **Context persists across sessions.** The spec is the authoritative source of intent. New sessions can load it as context. Other developers can read it. The AI assistant has clear, specific guidance.
 
-**Cost becomes visible.** Token usage is tracked per phase and per feature. The cost of rework (if any) is visible as extra token spend on the same feature.
+**Cost becomes visible.** Token usage is tracked per phase and per component. The cost of rework (if any) is visible as extra token spend on the same component.
 
 None of this guarantees you'll ship the right feature. Requirements can be misunderstood at spec time, not just at implementation time. But it moves the failure point earlier — to a moment when the cost of correction is low — and makes the interpretation explicit, which is the prerequisite for catching it.
 
@@ -154,7 +154,7 @@ None of this guarantees you'll ship the right feature. Requirements can be misun
 
 The argument for specs is ultimately simple, and the math is straightforward.
 
-A feature spec takes 30 minutes and costs ~$0.25 in tokens. It makes the developer's interpretation explicit, verifies it against architecture, and creates a reviewable artifact.
+A component spec takes 30 minutes and costs ~$0.25 in tokens. It makes the developer's interpretation explicit, verifies it against architecture, and creates a reviewable artifact.
 
 A misaligned implementation costs 8–24 hours and $0.50–$1.50 in tokens to rework — more if discovered late.
 

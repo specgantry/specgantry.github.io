@@ -160,7 +160,7 @@ Gap merge:
 
 Integration tests:
 - ○ not yet reached
-- 👤 all `tests_passing:true` and gap merge done (or no gaps) but `integration_phase_confirmed:false` — awaiting TL confirm
+- 👤 all `tests_passing:true` and `integration_phase_confirmed:false` — awaiting TL confirm
 - 🔄 running
 - ✅ `integration_tests_passing:true`
 
@@ -263,11 +263,8 @@ All specs done, awaiting build confirmation (TL):
 Build in progress (`active_components` non-empty):
 - `[1]` Continue build _(informational — subagents running)_
 
-All components built, gap merge pending (TL):
-- `[1]` Merge gap specs _(→ merge_gap_specs — runs automatically)_
-
-All components built, awaiting integration test (TL):
-- `[1]` Run integration tests _(→ run_integration_tests)_
+All components built, awaiting integration confirm (TL):
+- `[1]` Run integration tests _(→ confirm_integration)_
 
 Integration tests passed, awaiting deploy (TL):
 - `[1]` Deploy release [next_version] _(→ deploy_release)_
@@ -329,7 +326,7 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete` not set | **spec_all_components** (batch) | yes ⏸ — confirm before building |
 | 4 | TL · all components `spec_complete:true` · any has `dev_complete:false` · `build_phase_confirmed` not set | **confirm_build** → **build_all_components** | yes ⏸ |
 | 5 | TL · `build_phase_confirmed:true` · `active_components` non-empty | **build_all_components** (continuing) | yes ⏸ |
-| 6 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_phase_confirmed` not set | **merge_gap_specs** (auto) → **confirm_integration** → **run_integration_tests** | yes ⏸ |
+| 6 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_phase_confirmed` not set | **confirm_integration** (pre-check gaps) → **run_integration_tests** | yes ⏸ |
 | 7 | TL · `integration_tests_passing:true` · deployment not complete | **deploy_release** | yes ⏸ |
 | 8 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
 | 9 | All components deployed | View H → **classify_and_route** | yes ⏸ |
@@ -453,36 +450,26 @@ Process all components with `tests_passing:false` in topological order. For each
 
 When all components have `tests_passing:true`:
 - Re-render full dashboard
-- → proceed to **merge_gap_specs**
+- → proceed to **confirm_integration**
 
 ---
 
 ### merge_gap_specs
-**Gate:** all components `tests_passing:true`
-**Runs automatically** — no user input required to start.
+**Gate:** all components `tests_passing:true` · at least one `gap-*.md` file exists
+**Called from confirm_integration** — never invoked directly or automatically.
 
 1. Scan all `specs/components/*/gap-*.md`. Collect a list of `{comp_id, gap_files[]}` for every component that has at least one gap file.
 
-2. **No gaps found:** skip this action entirely. Proceed directly to **confirm_integration**.
-
-3. **Gaps found:**
-   - For each affected component, invoke `spec-gantry:component-spec:component-spec-subagent` · description: `"Merging gap specs for [comp_id]"` · pass `comp_id`, `project_dir`, `merge_gaps: true`, `gap_files: [list]`
+2. For each affected component, invoke `spec-gantry:component-spec:component-spec-subagent` · description: `"Merging gap specs for [comp_id]"` · pass `comp_id`, `project_dir`, `merge_gaps: true`, `gap_files: [list]`
    - Process components sequentially in topological order (same ordering as build phase)
    - After each invocation, verify the gap files were deleted from disk
    - Collect the summary returned by each invocation
 
-4. After all merges complete, show the TL the consolidated summary and proceed to **confirm_integration**:
+3. Return the consolidated summary to `confirm_integration`:
    ```
-   ✓ Gap specs merged — specs and architecture updated to reflect actual build
-
-     COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
-     COMP-003: 1 gap(s) merged — Data section updated
-
-   Ready for integration tests:
-   [Y] Run integration tests   [X] Hold
+   COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
+   COMP-003: 1 gap(s) merged — Data section updated
    ```
-   On `Y`: set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
-   On `X`: re-render · ⏸
 
 ---
 
@@ -530,13 +517,41 @@ On `X`: re-render · ⏸
 ---
 
 ### confirm_integration
-Only reached when `merge_gap_specs` found no gaps. Show gate prompt and wait:
+**Gate:** all components `tests_passing:true` · `integration_phase_confirmed:false`
+**Entry point** for the integration phase — always reached directly from `build_all_components`. Never skipped.
+
+**Step 1 — Pre-check for gap files.** Scan `specs/components/*/gap-*.md`.
+
+**No gaps found** — show:
 ```
 ✓ All [n] components built and tested — no gap specs found.
 
   [Y] Run integration tests   [X] Hold
 ```
 On `Y`: set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
+On `X`: re-render · ⏸
+
+**Gaps found** — show summary before asking TL to confirm:
+```
+✓ All [n] components built and tested.
+
+  Gap specs detected — specs must be updated before integration tests:
+
+    COMP-001  2 gap file(s) — gap-2026-06-01.md, gap-2026-06-02.md
+    COMP-003  1 gap file(s) — gap-2026-06-05.md
+
+  [Y] Merge gaps then run integration tests   [X] Hold
+```
+On `Y`:
+  - → invoke **merge_gap_specs** (which processes all gaps and returns a merge summary)
+  - Show merge summary:
+    ```
+    ✓ Gap specs merged — specs and architecture updated to reflect actual build
+
+      [merge summary returned by merge_gap_specs]
+
+    ```
+  - Set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
 On `X`: re-render · ⏸
 
 ---

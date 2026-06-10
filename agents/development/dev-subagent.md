@@ -27,13 +27,17 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Implementation
 
-Read `## Implementation Plan` from feature-spec.md. Work through tasks in order.
+Read `## Implementation Plan` and `## Test Plan` from feature-spec.md. Follow TDD — for each implementation task:
+
+1. **Write unit tests first** — derive from the Test Plan. Tests must fail before any implementation code exists.
+2. **Implement** — write the minimum code to make the tests pass.
+3. **Verify** — run the tests for this task and confirm they are green before moving to the next task.
 
 Rules:
 - Stay within this feature's domain boundary
 - Respect every guardrail in `architecture-spec.md → ## Guardrails`
-- Write tests alongside code — do not defer all tests to test-agent
-- Commit with conventional messages: `feat([ID]): [description]` / `test([ID]): [description]`
+- Never defer tests to test-subagent — test-subagent does a final suite run, not first-time test writing
+- Commit in pairs: `test([ID]): [description]` first, then `feat([ID]): [description]`
 - **Secrets must come from environment variables.** If you find yourself about to write a literal credential, API key, or connection string into any file: stop immediately and report it instead
 
 ## Output

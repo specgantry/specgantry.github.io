@@ -36,7 +36,7 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 | `specs/project-state.yaml` | ideation subagent | `phase_gates`, `backlog`, `domains`; `project.release`; backlog entries include `assignment_group`, `last_release`, `change_type` |
 | `specs/architecture-spec.md` | ideation subagent | single source of truth — vision, constraints, tech stack, system boundaries, guardrails, backlog summary, domain sections; **never duplicated in component specs** |
 | `specs/integration-scenarios.md` | ideation subagent (seed) · feature-spec subagent (extend) · integration-test subagent (results) | living document — cross-component scenarios, assertions, run history |
-| `.claude/local-state.yaml` | this skill | `role`; `active_features` (list of feature IDs currently in-flight) |
+| `.claude/local-state.yaml` | this skill | `role`; `active_features` (list of feature IDs currently in-flight); `spec_phase_complete` (all specs done, awaiting build confirm); `build_phase_confirmed` (TL confirmed build start); `integration_phase_confirmed` (TL confirmed integration test start) |
 | `specs/features/[ID]/state.yaml` | feature-spec subagent | `feature_spec_complete`, `dev_complete`, `tests_passing`, `deployment_status` |
 | `specs/features/[ID]/dev-artifact.yaml` | dev + test subagents | `overall_status` |
 | `.claude/features/[ID].lock` | this skill | concurrency guard, stale after 5 min |
@@ -132,8 +132,9 @@ Middle section — feature table + project-level status:
 - Blocked features show `depends on NNN[,NNN]` inline at end of row
 - Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
 - Component flags: Spec=`feature_spec_complete` · Build=`dev_complete` · Test=`tests_passing` · Deploy=`deployment_status:complete`
-- Integration tests icon: ⏳ when all components `tests_passing:true` · 🔄 running · ✅ `integration_tests_passing:true` · ○ otherwise
+- Integration tests icon: ⏳ when all components `tests_passing:true` and `integration_phase_confirmed:true` · 👤 when all `tests_passing:true` but awaiting confirm · 🔄 running · ✅ `integration_tests_passing:true` · ○ otherwise
 - Deploy release icon: ⏳ when `integration_tests_passing:true` · ✅ all deployed · ○ otherwise
+- Build column: show 👤 on all features when `spec_phase_complete:true` but `build_phase_confirmed:false` (awaiting confirm to start building)
 
 ---
 
@@ -172,17 +173,20 @@ No project:
 Ideation in progress (TL):
 - `[1]` Continue ideation
 
-Feature in progress (`active_features` non-empty):
-- `[1]` Continue [phase] for FEATURE-NNN _(first active feature needing action)_
+Architecture complete, all specs pending (TL) — batch gate:
+- `[1]` Spec all [n] features _(→ spec_all_features)_
 
-All components tested, awaiting integration test (TL):
-- `[1]` Run integration tests
+All specs done, awaiting build confirmation (TL) — batch gate:
+- `[1]` Build all [n] features — start? _(→ build_all_features)_
 
-Integration tests passed, awaiting deploy (TL):
-- `[1]` Deploy release [next_version]
+Build/test in progress (`active_features` non-empty):
+- `[1]` Continue build+test _(informational — subagents running)_
 
-Some components tested, others not (TL):
-- `[1]` Continue — [n] components still need build/test _(informational, not selectable)_
+All components tested, awaiting integration test (TL) — batch gate:
+- `[1]` Run integration tests _(→ run_integration_tests)_
+
+Integration tests passed, awaiting deploy (TL) — batch gate:
+- `[1]` Deploy release [next_version] _(→ deploy_release)_
 
 All features deployed:
 - `[1]` Describe next work _(→ classify_and_route)_
@@ -221,27 +225,26 @@ Right column items not yet applicable are omitted — do not show greyed or disa
 
 ## Routing — First Match
 
-Re-read all state files before routing. **Multiple components can be in-flight simultaneously.** Every action ends by updating state, re-rendering the dashboard, and stopping.
+Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
+
+**Batch pipeline:** SpecGantry processes the full backlog in four batch phases, each separated by an explicit user confirmation. Within each phase, features are processed in dependency order (sequential where dependencies exist, otherwise independent).
 
 | # | Condition | Action | Pause after? |
 |---|-----------|--------|-------------|
 | 1 | No `.claude/local-state.yaml` · no source files | **init_project** | no — moves straight to ideation |
 | 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
 | 2 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
-| 3 | User picks component ID · `feature_spec_complete:false` | **feature_spec** | yes ⏸ |
-| 4 | User picks component ID · `feature_spec_complete:true` · `dev_complete:false` | **development** | yes ⏸ |
-| 5 | User picks component ID · `dev_complete:true` · `tests_passing:false` | **resume_testing** | yes ⏸ |
-| 6 | User picks component ID · `tests_passing:true` | Show "component ready" | yes ⏸ |
-| 7 | TL · all backlog components `tests_passing:true` · `integration_tests_passing:false` | **run_integration_tests** | yes ⏸ |
-| 7b | TL · some components still in progress | Show blocking message — list outstanding components | yes ⏸ |
-| 8 | TL · `integration_tests_passing:true` · deployment not complete | **deploy_release** | yes ⏸ |
-| 9 | No component picked · user types a component ID · unblocked | route to its current phase | yes ⏸ |
-| 10 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
-| 11 | All features deployed | View H → **classify_and_route** | yes ⏸ |
+| 3 | TL · `architecture_complete:true` · any feature has `feature_spec_complete:false` · `spec_phase_complete` not set in local-state | **spec_all_features** (batch) | yes ⏸ — confirm before building |
+| 4 | TL · all features `feature_spec_complete:true` · any feature has `dev_complete:false` · `build_phase_confirmed` not set | **confirm_build** — show gate prompt → set `build_phase_confirmed:true` → **build_all_features** | yes ⏸ |
+| 5 | TL · `build_phase_confirmed:true` · `active_features` non-empty | **build_all_features** (continuing) | yes ⏸ |
+| 6 | TL · all features `tests_passing:true` · `integration_tests_passing:false` · `integration_phase_confirmed` not set | **confirm_integration** — show gate prompt → set `integration_phase_confirmed:true` → **run_integration_tests** | yes ⏸ |
+| 7 | TL · `integration_tests_passing:true` · deployment not complete | **deploy_release** (has built-in confirm prompt) | yes ⏸ |
+| 8 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
+| 9 | All features deployed | View H → **classify_and_route** | yes ⏸ |
 
 **⏸ Pause = re-render full dashboard + stop.**
 
-**Parallel lifecycle:** No single `current_feature` lock. Multiple components advance independently. Each locks only its own `.claude/features/[ID].lock`.
+**Dependency ordering within phases:** always process features in topological order (features with no `depends_on` first, then their dependents). Within a tier of independent features, process one at a time to avoid file conflicts.
 
 **View A:**
 ```
@@ -280,7 +283,7 @@ phase_gates:
 domains: []
 backlog: []
 ```
-Write `.claude/local-state.yaml`: `role: tl` · `active_features: []`
+Write `.claude/local-state.yaml`: `role: tl` · `active_features: []` · `spec_phase_complete: false` · `build_phase_confirmed: false` · `integration_phase_confirmed: false`
 Create `.claude/features/.gitkeep`.
 Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/*.lock`
 → **start_ideation**
@@ -291,36 +294,90 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
 **Idempotency:** `ideation_complete:true` AND `architecture_complete:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `vision_statement`, `project_dir`
-**After:** verify `ideation_complete:true` and `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause — TL hands off to developers
+**After:** verify `ideation_complete:true` and `architecture_complete:true` · re-render dashboard showing full backlog · ⏸ pause
 
 ---
 
-### feature_spec
-**Gate:** feature in backlog · `architecture_complete:true` · `feature_spec_complete:false`
-**Idempotency:** `feature_spec_complete:true` → re-render dashboard · stop
-**Lock:** create `.claude/features/[ID].lock`
-**Dependency gate:** all `depends_on` features must have `tests_passing:true`
-**Add to active:** append feature ID to `active_features` in `.claude/local-state.yaml` if not already present
-**Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · description: `"Writing feature spec for [feature_id]"` · pass `feature_id`, `project_dir`
-**After:** verify `feature_spec_complete:true` · remove lock · re-render dashboard · stop
+### spec_all_features
+**Gate:** `architecture_complete:true` · at least one feature has `feature_spec_complete:false`
+**Idempotency:** all features `feature_spec_complete:true` → set `spec_phase_complete:true` in `.claude/local-state.yaml` · re-render dashboard · stop
+
+Process all features with `feature_spec_complete:false` in topological order (no `depends_on` first, then dependents). For each feature in order:
+- **Lock:** create `.claude/features/[ID].lock`
+- **Add to active:** append feature ID to `active_features` in `.claude/local-state.yaml`
+- **Invoke:** `spec-gantry:feature-spec:feature-spec-subagent` · description: `"Writing feature spec for [feature_id]"` · pass `feature_id`, `project_dir`
+- **After:** verify `feature_spec_complete:true` · remove lock · remove from `active_features` · re-render dashboard progress line
+- If any spec fails: halt, surface error, stop — do not continue to next feature
+
+When all features have `feature_spec_complete:true`:
+- Set `spec_phase_complete:true` in `.claude/local-state.yaml`
+- Re-render full dashboard
+- Show gate prompt:
+```
+✓ All [n] feature specs complete.
+
+  Review the specs above, then confirm to begin building:
+  [Y] Start build   [X] Hold
+```
+⏸ pause — wait for user confirmation before proceeding to build phase.
 
 ---
 
-### development
-**Gate:** `feature_spec_complete:true` · `dev_complete:false`
-**Idempotency:** `dev_complete:true` + `tests_passing:true` → re-render dashboard · stop; `dev_complete:true` only → re-render dashboard · stop
-**Lock:** create `.claude/features/[ID].lock`
-**API contract gate:** read `## API / Interface Contract` from current + all active feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership; list conflicts for the developer to resolve
-**Invoke:** `spec-gantry:development:dev-subagent` · description: `"Implementing [feature_id]"` · pass `feature_id`, `project_dir`
-**After:** read `overall_status`; if `blocked/fail` → halt; else remove lock · re-render dashboard · stop
+### build_all_features
+**Gate:** `spec_phase_complete:true` · `build_phase_confirmed:true` · at least one feature has `dev_complete:false` OR `tests_passing:false`
+**Idempotency:** all features `tests_passing:true` → re-render dashboard · stop
+
+Process all features with `tests_passing:false` in topological order. For each feature in order:
+
+**Build step:**
+- **Gate:** `feature_spec_complete:true` · `dev_complete:false`
+- **API contract gate:** read `## API / Interface Contract` from current + all previously processed feature specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership
+- **Lock:** create `.claude/features/[ID].lock`
+- **Add to active:** append to `active_features`
+- **Invoke:** `spec-gantry:development:dev-subagent` · description: `"Implementing [feature_id]"` · pass `feature_id`, `project_dir`
+- **After:** read `overall_status`; if `blocked/fail` → halt; else proceed to test step
+
+**Test step (immediately after build, same feature):**
+- **Gate:** `dev_complete:true` · `tests_passing:false`
+- **Invoke:** `spec-gantry:development:test-subagent` · description: `"Running tests for [feature_id]"` · pass `feature_id`, `project_dir`
+- **After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry to resume"; else set `tests_passing:true` · set `status:ready` in backlog · remove from `active_features` · remove lock · re-render dashboard progress line
+
+When all features have `tests_passing:true`:
+- Re-render full dashboard
+- Show gate prompt:
+```
+✓ All [n] features built and tested.
+
+  Review results above, then confirm to run integration tests:
+  [Y] Run integration tests   [X] Hold
+```
+⏸ pause — wait for user confirmation before integration test phase.
 
 ---
 
-### resume_testing
-**Gate:** `dev_complete:true`
-**Idempotency:** `tests_passing:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:development:test-subagent` · description: `"Running tests for [feature_id]"` · pass `feature_id`, `project_dir`
-**After:** if `overall_status:fail` → halt "Tests failed — run /spec-gantry"; else set `tests_passing:true` · set `status:ready` in backlog · remove feature ID from `active_features` in `.claude/local-state.yaml` · re-render dashboard · ⏸ pause
+### confirm_build
+Show gate prompt and wait:
+```
+✓ All [n] feature specs complete — ready to build.
+
+  Build order: [list features in dependency order]
+
+  [Y] Build all features   [X] Hold
+```
+On `Y`: set `build_phase_confirmed:true` in `.claude/local-state.yaml` → proceed to **build_all_features**
+On `X`: re-render dashboard · ⏸ pause
+
+---
+
+### confirm_integration
+Show gate prompt and wait:
+```
+✓ All [n] features built and tested.
+
+  [Y] Run integration tests   [X] Hold
+```
+On `Y`: set `integration_phase_confirmed:true` in `.claude/local-state.yaml` → proceed to **run_integration_tests**
+On `X`: re-render dashboard · ⏸ pause
 
 ---
 
@@ -328,19 +385,20 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/features/
 **Gate:** `role:tl` · all backlog components `tests_passing:true` · `integration_tests_passing:false`
 **Idempotency:** `integration_tests_passing:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:integration-test:integration-test-subagent` · description: `"Running integration tests"` · pass `project_dir`
-**After:** if any scenario failed → halt with failure summary from `specs/integration-scenarios.md`; else re-render dashboard · ⏸ pause — TL triggers deploy
+**After:** if any scenario failed → halt with failure summary from `specs/integration-scenarios.md`; else re-render dashboard · show deploy gate prompt:
+```
+✓ Integration tests passed — [n]/[n] scenarios.
+
+  Ready to deploy release [next_version] — [n] features included.
+  [Y] Deploy   [X] Hold
+```
+⏸ pause — on `Y` proceed to **deploy_release**, on `X` re-render and stop.
 
 ---
 
 ### deploy_release
 **Gate:** `role:tl` · `integration_tests_passing:true`
 **Idempotency:** all features `deployment_status:complete` → re-render dashboard · stop
-
-Confirm with TL before proceeding:
-```
-Ready to deploy — [n] features included
-  [Y] Deploy  [X] Cancel
-```
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying full system"` · pass `project_dir`
 **After:** read `deployment_status` from any backlog entry; if `blocked` → halt with blockers from `specs/deploy-artifact.md`; else re-render dashboard · ⏸ pause
 
@@ -382,6 +440,8 @@ For `new_feature`:
 - Reset **all** phase flags in `specs/features/[ID]/state.yaml`:
   `feature_spec_complete:false · dev_complete:false · tests_passing:false · deployment_status:null`
 - Add each affected feature to `active_features` in `.claude/local-state.yaml`
+- Reset batch-phase flags in `.claude/local-state.yaml`: `spec_phase_complete:false · build_phase_confirmed:false · integration_phase_confirmed:false`
+- Reset `integration_tests_passing:false` in `specs/project-state.yaml`
 - Re-render · ⏸
 
 `new_feature`:
@@ -391,6 +451,7 @@ For `new_feature`:
 `project_change`:
 - Mark impacted features with `feature_spec_complete:false` (specs must be re-done after architecture updates)
 - Reset `integration_tests_passing:false` in `specs/project-state.yaml`
+- Reset batch-phase flags in `.claude/local-state.yaml`: `spec_phase_complete:false · build_phase_confirmed:false · integration_phase_confirmed:false`
 - Re-render · ⏸ before **start_ideation** (amendment mode)
 
 ---

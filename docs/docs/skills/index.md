@@ -44,7 +44,7 @@ Two states depending on where you are in the pipeline.
 **State 1 — No features yet** (ideation in progress, or no project):
 
 ```
-SpecGantry v2.0.0  |  My App
+SpecGantry v2.0.1  |  My App
 [░░░░░░░░░░]  0/0 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
@@ -61,7 +61,7 @@ SpecGantry v2.0.0  |  My App
 The pipeline table and feature picker are unified. Every feature is visible, its status is shown across all pipeline stages, and you can act on any feature directly from the same screen — no navigation required.
 
 ```
-SpecGantry v2.0.0  |  Acme Platform
+SpecGantry v2.0.1  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec Build Test Deploy
@@ -173,7 +173,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 **Default view — Cost Summary by Phase:**
 
 ```
-SpecGantry v2.0.0  |  Acme Platform
+SpecGantry v2.0.1  |  Acme Platform
 [██░░░░░░░░]  2/8 features deployed
 ──────────────────────────────────────────────────────────
 

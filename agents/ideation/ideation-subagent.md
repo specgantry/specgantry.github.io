@@ -163,19 +163,25 @@ Write to `## Guardrails`:
 ### Topic 8 — Feature Backlog
 From the system boundaries and problem shape, decompose the system into components (features). Present a proposed backlog and ask the TL to confirm, merge, split, or reorder.
 
-**Goldilocks rule:** components are building blocks, not micro-tasks. A component is a vertical slice — something a developer can complete in 1–3 sessions and demonstrate independently. When in doubt, merge. A component can have internally separated code but ships as a unit. Components can always be extended later.
+**Lean backlog rule (primary constraint):** minimise the number of features. Every feature is a coordination cost — spec, build, test, and integration overhead multiplies with count. Before adding a feature, ask: can this be merged into an adjacent one without losing clarity? If yes, merge it. Target the smallest backlog that delivers the full outcome.
+
+**Goldilocks rule:** each component is a vertical slice a developer can complete in 1–3 sessions and demonstrate independently. Components can have internally separated code but ship as a unit and can always be extended later. When in doubt, merge — never split unless forced by a hard dependency or an unacceptably large scope.
 
 **Dependency ordering:** data-layer components first — their schema unblocks everything that consumes it.
 
 **Assignment grouping:** components that share implementation boundaries get the same `assignment_group`.
 
-Present:
+Present the lean proposal. Show the count prominently:
 ```
+Proposed backlog — [n] features  (target: as few as possible)
+
 ID    Title                  Domain    Size  Depends on  Group
 ──────────────────────────────────────────────────────────────
 001   [title]                [domain]  M     —           [group]
 ...
 ```
+
+If the count exceeds 6, explicitly challenge each feature: "Can [X] be merged into [Y]?" before presenting to TL.
 
 On confirm, write to `## Feature Backlog` in `architecture-spec.md` (human-readable summary) AND write the machine-readable form to `specs/project-state.yaml → backlog`.
 

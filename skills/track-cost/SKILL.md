@@ -65,7 +65,7 @@ Show phases in pipeline order. Omit phases with zero entries.
 ## View: By Component — input `1`
 
 One row per component ID. Aggregate all entries for that component across all phases and models.
-Entries with `component: null` (ideation, integration test, deployment) are excluded — they belong to the project, not a component.
+Entries with `component: null` are project-level phases (ideation, integration test, deployment) — exclude them from this view. Show their costs in the Summary view instead.
 
 ```
 Cost by Component  |  release [current release]

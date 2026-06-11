@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.9`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.1.0`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -126,7 +126,7 @@ SpecGantry detects your situation automatically and guides you from there.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  New Project
+SpecGantry v2.1.0  |  New Project
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -147,39 +147,45 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 
 ### Joining a Team
 
-If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every component, its current phase, and what you can pick up:
+If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it on first run and asks whether you are the Team Lead or a Developer. After you identify yourself, the pipeline dashboard is shown immediately:
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  Acme Platform
-[█░░░░░░░░░]  1/10 components deployed  |  release 1.0.0
+SpecGantry project found: Acme Platform (release 1.0.0)
+
+Are you the Team Lead or a Developer?
+  [1] Team Lead / Architect
+  [2] Developer
+```
+</div>
+
+After selecting `[2]` and entering your name, the dashboard appears:
+
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+```
+SpecGantry v2.1.0  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 3/5  ·  Dev [█░░░░] 1/5  ·  You [░░░░░] 0/0 assigned
 ──────────────────────────────────────────────────────────
-                              Spec  Dev  Deploy  Assignee
-  [001]  Auth Module           ✅    ✅     ✅    alice
-  [002]  Payment Gateway       ✅    🔄     ○     bob
-  [003]  Notifications         🔄    ○      ○     carol
-  [004]  Search                ⏳    ○      ○     unassigned
-  [005]  Reporting             🔴    ○      ○     —          depends on 003,004
-  ────────────────────────────────────────────
-  Gap merge                    ○
-  Integration tests            ○
-  Deploy release               ○
+                              Spec  Dev  Assignee
+  [001]  Auth Module           ✅    ✅    alice
+  [002]  Payment Gateway       ✅    🔄    bob
+  [003]  Notifications         🔄    ○     carol
+  [004]  Search                ⏳    ○     unassigned
+  [005]  Reporting             🔴    ○     —          depends on 003,004
 ──────────────────────────────────────────────────────────
-  Type a component ID to pick it up   [A] Architecture
-  [1] Continue dev – COMP-002         [I] Integration scenarios
-                                      [P] Project
-                                      [$] Cost
-                                      [+] New work
-                                      [?] Help
+  Type a component ID to manage it    [$] Cost
+  [1] Claim a component               [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
 </div>
 
-Type a component number (e.g. `003`) to pick it up and begin the component spec phase immediately.
+Type a component number (e.g. `004`) to claim it and begin the component spec phase.
 
 ---
 
@@ -195,7 +201,7 @@ Type a component number (e.g. `003`) to pick it up and begin the component spec 
 ### If You're a Developer
 
 1. **Pull the repository** after the Team Lead commits `specs/`
-2. **Run `/spec-gantry`** — it detects the project and sets your role
+2. **Run `/spec-gantry`** — it detects the project and asks if you are the Team Lead or a Developer; select Developer and enter your name
 3. **Type a component ID** to claim it from the pipeline dashboard
 4. **Write the component spec** (5–15 min) — guided by the component-spec agent
 5. **Build and test** — implement against your approved spec using TDD
@@ -265,7 +271,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  My App
+SpecGantry v2.1.0  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -286,19 +292,15 @@ Shown once the backlog is approved. The pipeline table and component picker are 
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  My App
+SpecGantry v2.1.0  |  My App
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
-                              Spec  Dev  Deploy  Assignee
-  [001]  User Auth             ✅    ✅     ✅    alice
-  [002]  Profile API           ✅    🔄     ○     bob
-  [003]  Notifications         🔄    ○      ○     carol
-  [004]  Search                ⏳    ○      ○     unassigned
-  [005]  Reporting             🔴    ○      ○     —          depends on 003,004
-  ────────────────────────────────────────────
-  Gap merge                    ○
-  Integration tests            ○
-  Deploy release               ○
+                              Spec  Dev  Assignee
+  [001]  User Auth             ✅    ✅    alice
+  [002]  Profile API           ✅    🔄    bob
+  [003]  Notifications         🔄    ○     carol
+  [004]  Search                ⏳    ○     unassigned
+  [005]  Reporting             🔴    ○     —          depends on 003,004
 ──────────────────────────────────────────────────────────
   Type a component ID to pick it up   [A] Architecture
   [1] Continue spec – COMP-003        [I] Integration scenarios

@@ -1,6 +1,11 @@
 ---
 name: track-cost
-description: Reads specs/cost-log.ndjson and displays cost breakdowns by phase, component, release, and model.
+description: >
+  Invoke this skill when the user wants to see AI development costs for a SpecGantry project.
+  Triggers include: asking about cost, spend, or token usage ("how much have we spent?", "what's this costing?",
+  "show me the cost breakdown", "how many tokens have we used?");
+  asking for a breakdown by phase, component, release, or model.
+  Do NOT invoke for general cost questions unrelated to a SpecGantry project.
 allowed-tools: Read
 ---
 

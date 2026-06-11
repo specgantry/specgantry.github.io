@@ -47,13 +47,11 @@ Two states depending on where you are in the pipeline.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  My App
-[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
+SpecGantry v2.1.0  |  My App  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
-  [1] Continue ideation               [P] Project
-                                      [$] Cost
+  [1] Continue ideation               [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
@@ -68,27 +66,20 @@ The pipeline table and component picker are unified. Every component is visible,
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.9  |  Acme Platform
-[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
+SpecGantry v2.1.0  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 5/8  ·  Dev [██░░░] 2/8
 ──────────────────────────────────────────────────────────
-                              Spec  Dev  Deploy  Assignee
-  [001]  User Auth             ✅    ✅     ✅    alice
-  [002]  Search API            ✅    🔄     ○     bob
-  [003]  Notifications         🔄    ○      ○     carol
-  [004]  Export PDF            ⏳    ○      ○     unassigned
-  [005]  Analytics             🔴    ○      ○     —          depends on 003,004
-  ────────────────────────────────────────────
-  Gap merge                    ○
-  Integration tests            ○
-  Deploy release               ○
+  ID      Component           Spec   Dev   Assignee
+  ──────────────────────────────────────────────────
+  [001]  User Auth             ✅    ✅    alice
+  [002]  Search API            ✅    🔄    bob
+  [003]  Notifications         🔄    ○     carol
+  [004]  Export PDF            ⏳    ○     unassigned
+  [005]  Analytics             🔴    ○     —          depends on 003,004
 ──────────────────────────────────────────────────────────
-  Type a component ID to pick it up   [A] Architecture
-  [1] Continue spec – COMP-003        [I] Integration scenarios
-                                      [P] Project
-                                      [$] Cost
-                                      [+] New work
-                                      [?] Help
-                                      [X] Exit
+  Type a component ID to manage it    [$] Cost
+  [1] Continue spec – COMP-003        [?] Help
+  [2] New work                        [X] Exit
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
@@ -116,7 +107,7 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 
 **Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written.
 
-**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and your role is detected automatically. The full pipeline dashboard is visible immediately.
+**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and you'll be asked whether you are the Team Lead or a Developer. The full pipeline dashboard is shown immediately after.
 
 **Full component lifecycle** — From claiming a component through spec, development, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
 
@@ -128,12 +119,9 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[A]` Architecture | Both | View the full architecture spec. Visible whenever `architecture-spec.md` exists — including mid-ideation. |
-| `[I]` Integration scenarios | Both | View `integration-scenarios.md` — scenarios, assertions, run history. Visible once seeded during ideation. |
-| `[P]` Project | Both | Manage backlog — prioritize, assign, defer. Edit project name and vision. |
+| `[1]`–`[n]` New work | TL only | Describe a bug, improvement, new component, or change. Always the last numbered action in the left column once ideation is complete. |
 | `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, component, release, and model |
-| `[+]` New work | Both | Describe a bug, improvement, new component, or change. Visible once ideation is complete. |
-| `[?]` Help | Both | Quick reference and docs link |
+| `[?]` Help | Both | Quick reference and secondary commands: `[A]` Architecture · `[I]` Integration scenarios · `[P]` Project · docs link |
 | `[X]` Exit | Both | Return to normal Claude Code |
 
 ---
@@ -186,7 +174,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v2.0.9  |  Acme Platform
+SpecGantry v2.1.0  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 
@@ -275,6 +263,18 @@ Total           80,601      $7.79
 </div>
 
 Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.
+
+**Typical cost profile per phase:**
+
+| Phase | Model | Relative cost |
+|-------|-------|--------------|
+| Ideation | Haiku 4.5 | Low — conversational, short outputs |
+| Component spec | Sonnet 4.6 | Medium — per component |
+| Development | Sonnet 4.6 | Highest — code generation + test runs |
+| Integration test | Sonnet 4.6 | Medium — scenario execution |
+| Deployment | Sonnet 4.6 | Low — script generation, one-shot |
+
+Development dominates total spend. If costs are higher than expected, check the By Component view — a single complex component often accounts for a disproportionate share.
 
 ---
 

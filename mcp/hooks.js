@@ -15,6 +15,48 @@ const {
   projectSlug, buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
+// ─── UserPromptSubmit: project auto-detection ────────────────────────────────
+// If specs/project-state.yaml exists in cwd, inject a context note so Claude
+// recognises this as an active SpecGantry project without the user typing /spec-gantry.
+async function hookUserPromptSubmit() {
+  let payload;
+  try {
+    payload = JSON.parse(await readStdin());
+  } catch (err) {
+    logError('UserPromptSubmit: failed to parse payload:', err.message);
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
+  }
+
+  const cwd = payload.cwd || PROJECT_DIR;
+  const stateFile = path.join(cwd, 'specs', 'project-state.yaml');
+
+  if (!fs.existsSync(stateFile)) {
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
+  }
+
+  // Extract project name and release from state file (simple regex, no YAML parser needed)
+  let projectName = 'unknown';
+  let release = 'unknown';
+  try {
+    const raw = fs.readFileSync(stateFile, 'utf8');
+    const nameMatch    = raw.match(/^\s+name:\s*(.+)$/m);
+    const releaseMatch = raw.match(/^\s+release:\s*(.+)$/m);
+    if (nameMatch)    projectName = nameMatch[1].trim();
+    if (releaseMatch) release     = releaseMatch[1].trim();
+  } catch { /* ignore — still inject the note */ }
+
+  const note = `[SpecGantry] Active project detected: ${projectName} (release ${release}). Invoke the spec-gantry skill to manage this project.`;
+  logInfo(`UserPromptSubmit: injecting project note — ${projectName} @ ${release}`);
+
+  process.stdout.write(JSON.stringify({
+    continue: true,
+    hookSpecificOutput: { additionalSystemPrompt: note },
+  }) + '\n');
+  process.exit(0);
+}
+
 // ─── PreToolUse: Agent tool guard ────────────────────────────────────────────
 // Blocks any Agent spawn whose subagent_type is not an approved spec-gantry:*:* agent.
 // Prevents Claude Code from going off-script with general-purpose agents, etc.
@@ -141,7 +183,8 @@ async function hookSubagentStop() {
 // ─── Dispatch ─────────────────────────────────────────────────────────────────
 (async function main() {
   initLogger('spec-gantry-hooks.log');
-  if (process.argv.includes('--pre-tool-use'))   { await hookPreToolUse();    return; }
+  if (process.argv.includes('--user-prompt-submit')) { await hookUserPromptSubmit(); return; }
+  if (process.argv.includes('--pre-tool-use'))       { await hookPreToolUse();       return; }
   if (process.argv.includes('--subagent-start')) { await hookSubagentStart(); return; }
   if (process.argv.includes('--subagent-stop'))  { await hookSubagentStop();  return; }
   process.stderr.write('Usage: hooks.js --pre-tool-use | --subagent-start | --subagent-stop\n');

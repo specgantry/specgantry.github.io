@@ -1,6 +1,15 @@
 ---
 name: spec-gantry
-description: Main dashboard and single entry point for SpecGantry. Orchestrates the full SDLC pipeline — from project init through deployment — with phase gates at every transition.
+description: >
+  Invoke this skill when the user wants to build, plan, or manage a software project — at any stage.
+  Triggers include: starting a new app or service ("I want to build...", "let's create a...");
+  resuming or checking project status ("where did we leave off?", "what's left to build?", "what are we working on?");
+  asking about a specific component, feature, or spec ("tell me about the auth component", "what does COMP-003 do?");
+  reporting a bug or requesting a change ("something is broken", "I need to add...", "can we change how X works?");
+  asking about architecture, tech stack, or design decisions;
+  asking who is working on what, or wanting to claim or assign work;
+  asking about deployment, release status, or project costs.
+  Do NOT invoke for general coding questions, debugging unrelated code, or one-off tasks with no project context.
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 ---
 
@@ -72,12 +81,30 @@ Examples:
 Always rendered first, same in all states:
 
 ```
-SpecGantry v[version]  |  [project.name or "New Project"]
-[████░░░░░░]  [n]/[total] components deployed  |  release [project.release]
+SpecGantry v[version]  |  [project.name or "New Project"]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 ```
 
-Progress bar: 10 chars — `█` (U+2588) per deployed component, `░` (U+2591) for remaining. Before first deployment: all `░`. When any components have in-flight work: append `· release [next_version] in progress` to the second line.
+In STATE 2 (pipeline active), append a progress line below the separator:
+
+```
+Spec [███░░] 8/10  ·  Dev [██░░░] 5/10
+──────────────────────────────────────────────────────────
+```
+
+For **developer role**, append You inline on the same line:
+
+```
+Spec [███░░] 8/10  ·  Dev [██░░░] 5/10  ·  You [█░░░░] 1/3 assigned
+──────────────────────────────────────────────────────────
+```
+
+Progress bars: 5 chars — `█` (U+2588) filled, `░` (U+2591) remaining.
+- **Spec** counts components where `spec_complete:true`
+- **Dev** counts components where `dev_complete:true` AND `tests_passing:true`
+- **You** counts developer's assigned components where `dev_complete:true` AND `tests_passing:true`, denominator is total assigned to them
+
+In STATE 1 (no pipeline), omit the progress bars entirely — just the header line and separator.
 
 ---
 
@@ -121,11 +148,12 @@ The pipeline table and action bar are one unified view. Everything is actionable
 Middle section — component table:
 
 ```
-                              Spec   Dev   Assignee
+  ID      Component           Spec   Dev   Assignee
+  --------------------------------------------------
   [001]  Authentication        ✅    🔄    alice
   [002]  User Profile          ⏳    ○     unassigned
   [003]  Notifications         🔴    ○     —          depends on 001
-  [004]  Admin Panel           ✅    ✅    bob
+  [004]  Admin Panel           ✅    ✅    bob  
 ```
 
 - Always render the column header row
@@ -151,9 +179,8 @@ Always the last element rendered. Two columns — left is contextual actions, ri
 **State 1 (no pipeline):**
 ```
 ──────────────────────────────────────────────────────────────────────
-  `[1]` [action one]                  `[P]` Project
-  `[2]` [action two]                  `[$]` Cost
-                                      `[?]` Help
+  `[1]` [action one]                  `[$]` Cost
+  `[2]` [action two]                  `[?]` Help
                                       `[X]` Exit
 ──────────────────────────────────────────────────────────────────────
 ```
@@ -161,67 +188,46 @@ Always the last element rendered. Two columns — left is contextual actions, ri
 **State 2 (pipeline active):**
 ```
 ──────────────────────────────────────────────────────────────────────
-  Type a component ID to manage it    `[A]` Architecture
-  `[1]` [contextual action]           `[I]` Integration scenarios
-  `[2]` [contextual action]           `[P]` Project
-                                      `[$]` Cost
-                                      `[+]` New work  (TL only)
-                                      `[?]` Help
-                                      `[X]` Exit
+  Type a component ID to manage it    `[$]` Cost
+  `[1]` New work  (TL only)           `[?]` Help
+  `[2]` [contextual action]           `[X]` Exit
+  `[3]` [contextual action]
 ──────────────────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
 
-`[2]` is only rendered when the state offers two contextual actions. `[+]` is only rendered for TL role.
+`[2]` is only rendered when the state offers two contextual actions. `[+]` New work is only rendered for TL role, once ideation is complete — it always appears as the last numbered action regardless of how many contextual actions precede it.
 
-**Left column — contextual actions by state:**
+`[?]` expands inline to show secondary commands: `[A]` Architecture · `[I]` Integration scenarios · `[P]` Project · and a docs link.
 
-No project:
-- `[1]` Start new project
-- `[2]` Analyse existing codebase _(only if source files exist)_
+**Left column — derivation rules:**
 
-Ideation in progress:
-- `[1]` Continue ideation
+Evaluate state flags in pipeline order. Each condition that is true and actionable contributes one numbered action. Number them sequentially `[1]`, `[2]`, etc. If a phase is blocked or already in progress (subagent running), show a status line instead of a numbered action.
 
-Architecture complete, backlog not yet approved:
-- `[1]` Review and approve component backlog
+| Condition | Action label |
+|-----------|-------------|
+| No project exists | `Start new project` · `Analyse existing codebase` (only if source files present) |
+| Ideation in progress | `Continue ideation` |
+| Architecture complete, backlog not approved | `Review and approve component backlog` |
+| Backlog approved, specs not started | `Spec all [n] components` |
+| Spec in progress | _(status line)_ `Spec in progress — [n] components running` |
+| All specs done, build not confirmed | `Build all [n] components` |
+| Build in progress | _(status line)_ `Build in progress — [n] components running` |
+| All components built, integration not confirmed | `Run integration tests` · `Deploy directly — skip tests` |
+| Integration passed or skipped, deploy pending | `Deploy release [version]` |
+| Developer — assigned components ready to spec | `Continue spec — [COMP-ID]` |
+| Developer — assigned components ready to build | `Continue build — [COMP-ID]` |
+| Developer — no assigned components | `Claim a component` |
 
-Backlog approved, specs pending:
-- `[1]` Spec all [n] components _(→ spec_all_components)_
+For TL: append `New work` as the final numbered action whenever `architecture_complete:true`.
 
-All specs done, awaiting build confirmation:
-- `[1]` Build all [n] components — start? _(→ build_all_components)_
-
-Spec in progress (`active_components` non-empty, spec phase):
-- _(no numbered action)_ `Spec in progress — [n] components running`
-
-Build in progress (`active_components` non-empty, build phase):
-- _(no numbered action)_ `Build in progress — [n] components running`
-
-All components built, awaiting integration confirm:
-- `[1]` Run integration tests _(→ confirm_integration → run_integration_tests)_
-- `[2]` Deploy directly — skip tests _(→ confirm_integration → deploy_release)_
-
-Integration tests passed, awaiting deploy:
-- `[1]` Deploy release [next_version] _(→ deploy_release)_
-
-All components deployed:
-- `[1]` Describe next work _(→ classify_and_route)_
-
-Developer — has assigned components with `spec_complete:true`:
-- `[1]` Continue build on [COMP-ID] _(→ build_component)_
-
-Developer — no assigned components:
-- `[1]` Claim a component _(→ claim_component)_
+Label format: use the exact wording above. Insert counts (`[n]`) and IDs where shown.
 
 **Right column — visibility rules:**
-- `[A]` Architecture — visible when `specs/architecture-spec.md` exists
-- `[I]` Integration scenarios — visible when `specs/integration-scenarios.md` exists
-- `[P]` always visible
 - `[$]` always visible
-- `[+]` TL only · visible when `architecture_complete:true`
-- `[?]` always visible
+- `[?]` always visible — expands inline to: `[A]` Architecture (when `architecture-spec.md` exists) · `[I]` Integration scenarios (when `integration-scenarios.md` exists) · `[P]` Project · docs link
 - `[X]` always visible
+
 
 **Input handling:**
 - Bare number (`001`, `1`) or full ID (`COMP-001`) → route to component's current phase
@@ -242,8 +248,9 @@ Re-read all state files before routing. Every action ends by updating state, re-
 
 | # | Condition | Action | Pause after? |
 |---|-----------|--------|-------------|
-| 1 | No `.claude/local-state.yaml` · no source files | **init_project** | no — moves straight to ideation |
-| 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
+| 1 | No `.claude/local-state.yaml` · `specs/project-state.yaml` exists | **detect_role** | yes ⏸ |
+| 1b | No `.claude/local-state.yaml` · no `specs/project-state.yaml` · no source files | **init_project** | no — moves straight to ideation |
+| 1c | No `.claude/local-state.yaml` · no `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
 | 2 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
 | 2b | TL · `architecture_complete:true` · `backlog_approved:false` | **approve_backlog** | yes ⏸ |
 | 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete:false` | **spec_all_components** (batch) | yes ⏸ — confirm before building |
@@ -253,8 +260,9 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 7 | TL · (`integration_tests_passing:true` OR `integration_skipped:true`) · deployment not complete | **deploy_release** | yes ⏸ |
 | 8 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
 | 9 | All components deployed | View H → **classify_and_route** | yes ⏸ |
-| 10 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` | **build_component** (their component) | yes ⏸ |
-| 11 | Dev · no assigned components | **claim_component** | yes ⏸ |
+| 10 | Dev · assigned components with `spec_complete:false` · `dev_complete:false` | **spec_component** (their component) | yes ⏸ |
+| 11 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` | **build_component** (their component) | yes ⏸ |
+| 12 | Dev · no assigned components | **claim_component** | yes ⏸ |
 
 **⏸ Pause = re-render full dashboard + stop.**
 
@@ -276,6 +284,26 @@ Describe next work (bug fix / improvement / new feature / architectural change),
 ---
 
 ## Actions
+
+### detect_role
+**Gate:** `specs/project-state.yaml` exists · no `.claude/local-state.yaml`
+
+A project exists but this machine has no local state — the user is either a developer joining the team, or the TL on a fresh clone.
+
+Show:
+```
+SpecGantry project found: [project.name] (release [project.release])
+
+Are you the Team Lead or a Developer?
+  [1] Team Lead / Architect
+  [2] Developer
+```
+
+On `[1]`: write `.claude/local-state.yaml` with `role: tl` · `active_components: []` · `current_component: null` · `spec_phase_complete: false` · `build_phase_confirmed: false` · `integration_phase_confirmed: false` → re-render dashboard · ⏸
+
+On `[2]`: prompt `Your name: >` · write `.claude/local-state.yaml` with `role: dev` · `developer_name: [name]` · `active_components: []` · `current_component: null` → re-render dashboard · ⏸
+
+---
 
 ### init_project
 Collect inputs (re-prompt on blank):
@@ -339,17 +367,9 @@ Process all components with `spec_complete:false` in topological order. For each
 
 When all components have `spec_complete:true`:
 - Set `spec_phase_complete:true` in `.claude/local-state.yaml`
-- Re-render full dashboard
-- **confirm_build** — show gate prompt and wait:
-```
-✓ All [n] component specs complete — ready to build.
-
-  Build order: [list components in dependency order]
-
-  [Y] Build all components   [X] Hold
-```
-On `Y`: set `build_phase_confirmed:true` in `.claude/local-state.yaml` → proceed to **build_all_components**
-On `X`: re-render · ⏸
+- Re-render full dashboard — the action bar will show `[1] Build all [n] components` (see action bar rules)
+- ⏸ wait for user input
+- On `[1]`: set `build_phase_confirmed:true` in `.claude/local-state.yaml` → proceed to **build_all_components**
 
 ---
 
@@ -388,6 +408,18 @@ When all components have `tests_passing:true`:
    COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
    COMP-003: 1 gap(s) merged — Data section updated
    ```
+
+---
+
+### spec_component (developer path)
+**Gate:** `role:dev` · comp_id assigned to this developer · `spec_complete:false`
+
+- **Lock:** create `.claude/components/[COMP-ID].lock`
+- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
+- **Invoke:** `spec-gantry:component-spec:component-spec-subagent` · description: `"Writing component spec for [comp_id]"` · pass `comp_id`, `project_dir`
+- **After:** verify `spec_complete:true` · remove lock · remove from `active_components` · set `current_component: null` · re-render
+
+⏸ pause
 
 ---
 
@@ -542,8 +574,36 @@ Proceed? `[Y]`/`[N]`
 
 **`[A]`** Display `specs/architecture-spec.md` in full, then re-render dashboard. Visible to all roles when file exists.
 **`[I]`** Display `specs/integration-scenarios.md` in full, then re-render dashboard. Visible to all roles when file exists.
-**`[P]`** Project menu (TL): view/edit project name and vision · manage backlog (reorder, defer, assign component to developer) · add component. Developer: view assigned components. Visible always.
+**`[P]`** Project menu. Show inline, then re-render dashboard on exit.
+
+TL view:
+```
+Project: [name]  |  [vision, truncated to 80 chars]
+
+  [1] Edit project name and vision
+  [2] Assign component to developer
+  [3] Reorder / defer component
+  [4] View full backlog
+  [X] Back
+```
+Developer view:
+```
+Project: [name]
+
+  My components:
+    [COMP-ID]  [title]  Spec: [status]  Dev: [status]
+
+  [X] Back
+```
+
 **`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and component. Visible to all roles.
 **`[+]`** Prompt for next work → **classify_and_route**. Visible to TL when `architecture_complete:true`.
-**`[?]`** Help: `/spec-gantry` — entry point · `/track-cost` — cost breakdown · restart Claude Code to refresh pricing rates.
+**`[?]`** Expand inline — show secondary commands, then re-render dashboard on exit:
+```
+  [A] Architecture spec     (visible when architecture-spec.md exists)
+  [I] Integration scenarios (visible when integration-scenarios.md exists)
+  [P] Project
+  [D] Docs — specgantry.github.io
+  [X] Back
+```
 **`[X]`** Exit: `Run /spec-gantry anytime to return.`

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(bash *)",
+      "Bash(chmod *)",
+      "Bash(npm *)",
+      "Bash(pytest *)",
+      "Bash(go test *)",
+      "Bash(bundle *)",
+      "Bash(make *)",
+      "Bash(find . *)",
+      "Bash(node ${CLAUDE_PLUGIN_ROOT}/mcp/hooks.js *)"
+    ]
+  }
+}

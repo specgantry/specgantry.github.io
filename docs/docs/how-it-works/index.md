@@ -109,7 +109,7 @@ This gate ensures developers never pick up a component from a backlog the TL has
 
 ### Phase 2 — Component Spec {#spec-gate}
 
-**Who:** Developer
+**Who:** Developer (or Team Lead in batch via `spec_all_components`)
 **Time:** 5–15 minutes per component (+5 min domain elaboration on first component of each domain)
 **Output:** `specs/components/COMP-NNN/component-spec.md`
 

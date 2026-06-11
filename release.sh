@@ -93,6 +93,7 @@ USAGE:
   ./release.sh              Auto-increment and release
   ./release.sh --help       Show this help message
   ./release.sh --current    Show current version
+  ./release.sh --dry-run    Build site + index locally and serve at http://localhost:4001
   ./release.sh vX.Y.Z       Release specific version (e.g., v1.0.0)
 
 AUTO-INCREMENT PATTERN:
@@ -107,9 +108,16 @@ PROCESS:
   1. Validates branch and pre-conditions
   2. Updates version in all manifest and doc files
   3. Verifies version sync across manifests
-  4. Commits all changes
-  5. Tags release in git
-  6. Pushes commits and tags to GitHub
+  4. Builds Jekyll site locally (requires Ruby + Bundler)
+  5. Builds Pagefind search index (requires Node.js + npx)
+  6. Deploys built site to gh-pages branch
+  7. Commits all changes to main
+  8. Tags release in git
+  9. Pushes commits and tags to GitHub
+
+PREREQUISITES:
+  Ruby + Bundler:  gem install bundler && cd docs && bundle install
+  Node.js + npx:  comes with Node.js (https://nodejs.org)
 
 For more info, visit: https://github.com/specgantry/specgantry.github.io
 EOF
@@ -149,6 +157,65 @@ validate_version() {
   fi
 }
 
+check_build_deps() {
+  if ! command -v bundle &> /dev/null; then
+    log_error "Bundler not found. Install with: gem install bundler"
+  fi
+  log_success "Bundler found: $(bundle --version)"
+
+  if ! command -v npx &> /dev/null; then
+    log_error "npx not found. Install Node.js from https://nodejs.org"
+  fi
+  log_success "npx found: $(npx --version)"
+}
+
+build_site() {
+  print_step "Installing Ruby gems"
+  (cd docs && bundle install --quiet)
+  log_success "Gems ready"
+
+  print_step "Building Jekyll site"
+  (cd docs && JEKYLL_ENV=production bundle exec jekyll build --destination _site)
+  log_success "Site built → docs/_site/"
+
+  print_step "Building Pagefind search index"
+  npx pagefind --site docs/_site --output-path docs/_site/pagefind
+  log_success "Search index built → docs/_site/pagefind/"
+}
+
+deploy_to_gh_pages() {
+  local version=$1
+  local worktree_path
+  worktree_path="$(mktemp -d)/gh-pages-deploy"
+
+  print_step "Deploying to gh-pages branch"
+
+  # Check if gh-pages branch exists on remote
+  if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+    git worktree add "$worktree_path" gh-pages
+  else
+    log_info "gh-pages branch does not exist — creating orphan branch"
+    git worktree add --orphan -b gh-pages "$worktree_path"
+  fi
+
+  rsync -a --delete --exclude='.git' docs/_site/ "$worktree_path/"
+
+  (
+    cd "$worktree_path"
+    git add -A
+    if git diff --cached --quiet; then
+      log_warning "No changes in built site — skipping gh-pages commit"
+    else
+      git commit -m "Deploy v$version"
+      git push origin gh-pages
+      log_success "Deployed to gh-pages"
+    fi
+  )
+
+  git worktree remove "$worktree_path" --force
+  rm -rf "$(dirname "$worktree_path")"
+}
+
 verify_version_sync() {
   local expected=$1
   local all_ok=true
@@ -174,6 +241,41 @@ verify_version_sync() {
   if [ "$all_ok" = false ]; then
     log_error "Version mismatch detected after update. Aborting release."
   fi
+}
+
+dry_run() {
+  print_header
+
+  echo -e "   ${BOLD}${YELLOW}Dry Run — no git operations will be performed${NC}"
+  echo -e "   ${DIM}$(date '+%Y-%m-%d %H:%M:%S')${NC}"
+
+  check_build_deps
+  build_site
+
+  local page_count
+  page_count=$(find docs/_site -name "*.html" | wc -l | tr -d ' ')
+  local index_size
+  index_size=$(du -sh docs/_site/pagefind 2>/dev/null | cut -f1 || echo "?")
+
+  echo ""
+  echo -e "${BOLD}${GREEN}╔══════════════════════════════════════════════════╗${NC}"
+  echo -e "${BOLD}${GREEN}║   Build complete                                 ║${NC}"
+  echo -e "${BOLD}${GREEN}╚══════════════════════════════════════════════════╝${NC}"
+  echo ""
+  echo -e "   ${DIM}Pages built:${NC}    $page_count HTML files"
+  echo -e "   ${DIM}Search index:${NC}   $index_size  (docs/_site/pagefind/)"
+  echo -e "   ${DIM}Server:${NC}         http://localhost:4001"
+  echo ""
+  echo -e "   ${BOLD}What to check:${NC}"
+  echo -e "   ${DIM}1.${NC} Search bar appears top-right on every page"
+  echo -e "   ${DIM}2.${NC} Type a query — results should appear instantly"
+  echo -e "   ${DIM}3.${NC} Click a result — it should navigate to the correct page"
+  echo -e "   ${DIM}4.${NC} Works on both the landing page (dark nav) and docs pages (light nav)"
+  echo ""
+  echo -e "   ${DIM}Press Ctrl+C to stop the server when done.${NC}"
+  echo ""
+
+  cd docs/_site && python3 -m http.server 4001
 }
 
 release() {
@@ -207,6 +309,8 @@ release() {
   else
     log_success "Working tree clean"
   fi
+
+  check_build_deps
 
   # Step 2: Update versions
   print_step "Updating version to $version"
@@ -243,7 +347,13 @@ release() {
   # Step 3: Verify sync
   verify_version_sync "$version"
 
-  # Step 4: Commit
+  # Step 4: Build site and search index
+  build_site
+
+  # Step 5: Deploy to gh-pages
+  deploy_to_gh_pages "$version"
+
+  # Step 6: Commit
   print_step "Creating release commit"
   git add -A .
   local changed_files
@@ -254,12 +364,12 @@ release() {
   git commit -m "Release v$version"
   log_success "Commit created: $(git rev-parse --short HEAD)"
 
-  # Step 5: Push to main
+  # Step 7: Push to main
   print_step "Pushing to main"
   git push origin main
   log_success "Pushed to origin/main"
 
-  # Step 6: Tag and push
+  # Step 8: Tag and push
   print_step "Tagging and pushing v$version"
   git tag -a "v$version" -m "Release v$version"
   log_success "Tag created: v$version"
@@ -281,6 +391,9 @@ main() {
       current=$(get_current_version)
       echo "Current version: $current"
       exit 0
+      ;;
+    --dry-run)
+      dry_run
       ;;
     v*)
       local version="${1#v}"

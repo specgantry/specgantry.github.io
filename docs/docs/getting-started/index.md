@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.5`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.6`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -122,11 +122,11 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ### New Project (Empty Folder)
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  New Project
+SpecGantry v2.0.6  |  New Project
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -149,11 +149,11 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every component, its current phase, and what you can pick up:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  Acme Platform
+SpecGantry v2.0.6  |  Acme Platform
 [█░░░░░░░░░]  1/10 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -261,11 +261,11 @@ Every `/spec-gantry` invocation re-reads all state and renders the full dashboar
 
 Shown during ideation, or when no project exists. The middle section shows the current phase status:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  My App
+SpecGantry v2.0.6  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -282,11 +282,11 @@ SpecGantry v2.0.5  |  My App
 
 Shown once the backlog is approved. The pipeline table and component picker are unified — every component is visible and directly actionable from the same screen:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  My App
+SpecGantry v2.0.6  |  My App
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee

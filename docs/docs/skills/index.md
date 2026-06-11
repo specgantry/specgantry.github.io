@@ -43,11 +43,11 @@ Two states depending on where you are in the pipeline.
 
 **State 1 — No components yet** (ideation in progress, or no project):
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  My App
+SpecGantry v2.0.6  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
@@ -64,11 +64,11 @@ SpecGantry v2.0.5  |  My App
 
 The pipeline table and component picker are unified. Every component is visible, its status is shown across all pipeline stages, and you can act on any component directly from the same screen — no navigation required.
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.5  |  Acme Platform
+SpecGantry v2.0.6  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -182,11 +182,11 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 
 **Default view — Cost Summary by Phase:**
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v2.0.5  |  Acme Platform
+SpecGantry v2.0.6  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 
@@ -216,7 +216,7 @@ The menu bar persists across all views — switch between breakdowns without goi
 
 **[1] By Component** — total spend per component across all phases:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
@@ -238,7 +238,7 @@ Project-level phases (ideation, integration test, deployment) are excluded here 
 
 **[2] By Release** — cumulative spend per deployed release:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
@@ -259,7 +259,7 @@ Shows full project history across all releases — useful for understanding how 
 
 **[3] By Model** — spend per model, most expensive first:
 
-<div class="docs-terminal">
+<div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```

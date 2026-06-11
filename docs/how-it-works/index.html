@@ -13,6 +13,7 @@
   <meta name="twitter:title" content="How It Works">
   <meta name="twitter:description" content="A complete walkthrough of SpecGantry's pipeline — from raw idea to deployed system.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="icon" href="/assets/logo/favicon.ico">
 </head>
@@ -132,27 +133,110 @@
 
 <h2 id="the-pipeline-at-a-glance">The Pipeline at a Glance</h2>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>IDEATION ────────────────────────────────────────────────────
-  Mature the idea + shape the system
-  Output: architecture-spec.md · component backlog · integration-scenarios.md (seeded)
+<div class="dg-wrap">
+<div class="dg-diagram-title">Pipeline at a Glance</div>
+<div class="dg-flow">
 
-BACKLOG APPROVAL ─────────────────────────────────────────────
-  Team Lead reviews and approves the component list before spec work begins
+  <div class="dg-flow-node dg-ideation">
+    <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Ideation</div>
+      <div class="dg-flow-node-desc">Mature the idea · shape the system · propose component backlog</div>
+      <div class="dg-flow-node-meta">architecture-spec.md · project-state.yaml · integration-scenarios.md (seeded)</div>
+    </div>
+    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
+  </div>
 
-COMPONENT LOOP (parallel, dependency-ordered) ───────────────
-  Spec   — component spec + domain elaboration (first of each domain)
-  Dev    — TDD implementation + unit/component tests  →  technically solid
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> Backlog Approval</div>
+  </div>
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
-GAP MERGE (TL-confirmed, if needed) ────────────────────────
-  TL reviews any gap specs found during build and confirms merge before proceeding
+  <div class="dg-flow-node dg-spec">
+    <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Component Spec <span style="font-weight:400;color:var(--slate-400)">(parallel, dependency-ordered)</span></div>
+      <div class="dg-flow-node-desc">Component spec + domain elaboration on first of each domain</div>
+      <div class="dg-flow-node-meta">component-spec.md per component</div>
+    </div>
+    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-code-slash"></i> Developers</div>
+  </div>
 
-INTEGRATION TEST (optional) ────────────────────────────────
-  Execute critical cross-component scenarios  →  functionally solid
-  TL can skip integration tests and go straight to deploy — recorded as audit flag
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_complete per component</div>
+  </div>
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
-DEPLOY ──────────────────────────────────────────────────────
-  Deployment script + release
-</code></pre></div></div>
+  <div class="dg-flow-node dg-build">
+    <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Build + Unit Test <span style="font-weight:400;color:var(--slate-400)">(parallel, dependency-ordered)</span></div>
+      <div class="dg-flow-node-desc">TDD implementation · full test suite gate · gap specs written if needed</div>
+      <div class="dg-flow-node-meta">dev-artifact.yaml · gap-YYYY-MM-DD.md (if any)</div>
+    </div>
+    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-code-slash"></i> Developers</div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all components tests_passing</div>
+  </div>
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-decision">
+    <div class="dg-flow-node-icon"><i class="bi bi-signpost-split"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">TL Confirmation Point</div>
+      <div class="dg-flow-node-desc">Gap specs reviewed and merged (if any) · TL chooses next step</div>
+    </div>
+    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-fork" style="max-width:520px;margin:0 auto">
+    <div class="dg-fork-branch">
+      <div class="dg-fork-label"><i class="bi bi-check-lg"></i> [Y] Run tests</div>
+      <div class="dg-flow-node dg-integration" style="width:100%">
+        <div class="dg-flow-node-icon"><i class="bi bi-diagram-3"></i></div>
+        <div class="dg-flow-node-body">
+          <div class="dg-flow-node-title">Integration Test</div>
+          <div class="dg-flow-node-desc">Real system, no mocks · results per scenario</div>
+          <div class="dg-flow-node-meta">integration_tests_passing:true</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;padding-top:28px;color:var(--slate-300);font-size:.8rem">│</div>
+    <div class="dg-fork-branch">
+      <div class="dg-fork-label"><i class="bi bi-skip-forward"></i> [S] Skip</div>
+      <div class="dg-flow-node dg-neutral" style="width:100%">
+        <div class="dg-flow-node-icon"><i class="bi bi-clipboard-check"></i></div>
+        <div class="dg-flow-node-body">
+          <div class="dg-flow-node-title">Skip to Deploy</div>
+          <div class="dg-flow-node-desc">TL decision audited in project-state.yaml</div>
+          <div class="dg-flow-node-meta">integration_skipped:true</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dg-fork-join-line"></div>
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-deploy">
+    <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Deploy Release</div>
+      <div class="dg-flow-node-desc">Deployment script · whole system · release version bumped</div>
+      <div class="dg-flow-node-meta">deploy.sh · deploy-artifact.md</div>
+    </div>
+    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
+  </div>
+
+</div>
+</div>
 
 <p>Components run in parallel and in dependency order — data-layer components first, consumers after. Once all components pass their unit tests, the TL is prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then the TL chooses to run integration tests or skip directly to deployment — both paths are fully audited in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>. Deployment is gated on either integration tests passing (<code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code>) or the TL explicitly skipping them (<code class="language-plaintext highlighter-rouge">integration_skipped:true</code>).</p>
 
@@ -329,6 +413,62 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
 
 <p><code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> is a <strong>living document</strong>. It was seeded during ideation with the obvious cross-component flows. It grew as each component spec was written, with scenarios contributed by each component’s interface. By the time integration testing runs, it reflects the full system’s understanding of critical paths.</p>
 
+<div class="dg-wrap">
+<div class="dg-diagram-title">integration-scenarios.md lifecycle</div>
+<div class="dg-timeline">
+
+  <div class="dg-timeline-stage">
+    <div class="dg-timeline-dot dg-ideation" style="border-color:rgba(34,197,94,.5);color:rgba(34,197,94,.8)">1</div>
+    <div class="dg-timeline-body">
+      <div class="dg-timeline-title">Seeded</div>
+      <div class="dg-timeline-sub">obvious end-to-end flows</div>
+      <div class="dg-timeline-phase">Ideation</div>
+    </div>
+  </div>
+  <div class="dg-timeline-connector"></div>
+
+  <div class="dg-timeline-stage">
+    <div class="dg-timeline-dot dg-spec" style="border-color:rgba(168,85,247,.5);color:rgba(168,85,247,.8)">2</div>
+    <div class="dg-timeline-body">
+      <div class="dg-timeline-title">Extended</div>
+      <div class="dg-timeline-sub">interface scenarios added</div>
+      <div class="dg-timeline-phase">Component Spec × N</div>
+    </div>
+  </div>
+  <div class="dg-timeline-connector"></div>
+
+  <div class="dg-timeline-stage">
+    <div class="dg-timeline-dot dg-integration" style="border-color:rgba(37,99,235,.5);color:rgba(37,99,235,.8)">3</div>
+    <div class="dg-timeline-body">
+      <div class="dg-timeline-title">Enriched</div>
+      <div class="dg-timeline-sub">concrete assertions added</div>
+      <div class="dg-timeline-phase">Pre-integration test</div>
+    </div>
+  </div>
+  <div class="dg-timeline-connector"></div>
+
+  <div class="dg-timeline-stage">
+    <div class="dg-timeline-dot dg-integration" style="border-color:rgba(37,99,235,.7);color:rgba(37,99,235,.9)">4</div>
+    <div class="dg-timeline-body">
+      <div class="dg-timeline-title">Executed</div>
+      <div class="dg-timeline-sub">real system, no mocks</div>
+      <div class="dg-timeline-phase">Integration Test</div>
+    </div>
+  </div>
+  <div class="dg-timeline-connector"></div>
+
+  <div class="dg-timeline-stage">
+    <div class="dg-timeline-dot dg-deploy" style="border-color:rgba(16,185,129,.5);color:rgba(16,185,129,.8)">5</div>
+    <div class="dg-timeline-body">
+      <div class="dg-timeline-title">History updated</div>
+      <div class="dg-timeline-sub">## Run History appended</div>
+      <div class="dg-timeline-phase">Every run</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
 <p>Results are written back to <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> per scenario, and a run summary is appended to the <code class="language-plaintext highlighter-rouge">## Run History</code> section. This becomes the audit trail of functional health across releases.</p>
 
 <p>The system is <strong>functionally solid</strong> once all scenarios pass.</p>
@@ -423,6 +563,70 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
   <li>A passing component signals readiness — integration testing and deployment are TL territory</li>
 </ul>
 
+<div class="dg-wrap">
+<div class="dg-diagram-title">Phase ownership by role</div>
+<table class="dg-matrix">
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th class="dg-matrix-role"><i class="bi bi-shield-check"></i> Team Lead</th>
+      <th class="dg-matrix-role"><i class="bi bi-code-slash"></i> Developer</th>
+      <th class="dg-matrix-role"><i class="bi bi-person-workspace"></i> Solo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-ideation"></span>Ideation</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+      <td class="dg-matrix-cell">—</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-ideation"></span>Backlog Approval</td>
+      <td class="dg-matrix-cell">✅ approves</td>
+      <td class="dg-matrix-cell">👁 view</td>
+      <td class="dg-matrix-cell">✅ approves</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-spec"></span>Component Spec</td>
+      <td class="dg-matrix-cell">✅ can run</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-build"></span>Build + Test</td>
+      <td class="dg-matrix-cell">✅ can run</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-build"></span>Gap Specs</td>
+      <td class="dg-matrix-cell">✅ reviews &amp; merges</td>
+      <td class="dg-matrix-cell">✅ writes</td>
+      <td class="dg-matrix-cell">✅ both</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-integration"></span>Integration Test</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+      <td class="dg-matrix-cell">—</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-deploy"></span>Deploy Release</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+      <td class="dg-matrix-cell">—</td>
+      <td class="dg-matrix-cell">✅ owns</td>
+    </tr>
+    <tr>
+      <td><span class="dg-matrix-phase-dot dot-deploy"></span>New Work / Routing</td>
+      <td class="dg-matrix-cell">✅ classifies</td>
+      <td class="dg-matrix-cell">—</td>
+      <td class="dg-matrix-cell">✅ classifies</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <hr />
 
 <h2 id="architecture-artifact">The Architecture Artifact</h2>
@@ -515,14 +719,14 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
 
 <div class="next-steps-grid">
   <a href="/docs/skills" class="next-step-card">
-    <div class="next-step-icon">🛠️</div>
+    <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
       <span>Every skill command in detail — when to use each one and what it produces.</span>
     </div>
   </a>
   <a href="/docs/architecture" class="next-step-card">
-    <div class="next-step-icon">🏗️</div>
+    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <strong>Reference</strong>
       <span>File structure, security model, design principles, and extension points.</span>

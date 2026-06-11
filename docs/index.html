@@ -13,6 +13,7 @@
   <meta name="twitter:title" content="SpecGantry Documentation">
   <meta name="twitter:description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="icon" href="/assets/logo/favicon.ico">
 </head>
@@ -137,23 +138,55 @@
 
 <p>The result: less rework, fewer surprises, and a codebase that reflects deliberate decisions rather than accumulated shortcuts.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PROJECT LEVEL (Team Lead/Architect)
-  1. Ideation         → Validate the problem, shape the system, propose component backlog
-  2. Backlog Approval → TL approves component list before any spec work begins
+<div class="dg-wrap">
+<div class="dg-diagram-title">The SpecGantry Pipeline</div>
+<div class="dg-node-graph">
 
-  ── Commit → Team joins ──
+  <div class="dg-node dg-ideation">
+    <div class="dg-node-num">01</div>
+    <div class="dg-node-name">Ideation</div>
+    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
+    <div class="dg-node-output">architecture-spec.md</div>
+  </div>
 
-COMPONENT LEVEL (Developers, in parallel)
-  3. Component Spec   → Write a precise, implementation-ready spec
-  4. Development      → TDD implementation + unit tests
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + architecture_complete"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
-PROJECT LEVEL (Team Lead/Architect)
-  5. Gap Merge        → Merge mid-build adjustments (auto, if gaps exist)
-  6. Integration Test → Verify critical cross-component scenarios
-  7. Deploy           → Release the entire system
+  <div class="dg-node dg-spec">
+    <div class="dg-node-num">02</div>
+    <div class="dg-node-name">Component Spec</div>
+    <div class="dg-node-role"><i class="bi bi-code-slash"></i> Developers</div>
+    <div class="dg-node-output">component-spec.md</div>
+  </div>
 
-Each phase builds on the last. You move forward when the work is done — not before.
-</code></pre></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_complete per component"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+
+  <div class="dg-node dg-build">
+    <div class="dg-node-num">03</div>
+    <div class="dg-node-name">Build + Test</div>
+    <div class="dg-node-role"><i class="bi bi-code-slash"></i> Developers</div>
+    <div class="dg-node-output">state.yaml × N</div>
+  </div>
+
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all components tests_passing"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+
+  <div class="dg-node dg-integration">
+    <div class="dg-node-num">04</div>
+    <div class="dg-node-name">Integration Test</div>
+    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
+    <div class="dg-node-output">integration-scenarios.md</div>
+  </div>
+
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: integration_tests_passing OR integration_skipped"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+
+  <div class="dg-node dg-deploy">
+    <div class="dg-node-num">05</div>
+    <div class="dg-node-name">Deploy Release</div>
+    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
+    <div class="dg-node-output">deploy.sh</div>
+  </div>
+
+</div>
+</div>
 
 <hr />
 
@@ -161,35 +194,35 @@ Each phase builds on the last. You move forward when the work is done — not be
 
 <div class="doc-nav-cards">
   <a href="/docs/getting-started" class="doc-nav-card">
-    <div class="doc-nav-icon">🚀</div>
+    <div class="doc-nav-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div>
       <div class="doc-nav-title">Getting Started</div>
       <div class="doc-nav-desc">Install the plugin and run your first session in under 5 minutes.</div>
     </div>
   </a>
   <a href="/docs/how-it-works" class="doc-nav-card">
-    <div class="doc-nav-icon">⚙️</div>
+    <div class="doc-nav-icon"><i class="bi bi-gear"></i></div>
     <div>
       <div class="doc-nav-title">How It Works</div>
       <div class="doc-nav-desc">A complete walkthrough of all phases, roles, gap specs, and how SpecGantry keeps your team aligned.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
-    <div class="doc-nav-icon">🛠️</div>
+    <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
       <div class="doc-nav-title">Skills Guide</div>
       <div class="doc-nav-desc">/spec-gantry and /track-cost — the two commands you need and everything they do.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
-    <div class="doc-nav-icon">🏗️</div>
+    <div class="doc-nav-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <div class="doc-nav-title">Reference</div>
       <div class="doc-nav-desc">Design principles, file structure, security model, and how to extend SpecGantry.</div>
     </div>
   </a>
   <a href="/docs/faq" class="doc-nav-card">
-    <div class="doc-nav-icon">❓</div>
+    <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
       <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, costs, and troubleshooting.</div>

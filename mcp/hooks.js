@@ -17,7 +17,7 @@ const {
 
 // ─── PreToolUse: Agent tool guard ────────────────────────────────────────────
 // Blocks any Agent spawn whose subagent_type is not an approved spec-gantry:*:* agent.
-// Prevents Claude Code from going off-script with general-purpose, Explore, etc.
+// Prevents Claude Code from going off-script with general-purpose agents, etc.
 async function hookPreToolUse() {
   let payload;
   try {
@@ -41,7 +41,6 @@ async function hookPreToolUse() {
     /^spec-gantry:/,   // all SpecGantry subagents
     /^Plan$/,          // Claude Code plan mode — read-only, harmless
     /^statusline-setup$/, // Claude Code status line helper
-    /^Explore$/,       // read-only codebase search — safe to allow
   ];
 
   const allowed = !agentType || ALLOWED.some(p => p.test(agentType));

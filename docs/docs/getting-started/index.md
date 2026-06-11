@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.8`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.9`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -126,7 +126,7 @@ SpecGantry detects your situation automatically and guides you from there.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.8  |  New Project
+SpecGantry v2.0.9  |  New Project
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -153,7 +153,7 @@ If your Team Lead has already committed `specs/` to the repository, SpecGantry d
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.8  |  Acme Platform
+SpecGantry v2.0.9  |  Acme Platform
 [█░░░░░░░░░]  1/10 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -265,7 +265,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.8  |  My App
+SpecGantry v2.0.9  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -286,7 +286,7 @@ Shown once the backlog is approved. The pipeline table and component picker are 
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.0.8  |  My App
+SpecGantry v2.0.9  |  My App
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee

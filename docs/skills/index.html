@@ -178,13 +178,11 @@
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.9  |  My App
-[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.1.0  |  My App  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
-  [1] Continue ideation               [P] Project
-                                      [$] Cost
+  [1] Continue ideation               [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
@@ -198,27 +196,20 @@
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.9  |  Acme Platform
-[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.1.0  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 5/8  ·  Dev [██░░░] 2/8
 ──────────────────────────────────────────────────────────
-                              Spec  Dev  Deploy  Assignee
-  [001]  User Auth             ✅    ✅     ✅    alice
-  [002]  Search API            ✅    🔄     ○     bob
-  [003]  Notifications         🔄    ○      ○     carol
-  [004]  Export PDF            ⏳    ○      ○     unassigned
-  [005]  Analytics             🔴    ○      ○     —          depends on 003,004
-  ────────────────────────────────────────────
-  Gap merge                    ○
-  Integration tests            ○
-  Deploy release               ○
+  ID      Component           Spec   Dev   Assignee
+  ──────────────────────────────────────────────────
+  [001]  User Auth             ✅    ✅    alice
+  [002]  Search API            ✅    🔄    bob
+  [003]  Notifications         🔄    ○     carol
+  [004]  Export PDF            ⏳    ○     unassigned
+  [005]  Analytics             🔴    ○     —          depends on 003,004
 ──────────────────────────────────────────────────────────
-  Type a component ID to pick it up   [A] Architecture
-  [1] Continue spec – COMP-003        [I] Integration scenarios
-                                      [P] Project
-                                      [$] Cost
-                                      [+] New work
-                                      [?] Help
-                                      [X] Exit
+  Type a component ID to manage it    [$] Cost
+  [1] Continue spec – COMP-003        [?] Help
+  [2] New work                        [X] Exit
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `&gt;`
 </code></pre></div>  </div>
@@ -275,7 +266,7 @@ Enter component ID or action:  `&gt;`
 
 <p><strong>Analysing an existing codebase</strong> — If source files are found without a SpecGantry project, <code class="language-plaintext highlighter-rouge">/spec-gantry</code> offers to scan your code and generate an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written.</p>
 
-<p><strong>Joining a team</strong> — Pull the repository after your Team Lead commits <code class="language-plaintext highlighter-rouge">specs/</code>, run <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, and your role is detected automatically. The full pipeline dashboard is visible immediately.</p>
+<p><strong>Joining a team</strong> — Pull the repository after your Team Lead commits <code class="language-plaintext highlighter-rouge">specs/</code>, run <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, and you’ll be asked whether you are the Team Lead or a Developer. The full pipeline dashboard is shown immediately after.</p>
 
 <p><strong>Full component lifecycle</strong> — From claiming a component through spec, development, and deployment — every phase transition is handled through <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. Phase gates are enforced automatically.</p>
 
@@ -295,19 +286,9 @@ Enter component ID or action:  `&gt;`
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture</td>
-      <td>Both</td>
-      <td>View the full architecture spec. Visible whenever <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> exists — including mid-ideation.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">[I]</code> Integration scenarios</td>
-      <td>Both</td>
-      <td>View <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> — scenarios, assertions, run history. Visible once seeded during ideation.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">[P]</code> Project</td>
-      <td>Both</td>
-      <td>Manage backlog — prioritize, assign, defer. Edit project name and vision.</td>
+      <td><code class="language-plaintext highlighter-rouge">[1]</code>–<code class="language-plaintext highlighter-rouge">[n]</code> New work</td>
+      <td>TL only</td>
+      <td>Describe a bug, improvement, new component, or change. Always the last numbered action in the left column once ideation is complete.</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost</td>
@@ -315,14 +296,9 @@ Enter component ID or action:  `&gt;`
       <td>Opens the cost dashboard — breakdown by phase, component, release, and model</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">[+]</code> New work</td>
-      <td>Both</td>
-      <td>Describe a bug, improvement, new component, or change. Visible once ideation is complete.</td>
-    </tr>
-    <tr>
       <td><code class="language-plaintext highlighter-rouge">[?]</code> Help</td>
       <td>Both</td>
-      <td>Quick reference and docs link</td>
+      <td>Quick reference and secondary commands: <code class="language-plaintext highlighter-rouge">[A]</code> Architecture · <code class="language-plaintext highlighter-rouge">[I]</code> Integration scenarios · <code class="language-plaintext highlighter-rouge">[P]</code> Project · docs link</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[X]</code> Exit</td>
@@ -402,7 +378,7 @@ Enter component ID or action:  `&gt;`
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.9  |  Acme Platform
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.1.0  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 
@@ -488,6 +464,47 @@ Total           80,601      $7.79
 </div>
 
 <p>Useful for understanding whether your spend profile aligns with what you’d expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.</p>
+
+<p><strong>Typical cost profile per phase:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Model</th>
+      <th>Relative cost</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation</td>
+      <td>Haiku 4.5</td>
+      <td>Low — conversational, short outputs</td>
+    </tr>
+    <tr>
+      <td>Component spec</td>
+      <td>Sonnet 4.6</td>
+      <td>Medium — per component</td>
+    </tr>
+    <tr>
+      <td>Development</td>
+      <td>Sonnet 4.6</td>
+      <td>Highest — code generation + test runs</td>
+    </tr>
+    <tr>
+      <td>Integration test</td>
+      <td>Sonnet 4.6</td>
+      <td>Medium — scenario execution</td>
+    </tr>
+    <tr>
+      <td>Deployment</td>
+      <td>Sonnet 4.6</td>
+      <td>Low — script generation, one-shot</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Development dominates total spend. If costs are higher than expected, check the By Component view — a single complex component often accounts for a disproportionate share.</p>
 
 <hr />
 

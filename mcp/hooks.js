@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SpecGantry hook handlers — invoked by Claude Code's hook system (not the MCP server)
-// Handles: PreToolUse (agent gating), SubagentStart (logging), SubagentStop (cost tracking)
+// Handles: SessionStart (project detection), PreToolUse (agent gating), SubagentStart (logging), SubagentStop (cost tracking)
 // stdlib-only — no npm dependencies required
 
 'use strict';
@@ -15,15 +15,15 @@ const {
   projectSlug, buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
-// ─── UserPromptSubmit: project auto-detection ────────────────────────────────
+// ─── SessionStart: project auto-detection ────────────────────────────────────
 // If specs/project-state.yaml exists in cwd, inject a context note so Claude
 // recognises this as an active SpecGantry project without the user typing /spec-gantry.
-async function hookUserPromptSubmit() {
+async function hookSessionStart() {
   let payload;
   try {
     payload = JSON.parse(await readStdin());
   } catch (err) {
-    logError('UserPromptSubmit: failed to parse payload:', err.message);
+    logError('SessionStart: failed to parse payload:', err.message);
     process.stdout.write(JSON.stringify({ continue: true }) + '\n');
     process.exit(0);
   }
@@ -48,11 +48,11 @@ async function hookUserPromptSubmit() {
   } catch { /* ignore — still inject the note */ }
 
   const note = `[SpecGantry] Active project detected: ${projectName} (release ${release}). Invoke the spec-gantry skill to manage this project.`;
-  logInfo(`UserPromptSubmit: injecting project note — ${projectName} @ ${release}`);
+  logInfo(`SessionStart: injecting project note — ${projectName} @ ${release}`);
 
   process.stdout.write(JSON.stringify({
     continue: true,
-    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: note },
+    hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: note },
   }) + '\n');
   process.exit(0);
 }
@@ -183,10 +183,10 @@ async function hookSubagentStop() {
 // ─── Dispatch ─────────────────────────────────────────────────────────────────
 (async function main() {
   initLogger('spec-gantry-hooks.log');
-  if (process.argv.includes('--user-prompt-submit')) { await hookUserPromptSubmit(); return; }
-  if (process.argv.includes('--pre-tool-use'))       { await hookPreToolUse();       return; }
+  if (process.argv.includes('--session-start'))  { await hookSessionStart();  return; }
+  if (process.argv.includes('--pre-tool-use'))   { await hookPreToolUse();    return; }
   if (process.argv.includes('--subagent-start')) { await hookSubagentStart(); return; }
   if (process.argv.includes('--subagent-stop'))  { await hookSubagentStop();  return; }
-  process.stderr.write('Usage: hooks.js --pre-tool-use | --subagent-start | --subagent-stop\n');
+  process.stderr.write('Usage: hooks.js --session-start | --pre-tool-use | --subagent-start | --subagent-stop\n');
   process.exit(1);
 })();

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpecGantry Documentation — SpecGantry Docs</title>
+  <meta name="description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <meta property="og:title" content="SpecGantry Documentation">
+  <meta property="og:description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/docs/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SpecGantry Documentation">
+  <meta name="twitter:description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link sidebar-link-active">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link ">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link ">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link ">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="specgantry-documentation">SpecGantry Documentation</h1>
+
+<p><strong>AI-assisted SDLC pipeline for Claude Code.</strong> Bring structure to your AI development workflow — from first idea through deployment — with specs before code, architectural guardrails, role-based ownership, and real cost visibility.</p>
+
+<div class="info">
+  <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
+</div>
+
+<hr />
+
+<h2 id="what-is-specgantry">What Is SpecGantry?</h2>
+
+<p>SpecGantry is a Claude Code plugin that guides your team through a structured development process. Instead of jumping straight into code, it ensures every component is grounded in a validated idea, a thoughtful architecture, and a precise spec — before a single line is written.</p>
+
+<p>The result: less rework, fewer surprises, and a codebase that reflects deliberate decisions rather than accumulated shortcuts.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PROJECT LEVEL (Team Lead/Architect)
+  1. Ideation         → Validate the problem, shape the system, propose component backlog
+  2. Backlog Approval → TL approves component list before any spec work begins
+
+  ── Commit → Team joins ──
+
+COMPONENT LEVEL (Developers, in parallel)
+  3. Component Spec   → Write a precise, implementation-ready spec
+  4. Development      → TDD implementation + unit tests
+
+PROJECT LEVEL (Team Lead/Architect)
+  5. Gap Merge        → Merge mid-build adjustments (auto, if gaps exist)
+  6. Integration Test → Verify critical cross-component scenarios
+  7. Deploy           → Release the entire system
+
+Each phase builds on the last. You move forward when the work is done — not before.
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="documentation-sections">Documentation Sections</h2>
+
+<div class="doc-nav-cards">
+  <a href="/docs/getting-started" class="doc-nav-card">
+    <div class="doc-nav-icon">🚀</div>
+    <div>
+      <div class="doc-nav-title">Getting Started</div>
+      <div class="doc-nav-desc">Install the plugin and run your first session in under 5 minutes.</div>
+    </div>
+  </a>
+  <a href="/docs/how-it-works" class="doc-nav-card">
+    <div class="doc-nav-icon">⚙️</div>
+    <div>
+      <div class="doc-nav-title">How It Works</div>
+      <div class="doc-nav-desc">A complete walkthrough of all phases, roles, gap specs, and how SpecGantry keeps your team aligned.</div>
+    </div>
+  </a>
+  <a href="/docs/skills" class="doc-nav-card">
+    <div class="doc-nav-icon">🛠️</div>
+    <div>
+      <div class="doc-nav-title">Skills Guide</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — the two commands you need and everything they do.</div>
+    </div>
+  </a>
+  <a href="/docs/architecture" class="doc-nav-card">
+    <div class="doc-nav-icon">🏗️</div>
+    <div>
+      <div class="doc-nav-title">Reference</div>
+      <div class="doc-nav-desc">Design principles, file structure, security model, and how to extend SpecGantry.</div>
+    </div>
+  </a>
+  <a href="/docs/faq" class="doc-nav-card">
+    <div class="doc-nav-icon">❓</div>
+    <div>
+      <div class="doc-nav-title">FAQ</div>
+      <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, costs, and troubleshooting.</div>
+    </div>
+  </a>
+</div>
+
+<hr />
+
+<h2 id="quick-install">Quick Install</h2>
+
+<p>Run both commands in order — the marketplace must be registered before installing:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin <span class="nb">install </span>spec-gantry
+</code></pre></div></div>
+
+<p>Then in any Claude Code project:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
+</code></pre></div></div>
+
+<p>The dashboard guides you from there.</p>
+
+<h3 id="keep-specgantry-updated">Keep SpecGantry Updated</h3>
+
+<p>Update to the latest version anytime:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
+</code></pre></div></div>
+
+<p>Or from within Claude Code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/plugin marketplace update spec-gantry
+</code></pre></div></div>
+
+<p>See <a href="/docs/getting-started#step-1--install-the-plugin">Getting Started → Install, Update &amp; Remove</a> for all options including uninstall.</p>
+
+<hr />
+
+<h2 id="key-concepts">Key Concepts</h2>
+
+<h3 id="phase-gates">Phase Gates</h3>
+
+<p>Every phase transition requires the previous phase to be fully complete — both the decisions you made and the documents they produced. SpecGantry verifies completeness automatically before moving forward. Partial work doesn’t advance the pipeline.</p>
+
+<p>This isn’t bureaucracy — it’s the thing that prevents half-finished specs from becoming hard-to-change code.</p>
+
+<h3 id="backlog-approval">Backlog Approval</h3>
+
+<p>Before any component spec work begins, the Team Lead must review and approve the component backlog produced by ideation. This single gate ensures developers are always building from a plan the TL has signed off on.</p>
+
+<h3 id="architecture-as-guardrails">Architecture as Guardrails</h3>
+
+<p>When the Team Lead defines the architecture, every decision becomes a rule the whole team builds to. During the Component Spec phase, SpecGantry checks every spec against those rules before development can begin. If a spec contradicts the architecture — wrong auth pattern, wrong data ownership, wrong layer access — it fails with a specific explanation before any code is written.</p>
+
+<h3 id="gap-specs">Gap Specs</h3>
+
+<p>When a developer discovers mid-build that the spec needs adjustment — an incomplete contract, a side-effect on another component — they write a gap spec file rather than editing the main spec. This keeps the main spec stable for other developers building in parallel. Before integration testing, SpecGantry automatically merges all gap specs back into the relevant component and architecture specs.</p>
+
+<h3 id="state-that-survives-interruption">State That Survives Interruption</h3>
+
+<p>All progress is saved after every question and every section. If your session is interrupted for any reason — context reset, network drop, end of day — the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up exactly where you left off. Nothing is lost.</p>
+
+<h3 id="specs-in-git">Specs in Git</h3>
+
+<p>All project state — ideation, architecture, component specs, and cost data — lives in plain-text files under <code class="language-plaintext highlighter-rouge">specs/</code> in your project. Commit them to git and your whole team shares a single source of truth, complete history, and meaningful diffs.</p>
+
+<hr />
+
+<h2 id="who-should-use-specgantry">Who Should Use SpecGantry?</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Role</th>
+      <th>Use Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Team Lead / Architect</strong></td>
+      <td>Establish a consistent process the whole team follows without needing to police every PR</td>
+    </tr>
+    <tr>
+      <td><strong>Developer</strong></td>
+      <td>Always start from a clear, approved spec — no ambiguity, no scope creep mid-build</td>
+    </tr>
+    <tr>
+      <td><strong>Solo Developer</strong></td>
+      <td>Bring discipline to your own AI workflow; avoid building fast in the wrong direction</td>
+    </tr>
+    <tr>
+      <td><strong>Engineering Manager</strong></td>
+      <td>Get cost visibility and an audit trail for every AI-assisted component</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<p><strong>Ready to begin?</strong> → <a href="/docs/getting-started">Installation &amp; First Steps →</a></p>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+        </div>
+        <div class="page-nav-next">
+          
+            <a href="/docs/getting-started" class="page-nav-link">
+              <span class="page-nav-dir">Next →</span>
+              <span class="page-nav-label">Getting Started</span>
+            </a>
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

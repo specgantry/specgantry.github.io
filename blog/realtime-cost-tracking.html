@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Development Costs Are Visible — If You Track Them at the Right Level — SpecGantry Docs</title>
+  <meta name="description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
+  <meta property="og:title" content="AI Development Costs Are Visible — If You Track Them at the Right Level">
+  <meta property="og:description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/blog/realtime-cost-tracking">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI Development Costs Are Visible — If You Track Them at the Right Level">
+  <meta name="twitter:description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">AI Development Costs Are Visible — If You Track Them at the Right Level</span>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link ">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link ">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link ">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link ">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="ai-development-costs-are-visible--if-you-track-them-at-the-right-level">AI Development Costs Are Visible — If You Track Them at the Right Level</h1>
+
+<p><em>June 2026 · Economics · 8 min read</em></p>
+
+<hr />
+
+<p>There’s a pattern playing out in teams that have adopted AI coding assistants seriously.</p>
+
+<p>Month one: everything feels fast. Features ship, prototypes materialize, and the productivity gains are real. Month two: someone checks the Anthropic billing dashboard and the number is larger than expected. Month three: a finance conversation that nobody wanted to have.</p>
+
+<p>The problem isn’t that AI development is expensive. For most projects it’s remarkably cost-effective — a complete feature that would have taken three days of senior engineering time might cost $3–8 in tokens. That’s an extraordinary value proposition.</p>
+
+<p>The problem is that <strong>cost is invisible until it isn’t.</strong> And by the time it is, the habits are set, the team doesn’t know which phases drove the spend, and there’s no data to inform decisions about where to optimize.</p>
+
+<hr />
+
+<h2 id="why-token-costs-are-harder-to-track-than-you-think">Why Token Costs Are Harder to Track Than You Think</h2>
+
+<p>Traditional software development costs map cleanly to time. Hours times rates equals budget. You can see the work happening, you can estimate remaining effort, and you can course-correct mid-project.</p>
+
+<p>Token costs don’t work that way. They’re:</p>
+
+<p><strong>Invisible in the moment.</strong> When a developer is deep in a complex component spec with an AI assistant, they’re thinking about the spec — not the fact that each turn of a long conversation adds input tokens because the full context is re-sent on every call.</p>
+
+<p><strong>Nonlinear.</strong> A well-structured 10-turn session might cost a fraction of what a poorly-structured 40-turn session costs. A developer who restarts an agent session five times while working through a complex architecture decision is spending more than one who completes it in one focused session. Neither developer has any visibility into this.</p>
+
+<p><strong>Distributed.</strong> In a team setting, multiple developers are running agent sessions simultaneously. The cost of a release isn’t just your sessions — it’s every session across every developer working that sprint. Nobody sees the aggregate.</p>
+
+<p><strong>Invisible by phase.</strong> Ideation costs less than architecture, which costs less than complex feature development. But which features cost the most? Which phases dominate spend? Without instrumentation, you don’t know.</p>
+
+<p><strong>Post-hoc by default.</strong> Virtually every AI cost tracking tool tells you what you spent last month. That’s useful for accounting. It’s useless for project management.</p>
+
+<hr />
+
+<h2 id="the-problem-with-well-check-at-the-end">The Problem With “We’ll Check at the End”</h2>
+
+<p>Here’s the failure mode we see consistently.</p>
+
+<p>A team ships release 1.0.0 of a product. It goes well. The AI-assisted approach worked. They check costs: $180 for the whole initial development cycle. Totally reasonable.</p>
+
+<p>They start release 1.1.0. More features, more complexity, bigger codebase. The agents are working against more context per session. A few features require multiple spec revisions. The architecture got expanded during the cycle.</p>
+
+<p>Invoice: $340.</p>
+
+<p>Nobody saw it coming because nobody was watching it as it accumulated. There was no moment where someone could have said “this feature cost $45 to spec — let’s look at whether we’re writing specs efficiently.” Or “we’ve spent $80 on architecture amendments this sprint — are we adding too much scope mid-cycle?”</p>
+
+<p>The data to have those conversations existed. It just wasn’t surfaced in time to act on it.</p>
+
+<hr />
+
+<h2 id="cost-tracking-as-a-development-discipline">Cost Tracking as a Development Discipline</h2>
+
+<p>The teams that handle this well treat AI cost tracking the same way they treat time tracking or CI metrics: as a first-class signal in the development process, not an afterthought.</p>
+
+<p>Concretely, that means:</p>
+
+<p><strong>Knowing cost by phase.</strong> If your architecture sessions are consistently more expensive than your development sessions, that might be fine — architecture is complex. Or it might mean your architecture sessions are running too long because the design questions aren’t resolved before the session starts.</p>
+
+<p><strong>Knowing cost by component.</strong> A component that cost $50 to develop is a different story than one that cost $8. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can’t improve what you can’t measure.</p>
+
+<p><strong>Knowing cost by model.</strong> Different SpecGantry agents use different models — ideation uses Haiku (lightweight, fast), while component spec, development, integration test, and deployment use Sonnet (capable, more expensive). If your model spend profile looks wrong — too much Sonnet in phases that should be Haiku — that’s actionable information.</p>
+
+<p><strong>Knowing cost by release.</strong> As your project matures and the codebase grows, per-feature costs may increase because agents are working against more context. Tracking cost per release lets you spot this trend early.</p>
+
+<p>None of this requires a BI tool or a data engineering team. It requires that cost data is captured accurately, stored alongside the project, and surfaced in the same place developers are already working.</p>
+
+<hr />
+
+<h2 id="what-specgantry-does-differently">What SpecGantry Does Differently</h2>
+
+<p>SpecGantry’s approach to cost tracking starts from a different premise than most tools: <strong>cost visibility belongs in the development framework, not in a separate reporting layer.</strong></p>
+
+<p>The consequence of that premise is that cost data is:</p>
+
+<p><strong>Automatic.</strong> There’s no step where a developer has to remember to log a session or tag it with a project code. Every time a SpecGantry agent completes, a hook fires, reads the actual token counts from the agent transcript, computes cost at current pricing rates, and appends one entry to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>. The developer does nothing.</p>
+
+<p><strong>Real token counts.</strong> The cost log uses the actual <code class="language-plaintext highlighter-rouge">input_tokens</code>, <code class="language-plaintext highlighter-rouge">output_tokens</code>, <code class="language-plaintext highlighter-rouge">cache_creation_input_tokens</code>, and <code class="language-plaintext highlighter-rouge">cache_read_input_tokens</code> values from the API response — not estimates, not approximations. Cache writes and cache reads are tracked separately because they have different cost profiles, and conflating them obscures where spend is actually coming from.</p>
+
+<p><strong>Structured by the pipeline.</strong> Because every agent invocation goes through the SpecGantry pipeline, every cost entry is tagged with its phase (<code class="language-plaintext highlighter-rouge">ideation</code>, <code class="language-plaintext highlighter-rouge">architecture</code>, <code class="language-plaintext highlighter-rouge">component_spec</code>, <code class="language-plaintext highlighter-rouge">development</code>, <code class="language-plaintext highlighter-rouge">integration_test</code>, <code class="language-plaintext highlighter-rouge">deployment</code>), its component ID where applicable, its model, and the current release version. The structure that makes the pipeline work is the same structure that makes cost reporting meaningful.</p>
+
+<p><strong>In git.</strong> <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> is committed alongside your architecture spec and component specs. The whole team sees the same cost history. It survives machine changes, team member turnover, and project handoffs.</p>
+
+<p><strong>Priced at current rates.</strong> The MCP server fetches live pricing from Anthropic’s pricing page on startup and caches it. If the fetch fails, it falls back to known rates. Cost entries show whether live or fallback pricing was used.</p>
+
+<hr />
+
+<h2 id="the-track-cost-dashboard">The /track-cost Dashboard</h2>
+
+<p>Running <code class="language-plaintext highlighter-rouge">/track-cost</code> from anywhere in Claude Code opens a dedicated cost dashboard. The default view shows spend by phase for the current release:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost Summary  |  release 1.1.0
+
+Phase               Tokens       Cost
+──────────────────────────────────────
+ideation             4,404      $0.47
+component_spec      14,209      $1.43
+development         31,445      $3.14
+integration_test     6,112      $0.61
+deployment           3,890      $0.39
+──────────────────────────────────────
+Total               60,060      $6.04
+</code></pre></div></div>
+
+<p>From there, three drill-down views are one keypress away:</p>
+
+<p><strong>By Component</strong> — which components cost the most, without the phase noise:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Component        Tokens       Cost
+───────────────────────────────────
+COMP-001         26,209      $2.47
+COMP-002         18,441      $1.84
+COMP-003          9,112      $0.46
+</code></pre></div></div>
+
+<p><strong>By Release</strong> — how costs have evolved across the project lifetime:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Release      Tokens       Cost
+──────────────────────────────
+1.0.0        80,601      $7.79
+1.1.0        42,340      $4.12
+</code></pre></div></div>
+
+<p><strong>By Model</strong> — where spend is concentrated across model tiers:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Model           Tokens       Cost
+──────────────────────────────────
+sonnet-4-6      62,301      $6.23
+haiku-4-5       18,300      $0.92
+</code></pre></div></div>
+
+<p>All four views are available from within the same dashboard — no separate tool, no browser tab, no export required.</p>
+
+<hr />
+
+<h2 id="specgantry-as-the-full-stack">SpecGantry as the Full Stack</h2>
+
+<p>Most AI development tools solve one problem. Code generation tools help you write code faster. Project management tools help you track what needs to be done. Cost monitoring tools tell you what you spent.</p>
+
+<p>SpecGantry is intentionally all three, because they can’t actually be separated cleanly in AI-assisted development.</p>
+
+<p><strong>Cost tracking only makes sense with pipeline structure.</strong> A cost entry that says “you spent $3.14 on development” is marginally useful. A cost entry that says “you spent $3.14 on <code class="language-plaintext highlighter-rouge">development</code> phase for <code class="language-plaintext highlighter-rouge">COMP-007</code> in <code class="language-plaintext highlighter-rouge">release 1.1.0</code> using <code class="language-plaintext highlighter-rouge">claude-sonnet-4-6</code>” is actionable. That specificity comes directly from the pipeline structure — phases, components, releases — that SpecGantry enforces.</p>
+
+<p><strong>Project management only works if the pipeline is real.</strong> Knowing that COMP-007 is “in development” means nothing if “in development” just means someone is editing files. SpecGantry’s pipeline gates — spec before build, spec reviewed before development, tests passing before deployment — mean the status is trustworthy. The Team Lead’s dashboard reflects actual state, not developer self-reporting.</p>
+
+<p><strong>Development quality requires cost awareness.</strong> When developers know that their spec revision cycles are visible in the cost log, there’s a natural incentive to get specs right the first time. When a Team Lead can see that a particular component cost three times more than comparable components to build, that’s a conversation worth having — was the component genuinely harder, or did the development cycle include a lot of rework?</p>
+
+<hr />
+
+<h2 id="for-solo-developers">For Solo Developers</h2>
+
+<p>The cost tracking argument applies as much to solo developers as to teams — arguably more, because there’s no one else to catch a runaway spend before it hits the invoice.</p>
+
+<p>For a solo developer building an enterprise application, SpecGantry’s cost visibility answers questions like:</p>
+
+<ul>
+  <li>Is my architecture too complex for what I’m actually building? (Compare architecture cost vs. total project cost.)</li>
+  <li>Am I spending too many tokens on component spec revisions? (Component cost per phase.)</li>
+  <li>Did this new release cost more than the initial build? (By release view.)</li>
+  <li>Am I using the right model for each phase? (By model view.)</li>
+</ul>
+
+<p>These are questions that experienced developers ask themselves implicitly. SpecGantry just gives you the data to answer them explicitly.</p>
+
+<hr />
+
+<h2 id="the-broader-point">The Broader Point</h2>
+
+<p>AI-assisted development is still young as a discipline. Teams are still figuring out the right processes, the right habits, and the right instrumentation. Cost visibility is one of those things that looks like a nice-to-have until you’ve worked on a few AI-assisted projects and seen how spend accumulates invisibly.</p>
+
+<p>Building it into the framework — so it’s automatic, structured, and co-located with the project itself — is the right answer. The alternative is discovering, three months into a project, that you’ve spent more than expected and you have no data to understand why.</p>
+
+<p>SpecGantry exists because structure matters in AI-assisted development. Cost transparency is part of that structure.</p>
+
+<hr />
+
+<p><em>SpecGantry is open source under Apache 2.0. Install it in 90 seconds: <code class="language-plaintext highlighter-rouge">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io &amp;&amp; claude plugin install spec-gantry</code></em></p>
+
+<hr />
+
+<div class="next-steps-grid">
+  <a href="/docs/skills#track-cost" class="next-step-card">
+    <div class="next-step-icon">💰</div>
+    <div>
+      <strong>/track-cost Reference</strong>
+      <span>All four cost dashboard views explained with examples.</span>
+    </div>
+  </a>
+  <a href="/docs/how-it-works#cost-tracking" class="next-step-card">
+    <div class="next-step-icon">⚙️</div>
+    <div>
+      <strong>How Cost Tracking Works</strong>
+      <span>The hook architecture, token counting, and pricing resolution explained.</span>
+    </div>
+  </a>
+</div>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+        </div>
+        <div class="page-nav-next">
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

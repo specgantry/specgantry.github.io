@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — SpecGantry Docs</title>
+  <meta name="description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <meta property="og:title" content="FAQ">
+  <meta property="og:description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/docs/faq/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="FAQ">
+  <meta name="twitter:description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">FAQ</span>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link ">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link ">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link ">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link sidebar-link-active">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+
+<hr />
+
+<h2 id="installation">Installation</h2>
+
+<h3 id="plugin-wont-install--not-found-in-marketplace">Plugin won’t install — “Not found in marketplace”</h3>
+
+<p>You need to register the SpecGantry marketplace first, then install:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin <span class="nb">install </span>spec-gantry
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">claude plugin install &lt;github-url&gt;</code> form does not work — <code class="language-plaintext highlighter-rouge">install</code> resolves names against registered marketplaces only.</p>
+
+<h3 id="where-does-the-plugin-install">Where does the plugin install?</h3>
+
+<p>Claude Code manages plugins automatically:</p>
+<ul>
+  <li><strong>macOS:</strong> <code class="language-plaintext highlighter-rouge">~/.claude/plugins/</code></li>
+  <li><strong>Windows:</strong> <code class="language-plaintext highlighter-rouge">%APPDATA%\Claude\plugins\</code></li>
+  <li><strong>Linux:</strong> <code class="language-plaintext highlighter-rouge">~/.claude/plugins/</code></li>
+</ul>
+
+<h3 id="can-i-use-specgantry-offline">Can I use SpecGantry offline?</h3>
+
+<p>Yes. SpecGantry runs entirely within Claude Code and your local project directory. The only network activity is the model invocations themselves — Claude Code’s normal operation. Pricing rates are fetched automatically from Anthropic’s pricing page when the MCP server starts.</p>
+
+<h3 id="do-i-need-git">Do I need git?</h3>
+
+<p>Not required. SpecGantry saves state as plain text files in <code class="language-plaintext highlighter-rouge">specs/</code> — git is not involved in any state operation. That said, git is <strong>strongly recommended</strong> for:</p>
+<ul>
+  <li>Sharing <code class="language-plaintext highlighter-rouge">specs/</code> with your team</li>
+  <li>Version history of your architecture and specs</li>
+  <li>Recovery from accidental file deletion</li>
+</ul>
+
+<h3 id="how-do-i-update-specgantry">How do I update SpecGantry?</h3>
+
+<p><strong>Option 1 — From the marketplace (recommended):</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
+</code></pre></div></div>
+
+<p>Or from within Claude Code:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/plugin marketplace update spec-gantry
+</code></pre></div></div>
+
+<p><strong>Option 2 — Direct plugin update:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin update spec-gantry@spec-gantry
+</code></pre></div></div>
+
+<p>Check your current version anytime:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin list
+</code></pre></div></div>
+
+<h3 id="whats-the-difference-between-plugin-marketplace-update-and-plugin-update">What’s the difference between <code class="language-plaintext highlighter-rouge">plugin marketplace update</code> and <code class="language-plaintext highlighter-rouge">plugin update</code>?</h3>
+
+<p>Both update to the latest version. <code class="language-plaintext highlighter-rouge">marketplace update</code> is recommended — it verifies the plugin structure as part of the update. Use whichever is more convenient.</p>
+
+<h3 id="how-do-i-uninstall-specgantry">How do I uninstall SpecGantry?</h3>
+
+<p>To remove the plugin and the marketplace entry completely:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
+claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+</code></pre></div></div>
+
+<p>Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project’s <code class="language-plaintext highlighter-rouge">specs/</code> files are not affected.</p>
+
+<p>To reinstall afterwards, use the standard install sequence:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin <span class="nb">install </span>spec-gantry
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="getting-started">Getting Started</h2>
+
+<h3 id="im-starting-a-new-project-what-do-i-do">I’m starting a new project. What do I do?</h3>
+
+<p>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version <code class="language-plaintext highlighter-rouge">1.0.0</code> automatically. Takes 5–10 minutes.</p>
+
+<h3 id="im-joining-a-team-what-do-i-do">I’m joining a team. What do I do?</h3>
+
+<p>Get the project repository from your Team Lead (it should include the <code class="language-plaintext highlighter-rouge">specs/</code> folder), then open it in Claude Code and run <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. It detects the project, sets your role as Developer, and shows you the component backlog.</p>
+
+<h3 id="i-have-an-existing-codebase-should-i-reverse-engineer-it">I have an existing codebase. Should I reverse-engineer it?</h3>
+
+<p>Yes, if you want SpecGantry’s structure — architecture documentation, a component backlog, and guardrails. Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.</p>
+
+<hr />
+
+<h2 id="roles">Roles</h2>
+
+<h3 id="can-a-developer-see-the-architecture-spec">Can a Developer see the architecture spec?</h3>
+
+<p>Yes, read-only. Developers need the architecture context to write component specs that fit the system. Select <code class="language-plaintext highlighter-rouge">[A]</code> Architecture from the action bar to view it.</p>
+
+<h3 id="can-a-team-lead-build-components">Can a Team Lead build components?</h3>
+
+<p>SpecGantry is designed for clear role separation — Team Leads own project-level phases and deployment, developers own component-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.</p>
+
+<h3 id="can-a-developer-deploy">Can a Developer deploy?</h3>
+
+<p>No. Deployment is a Team Lead responsibility. The TL triggers the release once all components pass tests and integration testing is complete — this deploys the entire system as a single release.</p>
+
+<h3 id="what-if-the-team-lead-leaves">What if the Team Lead leaves?</h3>
+
+<p>Another person can take over as Team Lead by updating their local role setting and running <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. They’ll see the full project dashboard with all pending items and can continue managing the project.</p>
+
+<h3 id="can-multiple-developers-work-in-parallel">Can multiple developers work in parallel?</h3>
+
+<p>Yes. Each developer works on different components — components are isolated from each other in separate directories. Each developer has their own local role settings that stay on their machine. Spec files are committed per-component, so parallel work doesn’t conflict.</p>
+
+<hr />
+
+<h2 id="the-pipeline">The Pipeline</h2>
+
+<h3 id="can-i-skip-ideation">Can I skip ideation?</h3>
+
+<p>No. Ideation produces <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and the component backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation.</p>
+
+<h3 id="is-there-a-separate-architecture-phase">Is there a separate architecture phase?</h3>
+
+<p>No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a component backlog. There is no separate step to complete before components can be picked up.</p>
+
+<h3 id="does-the-team-lead-need-to-approve-the-backlog">Does the Team Lead need to approve the backlog?</h3>
+
+<p>Yes. After ideation, SpecGantry presents the proposed component list for the TL’s review. No component spec work can begin until the TL explicitly approves with <code class="language-plaintext highlighter-rouge">[Y] Approve</code>. This is a hard gate — <code class="language-plaintext highlighter-rouge">backlog_approved:true</code> must be set in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>.</p>
+
+<h3 id="can-i-skip-the-component-spec">Can I skip the component spec?</h3>
+
+<p>No. The component spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.</p>
+
+<h3 id="when-can-i-deploy">When can I deploy?</h3>
+
+<p>Once all components pass their unit tests and either integration tests pass or you explicitly skip them. The TL is presented with a single confirmation point after all builds complete: any gap specs are shown and confirmed first, then the TL chooses <code class="language-plaintext highlighter-rouge">[Y] Run integration tests</code>, <code class="language-plaintext highlighter-rouge">[S] Skip — deploy directly</code>, or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. Both outcomes are recorded as audit flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> — <code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code> or <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> — and either one opens the deploy gate.</p>
+
+<h3 id="can-i-deploy-individual-components">Can I deploy individual components?</h3>
+
+<p>No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all components in dependency order.</p>
+
+<h3 id="what-are-gap-specs-and-when-are-they-written">What are gap specs and when are they written?</h3>
+
+<p>Gap specs are delta documents written during development when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects on another component’s interface. Rather than editing the main spec while other developers may still be building against it, the developer writes a <code class="language-plaintext highlighter-rouge">gap-YYYY-MM-DD.md</code> file recording what changed, files affected, side-effects, and a recommended spec update.</p>
+
+<p>Gap specs are reviewed and merged by the TL at the confirm-integration step, before choosing to run integration tests or deploy directly.</p>
+
+<h3 id="what-happens-during-gap-merge">What happens during gap merge?</h3>
+
+<p>When all components pass their unit tests, SpecGantry checks for unmerged gap specs and presents any it finds to the TL — showing which components have gaps and which files they are. The TL confirms before any merge runs. If confirmed, gaps are merged in chronological order: component spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content), side-effects on other components are checked and minimal corrections applied. Each gap file is deleted after it is merged. A summary of what changed is shown before the TL is prompted to run integration tests or skip to deploy.</p>
+
+<h3 id="can-i-skip-integration-tests">Can I skip integration tests?</h3>
+
+<p>Yes. At the confirm-integration step, after any gap specs are merged, the TL is offered <code class="language-plaintext highlighter-rouge">[Y] Run integration tests</code>, <code class="language-plaintext highlighter-rouge">[S] Skip — deploy directly</code>, or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. Choosing <code class="language-plaintext highlighter-rouge">[S]</code> sets <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> — committed to git as a permanent audit record — and opens the deploy gate directly.</p>
+
+<h3 id="how-long-does-each-phase-take">How long does each phase take?</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Typical Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation (idea maturation + system shaping)</td>
+      <td>15–30 minutes</td>
+    </tr>
+    <tr>
+      <td>Backlog approval</td>
+      <td>2–5 minutes</td>
+    </tr>
+    <tr>
+      <td>Component Spec</td>
+      <td>5–15 min per component (+5 min domain elaboration on first of each domain)</td>
+    </tr>
+    <tr>
+      <td>Development (TDD + full test gate)</td>
+      <td>Depends on complexity</td>
+    </tr>
+    <tr>
+      <td>Gap merge (if gaps exist)</td>
+      <td>2–5 minutes</td>
+    </tr>
+    <tr>
+      <td>Integration Test</td>
+      <td>Minutes to tens of minutes (depends on scenario count)</td>
+    </tr>
+    <tr>
+      <td>Deploy release</td>
+      <td>5–10 minutes (whole system)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="can-multiple-phases-overlap">Can multiple phases overlap?</h3>
+
+<p>Yes — components run their Spec → Development lifecycle in parallel. You can have one component in development while another is still in spec. Within a single component, phases are sequential. Ideation and backlog approval must complete before any component work begins.</p>
+
+<h3 id="why-does-architecture-feel-lighter-than-expected">Why does architecture feel lighter than expected?</h3>
+
+<p>By design. The initial system shaping (Beat 2 of ideation) only covers what must exist before any component work begins: tech stack, system boundaries, guardrails, and a dependency-ordered backlog. Detailed domain elaboration — data model, interface contracts, domain NFRs — happens just-in-time when the first component of each domain is picked up. You only elaborate what you actually build.</p>
+
+<h3 id="what-is-domain-elaboration">What is domain elaboration?</h3>
+
+<p>When you pick up the first component of a domain, three quick architecture questions elaborate that domain before the spec begins: data model, interface contracts, and domain-specific constraints. The answers are appended to <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and used as context for the spec. Subsequent components in the same domain skip this step.</p>
+
+<h3 id="how-should-components-be-sized">How should components be sized?</h3>
+
+<p>Components are building blocks, not micro-tasks. A component should represent a meaningful vertical slice of the system — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but it ships as a unit with one spec.</p>
+
+<p>When in doubt, err toward fewer, larger components. You can always add scope via <code class="language-plaintext highlighter-rouge">[+] New work</code> after deployment.</p>
+
+<h3 id="what-happens-after-all-components-are-deployed">What happens after all components are deployed?</h3>
+
+<p>SpecGantry enters post-deployment mode and asks what you want to work on next. Use <code class="language-plaintext highlighter-rouge">[+] New work</code> or describe a change when prompted. SpecGantry classifies the work, reads the backlog and component specs to identify what’s affected, confirms with you, and re-enters the pipeline. You can also use <code class="language-plaintext highlighter-rouge">[+] New work</code> at any point mid-pipeline. See <a href="/docs/how-it-works#post-deployment">How It Works → Handling Changes After Deployment</a> for details.</p>
+
+<h3 id="how-do-components-stay-versioned-over-time">How do components stay versioned over time?</h3>
+
+<p>Components keep the same <code class="language-plaintext highlighter-rouge">COMP-NNN</code> identity forever. When a bug fix or enhancement changes a component, the spec is updated inline — changed lines are annotated with the release version (e.g. <code class="language-plaintext highlighter-rouge">`__1.1.0__`</code>), old text is struck through, and a row is appended to the spec’s Change History table. This keeps the full audit trail inside the spec itself.</p>
+
+<h3 id="how-does-release-versioning-work">How does release versioning work?</h3>
+
+<p>Every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code>. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all components in the release — <code class="language-plaintext highlighter-rouge">project_change</code> bumps major, <code class="language-plaintext highlighter-rouge">enhancement</code> or <code class="language-plaintext highlighter-rouge">new_component</code> bumps minor, <code class="language-plaintext highlighter-rouge">bug_fix</code> bumps patch. The initial release always deploys as <code class="language-plaintext highlighter-rouge">1.0.0</code>.</p>
+
+<h3 id="who-decides-which-components-are-affected-by-a-bug-fix">Who decides which components are affected by a bug fix?</h3>
+
+<p>SpecGantry does. When you describe new work via <code class="language-plaintext highlighter-rouge">[+] New work</code>, SpecGantry reads the backlog and all component specs to determine which components own the described behaviour. It presents the mapping for your confirmation before touching any state — you don’t need to identify the target components yourself.</p>
+
+<h3 id="whats-a-guardrail-violation">What’s a “guardrail violation”?</h3>
+
+<p>A guardrail is a rule from the architecture that applies to all components. Examples:</p>
+<ul>
+  <li>“All API endpoints must use JWT authentication”</li>
+  <li>“No direct database access from the UI layer”</li>
+  <li>“All external API calls must have a timeout of 5 seconds or less”</li>
+</ul>
+
+<p>During the Component Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one — for example, defining a public endpoint with no auth — the violation is written to the spec file and the gate fails until it’s resolved.</p>
+
+<p>Options to resolve a violation:</p>
+<ol>
+  <li>Revise the spec to comply with the guardrail</li>
+  <li>Ask the Team Lead to update the guardrail in the architecture spec (which affects all future components)</li>
+</ol>
+
+<hr />
+
+<h2 id="specs-and-approval">Specs and Approval</h2>
+
+<h3 id="what-makes-a-good-component-spec">What makes a good component spec?</h3>
+
+<p>A spec clear enough that any developer could pick it up and build the same thing. SpecGantry guides you through five sections:</p>
+
+<ol>
+  <li><strong>Scope</strong> — What it does and explicitly what it doesn’t do</li>
+  <li><strong>Interface Contract</strong> — What it exposes or consumes (delta from the domain section in architecture-spec.md)</li>
+  <li><strong>Data</strong> — What data it owns or accesses (delta from the domain data model)</li>
+  <li><strong>Features</strong> — Ordered internal tasks grouped into parallel tiers</li>
+  <li><strong>Test Plan</strong> — Unit tests, integration hooks, edge cases</li>
+</ol>
+
+<p>The spec also notes which integration scenarios in <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> this component participates in.</p>
+
+<h3 id="does-the-team-lead-have-to-review-every-component-spec">Does the Team Lead have to review every component spec?</h3>
+
+<p>No. The developer self-reviews at the end of the spec phase — after completing all five sections and passing the guardrail check, the developer confirms the spec is ready to build. That’s the final gate before development begins. There is no separate TL review step.</p>
+
+<h3 id="can-i-edit-a-spec-after-starting-to-build">Can I edit a spec after starting to build?</h3>
+
+<p>Yes. Return to <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, select the component, and choose to edit the spec. Editing resets <code class="language-plaintext highlighter-rouge">spec_complete</code> — you must re-confirm the spec before building can resume. The spec and the implementation should always agree.</p>
+
+<h3 id="can-i-edit-a-spec-while-another-developer-is-building-against-it">Can I edit a spec while another developer is building against it?</h3>
+
+<p>The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — this keeps the main spec stable for anyone else building in parallel. Gap specs are merged before integration testing begins.</p>
+
+<hr />
+
+<h2 id="state-and-progress">State and Progress</h2>
+
+<h3 id="what-happens-if-i-close-claude-code-mid-session">What happens if I close Claude Code mid-session?</h3>
+
+<p>All progress is saved after every question. Closing Claude Code at any point loses nothing. The next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered question.</p>
+
+<h3 id="can-i-have-multiple-components-in-progress">Can I have multiple components in progress?</h3>
+
+<p>Yes. You can switch between components from the dashboard. You might have one component in development while starting the spec on another.</p>
+
+<h3 id="how-do-i-restart-a-phase">How do I restart a phase?</h3>
+
+<p>Use <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the component to revisit a completed phase. Phase state can be reset through the project menu when appropriate. Contact your Team Lead for resets that affect project-level gates.</p>
+
+<h3 id="can-i-move-a-component-back-to-pending">Can I move a component back to pending?</h3>
+
+<p>Yes — during the spec phase, select Abandon to return the component to the backlog unassigned. From later phases, the Team Lead can reassign or defer components through <code class="language-plaintext highlighter-rouge">[P] Project</code>.</p>
+
+<hr />
+
+<h2 id="costs-and-tokens">Costs and Tokens</h2>
+
+<h3 id="how-does-cost-tracking-work">How does cost tracking work?</h3>
+
+<p>SpecGantry tracks token usage automatically at the end of every agent run — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> alongside your other project files and committed to git.</p>
+
+<p>Run <code class="language-plaintext highlighter-rouge">/track-cost</code> for a navigable cost dashboard with four views: summary by phase, by component, by release, and by model. Switch between views by typing <code class="language-plaintext highlighter-rouge">1</code>, <code class="language-plaintext highlighter-rouge">2</code>, or <code class="language-plaintext highlighter-rouge">3</code> — the menu persists across views so you don’t need to navigate back.</p>
+
+<h3 id="why-are-my-costs-higher-than-expected">Why are my costs higher than expected?</h3>
+
+<p>Run <code class="language-plaintext highlighter-rouge">/track-cost</code> and look at the Cache Write and Cache Read columns — these often account for the majority of cost when agents are working through large codebases or long conversations.</p>
+
+<p>Common reasons totals are higher than expected:</p>
+<ul>
+  <li><strong>Large codebase</strong> — reverse-engineering or building against a large existing project means more context per turn</li>
+  <li><strong>Long conversations</strong> — agents working through complex components accumulate context over many turns</li>
+  <li><strong>Cache writes</strong> — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper</li>
+  <li><strong>Iterative spec revisions</strong> — multiple rounds of spec editing each consume tokens</li>
+</ul>
+
+<h3 id="how-do-i-refresh-the-pricing-rates">How do I refresh the pricing rates?</h3>
+
+<p>Restart Claude Code. The MCP server fetches the latest rates from Anthropic’s pricing page automatically on startup. If <code class="language-plaintext highlighter-rouge">/track-cost</code> shows <code class="language-plaintext highlighter-rouge">pricing_source: fallback</code> on any entry, a restart will resolve it.</p>
+
+<h3 id="can-i-export-a-cost-report">Can I export a cost report?</h3>
+
+<p>Yes — <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> is newline-delimited JSON committed to git. It contains one entry per agent session with full token counts and cost by type. Any tool that reads JSON can aggregate or visualize it.</p>
+
+<hr />
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3 id="costs-not-being-recorded">Costs not being recorded after agent runs</h3>
+
+<p>If <code class="language-plaintext highlighter-rouge">/track-cost</code> shows no data after completing a phase:</p>
+
+<ol>
+  <li><strong>Update the plugin</strong> — cost tracking improvements ship regularly:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Check that Node.js is installed</strong> — cost tracking requires Node.js to be available:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>node <span class="nt">--version</span>
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Reinstall if needed:</strong>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin <span class="nb">install </span>spec-gantry
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="spec-gantry-shows-wrong-state"><code class="language-plaintext highlighter-rouge">/spec-gantry</code> shows wrong state</h3>
+
+<p>Re-run it. The dashboard re-reads all state from disk on every invocation — most inconsistencies self-correct. If the problem persists, check whether the <code class="language-plaintext highlighter-rouge">specs/</code> files are as expected and try again.</p>
+
+<h3 id="component-is-stuck--cant-advance">Component is stuck — can’t advance</h3>
+
+<p>Read the gate failure message in the dashboard. It will list exactly which conditions are unmet and what action to take to resolve each one. Address each item and run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> again.</p>
+
+<h3 id="spec-wont-pass-guardrail-check">Spec won’t pass guardrail check</h3>
+
+<p>The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or ask your Team Lead to update the architecture guardrail.</p>
+
+<h3 id="mcp-log-level">How do I control the MCP server log level?</h3>
+
+<p>SpecGantry writes two separate log files to <code class="language-plaintext highlighter-rouge">.claude/logs/</code> in your project directory:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Log file</th>
+      <th>What it contains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spec-gantry-costs.log</code></td>
+      <td>Cost entries, token counts, pricing fetch results</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spec-gantry-hooks.log</code></td>
+      <td>Agent lifecycle events: start, stop, agent gating</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Both log at <code class="language-plaintext highlighter-rouge">error</code> level by default. Set the <code class="language-plaintext highlighter-rouge">SPEC_GANTRY_LOG_LEVEL</code> environment variable to change verbosity:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>What you see</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">error</code></td>
+      <td>Failures only <strong>(default)</strong></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">info</code></td>
+      <td>Key lifecycle events</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">debug</code></td>
+      <td>Full detail: resolved paths, token counts, every tool call</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Add it to your shell profile so it persists across sessions:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># ~/.zshrc or ~/.bashrc</span>
+<span class="nb">export </span><span class="nv">SPEC_GANTRY_LOG_LEVEL</span><span class="o">=</span>debug
+</code></pre></div></div>
+
+<p>Then restart your terminal and reopen Claude Code.</p>
+
+<h3 id="plugin-stopped-working-after-a-claude-code-update">Plugin stopped working after a Claude Code update</h3>
+
+<p>Reinstall:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
+claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin <span class="nb">install </span>spec-gantry
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="advanced">Advanced</h2>
+
+<h3 id="can-i-version-my-specs">Can I version my specs?</h3>
+
+<p>Yes — <code class="language-plaintext highlighter-rouge">specs/</code> is plain text committed to git. Use standard git tools to track spec evolution, compare versions, and understand how decisions changed over time.</p>
+
+<h3 id="can-i-extend-specgantry-with-custom-agents-or-guardrails">Can I extend SpecGantry with custom agents or guardrails?</h3>
+
+<p>Yes. See <a href="/docs/architecture#extension-points">Reference → Extension Points</a> for details on adding custom guardrails, agents, and skills.</p>
+
+<h3 id="can-i-use-specgantry-with-a-different-ai-assistant">Can I use SpecGantry with a different AI assistant?</h3>
+
+<p>SpecGantry is designed specifically for Claude Code. It uses Claude Code’s skill and agent system and won’t work with other AI tools.</p>
+
+<hr />
+
+<h2 id="getting-help">Getting Help</h2>
+
+<ul>
+  <li><strong>Bug reports:</strong> <a href="https://github.com/specgantry/specgantry.github.io/issues">GitHub Issues</a></li>
+  <li><strong>Feature requests:</strong> <a href="https://github.com/specgantry/specgantry.github.io/discussions">GitHub Discussions</a></li>
+  <li><strong>Contributing:</strong> See <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></li>
+</ul>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+            <a href="/docs/architecture" class="page-nav-link">
+              <span class="page-nav-dir">← Previous</span>
+              <span class="page-nav-label">Reference</span>
+            </a>
+          
+        </div>
+        <div class="page-nav-next">
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

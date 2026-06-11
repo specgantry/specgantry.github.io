@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why AI Coding Assistants Need Guardrails — Not Just More Tokens — SpecGantry Docs</title>
+  <meta name="description" content="The problem with AI coding assistants isn't code quality — it's that they have no idea if you're solving the right problem. That's a process gap, not a model gap.">
+  <meta property="og:title" content="Why AI Coding Assistants Need Guardrails — Not Just More Tokens">
+  <meta property="og:description" content="The problem with AI coding assistants isn't code quality — it's that they have no idea if you're solving the right problem. That's a process gap, not a model gap.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/blog/why-ai-needs-guardrails/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Why AI Coding Assistants Need Guardrails — Not Just More Tokens">
+  <meta name="twitter:description" content="The problem with AI coding assistants isn't code quality — it's that they have no idea if you're solving the right problem. That's a process gap, not a model gap.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">Why AI Coding Assistants Need Guardrails — Not Just More Tokens</span>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link ">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link ">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link ">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link ">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="why-ai-coding-assistants-need-guardrails--not-just-more-tokens">Why AI Coding Assistants Need Guardrails — Not Just More Tokens</h1>
+
+<p><em>June 4, 2026 · 8 min read · Process</em></p>
+
+<hr />
+
+<p>Here’s a scenario every software team has lived through, or will shortly.</p>
+
+<p>You give an AI coding assistant a task. It produces 400 lines of clean, well-structured, thoroughly commented code in under three minutes. You review it. The code does exactly what you asked.</p>
+
+<p>And then someone in code review says: <em>“Wait — this isn’t what we agreed to build.”</em></p>
+
+<p>The code is fine. The implementation is wrong. And now you’ve burned an afternoon.</p>
+
+<p>This isn’t a rare edge case. For teams using AI coding assistants at scale, it’s the dominant failure mode. And the response most teams reach for — better prompts, longer context windows, more capable models — doesn’t fix it. Because <strong>the problem isn’t in the code. It’s in the absence of process before the code.</strong></p>
+
+<hr />
+
+<h2 id="the-speed-trap">The Speed Trap</h2>
+
+<p>AI coding assistants are genuinely impressive. The best ones write production-quality code, catch edge cases you’d miss, explain their reasoning, and adapt to feedback in real time. They’ve fundamentally changed what a single developer can accomplish in a day.</p>
+
+<p>But speed is a double-edged property.</p>
+
+<p>The same capability that makes AI assistants so productive — the ability to execute on a vague prompt and produce plausible-looking output immediately — is precisely what makes them risky to hand the keyboard to without structure.</p>
+
+<p>A human developer who’s confused about the requirements will usually slow down. They’ll ask questions, re-read the ticket, maybe talk to the architect. The friction of uncertainty provides a natural forcing function for clarification.</p>
+
+<p>An AI assistant doesn’t slow down when confused. It makes the most plausible interpretation and runs with it. Confidently, quickly, at length.</p>
+
+<p>The result: three hours of implementation against the wrong interpretation, discovered at code review.</p>
+
+<hr />
+
+<h2 id="what-guardrails-actually-means">What “Guardrails” Actually Means</h2>
+
+<p>When people talk about guardrails for AI development, they usually mean things like:</p>
+<ul>
+  <li>Prevent the model from generating harmful content</li>
+  <li>Add a human review step before deploying AI-generated code</li>
+  <li>Use automated linters and security scanners</li>
+</ul>
+
+<p>These are real, valid concerns. But they’re all operating at the wrong layer.</p>
+
+<p>Content safety and code review catch problems <em>after the code is written</em>. By then, you’ve already paid the token cost to generate it. You’ve already paid a developer’s time to write it. And you’ve discovered the mismatch at the most expensive possible moment in the development cycle.</p>
+
+<p><strong>Process guardrails operate before the code.</strong> They answer three questions that determine whether a feature is worth building at all:</p>
+
+<ol>
+  <li><strong>What problem is this solving, exactly?</strong> (Ideation)</li>
+  <li><strong>Does this fit the system we’ve agreed to build?</strong> (Architecture)</li>
+  <li><strong>What does “done” look like, specifically enough that you could verify it?</strong> (Component Spec)</li>
+</ol>
+
+<p>If you can’t answer these three questions before writing code, writing the code is premature — regardless of how fast the AI can produce it.</p>
+
+<hr />
+
+<h2 id="the-architecture-gap-is-real">The Architecture Gap Is Real</h2>
+
+<p>Here’s a failure mode that’s becoming more common as AI-assisted teams grow: developers start writing features without a clear picture of the system architecture.</p>
+
+<p>This isn’t new. Developers have always made architectural assumptions when requirements were vague. But with AI assistants, the volume of code produced means the assumption propagates further before anyone catches it.</p>
+
+<p>Consider: a developer picks up a “user authentication” feature. They write a spec (a brief one), start building, and two days later have a working authentication system — using a library the architect had already ruled out for security compliance reasons, with a database schema that conflicts with how the session management feature was designed, and without the JWT implementation the API gateway expects.</p>
+
+<p>The code works. It passes the developer’s own tests. But it can’t be merged without significant rework, and the rework will take longer than building it correctly the first time would have.</p>
+
+<p><strong>Architecture guardrails prevent this.</strong> When the architect defines the system — tech stack, service boundaries, API contracts, data model, security requirements — and those decisions are formalized as <em>enforceable rules</em>, every component spec gets checked against them before development begins. The misalignment is caught in 5 minutes of spec review, not 2 days of development.</p>
+
+<p>The catch is that “architecture guardrails” are only useful if they’re actually enforced. A document in Confluence that everyone knows exists and nobody reads in practice is not a guardrail. It’s decorative.</p>
+
+<p>This is why SpecGantry’s architecture guardrails are checked automatically against every component spec — not by the developer remembering to check, but by the system refusing to let the spec pass if there’s a violation.</p>
+
+<hr />
+
+<h2 id="the-real-cost-of-moving-fast">The Real Cost of Moving Fast</h2>
+
+<p>There’s a mental model most teams carry about the cost of skipping process: “writing the spec takes time, writing the code takes time, so writing the code without the spec is faster.”</p>
+
+<p>This is true in a narrow, local sense. For any single feature, skipping the spec gets you to code faster.</p>
+
+<p>But it ignores the downstream costs:</p>
+
+<p><strong>Rework discovered late.</strong> An implementation that misunderstood the requirements gets caught at code review — or worse, in production. The rework cost is roughly 5–10× the original feature cost, because you’re now untangling code that may have dependencies, tests built against the wrong behavior, and assumptions propagated into other features.</p>
+
+<p><strong>API contract drift.</strong> Without specs documenting what each feature’s interfaces look like, different developers make different assumptions about how features connect. You discover the mismatch when you try to integrate. The fix requires changes in multiple features simultaneously.</p>
+
+<p><strong>Lost context.</strong> In an AI-assisted workflow, the context from a session is often not preserved across days. When the developer returns to a partially-complete feature and asks the AI to continue, the AI doesn’t know what decisions were made in the previous session. Without a written spec, the continuity breaks.</p>
+
+<p><strong>Wasted token spend.</strong> Every incomplete or misdirected feature burns tokens. In a team running multiple parallel features, this adds up quickly. Without cost visibility, you don’t know what you’re actually spending on AI-assisted development.</p>
+
+<hr />
+
+<h2 id="what-good-process-looks-like-for-agentic-teams">What Good Process Looks Like for Agentic Teams</h2>
+
+<p>The right structure for AI-assisted development isn’t the heavyweight processes that large enterprises use (though some of those have merit). It’s a lightweight but <em>hard-gated</em> process that:</p>
+
+<ol>
+  <li>
+    <p><strong>Answers the hard questions before starting.</strong> Ideation isn’t about documentation for its own sake — it’s about making sure you’ve thought through the problem clearly enough to know you’re solving the right one.</p>
+  </li>
+  <li>
+    <p><strong>Formalizes architecture decisions as rules.</strong> The system design is a living contract between the architect and the development team. It needs to be inspectable, version-controlled, and actively enforced — not a slide deck from the kickoff meeting.</p>
+  </li>
+  <li>
+    <p><strong>Requires a written spec before code.</strong> Not a novel — a spec. Five sections, 30 minutes to write, covering scope, interfaces, data, feature list, and test cases. This is the minimum that gives an AI coding assistant the context to implement something correctly.</p>
+  </li>
+  <li>
+    <p><strong>Tracks cost and progress transparently.</strong> AI-assisted development has real financial costs that vary significantly by how you use it. Visibility into token usage by phase, feature, and developer turns AI cost from a mystery into a managed resource.</p>
+  </li>
+</ol>
+
+<p>None of this is about slowing down. It’s about spending velocity in the right direction — fast on the right things, not fast in the wrong direction.</p>
+
+<hr />
+
+<h2 id="specgantrys-approach">SpecGantry’s Approach</h2>
+
+<p>SpecGantry enforces all four of these properties as hard gates in a Claude Code pipeline.</p>
+
+<p>The ideation agent generates targeted questions from your project description — not a fixed script, but questions tailored to the domain, scale, and constraints of what you’ve described. By the end of ideation, the feasibility assessment either clears you to proceed, asks you to clarify specific questions, or flags that there’s a risk that needs stakeholder input before design begins.</p>
+
+<p>The architecture agent translates the validated project vision into a concrete system design — tech stack, service boundaries, API contracts, data model — and then derives <strong>project domains</strong> from the natural divisions of the system. These domains become the bounded contexts that component specs must stay within. Every architecture decision is written as a guardrail.</p>
+
+<p>The component-spec agent loads the architecture spec before writing a single word. Every answer is checked against the guardrails in real time. Violations are flagged immediately, not at the end. The spec cannot be marked complete with any unresolved violation.</p>
+
+<p>And the pipeline is session-safe: every question, every section, every answer is written to disk immediately. Network drops, context resets, end of day — the next session picks up at the next unanswered question.</p>
+
+<p>The guardrails aren’t suggestions. The gates are hard. That’s the point.</p>
+
+<hr />
+
+<h2 id="the-deeper-argument">The Deeper Argument</h2>
+
+<p>There’s a tempting narrative about AI coding assistants that goes: “AI is so capable now that traditional software process is overhead. Just prompt it well and ship.”</p>
+
+<p>This argument is most persuasive before you’ve run a team at scale with AI assistance. After you have, you start to see the pattern: the failures aren’t where the AI wrote bad code. The failures are where the problem was poorly defined, the architecture was never agreed upon, or the feature was built against an assumption that turned out to be wrong.</p>
+
+<p>AI makes good problems faster to solve. It also makes bad problems faster to discover you’ve been solving. The difference, in both cases, is whether you defined the problem clearly before you started.</p>
+
+<p>Guardrails aren’t about limiting what AI can do. They’re about giving AI the context it needs to do the right thing. A component spec isn’t a leash on the model — it’s the information the model needs to implement correctly.</p>
+
+<p>More tokens won’t solve a missing spec. Better guardrails will.</p>
+
+<hr />
+
+<p><em>SpecGantry is an open-source Claude Code plugin. <a href="/docs/getting-started">Install in 90 seconds →</a></em></p>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+        </div>
+        <div class="page-nav-next">
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

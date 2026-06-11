@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference — SpecGantry Docs</title>
+  <meta name="description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <meta property="og:title" content="Reference">
+  <meta property="og:description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/docs/architecture/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Reference">
+  <meta name="twitter:description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">Reference</span>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link ">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link ">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link sidebar-link-active">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link ">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="reference">Reference</h1>
+
+<p>Design principles, project file structure, security model, and how to extend SpecGantry.</p>
+
+<hr />
+
+<h2 id="design-principles">Design Principles</h2>
+
+<p>SpecGantry is built on three principles.</p>
+
+<h3 id="structure-before-code">Structure Before Code</h3>
+
+<p>Specs, architecture, and planning happen <strong>before</strong> development begins — enforced, not advisory. SpecGantry verifies that each phase’s output exists and is complete before the next phase can start. The intent is to make skipping a phase impossible, not just inconvenient.</p>
+
+<h3 id="session-safety-by-default">Session Safety by Default</h3>
+
+<p>Every phase saves progress after each question or section. If a session is interrupted for any reason — network drop, context reset, end of day — the next invocation resumes at the next unanswered item. Zero progress loss is a design requirement.</p>
+
+<h3 id="role-based-access">Role-Based Access</h3>
+
+<p>Team Leads and Developers have different views and different permissions. SpecGantry enforces this automatically — a developer cannot run project-level phases, and a project-level operation cannot write to files owned by the developer workflow. Role confusion is a common failure mode in collaborative AI workflows; SpecGantry eliminates it structurally.</p>
+
+<hr />
+
+<h2 id="project-file-structure">Project File Structure</h2>
+
+<p>After SpecGantry runs, your project contains a <code class="language-plaintext highlighter-rouge">specs/</code> directory committed to git:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>specs/
+├── project-state.yaml              # Project metadata, component backlog, phase gates, current release version
+├── architecture-spec.md            # Single source of truth — vision, constraints, tech stack, guardrails, domain sections
+├── integration-scenarios.md        # Living document — cross-component scenarios, assertions, run history
+├── cost-log.ndjson                 # Token usage and cost per agent session
+├── deploy.sh                       # Generated deployment script (whole system)
+├── deploy.sh.old                   # Previous deployment script (backup)
+├── deploy-artifact.md              # Deployment validation summary
+└── components/
+    ├── COMP-001/
+    │   ├── state.yaml              # Phase progress flags
+    │   ├── component-spec.md       # Five-section component spec (cross-references architecture-spec.md)
+    │   ├── dev-artifact.yaml       # Build notes and test results
+    │   └── gap-YYYY-MM-DD.md      # Gap spec (written mid-build; deleted after merge)
+    └── COMP-002/
+        └── ...
+
+.claude/
+└── local-state.yaml                # Your role and active components (local, not committed)
+</code></pre></div></div>
+
+<p><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git.</strong> This gives your whole team shared visibility into project decisions, component progress, and cost data — with full history and meaningful diffs.</p>
+
+<p><strong>Don’t commit <code class="language-plaintext highlighter-rouge">.claude/local-state.yaml</code>.</strong> This file is local to each developer’s machine and is gitignored by default.</p>
+
+<hr />
+
+<h2 id="the-specs-files">The specs/ Files</h2>
+
+<h3 id="specsproject-stateyaml"><code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></h3>
+
+<p>The project registry. Contains the project name and vision, phase completion status, <code class="language-plaintext highlighter-rouge">backlog_approved</code> flag, the list of architectural domains, and the full component backlog with each component’s status, size, domain, assignee, dependencies, and internal feature list.</p>
+
+<h3 id="specsarchitecture-specmd"><code class="language-plaintext highlighter-rouge">specs/architecture-spec.md</code></h3>
+
+<p>The single source of truth for the system. Written during ideation and extended just-in-time as domains are elaborated. Contains vision, constraints, tech stack, system boundaries, guardrails, component backlog summary, and a <code class="language-plaintext highlighter-rouge">## Domain: [name]</code> section for each domain that has been picked up. Amendment blocks are appended by gap merge — prior content is never overwritten. Component specs reference this document rather than duplicating it.</p>
+
+<h3 id="specsintegration-scenariosmd"><code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code></h3>
+
+<p>A living document. Seeded during ideation with obvious cross-component flows. Extended by each component spec with scenarios involving its interface. Enriched and executed during integration testing. The <code class="language-plaintext highlighter-rouge">## Run History</code> section grows with every run — it is never overwritten. This document is the audit trail of the system’s functional health across releases.</p>
+
+<h3 id="specscomponentscomp-nnncomponent-specmd"><code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/component-spec.md</code></h3>
+
+<p>A five-section specification for a single component: scope, interface contract (delta from domain section), data (delta from domain data model), features (ordered internal tasks grouped into parallel tiers), and test plan including integration scenario hooks. The spec also contains a Change History table recording every release in which the component changed. A guardrail compliance section must be clean before build begins.</p>
+
+<h3 id="specscomponentscomp-nnndev-artifactyaml"><code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/dev-artifact.yaml</code></h3>
+
+<p>Written by the development agent on completion. Contains: list of features implemented, files modified, commits, any gap specs written, warnings, test results (command, pass/fail counts, coverage, failures, flaky tests), and <code class="language-plaintext highlighter-rouge">overall_status: pass | fail</code>.</p>
+
+<h3 id="specscomponentscomp-nnngap-yyyy-mm-ddmd"><code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/gap-YYYY-MM-DD.md</code></h3>
+
+<p>Written during development when the spec is discovered to be incomplete, incorrect, or has side-effects on another component. Records what changed, files affected, side-effects on other components, and the recommended spec update. Gap files are deleted automatically after they are merged by the gap-merge step.</p>
+
+<h3 id="specsdeploysh"><code class="language-plaintext highlighter-rouge">specs/deploy.sh</code></h3>
+
+<p>A single deployment script covering the entire system, generated by the deployment agent. Organised by architectural component (database migrations, API service, frontend, etc.) with steps from all components in dependency order. The previous version is backed up to <code class="language-plaintext highlighter-rouge">specs/deploy.sh.old</code> before each new deployment.</p>
+
+<h3 id="specsdeploy-artifactmd"><code class="language-plaintext highlighter-rouge">specs/deploy-artifact.md</code></h3>
+
+<p>A deployment validation summary for the most recent release: all components included, deployment order, checks performed, and the release version.</p>
+
+<h3 id="specscost-logndjson"><code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code></h3>
+
+<p>An append-only record of token usage and cost for every agent session. Each entry includes the phase, component, model, token counts by type, and cost by type. Run <code class="language-plaintext highlighter-rouge">/track-cost</code> to see this data rendered as a readable breakdown.</p>
+
+<hr />
+
+<h2 id="security-model">Security Model</h2>
+
+<h3 id="role-based-access-1">Role-Based Access</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Team Lead</th>
+      <th>Developer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Run ideation</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td>Approve component backlog</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td>Run integration tests (optional)</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td>Manage backlog (<code class="language-plaintext highlighter-rouge">[P]</code> Project)</td>
+      <td>✅</td>
+      <td>✅ (view)</td>
+    </tr>
+    <tr>
+      <td>View architecture spec</td>
+      <td>✅</td>
+      <td>✅ (read-only)</td>
+    </tr>
+    <tr>
+      <td>Write component spec</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Build component</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Deploy release</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td>View cost data</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="secrets-handling">Secrets Handling</h3>
+
+<p>The component spec requires that every secret, API key, and credential used by the component is declared by its environment variable name. The development agent enforces this: no literal credential values in source files. If a violation is detected during build, it is reported immediately and must be resolved before proceeding.</p>
+
+<hr />
+
+<h2 id="phase-gates">Phase Gates</h2>
+
+<p>SpecGantry uses phase gates to ensure each phase is genuinely complete before the next begins. Gates check both the presence of output documents and the content within them. Meeting the criteria is what advances the pipeline — not just saying it’s done.</p>
+
+<p>A gate failure tells you exactly what’s missing:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✗ Development gate FAILED · component spec must be complete · Run /spec-gantry
+
+  Required                                    Status
+  ──────────────────────────────────────────────────
+  component-spec.md exists                 →  ✓
+  All 5 sections present                   →  ✓
+  Guardrail compliance section present     →  ✓
+  Zero violations                          →  ✗
+
+  Action: Resolve the violation in section 2 (Interface Contract).
+
+  Run /spec-gantry to return to the dashboard.
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="pipeline-flow">Pipeline Flow</h2>
+
+<p>How state, gates, and subagents connect across the full lifecycle:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  /spec-gantry invoked
+        │
+        ▼
+  ┌─────────────┐
+  │  init /     │  No project found → collect name + vision → write
+  │  ideation   │  project-state.yaml · architecture-spec.md
+  └──────┬──────┘
+         │  ideation_complete:true · architecture_complete:true
+         ▼
+  ┌──────────────┐
+  │   Backlog    │  TL reviews component list
+  │   Approval   │  [Y] sets backlog_approved:true
+  └──────┬───────┘
+         │  backlog_approved:true
+         ▼
+  ┌──────────────────────────────────────────────────────────────┐
+  │  Component Loop  (one subagent per component, topo order)    │
+  │                                                              │
+  │  ┌─────────────────┐        ┌──────────────────────────┐    │
+  │  │  Component Spec  │──────▶│  Development (TDD)        │    │
+  │  │  component-spec  │        │  dev-artifact.yaml        │    │
+  │  │  subagent        │  gate  │  overall_status: pass     │    │
+  │  │  spec_complete:  │  ──── │  dev_complete:true        │    │
+  │  │  true            │        │  tests_passing:true       │    │
+  │  └─────────────────┘        └──────────────────────────┘    │
+  │                                       │                      │
+  │                              gap-*.md written if             │
+  │                              spec diverges from build        │
+  └───────────────────────────────────────┬──────────────────────┘
+                                          │  all tests_passing:true
+                                          ▼
+                               ┌─────────────────────┐
+                               │  confirm_integration │  TL decision point
+                               │                      │
+                               │  Step 1 (if gaps):   │
+                               │  Show gap list →     │
+                               │  [Y] Merge gaps      │
+                               │       ↓              │
+                               │  gap-merge subagent  │
+                               │  → summary shown     │
+                               │                      │
+                               │  Step 2:             │
+                               │  [Y] Run integ tests │
+                               │  [S] Skip → deploy   │
+                               │  [X] Hold            │
+                               └──────────┬───────────┘
+                    ┌─────────────────────┴──────────────────────┐
+                    │  [Y]                                    [S] │
+                    ▼                                             ▼
+         ┌──────────────────┐                    sets integration_skipped:true
+         │  Integration     │                             │
+         │  Test subagent   │                             │
+         │  real system,    │                             │
+         │  no mocks        │                             │
+         │  integration_    │                             │
+         │  tests_passing:  │                             │
+         │  true            │                             │
+         └────────┬─────────┘                             │
+                  │                                       │
+                  └───────────────────────────────────────┘
+                                        │
+                                        ▼
+                             ┌─────────────────────┐
+                             │   deploy_release     │  Gate:
+                             │                      │  integration_tests_
+                             │   deployment         │  passing:true
+                             │   subagent           │  OR
+                             │   → deploy.sh        │  integration_
+                             │   → chmod +x         │  skipped:true
+                             │   → deploy-artifact  │
+                             └──────────┬──────────┘
+                                        │  deployment_status:complete
+                                        ▼
+                             ┌─────────────────────┐
+                             │  Post-deployment     │
+                             │  [+] New work        │
+                             │  classify_and_route  │
+                             │  → re-enters loop    │
+                             └─────────────────────┘
+</code></pre></div></div>
+
+<p><strong>State flags that gate each transition:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Transition</th>
+      <th>Flag set</th>
+      <th>Flag read by next gate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation → Backlog approval</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation_complete</code>, <code class="language-plaintext highlighter-rouge">architecture_complete</code></td>
+      <td><code class="language-plaintext highlighter-rouge">approve_backlog</code></td>
+    </tr>
+    <tr>
+      <td>Backlog approval → Spec</td>
+      <td><code class="language-plaintext highlighter-rouge">backlog_approved</code></td>
+      <td><code class="language-plaintext highlighter-rouge">spec_all_components</code></td>
+    </tr>
+    <tr>
+      <td>Spec → Build</td>
+      <td><code class="language-plaintext highlighter-rouge">spec_complete</code> (per component) · <code class="language-plaintext highlighter-rouge">spec_phase_complete</code></td>
+      <td><code class="language-plaintext highlighter-rouge">build_all_components</code></td>
+    </tr>
+    <tr>
+      <td>Build → confirm_integration</td>
+      <td><code class="language-plaintext highlighter-rouge">dev_complete</code>, <code class="language-plaintext highlighter-rouge">tests_passing</code> (per component)</td>
+      <td><code class="language-plaintext highlighter-rouge">confirm_integration</code></td>
+    </tr>
+    <tr>
+      <td>Gaps merged</td>
+      <td>gap-*.md files deleted from disk (no flag — orchestrator re-scans)</td>
+      <td><code class="language-plaintext highlighter-rouge">merge_gap_specs</code> verify</td>
+    </tr>
+    <tr>
+      <td>Integration tests run</td>
+      <td><code class="language-plaintext highlighter-rouge">integration_tests_passing</code></td>
+      <td><code class="language-plaintext highlighter-rouge">deploy_release</code> gate</td>
+    </tr>
+    <tr>
+      <td>Integration skipped</td>
+      <td><code class="language-plaintext highlighter-rouge">integration_skipped</code></td>
+      <td><code class="language-plaintext highlighter-rouge">deploy_release</code> gate</td>
+    </tr>
+    <tr>
+      <td>Deploy</td>
+      <td><code class="language-plaintext highlighter-rouge">deployment_status:complete</code> (per component)</td>
+      <td>routing row 9</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="extension-points">Extension Points</h2>
+
+<p>SpecGantry is open source and designed to be extended.</p>
+
+<h3 id="custom-guardrails">Custom Guardrails</h3>
+
+<p>Add custom rules to the <code class="language-plaintext highlighter-rouge">## Guardrails</code> section of <code class="language-plaintext highlighter-rouge">architecture-spec.md</code>. The component-spec agent enforces every guardrail in that section — adding new ones requires no code changes. Examples:</p>
+
+<ul>
+  <li>“All API endpoints must require authentication”</li>
+  <li>“No direct database queries from the presentation layer”</li>
+  <li>“All external API calls must respect a 5-second timeout”</li>
+</ul>
+
+<h3 id="custom-agents">Custom Agents</h3>
+
+<p>Add domain-specific agents by placing a new agent definition file in the <code class="language-plaintext highlighter-rouge">agents/</code> directory with standard frontmatter. Custom agents follow the same subagent pattern as built-in phase agents.</p>
+
+<h3 id="custom-phase-pipeline">Custom Phase Pipeline</h3>
+
+<p>Advanced users can extend the pipeline — for example, inserting a security review phase between spec and build — by adding a new agent and wiring it into the <code class="language-plaintext highlighter-rouge">/spec-gantry</code> skill routing logic.</p>
+
+<hr />
+
+<h2 id="contributing">Contributing</h2>
+
+<p>SpecGantry is open source under Apache 2.0. See <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for details.</p>
+
+<p>Issues and PRs welcome: <a href="https://github.com/specgantry/specgantry.github.io">github.com/specgantry/specgantry.github.io</a></p>
+
+<hr />
+
+<h2 id="next-steps">Next Steps</h2>
+
+<div class="next-steps-grid">
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon">❓</div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Answers to common questions about installation, roles, pipeline phases, costs, and troubleshooting.</span>
+    </div>
+  </a>
+  <a href="/docs/getting-started" class="next-step-card">
+    <div class="next-step-icon">🚀</div>
+    <div>
+      <strong>Getting Started</strong>
+      <span>Install and run your first session in under 5 minutes.</span>
+    </div>
+  </a>
+</div>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+            <a href="/docs/skills" class="page-nav-link">
+              <span class="page-nav-dir">← Previous</span>
+              <span class="page-nav-label">Skills Guide</span>
+            </a>
+          
+        </div>
+        <div class="page-nav-next">
+          
+            <a href="/docs/faq" class="page-nav-link">
+              <span class="page-nav-dir">Next →</span>
+              <span class="page-nav-label">FAQ</span>
+            </a>
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Guide — SpecGantry Docs</title>
+  <meta name="description" content="The two skills that power SpecGantry — what they do and when to use them.">
+  <meta property="og:title" content="Skills Guide">
+  <meta property="og:description" content="The two skills that power SpecGantry — what they do and when to use them.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://specgantry.github.io/docs/skills/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Skills Guide">
+  <meta name="twitter:description" content="The two skills that power SpecGantry — what they do and when to use them.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+<body class="docs-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── TOP NAV ──────────────────────────────────────────────────────── -->
+  <header class="docs-topnav">
+    <div class="docs-topnav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <div class="docs-topnav-center">
+        <span class="docs-breadcrumb-sep">/</span>
+        <a href="/docs" class="docs-breadcrumb-link">Docs</a>
+        
+          <span class="docs-breadcrumb-sep">/</span>
+          <span class="docs-breadcrumb-current">Skills Guide</span>
+        
+      </div>
+      <nav class="docs-topnav-right">
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="docs-topnav-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="docs-topnav-cta">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── DOCS LAYOUT ──────────────────────────────────────────────────── -->
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="/docs" class="sidebar-link ">
+            Overview
+          </a>
+          <a href="/docs/getting-started" class="sidebar-link ">
+            Installation
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">The Pipeline</div>
+          <a href="/docs/how-it-works" class="sidebar-link ">
+            How It Works
+          </a>
+          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
+          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
+          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <a href="/docs/skills" class="sidebar-link sidebar-link-active">
+            Skills Guide
+          </a>
+          <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
+          <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Reference</div>
+          <a href="/docs/architecture" class="sidebar-link ">
+            Architecture
+          </a>
+          <a href="/docs/faq" class="sidebar-link ">
+            FAQ
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Community</div>
+          <a href="/blog" class="sidebar-link ">Blog</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="sidebar-link">GitHub ↗</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank" rel="noopener" class="sidebar-link">Issues ↗</a>
+        </div>
+      </nav>
+
+      <div class="sidebar-install">
+        <div class="sidebar-install-title">Quick Install</div>
+        <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-main">
+      <article class="docs-article">
+        <h1 id="specgantry-skills-guide">SpecGantry Skills Guide</h1>
+
+<p>SpecGantry has two skills. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is the one you use every day — it handles everything. <code class="language-plaintext highlighter-rouge">/track-cost</code> is your real-time cost dashboard.</p>
+
+<hr />
+
+<h2 id="skills-overview">Skills Overview</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Skill</th>
+      <th>Command</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>spec-gantry</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">/spec-gantry</code></td>
+      <td>Your single entry point — dashboard, pipeline, new projects, changes, everything</td>
+    </tr>
+    <tr>
+      <td><strong>track-cost</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">/track-cost</code></td>
+      <td>Cost breakdown by phase, component, release, and model</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="spec-gantry">/spec-gantry</h2>
+
+<p><strong>The only command you need to know.</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
+</code></pre></div></div>
+
+<p>Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you’re starting a brand new project, joining a team mid-flight, picking up a component, or handling a production bug — <code class="language-plaintext highlighter-rouge">/spec-gantry</code> detects the situation and guides you from there.</p>
+
+<p>You never need to remember separate commands for different workflows. One command, every time.</p>
+
+<hr />
+
+<h3 id="the-dashboard">The Dashboard</h3>
+
+<p>Two states depending on where you are in the pipeline.</p>
+
+<p><strong>State 1 — No components yet</strong> (ideation in progress, or no project):</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.6  |  My App
+[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
+──────────────────────────────────────────────────────────
+  Ideation in progress — Beat 1: 3/4 topics answered.
+──────────────────────────────────────────────────────────
+  [1] Continue ideation               [P] Project
+                                      [$] Cost
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
+</code></pre></div>  </div>
+</div>
+
+<p><strong>State 2 — Component pipeline active:</strong></p>
+
+<p>The pipeline table and component picker are unified. Every component is visible, its status is shown across all pipeline stages, and you can act on any component directly from the same screen — no navigation required.</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.6  |  Acme Platform
+[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
+──────────────────────────────────────────────────────────
+                              Spec  Dev  Deploy  Assignee
+  [001]  User Auth             ✅    ✅     ✅    alice
+  [002]  Search API            ✅    🔄     ○     bob
+  [003]  Notifications         🔄    ○      ○     carol
+  [004]  Export PDF            ⏳    ○      ○     unassigned
+  [005]  Analytics             🔴    ○      ○     —          depends on 003,004
+  ────────────────────────────────────────────
+  Gap merge                    ○
+  Integration tests            ○
+  Deploy release               ○
+──────────────────────────────────────────────────────────
+  Type a component ID to pick it up   [A] Architecture
+  [1] Continue spec – COMP-003        [I] Integration scenarios
+                                      [P] Project
+                                      [$] Cost
+                                      [+] New work
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
+Enter component ID or action:  `&gt;`
+</code></pre></div>  </div>
+</div>
+
+<p>Type a component number directly (e.g. <code class="language-plaintext highlighter-rouge">004</code>) to pick it up. Blocked components show their dependency inline. The left column shows the most useful contextual actions for your current role and state.</p>
+
+<p><strong>Pipeline stage icons:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Icon</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">✅</code></td>
+      <td>Complete</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄</code></td>
+      <td>Active / in progress</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">👤</code></td>
+      <td>Waiting for your action</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔴</code></td>
+      <td>Blocked by a dependency</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">⏳</code></td>
+      <td>Not started, ready to pick up</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">↷</code></td>
+      <td>Skipped by TL decision (integration tests)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">○</code></td>
+      <td>Not yet reached</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h3 id="what-spec-gantry-handles">What /spec-gantry Handles</h3>
+
+<p><strong>Starting a new project</strong> — When no project exists, <code class="language-plaintext highlighter-rouge">/spec-gantry</code> walks you through setup (name and vision — no version number needed, every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code>) and moves straight into ideation.</p>
+
+<p><strong>Analysing an existing codebase</strong> — If source files are found without a SpecGantry project, <code class="language-plaintext highlighter-rouge">/spec-gantry</code> offers to scan your code and generate an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written.</p>
+
+<p><strong>Joining a team</strong> — Pull the repository after your Team Lead commits <code class="language-plaintext highlighter-rouge">specs/</code>, run <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, and your role is detected automatically. The full pipeline dashboard is visible immediately.</p>
+
+<p><strong>Full component lifecycle</strong> — From claiming a component through spec, development, and deployment — every phase transition is handled through <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. Phase gates are enforced automatically.</p>
+
+<p><strong>Bug fixes and new work</strong> — Use <code class="language-plaintext highlighter-rouge">[+] New work</code> (visible once architecture is complete) to describe a bug, improvement, new component, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and component specs to determine what’s affected — you just describe the work.</p>
+
+<hr />
+
+<h3 id="action-bar-commands">Action Bar Commands</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Who</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture</td>
+      <td>Both</td>
+      <td>View the full architecture spec. Visible whenever <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> exists — including mid-ideation.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[I]</code> Integration scenarios</td>
+      <td>Both</td>
+      <td>View <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> — scenarios, assertions, run history. Visible once seeded during ideation.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[P]</code> Project</td>
+      <td>Both</td>
+      <td>Manage backlog — prioritize, assign, defer. Edit project name and vision.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost</td>
+      <td>Both</td>
+      <td>Opens the cost dashboard — breakdown by phase, component, release, and model</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[+]</code> New work</td>
+      <td>Both</td>
+      <td>Describe a bug, improvement, new component, or change. Visible once ideation is complete.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[?]</code> Help</td>
+      <td>Both</td>
+      <td>Quick reference and docs link</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[X]</code> Exit</td>
+      <td>Both</td>
+      <td>Return to normal Claude Code</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h3 id="classifying-new-work">Classifying New Work</h3>
+
+<p>When you use <code class="language-plaintext highlighter-rouge">[+] New work</code> or when all components are deployed, SpecGantry asks what you want to work on next. It then:</p>
+
+<ol>
+  <li><strong>Classifies</strong> the type of work</li>
+  <li><strong>Maps it to components</strong> — reads the backlog and all component specs to determine which existing components are affected, or what new component to create. You don’t need to specify this.</li>
+  <li><strong>Confirms</strong> the mapping with you before touching any state</li>
+  <li><strong>Routes</strong> — resets phase flags and re-enters the pipeline</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>Classification</th>
+      <th>When it applies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">bug_fix</code></td>
+      <td>Something that was working is now broken — full spec → dev cycle on the affected component</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">enhancement</code></td>
+      <td>An existing component needs to do more or work differently — same cycle, spec updated with change annotations</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">new_component</code></td>
+      <td>A net-new capability — ideation agent runs in amendment mode to assign a component ID and update the backlog</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">project_change</code></td>
+      <td>Cross-cutting: infrastructure, data model, multi-component scope — ideation agent runs in amendment mode first</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>SpecGantry always confirms its classification and component mapping before proceeding.</p>
+
+<hr />
+
+<h3 id="session-resume">Session Resume</h3>
+
+<p>All progress is saved after every question and every section. Every <code class="language-plaintext highlighter-rouge">/spec-gantry</code> invocation picks up exactly where you left off — no manual state management, no lost progress.</p>
+
+<hr />
+
+<h2 id="track-cost">/track-cost</h2>
+
+<p><strong>See exactly what your AI development is costing — in real time, broken down every way that matters.</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost
+</code></pre></div></div>
+
+<p>SpecGantry captures token usage automatically after every agent run. No manual steps, no estimates — real API counts. <code class="language-plaintext highlighter-rouge">/track-cost</code> renders that data as a navigable cost dashboard with four views.</p>
+
+<p>Cost data lives in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>, committed to git alongside your specs. Your whole team has shared visibility into AI spend over the full project lifetime.</p>
+
+<hr />
+
+<h3 id="the-cost-dashboard">The Cost Dashboard</h3>
+
+<p><strong>Default view — Cost Summary by Phase:</strong></p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.0.6  |  Acme Platform
+[██░░░░░░░░]  2/8 components deployed
+──────────────────────────────────────────────────────────
+
+Cost Summary  |  release 1.0.0
+
+Phase               Tokens       Cost
+──────────────────────────────────────
+ideation            12,605      $1.26
+component_spec      14,209      $1.43
+development         31,445      $3.14
+integration_test     6,112      $0.61
+deployment           3,890      $0.39
+──────────────────────────────────────
+Total               68,261      $6.83
+
+──────────────────────────────────────────────────────────
+  [1] By component    [2] By release    [3] By model
+                                        [X] Return
+──────────────────────────────────────────────────────────
+Enter option:  `&gt;`
+</code></pre></div>  </div>
+</div>
+
+<p>The menu bar persists across all views — switch between breakdowns without going back to the summary first.</p>
+
+<hr />
+
+<p><strong>[1] By Component</strong> — total spend per component across all phases:</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Component  |  release 1.0.0
+
+Component        Tokens       Cost
+───────────────────────────────────
+COMP-001         26,209      $2.47
+COMP-002         18,441      $1.84
+COMP-003          9,112      $0.46
+───────────────────────────────────
+Total            53,762      $4.77
+</code></pre></div>  </div>
+</div>
+
+<p>Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual components.</p>
+
+<hr />
+
+<p><strong>[2] By Release</strong> — cumulative spend per deployed release:</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Release
+
+Release      Tokens       Cost
+──────────────────────────────
+1.0.0        80,601      $7.79
+1.1.0        42,340      $4.12
+──────────────────────────────
+Total       122,941     $11.91
+</code></pre></div>  </div>
+</div>
+
+<p>Shows full project history across all releases — useful for understanding how development costs evolve over time.</p>
+
+<hr />
+
+<p><strong>[3] By Model</strong> — spend per model, most expensive first:</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Model  |  release 1.0.0
+
+Model           Tokens       Cost
+──────────────────────────────────
+sonnet-4-6      62,301      $6.23
+haiku-4-5       18,300      $0.92
+──────────────────────────────────
+Total           80,601      $7.79
+</code></pre></div>  </div>
+</div>
+
+<p>Useful for understanding whether your spend profile aligns with what you’d expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.</p>
+
+<hr />
+
+<h3 id="how-cost-tracking-works">How Cost Tracking Works</h3>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">SubagentStop</code> hook fires automatically when each SpecGantry agent completes</li>
+  <li>Token counts are read directly from the agent’s transcript — exact API values, not estimates</li>
+  <li>Cost is computed using live pricing rates fetched from Anthropic’s pricing page on startup (fallback rates used if the fetch fails)</li>
+  <li>One entry is appended to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> per agent run — never overwritten</li>
+</ul>
+
+<h3 id="if-no-data-appears">If No Data Appears</h3>
+
+<p>Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the <a href="/docs/faq#costs-not-being-recorded">FAQ troubleshooting section</a>.</p>
+
+<hr />
+
+<h2 id="common-workflows">Common Workflows</h2>
+
+<h3 id="starting-a-new-project">Starting a New Project</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Team Lead:
+  /spec-gantry → [1] Start new project
+              → Enter name and vision
+              → Beat 1: mature the idea  (~10 min)
+              → Beat 2: shape the system (~15 min)
+              → architecture-spec.md + backlog written
+              → [Y] Approve backlog
+              → Commit specs/ to git
+
+Developers:
+  git pull
+  /spec-gantry → detects project → type component ID to claim it
+              → domain elaboration (first of domain) → write spec → develop (TDD)
+</code></pre></div></div>
+
+<h3 id="onboarding-an-existing-codebase">Onboarding an Existing Codebase</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Team Lead:
+  /spec-gantry → detects source files, no project found
+              → [2] Analyse existing codebase
+              → Review proposed architecture and backlog
+              → Confirm → commit specs/ to git
+</code></pre></div></div>
+
+<h3 id="handling-a-production-bug">Handling a Production Bug</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Team Lead:
+  /spec-gantry → [+] New work
+              → Describe the bug
+              → SpecGantry identifies affected component, confirms
+              → Developer picks it up — full spec → dev cycle
+              → All components pass → confirm-integration prompt
+              → Gap specs reviewed and merged (if any)
+              → [Y] Run integration tests  OR  [S] Skip → deploy
+</code></pre></div></div>
+
+<h3 id="deploying-a-release">Deploying a Release</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Team Lead (once all components pass unit tests):
+  /spec-gantry → confirm-integration prompt shown
+              → gap specs reviewed and confirmed (if any exist)
+              → [Y] Run integration tests  OR  [S] Skip — deploy directly
+              → (if Y) scenarios execute against real system → all pass
+              → [1] Deploy release 1.0.0
+              → Confirm
+              → SpecGantry generates deploy.sh (executable)
+              → Reviews deploy-artifact.md
+              → Runs specs/deploy.sh
+</code></pre></div></div>
+
+<h3 id="reviewing-project-costs">Reviewing Project Costs</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Anyone:
+  /track-cost          → summary by phase
+  → type 1             → breakdown by component
+  → type 2             → breakdown by release
+  → type 3             → breakdown by model
+  → type X             → return to main dashboard
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="next-steps">Next Steps</h2>
+
+<div class="next-steps-grid">
+  <a href="/docs/architecture" class="next-step-card">
+    <div class="next-step-icon">🏗️</div>
+    <div>
+      <strong>Reference</strong>
+      <span>File structure, security model, design principles, and how to extend SpecGantry.</span>
+    </div>
+  </a>
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon">❓</div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Answers to common questions about installation, roles, the pipeline, and troubleshooting.</span>
+    </div>
+  </a>
+</div>
+
+      </article>
+
+      <!-- Doc Navigation Footer -->
+      <nav class="docs-page-nav">
+        <div class="page-nav-prev">
+          
+            <a href="/docs/how-it-works" class="page-nav-link">
+              <span class="page-nav-dir">← Previous</span>
+              <span class="page-nav-label">How It Works</span>
+            </a>
+          
+        </div>
+        <div class="page-nav-next">
+          
+            <a href="/docs/architecture" class="page-nav-link">
+              <span class="page-nav-dir">Next →</span>
+              <span class="page-nav-label">Reference</span>
+            </a>
+          
+        </div>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="docs-footer">
+    <div class="docs-footer-inner">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code · Not affiliated with Anthropic</span>
+      <span>
+        <a href="https://github.com/specgantry/specgantry.github.io">GitHub</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/issues">Issues</a> ·
+        <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE">License</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Highlight active sidebar link based on scroll position
+    const sections = document.querySelectorAll('h2[id], h3[id]');
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+
+    if (sections.length && sublinks.length) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            sublinks.forEach(link => {
+              link.classList.toggle('sidebar-link-active', link.getAttribute('href').endsWith('#' + id));
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => obs.observe(s));
+    }
+
+    // Copy code blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      const btn = document.createElement('button');
+      btn.className = 'pre-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

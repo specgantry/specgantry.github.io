@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpecGantry — AI-Assisted SDLC Pipeline for Claude Code</title>
+  <meta name="google-site-verification" content="0rLKkEIQvHRi4lPU6COp8BOn_GnyYbFJIV-d0n3NhhQ" />
+  <meta name="description"
+    content="SpecGantry enforces structured AI-assisted development from ideation through deployment. Specs before code. Architecture as guardrails. Full token cost visibility.">
+  <meta property="og:title" content="SpecGantry — AI-Assisted SDLC Pipeline for Claude Code">
+  <meta property="og:description"
+    content="Enforces structured development — specs before code, architecture as guardrails, role-based ownership, token cost transparency.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/logo/favicon.ico">
+</head>
+
+<body class="landing-body">
+
+  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-header">
+        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
+        <button class="search-modal-close" id="searchClose">Esc</button>
+      </div>
+      <div class="search-modal-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ─── NAV ──────────────────────────────────────────────────────── -->
+  <header class="landing-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/docs">Docs</a>
+        <a href="/docs/how-it-works">How It Works</a>
+        <a href="/docs/skills">Skills</a>
+        <a href="/blog">Blog</a>
+        <a href="/docs/faq">FAQ</a>
+        <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="nav-github">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+        <a href="/docs/getting-started" class="nav-cta">Get Started</a>
+        <button class="search-trigger search-trigger-dark" id="searchTrigger" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </nav>
+      <button class="nav-hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ─── HERO ─────────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+      </div>
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Claude Code Plugin · v2.0.6 · Production Ready
+        </div>
+        <h1 class="hero-headline">
+          Stop Building Before<br>
+          <span class="gradient-text">You Know What to Build</span>
+        </h1>
+        <p class="hero-sub">
+          SpecGantry wraps Claude Code in a structured SDLC pipeline — enforcing specs before code, architecture as
+          guardrails, and full token cost visibility. One command. The rest is guided.
+        </p>
+        <div class="hero-actions">
+          <a href="/docs/getting-started" class="btn-primary">
+            Install in 90 Seconds
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+          <a href="/docs/how-it-works" class="btn-secondary">See How It Works</a>
+        </div>
+        <div class="hero-terminal">
+          <div class="terminal-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="terminal-title">claude — specgantry</span>
+          </div>
+          <div class="terminal-body">
+            <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
+              https://github.com/specgantry/specgantry.github.io</div>
+            <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.6</div>
+            <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
+            <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
+            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.6</span>  |  Acme Platform</div>
+            <div class="terminal-line output">  [████░░░░░░]  2 / 6 deployed</div>
+            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
+            <div class="terminal-line output">                         Spec   Dev  Deploy</div>
+            <div class="terminal-line output">  001  User Auth         ✅    ✅     ✅</div>
+            <div class="terminal-line output">  002  Search API        ✅    🔄     ○</div>
+            <div class="terminal-line output">  003  Notify            🔄    ○      ○</div>
+            <div class="terminal-line output">  ─────────────────────────────────────────</div>
+            <div class="terminal-line output">  Integration tests    ○</div>
+            <div class="terminal-line output">  Deploy release       ○</div>
+            <div class="terminal-line output"></div>
+            <div class="terminal-line output">  [1] Continue spec – COMP-003</div>
+            <div class="terminal-line output"></div>
+            <div class="terminal-line output">── [A]rch  [I]nteg  [$]Cost  [?]Help  [X]Exit ────────</div>
+            <div class="terminal-line cursor-line"><span class="cursor">▌</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PROBLEM / WHY ─────────────────────────────────────────────── -->
+    <section class="section-why">
+      <div class="section-inner">
+        <div class="why-text">
+          <div class="section-label">The Problem</div>
+          <h2>AI coding tools are fast.<br>That speed is also the risk.</h2>
+          <p>When your AI can write 500 lines in a minute, it's easy to start building before you've answered the hard
+            questions. Three hours later you're refactoring in code review — or worse, starting over.</p>
+          <p>The team already knows the right process. SpecGantry makes it impossible to skip it.</p>
+        </div>
+        <div class="why-cards">
+          <div class="problem-card">
+            <div class="problem-icon">⚡</div>
+            <h4>Speed without direction</h4>
+            <p>AI writes code instantly, but it doesn't know if you're solving the right problem until after the spec
+              review.</p>
+          </div>
+          <div class="problem-card">
+            <div class="problem-icon">🏗️</div>
+            <h4>Architecture discovered too late</h4>
+            <p>Violations found in code review cost 10× more to fix than violations caught at spec time.</p>
+          </div>
+          <div class="problem-card">
+            <div class="problem-icon">💸</div>
+            <h4>Invisible token spend</h4>
+            <p>Teams run up hundreds of dollars in AI tokens with no visibility into what each feature actually cost.
+            </p>
+          </div>
+          <div class="problem-card">
+            <div class="problem-icon">🔀</div>
+            <h4>Role confusion</h4>
+            <p>Without clear ownership, developers make architectural decisions and architects block development.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PIPELINE DIAGRAM ──────────────────────────────────────────── -->
+    <section class="section-pipeline">
+      <div class="section-inner">
+        <div class="section-label center">The Solution</div>
+        <h2 class="center">Five phases. Hard gates between every one.</h2>
+        <p class="section-sub center">No skipping. No "we'll write the spec later." Every phase gate reads the
+          filesystem — the pipeline advances only when the artifact actually exists on disk.</p>
+
+        <div class="pipeline-diagram">
+          <!-- Project Level -->
+          <div class="pipeline-track project-track">
+            <div class="track-label">
+              <span class="track-icon">👑</span>
+              <span>Team Lead</span>
+            </div>
+            <div class="pipeline-phases">
+              <div class="phase-node phase-complete-color">
+                <div class="phase-num">01</div>
+                <div class="phase-name">Ideation</div>
+                <div class="phase-output">architecture-spec.md</div>
+              </div>
+              <div class="phase-arrow">→</div>
+              <div class="phase-gate">
+                <span class="gate-icon">🔒</span>
+                <span class="gate-label">Gate</span>
+              </div>
+              <div class="phase-arrow">→</div>
+              <div class="phase-node phase-spec-color">
+                <div class="phase-num">02</div>
+                <div class="phase-name">Component Spec</div>
+                <div class="phase-output">component-spec.md</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="pipeline-divider">
+            <div class="divider-line"></div>
+            <div class="divider-label">Team Lead commits specs/ → developers pull → builds begin in parallel</div>
+            <div class="divider-line"></div>
+          </div>
+
+          <!-- Component Level -->
+          <div class="pipeline-track feature-track">
+            <div class="track-label">
+              <span class="track-icon">💻</span>
+              <span>Developers (parallel, dependency-ordered)</span>
+            </div>
+            <div class="pipeline-phases">
+              <div class="phase-node phase-build-color">
+                <div class="phase-num">03a</div>
+                <div class="phase-name">Build + Unit Test</div>
+                <div class="phase-output">dev-artifact.yaml</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="pipeline-divider">
+            <div class="divider-line"></div>
+            <div class="divider-label">All components unit-tested → Team Lead confirms integration or deploys directly</div>
+            <div class="divider-line"></div>
+          </div>
+
+          <!-- Integration + Deploy Level -->
+          <div class="pipeline-track project-track">
+            <div class="track-label">
+              <span class="track-icon">👑</span>
+              <span>Team Lead</span>
+            </div>
+            <div class="pipeline-phases">
+              <div class="phase-node phase-arch-color">
+                <div class="phase-num">03b</div>
+                <div class="phase-name">Integration Test</div>
+                <div class="phase-output">integration-scenarios.md</div>
+              </div>
+              <div class="phase-arrow">→</div>
+              <div class="phase-gate">
+                <span class="gate-icon">🔀</span>
+                <span class="gate-label">TL decides</span>
+              </div>
+              <div class="phase-arrow">→</div>
+              <div class="phase-node phase-deploy-color">
+                <div class="phase-num">04</div>
+                <div class="phase-name">Deploy Release</div>
+                <div class="phase-output">deploy-artifact.md</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pipeline-note">
+          <strong>Gates are two-layer:</strong> the orchestrator routes on state flags in <code>project-state.yaml</code>;
+          each subagent enforces its own hard gate against the artifact on disk before doing any work.
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FEATURES ─────────────────────────────────────────────────── -->
+    <section class="section-features">
+      <div class="section-inner">
+        <div class="section-label center">Key Features</div>
+        <h2 class="center">Everything your team needs to ship AI-assisted features with confidence</h2>
+        <div class="features-grid">
+          <div class="feat-card feat-card-large">
+            <div class="feat-icon">🔒</div>
+            <h3>Specs Before Code — Enforced</h3>            <p>No developer can start coding until a component spec exists and has been checked against every architectural
+              guardrail. The gate is hard: Claude Code won't proceed without it. No
+              workarounds, no exceptions.</p>
+            <a href="/docs/how-it-works#spec-gate" class="feat-link">Learn about the spec gate
+              →</a>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🏗️</div>
+            <h3>Architecture as a Living Guardrail</h3>
+            <p>The Team Lead defines the architecture once. Every component spec is automatically checked against it.
+              Violations are flagged before a line of code is written.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">👥</div>
+            <h3>Role-Based Pipeline Ownership</h3>
+            <p>Team Leads own the project. Developers own features. Each sees only what's relevant to them. Nobody can
+              accidentally act outside their role.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔄</div>
+            <h3>Session-Safe Progress</h3>
+            <p>Every phase writes to disk after each question. Network dropped? Context reset? End of day? Pick up
+              exactly where you left off.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">💰</div>
+            <h3>Full Token Cost Visibility</h3>
+            <p>Every agent invocation logs tokens used, model selected, and timestamp. Dashboard shows spend by phase,
+              feature, and developer — no surprises.</p>
+            <a href="/docs/how-it-works#cost-tracking" class="feat-link">See cost tracking →</a>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📋</div>
+            <h3>Complete YAML-Based State</h3>
+            <p>All progress saved as plain text, git-friendly YAML. Audit trails, version control, diffs — it's all
+              there. Perfect for handoffs.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔗</div>
+            <h3>Feature Dependency Management</h3>
+            <p>Architecture can declare component dependencies. Developers can't start a component if its dependencies
+              haven't passed their unit tests. No accidental rework.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔍</div>
+            <h3>Reverse-Engineer Existing Code</h3>
+            <p>Have an existing codebase? SpecGantry analyzes it and generates an architecture spec and component backlog.
+              Bring structure to legacy projects.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── WHO IT'S FOR ──────────────────────────────────────────────── -->
+    <section class="section-roles">
+      <div class="section-inner">
+        <div class="section-label center">Who It's For</div>
+        <h2 class="center">Built for how real teams actually work</h2>
+        <div class="roles-grid">
+          <div class="role-card">
+            <div class="role-avatar">👑</div>
+            <h3>Team Leads &amp; Architects</h3>
+            <ul class="role-list">
+              <li>Run ideation — matures the idea and shapes the system in one conversation</li>
+              <li>Architecture becomes the guardrail every component spec is checked against</li>
+              <li>Confirm integration once all components pass — run tests or skip directly to deploy</li>
+              <li>Deploy the full system as a single release</li>
+            </ul>
+            <a href="/docs/how-it-works#team-lead--architect" class="role-link">Team Lead guide
+              →</a>
+          </div>
+          <div class="role-card role-card-center">
+            <div class="role-avatar">💻</div>
+            <h3>Developers</h3>
+            <ul class="role-list">
+              <li>Always have a clear spec before touching code</li>
+              <li>Architecture guardrails checked before you even start</li>
+              <li>Resume any session exactly where you left off</li>
+              <li>No ambiguity about what "done" looks like</li>
+            </ul>
+            <a href="/docs/how-it-works#developer" class="role-link">Developer guide →</a>
+          </div>
+          <div class="role-card">
+            <div class="role-avatar">🧑‍💻</div>
+            <h3>Solo Developers</h3>
+            <ul class="role-list">
+              <li>Wear both hats — architect then developer</li>
+              <li>Force yourself to answer the hard questions up front</li>
+              <li>Avoid the "build fast in the wrong direction" trap</li>
+              <li>Full audit trail of every decision made</li>
+            </ul>
+            <a href="/docs/getting-started#if-youre-solo" class="role-link">Solo workflow →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── STATS / PROOF ─────────────────────────────────────────────── -->
+    <section class="section-stats">
+      <div class="section-inner">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-num">2</div>
+            <div class="stat-label">Skills — /spec-gantry for everything, /track-cost for cost visibility</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">7</div>
+            <div class="stat-label">Agents — Ideation through deployment, each owning one phase</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">0</div>
+            <div class="stat-label">External dependencies — runs entirely in Claude Code</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">90s</div>
+            <div class="stat-label">Install time — one command, fully operational</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SKILLS QUICK OVERVIEW ─────────────────────────────────────── -->
+    <section class="section-skills">
+      <div class="section-inner">
+        <div class="section-label center">2 Skills, 7 Agents</div>
+        <h2 class="center">One command. Every workflow covered.</h2>
+        <div class="skills-grid">
+          <div class="skill-row">
+            <code class="skill-cmd">/spec-gantry</code>
+            <div class="skill-desc">
+              <strong>Your Single Entry Point</strong> — New project, existing codebase, daily work, bug fixes, new features.
+              Run this at the start of every session. SpecGantry reads your state, shows the full pipeline, and tells you exactly what to do next.
+            </div>
+          </div>
+          <div class="skill-row">
+            <code class="skill-cmd">/track-cost</code>
+            <div class="skill-desc">
+              <strong>Cost Breakdown</strong> — Real token counts and costs by phase and feature.
+              Powered by exact API usage — not estimates. Input, output, cache write, and cache read shown separately.
+            </div>
+          </div>
+        </div>
+        <div class="skills-cta">
+          <a href="/docs/skills" class="btn-secondary">Full Skills Reference →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── BLOG TEASERS ──────────────────────────────────────────────── -->
+    <section class="section-blog">
+      <div class="section-inner">
+        <div class="section-label center">From the Blog</div>
+        <h2 class="center">Why structure matters in agentic development</h2>
+        <div class="blog-cards">
+          <a href="/blog/realtime-cost-tracking" class="blog-card">
+            <div class="blog-card-meta">
+              <span class="blog-tag">Economics</span>
+              <span class="blog-date">June 2026</span>
+            </div>
+            <h3>AI Development Costs Are Visible — If You Track Them at the Right Level</h3>
+            <p>Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.</p>
+            <span class="blog-read-more">Read the post →</span>
+          </a>
+          <a href="/blog/why-ai-needs-guardrails" class="blog-card">
+            <div class="blog-card-meta">
+              <span class="blog-tag">Process</span>
+              <span class="blog-date">June 2026</span>
+            </div>
+            <h3>Why AI Coding Assistants Need Guardrails — Not Just More Tokens</h3>
+            <p>The problem isn't that AI writes bad code. It's that AI has no idea whether the code is solving the right
+              problem. That's a process gap, not a model gap.</p>
+            <span class="blog-read-more">Read the post →</span>
+          </a>
+          <a href="/blog/hidden-cost-of-skipping-specs" class="blog-card">
+            <div class="blog-card-meta">
+              <span class="blog-tag">Economics</span>
+              <span class="blog-date">June 2026</span>
+            </div>
+            <h3>The Hidden Cost of Skipping Specs in Agentic SDLC</h3>
+            <p>Developers skip specs because it feels like overhead. But the rework cost of a misaligned feature
+              implementation dwarfs the 15 minutes it would have taken to write the spec.</p>
+            <span class="blog-read-more">Read the post →</span>
+          </a>
+        </div>
+        <div class="blog-cta">
+          <a href="/blog" class="btn-secondary">View All Posts →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── INSTALL CTA ────────────────────────────────────────────────── -->
+    <section class="section-install">
+      <div class="section-inner">
+        <div class="install-box">
+          <div class="install-text">
+            <h2>Ready to add structure to your AI workflow?</h2>
+            <p>Install SpecGantry in 90 seconds. Works with any Claude Code project — new, existing, or team.</p>
+          </div>
+          <div class="install-code-block">
+            <div class="code-header">
+              <span>Install command</span>
+              <button class="copy-btn"
+                data-copy="claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry">Copy</button>
+            </div>
+            <pre class="install-pre"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+claude plugin install spec-gantry</code></pre>
+          </div>
+          <div class="install-update">
+            <span class="update-label">Keep it updated:</span>
+            <code
+              class="update-cmd">claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry</code>
+            <a href="/docs/faq#how-do-i-update-specgantry" class="update-link">More update
+              options →</a>
+          </div>
+          <div class="install-actions">
+            <a href="/docs/getting-started" class="btn-primary btn-large">
+              Full Installation Guide
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+            <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener"
+              class="btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+              View on GitHub
+            </a>
+          </div>
+          <p class="install-meta">Apache 2.0 · Open Source · Zero external dependencies</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
+        <span class="logo-text">SpecGantry</span>
+        <p>AI-assisted SDLC pipeline for Claude Code.<br>Structure before speed. Always.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title">Docs</div>
+          <a href="/docs">Overview</a>
+          <a href="/docs/getting-started">Getting Started</a>
+          <a href="/docs/how-it-works">How It Works</a>
+          <a href="/docs/skills">Skills Guide</a>
+          <a href="/docs/architecture">Architecture</a>
+          <a href="/docs/faq">FAQ</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Content</div>
+          <a href="/blog">Blog</a>
+          <a href="/blog/realtime-cost-tracking">Real-Time Cost Tracking</a>
+          <a href="/blog/why-ai-needs-guardrails">Why AI Needs Guardrails</a>
+          <a href="/blog/hidden-cost-of-skipping-specs">Cost of Skipping Specs</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Project</div>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank">GitHub</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank">Issues</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE" target="_blank">License</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md"
+            target="_blank">Contributing</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>SpecGantry © 2026 · Apache 2.0 · Made for Claude Code</span>
+      <span>Not affiliated with Anthropic</span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Search using Pagefind raw API ─────────────────────────────────
+    let pagefind;
+    async function initPagefind() {
+      if (pagefind) return;
+      pagefind = await import('/pagefind/pagefind.js');
+      await pagefind.init();
+    }
+
+    const overlay  = document.getElementById('searchOverlay');
+    const trigger  = document.getElementById('searchTrigger');
+    const closeBtn = document.getElementById('searchClose');
+    const input    = document.getElementById('searchInput');
+    const results  = document.getElementById('searchResults');
+
+    function openSearch() {
+      overlay.classList.add('search-modal-open');
+      input.focus();
+      initPagefind();
+    }
+    function closeSearch() {
+      overlay.classList.remove('search-modal-open');
+      input.value = '';
+      results.innerHTML = '';
+    }
+
+    trigger.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
+    });
+
+    async function runSearch(query) {
+      results.innerHTML = '';
+      if (!query) return;
+      await initPagefind();
+      const search = await pagefind.debouncedSearch(query);
+      if (!search) return;
+      const top = search.results.slice(0, 8);
+      const data = await Promise.all(top.map(r => r.data()));
+      renderResults(data, query);
+    }
+
+    function highlight(text, query) {
+      if (!text) return '';
+      const words = query.split(/\s+/).filter(Boolean);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function renderResults(data, query) {
+      if (!data.length) {
+        results.innerHTML = '<p class="search-no-results">No results found.</p>';
+        return;
+      }
+      const count = document.createElement('div');
+      count.className = 'search-count';
+      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
+      results.appendChild(count);
+
+      data.forEach(item => {
+        const group = document.createElement('div');
+        group.className = 'search-group';
+
+        const title = document.createElement('div');
+        title.className = 'search-group-title';
+        title.textContent = item.meta?.title || 'Untitled';
+        group.appendChild(title);
+
+        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
+          title: item.meta?.title || '',
+          url: item.url,
+          excerpt: item.excerpt
+        }];
+
+        subs.forEach(sub => {
+          const row = document.createElement('a');
+          row.className = 'search-result-row';
+          row.href = sub.url;
+          row.addEventListener('click', closeSearch);
+          row.innerHTML = `
+            <div class="search-result-title">${highlight(sub.title, query)}</div>
+            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
+          `;
+          group.appendChild(row);
+        });
+
+        results.appendChild(group);
+      });
+    }
+
+    // Copy button
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+    });
+
+    // Mobile nav toggle
+    const hamburger = document.querySelector('.nav-hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('nav-links-open');
+        hamburger.classList.toggle('active');
+      });
+    }
+
+    // Animate pipeline phases on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.phase-node, .feat-card, .role-card, .blog-card').forEach(el => {
+      observer.observe(el);
+    });
+  </script>
+</body>
+
+</html>

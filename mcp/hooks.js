@@ -41,6 +41,7 @@ async function hookPreToolUse() {
     /^spec-gantry:/,   // all SpecGantry subagents
     /^Plan$/,          // Claude Code plan mode — read-only, harmless
     /^statusline-setup$/, // Claude Code status line helper
+    /^Explore$/,       // read-only codebase search — safe to allow
   ];
 
   const allowed = !agentType || ALLOWED.some(p => p.test(agentType));

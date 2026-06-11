@@ -211,12 +211,13 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 | Architecture complete, backlog not approved | `Review and approve component backlog` |
 | Backlog approved, specs not started | `Spec all [n] components` |
 | Spec in progress | _(status line)_ `Spec in progress — [n] components running` |
-| All specs done, build not confirmed | `Build all [n] components` |
+| All specs done (`spec_phase_complete:true`), build not confirmed | `Build all [n] components` — TL must select this to proceed; never auto-advanced |
 | Build in progress | _(status line)_ `Build in progress — [n] components running` |
 | All components built, integration not confirmed | `Run integration tests` · `Deploy directly — skip tests` |
 | Integration passed or skipped, deploy pending | `Deploy release [version]` |
 | Developer — assigned components ready to spec | `Continue spec — [COMP-ID]` |
-| Developer — assigned components ready to build | `Continue build — [COMP-ID]` |
+| Developer — spec complete, build not started | `Build [COMP-ID]` — developer must select this; never auto-advanced after spec |
+| Developer — assigned components build in progress | _(status line)_ `Build in progress — [COMP-ID]` |
 | Developer — no assigned components | `Claim a component` |
 
 For TL: append `New work` as the final numbered action whenever `architecture_complete:true`.
@@ -253,15 +254,15 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 1c | No `.claude/local-state.yaml` · no `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
 | 2 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
 | 2b | TL · `architecture_complete:true` · `backlog_approved:false` | **approve_backlog** | yes ⏸ |
-| 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete:false` | **spec_all_components** (batch) | yes ⏸ — confirm before building |
-| 4 | TL · all components `spec_complete:true` · any has `dev_complete:false` · `build_phase_confirmed:false` | **spec_all_components** completion → **confirm_build** prompt → **build_all_components** | yes ⏸ |
-| 5 | TL · `build_phase_confirmed:true` · `active_components` non-empty | **build_all_components** (continuing) | yes ⏸ |
+| 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete:false` | **spec_all_components** (batch) | yes ⏸ — always stop after specs complete, wait for TL to confirm build |
+| 4 | TL · all components `spec_complete:true` · `spec_phase_complete:true` · `build_phase_confirmed:false` | re-render dashboard · ⏸ — wait for TL to select `[1] Build all [n] components` | yes ⏸ |
+| 5 | TL · `build_phase_confirmed:true` · any component has `dev_complete:false` OR `tests_passing:false` | **build_all_components** | yes ⏸ |
 | 6 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_skipped:false` · `integration_phase_confirmed` not set | re-render dashboard · ⏸ — wait for `[1]` (→ **confirm_integration** → **run_integration_tests**) or `[2]` (→ **confirm_integration** → **deploy_release**) | yes ⏸ |
 | 7 | TL · (`integration_tests_passing:true` OR `integration_skipped:true`) · deployment not complete | **deploy_release** | yes ⏸ |
 | 8 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
 | 9 | All components deployed | View H → **classify_and_route** | yes ⏸ |
-| 10 | Dev · assigned components with `spec_complete:false` · `dev_complete:false` | **spec_component** (their component) | yes ⏸ |
-| 11 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` | **build_component** (their component) | yes ⏸ |
+| 10 | Dev · assigned components with `spec_complete:false` · `dev_complete:false` | **spec_component** (their component) | yes ⏸ — always stop after spec completes; never auto-advance to build |
+| 11 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` · explicit `[1]` selected | **build_component** (their component) | yes ⏸ |
 | 12 | Dev · no assigned components | **claim_component** | yes ⏸ |
 
 **⏸ Pause = re-render full dashboard + stop.**
@@ -367,14 +368,15 @@ Process all components with `spec_complete:false` in topological order. For each
 
 When all components have `spec_complete:true`:
 - Set `spec_phase_complete:true` in `.claude/local-state.yaml`
-- Re-render full dashboard — the action bar will show `[1] Build all [n] components` (see action bar rules)
-- ⏸ wait for user input
-- On `[1]`: set `build_phase_confirmed:true` in `.claude/local-state.yaml` → proceed to **build_all_components**
+- Re-render full dashboard with transition note `✓ All specs complete · ready to build`
+- ⏸ **stop here** — do not offer or proceed to build automatically
+- The action bar will show `[1] Build all [n] components` per routing row 4; the TL must explicitly select it
 
 ---
 
 ### build_all_components
 **Gate:** `spec_phase_complete:true` · `build_phase_confirmed:true` · at least one component has `dev_complete:false` OR `tests_passing:false`
+**Entry:** reached only when TL explicitly selects `[1] Build all [n] components` from the dashboard (routing row 4). On that selection, set `build_phase_confirmed:true` in `.claude/local-state.yaml` then proceed.
 **Idempotency:** all `tests_passing:true` → re-render · stop
 
 Process all components with `tests_passing:false` in topological order. For each:
@@ -425,6 +427,7 @@ When all components have `tests_passing:true`:
 
 ### build_component (developer path)
 **Gate:** `role:dev` · comp_id assigned to this developer · `spec_complete:true` · `dev_complete:false`
+**Entry:** reached only when developer explicitly selects `[1] Build [COMP-ID]` from the dashboard. Never auto-invoked after spec completes — the developer must see the completed spec on the dashboard and choose to begin the build.
 
 - **Lock:** create `.claude/components/[COMP-ID].lock`
 - **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`

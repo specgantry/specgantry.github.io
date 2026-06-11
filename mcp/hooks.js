@@ -52,7 +52,7 @@ async function hookUserPromptSubmit() {
 
   process.stdout.write(JSON.stringify({
     continue: true,
-    hookSpecificOutput: { additionalSystemPrompt: note },
+    hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: note },
   }) + '\n');
   process.exit(0);
 }

@@ -43,8 +43,11 @@ Two states depending on where you are in the pipeline.
 
 **State 1 — No components yet** (ideation in progress, or no project):
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  My App
+SpecGantry v2.0.5  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
@@ -55,13 +58,17 @@ SpecGantry v2.0.4  |  My App
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 ```
+</div>
 
 **State 2 — Component pipeline active:**
 
 The pipeline table and component picker are unified. Every component is visible, its status is shown across all pipeline stages, and you can act on any component directly from the same screen — no navigation required.
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  Acme Platform
+SpecGantry v2.0.5  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -85,6 +92,7 @@ SpecGantry v2.0.4  |  Acme Platform
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
+</div>
 
 Type a component number directly (e.g. `004`) to pick it up. Blocked components show their dependency inline. The left column shows the most useful contextual actions for your current role and state.
 
@@ -97,6 +105,7 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 | `👤` | Waiting for your action |
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
+| `↷` | Skipped by TL decision (integration tests) |
 | `○` | Not yet reached |
 
 ---
@@ -173,8 +182,11 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 
 **Default view — Cost Summary by Phase:**
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
 ```
-SpecGantry v2.0.4  |  Acme Platform
+SpecGantry v2.0.5  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 
@@ -196,12 +208,16 @@ Total               68,261      $6.83
 ──────────────────────────────────────────────────────────
 Enter option:  `>`
 ```
+</div>
 
 The menu bar persists across all views — switch between breakdowns without going back to the summary first.
 
 ---
 
 **[1] By Component** — total spend per component across all phases:
+
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
 Cost by Component  |  release 1.0.0
@@ -214,12 +230,16 @@ COMP-003          9,112      $0.46
 ───────────────────────────────────
 Total            53,762      $4.77
 ```
+</div>
 
 Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual components.
 
 ---
 
 **[2] By Release** — cumulative spend per deployed release:
+
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
 Cost by Release
@@ -231,12 +251,16 @@ Release      Tokens       Cost
 ──────────────────────────────
 Total       122,941     $11.91
 ```
+</div>
 
 Shows full project history across all releases — useful for understanding how development costs evolve over time.
 
 ---
 
 **[3] By Model** — spend per model, most expensive first:
+
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
 Cost by Model  |  release 1.0.0
@@ -248,6 +272,7 @@ haiku-4-5       18,300      $0.92
 ──────────────────────────────────
 Total           80,601      $7.79
 ```
+</div>
 
 Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.
 
@@ -304,19 +329,22 @@ Team Lead:
               → Describe the bug
               → SpecGantry identifies affected component, confirms
               → Developer picks it up — full spec → dev cycle
-              → All components pass → TL runs gap merge (if needed) → integration tests → deploy
+              → All components pass → confirm-integration prompt
+              → Gap specs reviewed and merged (if any)
+              → [Y] Run integration tests  OR  [S] Skip → deploy
 ```
 
 ### Deploying a Release
 
 ```
 Team Lead (once all components pass unit tests):
-  /spec-gantry → gap merge runs automatically (if gap specs exist)
-              → [1] Run integration tests
-              → Scenarios execute against real system
-              → All pass → [1] Deploy release 1.0.0
+  /spec-gantry → confirm-integration prompt shown
+              → gap specs reviewed and confirmed (if any exist)
+              → [Y] Run integration tests  OR  [S] Skip — deploy directly
+              → (if Y) scenarios execute against real system → all pass
+              → [1] Deploy release 1.0.0
               → Confirm
-              → SpecGantry generates deploy.sh
+              → SpecGantry generates deploy.sh (executable)
               → Reviews deploy-artifact.md
               → Runs specs/deploy.sh
 ```

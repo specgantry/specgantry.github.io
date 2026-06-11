@@ -35,7 +35,7 @@ Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 | `specs/project-state.yaml` | ideation subagent | `phase_gates` (incl. `backlog_approved`), `backlog` (component entries with nested `features`), `domains`; `project.release` |
 | `specs/architecture-spec.md` | ideation subagent | single source of truth — vision, constraints, tech stack, system boundaries, guardrails, component backlog summary, domain sections; **never duplicated in component specs** |
 | `specs/integration-scenarios.md` | ideation subagent (seed) · component-spec subagent (extend) · integration-test subagent (results) | living document — cross-component scenarios, assertions, run history |
-| `.claude/local-state.yaml` | this skill | `role` (tl or dev); `active_components` (list of COMP-IDs currently in-flight); `spec_phase_complete`; `build_phase_confirmed`; `integration_phase_confirmed` |
+| `.claude/local-state.yaml` | this skill | `role` (tl or dev); `active_components` (list of COMP-IDs currently in-flight); `current_component` (single COMP-ID being processed right now, null otherwise — used by cost hook); `spec_phase_complete`; `build_phase_confirmed`; `integration_phase_confirmed` |
 | `specs/components/[COMP-ID]/state.yaml` | component-spec subagent | `spec_complete`, `dev_complete`, `tests_passing`, `deployment_status` |
 | `specs/components/[COMP-ID]/component-spec.md` | component-spec subagent | scope, interface contract, data, features (internal ordered list), test plan |
 | `specs/components/[COMP-ID]/dev-artifact.yaml` | dev + test subagents | `overall_status`, `features_implemented`, `gap_specs` |
@@ -163,10 +163,11 @@ Integration tests:
 - 👤 all `tests_passing:true` and `integration_phase_confirmed:false` — awaiting TL confirm
 - 🔄 running
 - ✅ `integration_tests_passing:true`
+- ↷ `integration_skipped:true` — TL skipped, deploy gate open
 
 Deploy release:
 - ○ not yet reached
-- ⏳ `integration_tests_passing:true` and awaiting deploy confirm
+- ⏳ (`integration_tests_passing:true` OR `integration_skipped:true`) and awaiting deploy confirm
 - 🔄 running
 - ✅ all `deployment_status:complete`
 
@@ -264,7 +265,7 @@ Build in progress (`active_components` non-empty):
 - `[1]` Continue build _(informational — subagents running)_
 
 All components built, awaiting integration confirm (TL):
-- `[1]` Run integration tests _(→ confirm_integration)_
+- `[1]` Review gaps + run integration tests or deploy _(→ confirm_integration)_
 
 Integration tests passed, awaiting deploy (TL):
 - `[1]` Deploy release [next_version] _(→ deploy_release)_
@@ -323,11 +324,11 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 1b | No `.claude/local-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
 | 2 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
 | 2b | TL · `architecture_complete:true` · `backlog_approved:false` | **approve_backlog** | yes ⏸ |
-| 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete` not set | **spec_all_components** (batch) | yes ⏸ — confirm before building |
-| 4 | TL · all components `spec_complete:true` · any has `dev_complete:false` · `build_phase_confirmed` not set | **confirm_build** → **build_all_components** | yes ⏸ |
+| 3 | TL · `backlog_approved:true` · any component has `spec_complete:false` · `spec_phase_complete:false` | **spec_all_components** (batch) | yes ⏸ — confirm before building |
+| 4 | TL · all components `spec_complete:true` · any has `dev_complete:false` · `build_phase_confirmed:false` | **confirm_build** → **build_all_components** | yes ⏸ |
 | 5 | TL · `build_phase_confirmed:true` · `active_components` non-empty | **build_all_components** (continuing) | yes ⏸ |
-| 6 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_phase_confirmed` not set | **confirm_integration** (pre-check gaps) → **run_integration_tests** | yes ⏸ |
-| 7 | TL · `integration_tests_passing:true` · deployment not complete | **deploy_release** | yes ⏸ |
+| 6 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_skipped:false` · `integration_phase_confirmed` not set | **confirm_integration** (pre-check gaps) → **run_integration_tests** | yes ⏸ |
+| 7 | TL · (`integration_tests_passing:true` OR `integration_skipped:true`) · deployment not complete | **deploy_release** | yes ⏸ |
 | 8 | `[+]` pressed · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
 | 9 | All components deployed | View H → **classify_and_route** | yes ⏸ |
 | 10 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` | **build_component** (their component) | yes ⏸ |
@@ -372,10 +373,11 @@ phase_gates:
   architecture_complete: false
   backlog_approved: false
   integration_tests_passing: false
+  integration_skipped: false
 domains: []
 backlog: []
 ```
-Write `.claude/local-state.yaml`: `role: tl` · `active_components: []` · `spec_phase_complete: false` · `build_phase_confirmed: false` · `integration_phase_confirmed: false`
+Write `.claude/local-state.yaml`: `role: tl` · `active_components: []` · `current_component: null` · `spec_phase_complete: false` · `build_phase_confirmed: false` · `integration_phase_confirmed: false`
 Create `.claude/components/.gitkeep`.
 Append to `.gitignore` if absent: `specs/.current-session` · `.claude/components/*.lock`
 → **start_ideation**
@@ -416,7 +418,7 @@ Component backlog awaiting approval:
 
 Process all components with `spec_complete:false` in topological order. For each component:
 - **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append COMP-ID to `active_components` in `.claude/local-state.yaml`
+- **Add to active:** append COMP-ID to `active_components` in `.claude/local-state.yaml` · set `current_component: [COMP-ID]`
 - **Invoke:** `spec-gantry:component-spec:component-spec-subagent` · description: `"Writing component spec for [comp_id]"` · pass `comp_id`, `project_dir`
 - **After:** verify `spec_complete:true` · remove lock · remove from `active_components` · re-render dashboard progress line
 - If any spec fails: halt, surface error, stop — do not continue to next component
@@ -444,7 +446,7 @@ Process all components with `tests_passing:false` in topological order. For each
 - **Gate:** `spec_complete:true` · `dev_complete:false`
 - **API contract gate:** read `## Interface Contract` from current + all previously processed component specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership
 - **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append to `active_components`
+- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
 - **Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [comp_id]"` · pass `comp_id`, `project_dir`
 - **After:** read `overall_status` from `dev-artifact.yaml`; if `fail` → halt "Build or tests failed — run /spec-gantry to resume"; else set `tests_passing:true` · set `status:ready` in backlog · remove from `active_components` · remove lock · re-render dashboard progress line
 
@@ -477,7 +479,7 @@ When all components have `tests_passing:true`:
 **Gate:** `role:dev` · comp_id assigned to this developer · `spec_complete:true` · `dev_complete:false`
 
 - **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append to `active_components`
+- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
 - **Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [comp_id]"` · pass `comp_id`, `project_dir`
 - **After:** read `overall_status` from `dev-artifact.yaml`; if `fail` → halt; else set `tests_passing:true` · remove from `active_components` · remove lock · re-render
 
@@ -520,38 +522,40 @@ On `X`: re-render · ⏸
 **Gate:** all components `tests_passing:true` · `integration_phase_confirmed:false`
 **Entry point** for the integration phase — always reached directly from `build_all_components`. Never skipped.
 
-**Step 1 — Pre-check for gap files.** Scan `specs/components/*/gap-*.md`.
+**Step 1 — Gap pre-check and merge (if needed).** Scan `specs/components/*/gap-*.md`.
 
-**No gaps found** — show:
-```
-✓ All [n] components built and tested — no gap specs found.
-
-  [Y] Run integration tests   [X] Hold
-```
-On `Y`: set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
-On `X`: re-render · ⏸
-
-**Gaps found** — show summary before asking TL to confirm:
+**Gaps found** — show summary and ask TL to confirm merge:
 ```
 ✓ All [n] components built and tested.
 
-  Gap specs detected — specs must be updated before integration tests:
+  Gap specs detected — specs must be updated before proceeding:
 
     COMP-001  2 gap file(s) — gap-2026-06-01.md, gap-2026-06-02.md
     COMP-003  1 gap file(s) — gap-2026-06-05.md
 
-  [Y] Merge gaps then run integration tests   [X] Hold
+  [Y] Merge gap specs   [X] Hold
 ```
 On `Y`:
-  - → invoke **merge_gap_specs** (which processes all gaps and returns a merge summary)
+  - → invoke **merge_gap_specs** (processes all gaps, returns merge summary)
   - Show merge summary:
     ```
     ✓ Gap specs merged — specs and architecture updated to reflect actual build
 
-      [merge summary returned by merge_gap_specs]
+      COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
+      COMP-003: 1 gap(s) merged — Data section updated
 
     ```
-  - Set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
+  - → proceed to **Step 2**
+On `X`: re-render · ⏸
+
+**No gaps found** — skip Step 1, proceed directly to **Step 2**.
+
+**Step 2 — Choose next phase.** Show:
+```
+  [Y] Run integration tests   [S] Skip — deploy directly   [X] Hold
+```
+On `Y`: set `integration_phase_confirmed:true` → proceed to **run_integration_tests**
+On `S`: set `integration_skipped:true` in `specs/project-state.yaml → phase_gates` → proceed to **deploy_release**
 On `X`: re-render · ⏸
 
 ---
@@ -572,7 +576,7 @@ On `X`: re-render · ⏸
 ---
 
 ### deploy_release
-**Gate:** `role:tl` · `integration_tests_passing:true`
+**Gate:** `role:tl` · (`integration_tests_passing:true` OR `integration_skipped:true`)
 **Idempotency:** all components `deployment_status:complete` → re-render · stop
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying full system"` · pass `project_dir`
 **After:** read `deployment_status` from any backlog entry; if `blocked` → halt with blockers; else re-render · ⏸
@@ -608,14 +612,14 @@ Prompt: `Describe the next work (bug fix / improvement / new feature / architect
 - Reset all phase flags in `specs/components/[COMP-ID]/state.yaml`: `spec_complete:false · dev_complete:false · tests_passing:false · deployment_status:null`
 - Add to `active_components` in `.claude/local-state.yaml`
 - Reset batch-phase flags: `spec_phase_complete:false · build_phase_confirmed:false · integration_phase_confirmed:false`
-- Reset `integration_tests_passing:false`
+- Reset `integration_tests_passing:false` and `integration_skipped:false` in `specs/project-state.yaml → phase_gates`
 - Re-render · ⏸
 
 `new_component` → route to **start_ideation** (amendment mode). Re-render after ideation completes. ⏸
 
 `project_change`:
 - Mark impacted components with `spec_complete:false`
-- Reset `integration_tests_passing:false`
+- Reset `integration_tests_passing:false` and `integration_skipped:false` in `specs/project-state.yaml → phase_gates`
 - Reset batch-phase flags
 - Re-render · ⏸ before **start_ideation** (amendment mode)
 
@@ -630,7 +634,7 @@ Proceed? `[Y]`/`[N]`
 ```
 **Gate:** source files exist · `architecture_complete` not true
 **Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · description: `"Reverse engineering existing codebase"` · pass `project_name`, `project_dir`
-**After:** verify `architecture_complete:true` · set `active_components: []` in local-state · re-render dashboard · ⏸
+**After:** verify `architecture_complete:true` · set `active_components: []` · set `current_component: null` in local-state · re-render dashboard · ⏸
 
 ---
 

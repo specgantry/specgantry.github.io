@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.4`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.0.5`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -122,8 +122,11 @@ SpecGantry detects your situation automatically and guides you from there.
 
 ### New Project (Empty Folder)
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  New Project
+SpecGantry v2.0.5  |  New Project
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -134,6 +137,7 @@ SpecGantry v2.0.4  |  New Project
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 ```
+</div>
 
 Select `[1]`. You'll answer two questions — project name and vision. No version number needed; every project starts at `1.0.0`. SpecGantry moves straight into ideation.
 
@@ -145,8 +149,11 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture spec
 
 If your Team Lead has already committed `specs/` to the repository, SpecGantry detects it and sets your role automatically. The pipeline dashboard shows every component, its current phase, and what you can pick up:
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  Acme Platform
+SpecGantry v2.0.5  |  Acme Platform
 [█░░░░░░░░░]  1/10 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -170,6 +177,7 @@ SpecGantry v2.0.4  |  Acme Platform
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
+</div>
 
 Type a component number (e.g. `003`) to pick it up and begin the component spec phase immediately.
 
@@ -198,7 +206,7 @@ Type a component number (e.g. `003`) to pick it up and begin the component spec 
 2. **Complete Ideation** yourself — both idea maturation and system shaping happen in one session
 3. **Approve the backlog** — then switch to Developer role
 4. **Work components from the dashboard** using TDD
-5. **Run integration tests** once all components pass — then deploy as one release
+5. **Confirm integration** once all components pass — run tests or skip straight to deploy
 
 ---
 
@@ -253,8 +261,11 @@ Every `/spec-gantry` invocation re-reads all state and renders the full dashboar
 
 Shown during ideation, or when no project exists. The middle section shows the current phase status:
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  My App
+SpecGantry v2.0.5  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -265,13 +276,17 @@ SpecGantry v2.0.4  |  My App
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 ```
+</div>
 
 ### State 2 — Component pipeline active
 
 Shown once the backlog is approved. The pipeline table and component picker are unified — every component is visible and directly actionable from the same screen:
 
+<div class="docs-terminal">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
 ```
-SpecGantry v2.0.4  |  My App
+SpecGantry v2.0.5  |  My App
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Deploy  Assignee
@@ -295,6 +310,7 @@ SpecGantry v2.0.4  |  My App
 ──────────────────────────────────────────────────────────
 Enter component ID or action:  `>`
 ```
+</div>
 
 **Pipeline stage icons:**
 
@@ -305,6 +321,7 @@ Enter component ID or action:  `>`
 | `👤` | Waiting for your action |
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
+| `↷` | Skipped by TL decision (integration tests) |
 | `○` | Not yet reached |
 
 Type a component number directly (e.g. `004`) to pick it up. Blocked components show their dependency inline — no separate screen needed.
@@ -326,7 +343,7 @@ SpecGantry works great for solo developers. Complete both the Team Lead and Deve
 It depends on project size and complexity. A complete ideation session typically runs $0.50–$2.00. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, component, release, and model.
 
 **"When can I deploy?"**
-Once all components pass their unit tests and integration tests pass. The TL triggers integration testing first — all critical cross-component scenarios must pass before the deployment gate opens.
+Once all components pass their unit tests. The TL is then prompted at a single confirmation point: any gap specs are reviewed and merged first, then the TL chooses `[Y] Run integration tests`, `[S] Skip — deploy directly`, or `[X] Hold`. Both paths are recorded as audit flags and either one opens the deploy gate.
 
 ---
 

@@ -68,6 +68,7 @@ phase_gates:
   architecture_complete: true
   backlog_approved: true
   integration_tests_passing: false
+  integration_skipped: false
 ideation_recommendation: proceed
 domains: [list]
 backlog:
@@ -94,6 +95,7 @@ backlog:
 ```yaml
 role: tl
 active_components: []
+current_component: null
 spec_phase_complete: false
 build_phase_confirmed: false
 integration_phase_confirmed: false

@@ -112,7 +112,7 @@ An append-only record of token usage and cost for every agent session. Each entr
 |--------|-----------|-----------|
 | Run ideation | ✅ | ❌ |
 | Approve component backlog | ✅ | ❌ |
-| Run integration tests | ✅ | ❌ |
+| Run integration tests (optional) | ✅ | ❌ |
 | Manage backlog (`[P]` Project) | ✅ | ✅ (view) |
 | View architecture spec | ✅ | ✅ (read-only) |
 | Write component spec | ✅ | ✅ |
@@ -146,6 +146,107 @@ A gate failure tells you exactly what's missing:
 
   Run /spec-gantry to return to the dashboard.
 ```
+
+---
+
+## Pipeline Flow
+
+How state, gates, and subagents connect across the full lifecycle:
+
+```
+  /spec-gantry invoked
+        │
+        ▼
+  ┌─────────────┐
+  │  init /     │  No project found → collect name + vision → write
+  │  ideation   │  project-state.yaml · architecture-spec.md
+  └──────┬──────┘
+         │  ideation_complete:true · architecture_complete:true
+         ▼
+  ┌──────────────┐
+  │   Backlog    │  TL reviews component list
+  │   Approval   │  [Y] sets backlog_approved:true
+  └──────┬───────┘
+         │  backlog_approved:true
+         ▼
+  ┌──────────────────────────────────────────────────────────────┐
+  │  Component Loop  (one subagent per component, topo order)    │
+  │                                                              │
+  │  ┌─────────────────┐        ┌──────────────────────────┐    │
+  │  │  Component Spec  │──────▶│  Development (TDD)        │    │
+  │  │  component-spec  │        │  dev-artifact.yaml        │    │
+  │  │  subagent        │  gate  │  overall_status: pass     │    │
+  │  │  spec_complete:  │  ──── │  dev_complete:true        │    │
+  │  │  true            │        │  tests_passing:true       │    │
+  │  └─────────────────┘        └──────────────────────────┘    │
+  │                                       │                      │
+  │                              gap-*.md written if             │
+  │                              spec diverges from build        │
+  └───────────────────────────────────────┬──────────────────────┘
+                                          │  all tests_passing:true
+                                          ▼
+                               ┌─────────────────────┐
+                               │  confirm_integration │  TL decision point
+                               │                      │
+                               │  Step 1 (if gaps):   │
+                               │  Show gap list →     │
+                               │  [Y] Merge gaps      │
+                               │       ↓              │
+                               │  gap-merge subagent  │
+                               │  → summary shown     │
+                               │                      │
+                               │  Step 2:             │
+                               │  [Y] Run integ tests │
+                               │  [S] Skip → deploy   │
+                               │  [X] Hold            │
+                               └──────────┬───────────┘
+                    ┌─────────────────────┴──────────────────────┐
+                    │  [Y]                                    [S] │
+                    ▼                                             ▼
+         ┌──────────────────┐                    sets integration_skipped:true
+         │  Integration     │                             │
+         │  Test subagent   │                             │
+         │  real system,    │                             │
+         │  no mocks        │                             │
+         │  integration_    │                             │
+         │  tests_passing:  │                             │
+         │  true            │                             │
+         └────────┬─────────┘                             │
+                  │                                       │
+                  └───────────────────────────────────────┘
+                                        │
+                                        ▼
+                             ┌─────────────────────┐
+                             │   deploy_release     │  Gate:
+                             │                      │  integration_tests_
+                             │   deployment         │  passing:true
+                             │   subagent           │  OR
+                             │   → deploy.sh        │  integration_
+                             │   → chmod +x         │  skipped:true
+                             │   → deploy-artifact  │
+                             └──────────┬──────────┘
+                                        │  deployment_status:complete
+                                        ▼
+                             ┌─────────────────────┐
+                             │  Post-deployment     │
+                             │  [+] New work        │
+                             │  classify_and_route  │
+                             │  → re-enters loop    │
+                             └─────────────────────┘
+```
+
+**State flags that gate each transition:**
+
+| Transition | Flag set | Flag read by next gate |
+|---|---|---|
+| Ideation → Backlog approval | `ideation_complete`, `architecture_complete` | `approve_backlog` |
+| Backlog approval → Spec | `backlog_approved` | `spec_all_components` |
+| Spec → Build | `spec_complete` (per component) · `spec_phase_complete` | `build_all_components` |
+| Build → confirm_integration | `dev_complete`, `tests_passing` (per component) | `confirm_integration` |
+| Gaps merged | gap-*.md files deleted from disk (no flag — orchestrator re-scans) | `merge_gap_specs` verify |
+| Integration tests run | `integration_tests_passing` | `deploy_release` gate |
+| Integration skipped | `integration_skipped` | `deploy_release` gate |
+| Deploy | `deployment_status:complete` (per component) | routing row 9 |
 
 ---
 

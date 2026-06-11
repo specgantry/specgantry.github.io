@@ -28,17 +28,18 @@ COMPONENT LOOP (parallel, dependency-ordered) ───────────�
   Spec   — component spec + domain elaboration (first of each domain)
   Dev    — TDD implementation + unit/component tests  →  technically solid
 
-GAP MERGE (auto, if needed) ─────────────────────────────────
-  Merge any gap specs written during build back into component and architecture specs
+GAP MERGE (TL-confirmed, if needed) ────────────────────────
+  TL reviews any gap specs found during build and confirms merge before proceeding
 
-INTEGRATION TEST ────────────────────────────────────────────
+INTEGRATION TEST (optional) ────────────────────────────────
   Execute critical cross-component scenarios  →  functionally solid
+  TL can skip integration tests and go straight to deploy — recorded as audit flag
 
 DEPLOY ──────────────────────────────────────────────────────
   Deployment script + release
 ```
 
-Components run in parallel and in dependency order — data-layer components first, consumers after. If any gap specs were written during build, they are merged automatically before integration testing begins. Integration testing runs once, after all components pass their unit tests. Deployment is gated on integration tests passing.
+Components run in parallel and in dependency order — data-layer components first, consumers after. Once all components pass their unit tests, the TL is prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then the TL chooses to run integration tests or skip directly to deployment — both paths are fully audited in `project-state.yaml`. Deployment is gated on either integration tests passing (`integration_tests_passing:true`) or the TL explicitly skipping them (`integration_skipped:true`).
 
 ---
 
@@ -171,30 +172,33 @@ Multiple gap specs can accumulate across components during parallel build. They 
 
 ---
 
-### Gap Merge (Automatic) {#gap-merge}
+### Gap Merge (TL-confirmed) {#gap-merge}
 
-**Who:** Automated (triggered before integration tests)
+**Who:** Team Lead (confirms, then automated)
 **Time:** 2–5 minutes
 **Output:** Updated `component-spec.md` and/or `architecture-spec.md` · gap files deleted
 
-Before integration testing begins, SpecGantry checks for unmerged gap specs across all components. If any exist, the component-spec subagent is invoked in gap-merge mode before integration testing proceeds:
+When all components pass their unit tests, SpecGantry checks for unmerged gap specs across all components and presents the findings to the TL before anything is run. If gap specs are found, the TL reviews the list and confirms the merge — this is the same decision point where the TL then chooses to run integration tests or skip to deploy.
 
+If the TL confirms the merge:
 1. Each gap file is applied in chronological order — component spec edits in place, architecture changes appended as amendment blocks
 2. Side-effects listed in the gap are checked against other components; minimal corrections applied only where a contract was broken
 3. Each gap file is deleted after successful merge
-4. A summary is returned to the Team Lead: how many gaps merged, what changed, any side-effects resolved
+4. A summary is shown to the TL before the next decision
 
-If no gaps exist, integration testing proceeds immediately with no delay.
+If no gaps exist, SpecGantry skips straight to the integration/deploy choice.
 
 ---
 
 ### Phase 4 — Integration Test {#integration-test}
 
-**Who:** Team Lead (triggers once, automated)
+**Who:** Team Lead (optional — can be skipped)
 **Time:** Minutes to tens of minutes depending on scenario count
 **Output:** `specs/integration-scenarios.md` updated with results
 
-Once every component passes its unit tests (and any gap specs are merged), the TL triggers integration testing. The integration test agent reads `architecture-spec.md` and `integration-scenarios.md`, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.
+Once all components pass their unit tests (and any gap specs are merged and confirmed), the TL is presented with a choice: run integration tests or skip directly to deployment. Both paths are recorded as audit flags in `specs/project-state.yaml` — `integration_tests_passing:true` if tests ran and passed, or `integration_skipped:true` if the TL chose to bypass them.
+
+If integration tests run, the integration test agent reads `architecture-spec.md` and `integration-scenarios.md`, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.
 
 `specs/integration-scenarios.md` is a **living document**. It was seeded during ideation with the obvious cross-component flows. It grew as each component spec was written, with scenarios contributed by each component's interface. By the time integration testing runs, it reflects the full system's understanding of critical paths.
 
@@ -210,15 +214,15 @@ The system is **functionally solid** once all scenarios pass.
 **Time:** 5–10 minutes
 **Output:** `specs/deploy.sh` + `specs/deploy-artifact.md`
 
-**The deployment gate requires integration tests to pass.** Individual component unit tests are necessary but not sufficient — the system must be functionally solid end-to-end before a release.
+**The deployment gate requires either integration tests passing or an explicit TL skip.** Individual component unit tests are necessary but not sufficient — the TL must either confirm the system is functionally solid end-to-end, or explicitly choose to skip integration testing (recorded as `integration_skipped:true` for audit).
 
 The deployment agent:
-1. Verifies `integration_tests_passing:true`
+1. Verifies the deploy gate (`integration_tests_passing:true` OR `integration_skipped:true`)
 2. Computes the next release version from change types in the backlog
 3. Resolves deployment order via the dependency graph
 4. Backs up the previous `deploy.sh` to `deploy.sh.old`
 5. Generates a single `deploy.sh` covering all components
-6. Validates the script with `bash -n`
+6. Validates the script with `bash -n` and sets executable permissions
 7. Writes `deploy-artifact.md` summarising the release
 8. Marks all components deployed and updates `project.release`
 
@@ -304,8 +308,8 @@ Use `[+] New work` at any point to describe new work — bug fix, enhancement, n
 
 | Type | What happens |
 |---|---|
-| `bug_fix` | Affected component identified from specs. All phase flags reset — full spec → dev cycle. Integration tests re-run before next deploy. |
-| `enhancement` | Same as bug_fix — spec updated with change annotations. |
+| `bug_fix` | Affected component identified from specs. All phase flags reset — full spec → dev cycle. Integration gate re-runs before next deploy. |
+| `enhancement` | Same as bug_fix — spec updated with change annotations. Integration gate re-runs before next deploy. |
 | `new_component` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture spec. Then normal pipeline. |
 | `project_change` | Ideation agent runs in amendment mode first. Impacted component specs reset for re-spec. Integration tests reset. |
 

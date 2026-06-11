@@ -497,6 +497,47 @@ img { max-width: 100%; height: auto; }
 .hl-yellow { color: var(--amber-400); }
 .hl-green  { color: var(--green-400); }
 
+/* Docs terminal window chrome — wraps dashboard code blocks in docs pages */
+.docs-terminal {
+  background: var(--slate-900);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin: 1.25rem 0;
+}
+.docs-terminal .terminal-header {
+  background: var(--slate-800);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.docs-terminal .terminal-title {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+.docs-terminal pre {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 16px 20px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.7 !important;
+  color: var(--slate-300) !important;
+  overflow-x: auto;
+}
+.docs-terminal pre code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+}
+
 .cursor {
   display: inline-block;
   color: var(--blue-400);

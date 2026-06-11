@@ -60,7 +60,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v2.0.4 · Production Ready
+          Claude Code Plugin · v2.0.5 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -90,11 +90,11 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.4</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.0.5</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.4</span>  |  Acme Platform</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.0.5</span>  |  Acme Platform</div>
             <div class="terminal-line output">  [████░░░░░░]  2 / 6 deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">                         Spec   Dev  Deploy</div>
@@ -211,7 +211,7 @@
           <!-- Divider -->
           <div class="pipeline-divider">
             <div class="divider-line"></div>
-            <div class="divider-label">All components unit-tested → Team Lead triggers integration test</div>
+            <div class="divider-label">All components unit-tested → Team Lead confirms integration or deploys directly</div>
             <div class="divider-line"></div>
           </div>
 
@@ -229,8 +229,8 @@
               </div>
               <div class="phase-arrow">→</div>
               <div class="phase-gate">
-                <span class="gate-icon">🔒</span>
-                <span class="gate-label">Gate</span>
+                <span class="gate-icon">🔀</span>
+                <span class="gate-label">TL decides</span>
               </div>
               <div class="phase-arrow">→</div>
               <div class="phase-node phase-deploy-color">
@@ -243,8 +243,8 @@
         </div>
 
         <div class="pipeline-note">
-          <strong>Each gate reads two sources of truth:</strong> the phase flag in <code>state.yaml</code> AND the
-          artifact file on disk. Both must agree before the pipeline advances.
+          <strong>Gates are two-layer:</strong> the orchestrator routes on state flags in <code>project-state.yaml</code>;
+          each subagent enforces its own hard gate against the artifact on disk before doing any work.
         </div>
       </div>
     </section>
@@ -322,7 +322,7 @@
             <ul class="role-list">
               <li>Run ideation — matures the idea and shapes the system in one conversation</li>
               <li>Architecture becomes the guardrail every component spec is checked against</li>
-              <li>Trigger integration tests once all components pass unit tests</li>
+              <li>Confirm integration once all components pass — run tests or skip directly to deploy</li>
               <li>Deploy the full system as a single release</li>
             </ul>
             <a href="{{ '/docs/how-it-works' | relative_url }}#team-lead--architect" class="role-link">Team Lead guide

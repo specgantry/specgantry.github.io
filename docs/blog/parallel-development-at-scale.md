@@ -131,11 +131,11 @@ A realistic parallel development flow with SpecGantry looks like this:
 2. The Team Lead approves the component backlog before spec work begins.
 3. Components are assigned to (or claimed by) developers. Each developer runs the component-spec agent independently, in their own session.
 4. Cleared specs are picked up by dev agents. Multiple dev agents can be running in parallel — each constrained to its component's domain. Gap specs are written if mid-build adjustments are needed.
-5. Before integration testing, any gap specs are merged automatically. The TL receives a summary.
-6. The TL triggers integration testing against the real running system. All critical cross-component scenarios must pass.
+5. Once all components pass, the TL is shown a confirm-integration prompt. Any gap specs are reviewed and merged with TL confirmation first, then the TL chooses to run integration tests or skip directly to deployment.
+6. If the TL runs integration tests, all critical cross-component scenarios execute against the real running system. The TL can also skip integration tests and go straight to deploy — recorded as an audit flag.
 7. The TL deploys the full system as a single release. Token usage is logged per phase and per component.
 
-Steps 3–4 run in parallel across the team. The orchestrator serializes only what needs to be serialized: the gap merge and the integration test gate (which needs all components to have passed their unit tests).
+Steps 3–4 run in parallel across the team. The orchestrator serializes only what needs to be serialized: the confirm-integration step (which needs all components to have passed their unit tests before the TL can review gaps, choose integration tests or skip, and then deploy).
 
 Everything else — spec writing, development, gap specs — runs independently, as fast as each developer and their AI assistant can move.
 

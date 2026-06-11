@@ -149,7 +149,7 @@ No. The component spec gate is the core of what SpecGantry enforces. No spec mea
 
 ### When can I deploy?
 
-Once integration tests pass. Individual component unit tests are necessary but not sufficient — the system must be functionally solid end-to-end. The deployment gate requires `integration_tests_passing:true`, which means all component unit tests passed AND all critical cross-component scenarios in `integration-scenarios.md` passed.
+Once all components pass their unit tests and either integration tests pass or you explicitly skip them. The TL is presented with a single confirmation point after all builds complete: any gap specs are shown and confirmed first, then the TL chooses `[Y] Run integration tests`, `[S] Skip — deploy directly`, or `[X] Hold`. Both outcomes are recorded as audit flags in `project-state.yaml` — `integration_tests_passing:true` or `integration_skipped:true` — and either one opens the deploy gate.
 
 ### Can I deploy individual components?
 
@@ -159,11 +159,15 @@ No. SpecGantry deploys the entire system as a single release. This is intentiona
 
 Gap specs are delta documents written during development when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects on another component's interface. Rather than editing the main spec while other developers may still be building against it, the developer writes a `gap-YYYY-MM-DD.md` file recording what changed, files affected, side-effects, and a recommended spec update.
 
-Gap specs are merged automatically before integration testing begins. If no gaps exist, integration testing proceeds immediately.
+Gap specs are reviewed and merged by the TL at the confirm-integration step, before choosing to run integration tests or deploy directly.
 
 ### What happens during gap merge?
 
-Before integration tests run, SpecGantry checks for unmerged gap specs across all components. If any exist, they are merged in chronological order: component spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content), side-effects on other components are checked and minimal corrections applied. Each gap file is deleted after it is merged. The TL receives a summary of what changed before integration testing proceeds.
+When all components pass their unit tests, SpecGantry checks for unmerged gap specs and presents any it finds to the TL — showing which components have gaps and which files they are. The TL confirms before any merge runs. If confirmed, gaps are merged in chronological order: component spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content), side-effects on other components are checked and minimal corrections applied. Each gap file is deleted after it is merged. A summary of what changed is shown before the TL is prompted to run integration tests or skip to deploy.
+
+### Can I skip integration tests?
+
+Yes. At the confirm-integration step, after any gap specs are merged, the TL is offered `[Y] Run integration tests`, `[S] Skip — deploy directly`, or `[X] Hold`. Choosing `[S]` sets `integration_skipped:true` in `specs/project-state.yaml` — committed to git as a permanent audit record — and opens the deploy gate directly.
 
 ### How long does each phase take?
 

@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.1.1`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v2.1.2`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -120,13 +120,79 @@ That's it. SpecGantry reads the current directory, determines what state you're 
 
 SpecGantry detects your situation automatically and guides you from there.
 
+<div class="dg-wrap">
+<div class="dg-diagram-title">What /spec-gantry detects</div>
+
+<div style="display:flex;flex-direction:column;align-items:center;gap:0">
+
+  <div class="dg-entry-start">/spec-gantry</div>
+  <div style="height:16px;width:2px;background:var(--slate-300);margin:0 auto"></div>
+  <div class="dg-flow-gate-row" style="justify-content:center">
+    <div class="dg-flow-gate-badge"><i class="bi bi-search" style="font-size:.6rem"></i> scans current directory</div>
+  </div>
+  <div style="height:16px;width:2px;background:var(--slate-300);margin:0 auto"></div>
+
+  <div style="display:flex;align-items:flex-start;gap:16px;width:100%">
+
+    <div class="dg-fork-branch">
+      <div class="dg-fork-label" style="text-align:center"><i class="bi bi-folder"></i> Empty folder</div>
+      <div class="dg-flow-node dg-ideation" style="width:100%">
+        <div class="dg-flow-node-body">
+          <div class="dg-flow-node-title">New Project</div>
+          <div class="dg-flow-node-desc">Name + vision → straight into ideation</div>
+        </div>
+      </div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Beat 1 — Mature the idea<br><span style="font-size:.68rem;color:var(--slate-400)">15–30 min</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Beat 2 — Shape the system<br><span style="font-size:.68rem;color:var(--slate-400)">tech stack · boundaries · backlog</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step"><strong>Approve backlog → commit specs/</strong></div>
+    </div>
+
+    <div class="dg-fork-branch">
+      <div class="dg-fork-label" style="text-align:center"><i class="bi bi-file-code"></i> Source files, no specs/</div>
+      <div class="dg-flow-node dg-spec" style="width:100%">
+        <div class="dg-flow-node-body">
+          <div class="dg-flow-node-title">Existing Codebase</div>
+          <div class="dg-flow-node-desc">Reverse-engineer: scan → propose arch spec + backlog</div>
+        </div>
+      </div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Analyse source files<br><span style="font-size:.68rem;color:var(--slate-400)">10–15 min</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Review proposed architecture<br><span style="font-size:.68rem;color:var(--slate-400)">confirm or redirect</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step"><strong>Approve backlog → commit specs/</strong></div>
+    </div>
+
+    <div class="dg-fork-branch">
+      <div class="dg-fork-label" style="text-align:center"><i class="bi bi-people"></i> specs/ found</div>
+      <div class="dg-flow-node dg-deploy" style="width:100%">
+        <div class="dg-flow-node-body">
+          <div class="dg-flow-node-title">Joining a Team</div>
+          <div class="dg-flow-node-desc">Ask role → show dashboard</div>
+        </div>
+      </div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Select role<br><span style="font-size:.68rem;color:var(--slate-400)">Team Lead or Developer</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Pipeline dashboard shown<br><span style="font-size:.68rem;color:var(--slate-400)">pick up a component or continue</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step"><strong>Type component ID to claim it</strong></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
 ### New Project (Empty Folder)
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.1.1  |  New Project
+SpecGantry v2.1.2  |  New Project
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -167,7 +233,7 @@ After selecting `[2]` and entering your name, the dashboard appears:
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.1.1  |  Acme Platform  |  release 1.0.0
+SpecGantry v2.1.2  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 3/5  ·  Dev [█░░░░] 1/5  ·  You [░░░░░] 0/0 assigned
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Assignee
@@ -271,7 +337,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.1.1  |  My App
+SpecGantry v2.1.2  |  My App
 [░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -292,7 +358,7 @@ Shown once the backlog is approved. The pipeline table and component picker are 
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.1.1  |  My App
+SpecGantry v2.1.2  |  My App
 [██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
                               Spec  Dev  Assignee
@@ -353,14 +419,14 @@ Once all components pass their unit tests. The TL is then prompted at a single c
 
 <div class="next-steps-grid">
   <a href="/docs/how-it-works" class="next-step-card">
-    <div class="next-step-icon">⚙️</div>
+    <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How It Works</strong>
       <span>Understand all phases, phase gates, gap specs, release versioning, and roles in detail.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">
-    <div class="next-step-icon">🛠️</div>
+    <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
       <span>Every skill and agent, what it does, and when to invoke it.</span>

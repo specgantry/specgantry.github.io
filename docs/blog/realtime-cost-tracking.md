@@ -188,14 +188,14 @@ SpecGantry exists because structure matters in AI-assisted development. Cost tra
 
 <div class="next-steps-grid">
   <a href="/docs/skills#track-cost" class="next-step-card">
-    <div class="next-step-icon">💰</div>
+    <div class="next-step-icon"><i class="bi bi-graph-up-arrow"></i></div>
     <div>
       <strong>/track-cost Reference</strong>
       <span>All four cost dashboard views explained with examples.</span>
     </div>
   </a>
   <a href="/docs/how-it-works#cost-tracking" class="next-step-card">
-    <div class="next-step-icon">⚙️</div>
+    <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How Cost Tracking Works</strong>
       <span>The hook architecture, token counting, and pricing resolution explained.</span>

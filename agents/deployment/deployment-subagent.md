@@ -64,6 +64,8 @@ Read `specs/architecture-spec.md` to understand the system's components and any 
 
 Read each component's `specs/components/[COMP-ID]/component-spec.md → ## Features` in deployment order.
 
+Create switches for `--dry-run` to allow local testing. No switch means deploy to production. 
+
 Write `specs/deploy.sh`:
 - `#!/bin/bash` and `set -e` at the top
 - Header comment: `# SpecGantry deploy script — Release [next_version] — [date]`

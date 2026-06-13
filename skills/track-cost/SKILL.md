@@ -65,22 +65,22 @@ Show phases in pipeline order. Omit phases with zero entries.
 ## View: By Component — input `1`
 
 One row per component ID. Aggregate all entries for that component across all phases and models.
-Entries with `component: null` are project-level phases (ideation, integration test, deployment) — include them in this view as "Ideation". Show their costs in the Summary view instead.
+Entries with `component: null` are project-level phases (ideation, integration test, deployment) — include them in this view as "OTHER". Show their costs in the Summary view instead.
 
 ```
 Cost by Component  |  release [current release]
 
 Component        Tokens       Cost
 ───────────────────────────────────
-Ideation            3,890      $0.39
 COMP-001         26,209      $2.47
 COMP-002         18,441      $1.84
 COMP-003          9,112      $0.46
+OTHER               3,890      $0.39
 ───────────────────────────────────
 Total                 57,652      $5.16
 ```
 
-Sort by component ID ascending with "Ideation" appearing first.
+Sort by component ID ascending with "OTHER" appearing last.
 
 ---
 

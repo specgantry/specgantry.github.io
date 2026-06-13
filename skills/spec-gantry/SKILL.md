@@ -92,7 +92,7 @@ Spec [███░░] 8/10  ·  Dev [██░░░] 5/10
 ──────────────────────────────────────────────────────────
 ```
 
-For **developer role**, append You inline on the same line:
+For **developer role**, append `You` inline on the same line:
 
 ```
 Spec [███░░] 8/10  ·  Dev [██░░░] 5/10  ·  You [█░░░░] 1/3 assigned
@@ -103,8 +103,6 @@ Progress bars: 5 chars — `█` (U+2588) filled, `░` (U+2591) remaining.
 - **Spec** counts components where `spec_complete:true`
 - **Dev** counts components where `dev_complete:true` AND `tests_passing:true`
 - **You** counts developer's assigned components where `dev_complete:true` AND `tests_passing:true`, denominator is total assigned to them
-
-In STATE 1 (no pipeline), omit the progress bars entirely — just the header line and separator.
 
 ---
 
@@ -123,16 +121,7 @@ Examples:
   No project found in this directory.
 ```
 ```
-  Ideation in progress — Beat 1: 2/4 topics answered.
-```
-```
-  Ideation in progress — Beat 2: 3/4 topics complete.
-```
-```
-  Ideation complete — awaiting backlog approval.
-```
-```
-  Backlog approved — ready to spec 5 components.
+  Ideation in progress — Beat N: X/Y topics answered.
 ```
 
 ---
@@ -335,7 +324,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/component
 
 ---
 
-### start_ideation
+### start_ideation (TL path)
 **Gate:** `role:tl` · `specs/project-state.yaml` exists · vision non-empty
 **Idempotency:** `ideation_complete:true` AND `architecture_complete:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `vision_statement`, `project_dir`
@@ -343,7 +332,7 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/component
 
 ---
 
-### approve_backlog
+### approve_backlog (TL path)
 **Gate:** `architecture_complete:true` · `backlog_approved:false`
 Re-render the standard dashboard, then show the approval prompt below it:
 ```
@@ -355,7 +344,7 @@ Re-render the standard dashboard, then show the approval prompt below it:
 
 ---
 
-### spec_all_components
+### spec_all_components (TL path)
 **Gate:** `backlog_approved:true` · at least one component has `spec_complete:false`
 **Idempotency:** all `spec_complete:true` → set `spec_phase_complete:true` · re-render · stop
 
@@ -374,7 +363,7 @@ When all components have `spec_complete:true`:
 
 ---
 
-### build_all_components
+### build_all_components (TL path)
 **Gate:** `spec_phase_complete:true` · `build_phase_confirmed:true` · at least one component has `dev_complete:false` OR `tests_passing:false`
 **Entry:** reached only when TL explicitly selects `[1] Build all [n] components` from the dashboard (routing row 4). On that selection, set `build_phase_confirmed:true` in `.claude/local-state.yaml` then proceed.
 **Idempotency:** all `tests_passing:true` → re-render · stop
@@ -394,7 +383,7 @@ When all components have `tests_passing:true`:
 
 ---
 
-### merge_gap_specs
+### merge_gap_specs (TL path)
 **Gate:** all components `tests_passing:true` · at least one `gap-*.md` file exists
 **Called from confirm_integration** — never invoked directly or automatically.
 
@@ -455,7 +444,7 @@ Developer name is read from `.claude/local-state.yaml → developer_name`. If no
 
 ---
 
-### confirm_integration
+### confirm_integration (TL path)
 **Gate:** all components `tests_passing:true` · `integration_phase_confirmed:false`
 **Entry point** for the integration phase — always reached directly from `build_all_components`. Never skipped.
 
@@ -512,7 +501,7 @@ On `X`: re-render · ⏸
 
 ---
 
-### deploy_release
+### deploy_release (TL path)
 **Gate:** `role:tl` · (`integration_tests_passing:true` OR `integration_skipped:true`)
 **Idempotency:** all components `deployment_status:complete` → re-render · stop
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying full system"` · pass `project_dir`
@@ -520,7 +509,7 @@ On `X`: re-render · ⏸
 
 ---
 
-### classify_and_route
+### classify_and_route (All paths)
 Prompt: `Describe the next work (bug fix / improvement / new feature / architectural change):  >`
 
 **Step 1 — Classify and map to components:**
@@ -560,7 +549,7 @@ Prompt: `Describe the next work (bug fix / improvement / new feature / architect
 
 ---
 
-### reverse_engineer
+### reverse_engineer (TL path)
 Confirm:
 ```
 Analysing codebase at: [cwd]

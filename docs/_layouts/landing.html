@@ -76,7 +76,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v2.2.7 · Production Ready
+          Claude Code Plugin · v3.0.0 · Production Ready
         </div>
         <h1 class="hero-headline">
           Stop Building Before<br>
@@ -106,23 +106,23 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v2.2.7</div>
-            <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v3.0.0</div>
+            <div class="terminal-line output">✓ 2 skills loaded · 5 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v2.2.7</span>  |  Acme Platform  |  release 1.0.0</div>
-            <div class="terminal-line output">  Spec [███░░] 4/6  ·  Dev [█░░░░] 2/6</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v3</span>  |  Acme Platform  |  release 1.0.0</div>
+            <div class="terminal-line output">  Spec [███░░] 3/4  ·  Build [██░░░] 2/4</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  ID      Component           Spec   Dev   Assignee</div>
+            <div class="terminal-line output">  ID      Story                          Spec   Build</div>
             <div class="terminal-line output">  ──────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  [001]  User Auth            ✅    ✅    alice</div>
-            <div class="terminal-line output">  [002]  Search API           ✅    🔄    bob</div>
-            <div class="terminal-line output">  [003]  Notifications         🔄    ○     carol</div>
-            <div class="terminal-line output">  [004]  Export PDF            ⏳    ○     unassigned</div>
+            <div class="terminal-line output">  [001]  User registers and logs in       ✅    ✅</div>
+            <div class="terminal-line output">  [002]  User manages their profile       ✅    🔄</div>
+            <div class="terminal-line output">  [003]  User submits application         🔄    ○</div>
+            <div class="terminal-line output">  [004]  Admin reviews submissions        ⏳    ○</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  Type a component ID to manage it   [$] Cost</div>
-            <div class="terminal-line output">  [1] Continue spec – COMP-003       [?] Help</div>
-            <div class="terminal-line output">                                     [X] Exit</div>
+            <div class="terminal-line output">  Type a story ID to manage it        [$] Cost</div>
+            <div class="terminal-line output">  [1] Continue spec – STORY-003       [?] Help</div>
+            <div class="terminal-line output">  [N] New work                        [X] Exit</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line cursor-line"><span class="cursor">▌</span></div>
           </div>
@@ -160,8 +160,8 @@
           </div>
           <div class="problem-card">
             <div class="problem-icon"><i class="bi bi-shuffle"></i></div>
-            <h4>Role confusion</h4>
-            <p>Without clear ownership, developers make architectural decisions and architects block development.</p>
+            <h4>Incoherent features</h4>
+            <p>Frontend built without the backend spec. AI integration specced but never wired up. Vertical incoherence discovered at integration.</p>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@
     <section class="section-pipeline">
       <div class="section-inner">
         <div class="section-label center">The Solution</div>
-        <h2 class="center">Five phases. Hard gates between every one.</h2>
+        <h2 class="center">Four phases. Hard gates between every one.</h2>
         <p class="section-sub center">No skipping. No "we'll write the spec later." Every phase gate reads the
           filesystem — the pipeline advances only when the artifact actually exists on disk.</p>
 
@@ -182,76 +182,55 @@
             <div class="ng-node phase-node phase-complete-color">
               <div class="ng-num">01</div>
               <div class="ng-name">Ideation</div>
-              <div class="ng-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-              <div class="ng-output">architecture-spec.md</div>
+              <div class="ng-output">architecture.md · project-state.yaml</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: architecture_complete flag in project-state.yaml">
+              <div class="ng-gate" title="Gate: ideation_complete flag in project-state.yaml">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 2: Component Spec -->
+            <!-- Node 2: Story Spec -->
             <div class="ng-node phase-node phase-spec-color">
               <div class="ng-num">02</div>
-              <div class="ng-name">Component Spec</div>
-              <div class="ng-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-              <div class="ng-output">component-spec.md</div>
+              <div class="ng-name">Story Spec</div>
+              <div class="ng-output">story-spec.md per story</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: spec_complete flag per component">
+              <div class="ng-gate" title="Gate: spec_done flag per story">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 3: Build + Test -->
+            <!-- Node 3: Build -->
             <div class="ng-node phase-node phase-build-color">
               <div class="ng-num">03</div>
-              <div class="ng-name">Build + Test</div>
-              <div class="ng-role"><i class="bi bi-code-slash"></i> Developers</div>
-              <div class="ng-output">state.yaml × N</div>
+              <div class="ng-name">Build</div>
+              <div class="ng-output">build-report.yaml · gap specs (if any)</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: all components tests_passing">
+              <div class="ng-gate" title="Gate: all stories built">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 4: Integration Test -->
-            <div class="ng-node phase-node phase-arch-color">
-              <div class="ng-num">04</div>
-              <div class="ng-name">Integration Test</div>
-              <div class="ng-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-              <div class="ng-output">integration-scenarios.md</div>
-            </div>
-
-            <!-- Connector + Gate -->
-            <div class="ng-connector">
-              <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: integration_tests_passing flag">
-                <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
-              </div>
-              <div class="ng-line"></div>
-            </div>
-
-            <!-- Node 5: Deploy -->
+            <!-- Node 4: Deploy -->
             <div class="ng-node phase-node phase-deploy-color">
-              <div class="ng-num">05</div>
+              <div class="ng-num">04</div>
               <div class="ng-name">Deploy Release</div>
-              <div class="ng-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-              <div class="ng-output">deploy-artifact.md</div>
+              <div class="ng-output">deploy.sh · deploy-artifact.md</div>
             </div>
 
           </div>
@@ -268,27 +247,26 @@
     <section class="section-features">
       <div class="section-inner">
         <div class="section-label center">Key Features</div>
-        <h2 class="center">Everything your team needs to ship AI-assisted features with confidence</h2>
+        <h2 class="center">Everything you need to ship AI-assisted features with confidence</h2>
         <div class="features-grid">
           <div class="feat-card feat-card-large">
             <div class="feat-icon"><i class="bi bi-lock-fill"></i></div>
-            <h3>Specs Before Code — Enforced</h3>            <p>No developer can start coding until a component spec exists and has been checked against every architectural
+            <h3>Specs Before Code — Enforced</h3>
+            <p>No code is written until a complete story spec exists and has been checked against every architectural
               guardrail. The gate is hard: Claude Code won't proceed without it. No
               workarounds, no exceptions.</p>
-            <a href="{{ '/docs/how-it-works' | relative_url }}#spec-gate" class="feat-link">Learn about the spec gate
-              →</a>
+            <a href="{{ '/docs/how-it-works' | relative_url }}#spec-gate" class="feat-link">Learn about the spec gate →</a>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-diagram-3"></i></div>
             <h3>Architecture as a Living Guardrail</h3>
-            <p>The Team Lead defines the architecture once. Every component spec is automatically checked against it.
+            <p>Define the architecture once. Every story spec is automatically checked against it.
               Violations are flagged before a line of code is written.</p>
           </div>
           <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-people-fill"></i></div>
-            <h3>Role-Based Pipeline Ownership</h3>
-            <p>Team Leads own the project. Developers own features. Each sees only what's relevant to them. Nobody can
-              accidentally act outside their role.</p>
+            <div class="feat-icon"><i class="bi bi-file-earmark-richtext"></i></div>
+            <h3>Story-Based Vertical Slices</h3>
+            <p>Each story owns its complete vertical slice — UI, backend, data, AI integration, and acceptance criteria in one spec. Incoherence between layers is structurally impossible.</p>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-arrow-repeat"></i></div>
@@ -299,26 +277,25 @@
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-graph-up-arrow"></i></div>
             <h3>Full Token Cost Visibility</h3>
-            <p>Every agent invocation logs tokens used, model selected, and timestamp. Dashboard shows spend by phase,
-              feature, and developer — no surprises.</p>
+            <p>Every agent invocation logs tokens used, model selected, and cost. Dashboard shows spend by phase,
+              story, and release — no surprises.</p>
             <a href="{{ '/docs/how-it-works' | relative_url }}#cost-tracking" class="feat-link">See cost tracking →</a>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-file-earmark-text"></i></div>
             <h3>Complete YAML-Based State</h3>
             <p>All progress saved as plain text, git-friendly YAML. Audit trails, version control, diffs — it's all
-              there. Perfect for handoffs.</p>
+              there. Perfect for session resumption across days.</p>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-bezier2"></i></div>
-            <h3>Feature Dependency Management</h3>
-            <p>Architecture can declare component dependencies. Developers can't start a component if its dependencies
-              haven't passed their unit tests. No accidental rework.</p>
+            <h3>Story Dependency Management</h3>
+            <p>Stories declare dependencies. The pipeline enforces order — a story that depends on another can't be built until its dependency is complete.</p>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-search"></i></div>
             <h3>Reverse-Engineer Existing Code</h3>
-            <p>Have an existing codebase? SpecGantry analyzes it and generates an architecture spec and component backlog.
+            <p>Have an existing codebase? SpecGantry analyzes it and generates an architecture and story backlog.
               Bring structure to legacy projects.</p>
           </div>
         </div>
@@ -329,41 +306,40 @@
     <section class="section-roles">
       <div class="section-inner">
         <div class="section-label center">Who It's For</div>
-        <h2 class="center">Built for how real teams actually work</h2>
+        <h2 class="center">Built for solo developers who ship enterprise-grade systems</h2>
         <div class="roles-grid">
-          <div class="role-card">
-            <div class="role-avatar"><i class="bi bi-shield-check"></i></div>
-            <h3>Team Leads &amp; Architects</h3>
-            <ul class="role-list">
-              <li>Run ideation — matures the idea and shapes the system in one conversation</li>
-              <li>Architecture becomes the guardrail every component spec is checked against</li>
-              <li>Confirm integration once all components pass — run tests or skip directly to deploy</li>
-              <li>Deploy the full system as a single release</li>
-            </ul>
-            <a href="{{ '/docs/how-it-works' | relative_url }}#team-lead--architect" class="role-link">Team Lead guide
-              →</a>
-          </div>
-          <div class="role-card role-card-center">
-            <div class="role-avatar"><i class="bi bi-code-slash"></i></div>
-            <h3>Developers</h3>
-            <ul class="role-list">
-              <li>Always have a clear spec before touching code</li>
-              <li>Architecture guardrails checked before you even start</li>
-              <li>Resume any session exactly where you left off</li>
-              <li>No ambiguity about what "done" looks like</li>
-            </ul>
-            <a href="{{ '/docs/how-it-works' | relative_url }}#developer" class="role-link">Developer guide →</a>
-          </div>
           <div class="role-card">
             <div class="role-avatar"><i class="bi bi-person-workspace"></i></div>
             <h3>Solo Developers</h3>
             <ul class="role-list">
-              <li>Wear both hats — architect then developer</li>
               <li>Force yourself to answer the hard questions up front</li>
-              <li>Avoid the "build fast in the wrong direction" trap</li>
-              <li>Full audit trail of every decision made</li>
+              <li>Every story owns its full vertical slice — UI, backend, AI, acceptance criteria</li>
+              <li>Resume any session exactly where you left off</li>
+              <li>Full audit trail of every architecture decision made</li>
             </ul>
-            <a href="{{ '/docs/getting-started' | relative_url }}#if-youre-solo" class="role-link">Solo workflow →</a>
+            <a href="{{ '/docs/getting-started' | relative_url }}" class="role-link">Get started →</a>
+          </div>
+          <div class="role-card role-card-center">
+            <div class="role-avatar"><i class="bi bi-cpu"></i></div>
+            <h3>Haiku-Level Efficiency</h3>
+            <ul class="role-list">
+              <li>Invest tokens in the spec once — build is pure execution</li>
+              <li>Precise specs mean fewer confused turns during build</li>
+              <li>Designed to work at Haiku low-effort — better models are a bonus</li>
+              <li>Track spend by phase and story in real time</li>
+            </ul>
+            <a href="{{ '/docs/how-it-works' | relative_url }}#cost-tracking" class="role-link">See cost tracking →</a>
+          </div>
+          <div class="role-card">
+            <div class="role-avatar"><i class="bi bi-building"></i></div>
+            <h3>Enterprise-Ready Output</h3>
+            <ul class="role-list">
+              <li>Every story spec includes mandatory enterprise checks</li>
+              <li>Auth, error states, AI fallbacks, data safety — all specified before build</li>
+              <li>Guardrails enforced across all stories automatically</li>
+              <li>Gap specs keep architecture accurate as you build</li>
+            </ul>
+            <a href="{{ '/docs/how-it-works' | relative_url }}#spec-gate" class="role-link">See the spec gate →</a>
           </div>
         </div>
       </div>
@@ -378,7 +354,7 @@
             <div class="stat-label">Skills — /spec-gantry for everything, /track-cost for cost visibility</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">7</div>
+            <div class="stat-num">5</div>
             <div class="stat-label">Agents — Ideation through deployment, each owning one phase</div>
           </div>
           <div class="stat-item">
@@ -396,7 +372,7 @@
     <!-- ─── SKILLS QUICK OVERVIEW ─────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">2 Skills, 7 Agents</div>
+        <div class="section-label center">2 Skills, 5 Agents</div>
         <h2 class="center">One command. Every workflow covered.</h2>
         <div class="skills-grid">
           <div class="skill-row">
@@ -468,7 +444,7 @@
         <div class="install-box">
           <div class="install-text">
             <h2>Ready to add structure to your AI workflow?</h2>
-            <p>Install SpecGantry in 90 seconds. Works with any Claude Code project — new, existing, or team.</p>
+            <p>Install SpecGantry in 90 seconds. Works with any Claude Code project — new or existing.</p>
           </div>
           <div class="install-code-block">
             <div class="code-header">

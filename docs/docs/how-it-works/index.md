@@ -163,32 +163,6 @@ A story is **complete** once all acceptance criteria are met.
 
 ---
 
-### Gap Specs {#gap-specs}
-
-If during development the spec is discovered to be incomplete, incorrect, or causes side-effects, a gap spec is written rather than editing the main spec directly:
-
-**File:** `specs/stories/STORY-NNN/gap-YYYY-MM-DD.md`
-
-The gap spec records: what changed, which files were affected, and a recommended spec update. The main specs remain stable.
-
-Multiple gap specs can accumulate during a build cycle. They are resolved before deployment.
-
----
-
-### Gap Merge (confirmed) {#gap-merge}
-
-**Time:** 2–5 minutes
-**Output:** Updated `story-spec.md` and/or `architecture.md` · gap files deleted
-
-When all stories are built, SpecGantry checks for unmerged gap specs and presents them before deployment. If confirmed:
-1. Each gap file is applied in chronological order
-2. Each gap file is deleted after successful merge
-3. A summary is shown before the deploy prompt
-
-If no gaps exist, SpecGantry skips straight to the deploy prompt.
-
----
-
 ### Phase 4 — Deploy Release {#deploy}
 
 **Time:** 5–10 minutes
@@ -206,6 +180,30 @@ The deployment agent:
 7. Marks all stories deployed and updates `project.release`
 
 Every release deploys the **entire system** — not individual stories.
+
+---
+
+### Gap Specs {#gap-specs}
+
+If during development the spec is discovered to be incomplete, incorrect, or causes side-effects, a gap spec is written rather than editing the main spec directly:
+
+**File:** `specs/stories/STORY-NNN/gap-YYYY-MM-DD.md`
+
+The gap spec records: what changed, which files were affected, and a recommended spec update. The main specs remain stable.
+
+Multiple gap specs can accumulate during a build cycle. They are resolved before deployment.
+
+### Gap Merge {#gap-merge}
+
+**Time:** 2–5 minutes
+**Output:** Updated `story-spec.md` and/or `architecture.md` · gap files deleted
+
+When all stories are built, SpecGantry checks for unmerged gap specs and presents them before deployment. If confirmed:
+1. Each gap file is applied in chronological order
+2. Each gap file is deleted after successful merge
+3. A summary is shown before the deploy prompt
+
+If no gaps exist, SpecGantry skips straight to the deploy prompt.
 
 ---
 
@@ -267,7 +265,7 @@ SpecGantry saves progress after every question, every answer, and every section.
 SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson` and committed to git. Run `[$] Cost` or `/track-cost` for a breakdown by phase, story, release, and model.
 
 <div class="info">
-  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving you shared visibility into AI development costs over the full project lifetime.
+  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs — full history of AI development costs over the project lifetime.
 </div>
 
 ---

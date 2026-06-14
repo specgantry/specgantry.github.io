@@ -63,9 +63,9 @@ Not at the end of the session. Not when the artifact is "complete." After every 
 
 In SpecGantry, this is implemented as a hard invariant across every agent:
 
-- The ideation agent writes each answer to `architecture-spec.md` immediately after it's confirmed — Beat 1 answers first, then Beat 2 system-shaping decisions. If the session closes mid-ideation, the artifact contains exactly what was answered. The next session reads the file, sees what's there, and continues from the next unanswered topic.
-- The component-spec agent writes each of the five sections to `component-spec.md` as they're completed. A session that ends after section 3 leaves a spec with sections 1–3 that the next session can read and continue from section 4.
-- The orchestrator logs every phase transition to `project-state.yaml`. The current phase, the approved backlog, the in-progress components — all persisted, so a restarted session doesn't re-run phases that already completed.
+- The ideation agent writes each answer to `architecture.md` immediately after it's confirmed — Beat 1 answers first, then Beat 2 system-shaping decisions. If the session closes mid-ideation, the artifact contains exactly what was answered. The next session reads the file, sees what's there, and continues from the next unanswered topic.
+- The story-spec agent writes each of the six sections to `story-spec.md` as they're completed. A session that ends after section 3 leaves a spec with sections 1–3 that the next session can read and continue from section 4.
+- The orchestrator logs every phase transition to `project-state.yaml`. The current phase, the in-progress stories — all persisted, so a restarted session doesn't re-run phases that already completed.
 
 The result: sessions are **interruption-safe at the question level**. Any interruption — network drop, context limit, end of day, crash — loses at most one in-progress answer. Everything before that is on disk.
 
@@ -115,7 +115,7 @@ With session safety, the anxiety disappears, because the failure mode is no long
 
 The practical effect: developers can take their time. They can work on the pipeline in short sessions without worrying about continuity. They can close the laptop mid-spec and know the work will be there tomorrow.
 
-This doesn't sound like a big deal until you're running a pipeline across a project that spans two weeks, with a team of four developers each running multiple component specs in parallel across dozens of sessions. At that scale, the session-safety invariant is what makes the pipeline reliable.
+This doesn't sound like a big deal until you're running a pipeline across a project that spans two weeks, working through multiple story specs across dozens of sessions. At that scale, the session-safety invariant is what makes the pipeline reliable.
 
 ---
 
@@ -139,14 +139,12 @@ For concreteness, here's the file system that SpecGantry maintains per project:
 
 ```
 specs/
-  architecture-spec.md       ← Vision, system design, domain sections — written section by section
-  integration-scenarios.md   ← Cross-component scenarios seeded during ideation, grows with every spec
-  project-state.yaml         ← Phase status, backlog_approved flag, component backlog
-  components/
-    COMP-NNN/
-      component-spec.md      ← Five-section spec, written section by section
-      state.yaml             ← Phase progress flags
-      dev-artifact.yaml      ← Build notes and test results
+  architecture.md            ← Vision, system design — written section by section
+  project-state.yaml         ← Phase status, ideation_complete flag, story backlog
+  stories/
+    STORY-NNN/
+      story-spec.md          ← Six-section spec, written section by section
+      build-report.yaml      ← Build notes and results
       gap-YYYY-MM-DD.md     ← Gap spec (written mid-build if needed)
 ```
 

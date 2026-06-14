@@ -13,10 +13,12 @@ allowed-tools: Read
 
 Render the SpecGantry header (same as main dashboard):
 ```
-SpecGantry v[version]  |  [project.name or "New Project"]
-[████░░░░░░]  [n]/[total] components deployed
+SpecGantry v3  |  [project.name or "New Project"]
+Spec [███░░] [n]/[total]  ·  Build [██░░░] [n]/[total]
 ──────────────────────────────────────────────────────────
 ```
+
+Read `specs/project-state.yaml` to compute: Spec = count of `spec_done:true` stories, Build = count of `built:true` stories, total = total stories.
 
 Read `specs/cost-log.ndjson`. If absent or empty: show `No cost data recorded yet.` then show the menu bar and prompt.
 
@@ -30,8 +32,8 @@ Always rendered at the bottom of every view, after the table:
 
 ```
 ──────────────────────────────────────────────────────────
-  `[1]` By component  `[2]` By release    `[3]` By model
-                                          `[X]` Return
+  `[1]` By story   `[2]` By release    `[3]` By model
+                                       `[X]` Return
 ──────────────────────────────────────────────────────────
 Enter option:  `>`
 ```
@@ -50,43 +52,42 @@ Cost Summary  |  release [current release]
 Phase              Tokens       Cost
 ────────────────────────────────────
 ideation            4,404      $0.47
-component_spec     14,209      $1.43
+story_spec         14,209      $1.43
 development        37,557      $3.45
-integration_test    3,890      $0.39
 deployment          2,340      $0.23
 ────────────────────────────────────
-Total              62,400      $5.97
+Total              58,510      $5.58
 ```
 
 Show phases in pipeline order. Omit phases with zero entries.
 
 ---
 
-## View: By Component — input `1`
+## View: By Story — input `1`
 
-One row per component ID. Aggregate all entries for that component across all phases and models.
-Entries with `component: null` are project-level phases (ideation, integration test, deployment) — include them in this view as "OTHER". Show their costs in the Summary view instead.
+One row per story ID. Aggregate all entries for that story across all phases and models.
+Entries with `story: null` are project-level phases (ideation, deployment) — include them in this view as "OTHER". Show their costs in the Summary view instead.
 
 ```
-Cost by Component  |  release [current release]
+Cost by Story  |  release [current release]
 
-Component        Tokens       Cost
+Story            Tokens       Cost
 ───────────────────────────────────
-COMP-001         26,209      $2.47
-COMP-002         18,441      $1.84
-COMP-003          9,112      $0.46
-OTHER               3,890      $0.39
+STORY-001        26,209      $2.47
+STORY-002        18,441      $1.84
+STORY-003         9,112      $0.46
+OTHER             3,890      $0.39
 ───────────────────────────────────
-Total                 57,652      $5.16
+Total            57,652      $5.16
 ```
 
-Sort by component ID ascending with "OTHER" appearing last.
+Sort by story ID ascending with "OTHER" appearing last.
 
 ---
 
 ## View: By Release — input `2`
 
-One row per release. Aggregate all entries for that release across all phases and components.
+One row per release. Aggregate all entries for that release across all phases and stories.
 
 ```
 Cost by Release
@@ -105,7 +106,7 @@ Sort by release ascending. No current-release filter — shows full project hist
 
 ## View: By Model — input `3`
 
-One row per model. Aggregate all entries for that model across all phases and components.
+One row per model. Aggregate all entries for that model across all phases and stories.
 Strip the `claude-` prefix from model names.
 
 ```

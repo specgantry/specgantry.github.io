@@ -20,8 +20,9 @@ const {
 
 // ─── Tool: record_agent_cost ──────────────────────────────────────────────────
 async function toolRecordAgentCost(args) {
-  const { toolUseId, phase, model, component = null } = args;
-  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, component }));
+  const { toolUseId, phase, model, story = null, projectDir: reqProjectDir } = args;
+  const projectDir = reqProjectDir || PROJECT_DIR;
+  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, story }));
 
   if (!toolUseId || !phase || !model) {
     logError('record_agent_cost: missing required fields');
@@ -64,10 +65,10 @@ async function toolRecordAgentCost(args) {
   }
 
   const tokens = { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens };
-  const entry  = buildCostEntry({ phase, agentType, model, component, projectDir: PROJECT_DIR, tokens });
+  const entry  = buildCostEntry({ phase, agentType, model, component: story, projectDir, tokens });
 
-  appendCostLog(entry);
-  logInfo(`Cost recorded: ${phase}${component ? ' / ' + component : ''} — ${input_tokens + output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+  appendCostLog(entry, projectDir);
+  logInfo(`Cost recorded: ${phase}${story ? ' / ' + story : ''} — ${input_tokens + output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
 
   return { ok: true, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost_usd: entry.total_cost_usd };
 }
@@ -86,9 +87,10 @@ const TOOLS = {
       required: ['toolUseId', 'phase', 'model'],
       properties: {
         toolUseId: { type: 'string', description: 'The id field of the Agent tool_use call — looks like toolu_bdrk_...' },
-        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, component_spec, development, test, deployment' },
+        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, story_spec, development, deployment' },
         model:     { type: 'string', description: 'Exact model ID from the agent frontmatter, e.g. claude-sonnet-4-6' },
-        component: { type: 'string', description: 'Component ID (COMP-001) or null for project-level phases', nullable: true },
+        story:     { type: 'string', description: 'Story ID (STORY-001) or null for project-level phases', nullable: true },
+        projectDir: { type: 'string', description: 'Absolute path to the project directory. Defaults to server cwd if omitted.' },
       },
     },
     handler: toolRecordAgentCost,

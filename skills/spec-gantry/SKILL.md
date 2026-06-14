@@ -4,16 +4,15 @@ description: >
   Invoke this skill when the user wants to build, plan, or manage a software project — at any stage.
   Triggers include: starting a new app or service ("I want to build...", "let's create a...");
   resuming or checking project status ("where did we leave off?", "what's left to build?", "what are we working on?");
-  asking about a specific component, feature, or spec ("tell me about the auth component", "what does COMP-003 do?");
+  asking about a specific story, spec, or feature ("tell me about STORY-002", "what does the auth story do?");
   reporting a bug or requesting a change ("something is broken", "I need to add...", "can we change how X works?");
   asking about architecture, tech stack, or design decisions;
-  asking who is working on what, or wanting to claim or assign work;
   asking about deployment, release status, or project costs.
   Do NOT invoke for general coding questions, debugging unrelated code, or one-off tasks with no project context.
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 ---
 
-# SpecGantry v[version]
+# SpecGantry v3
 
 You are the **orchestrator** — the only session-level entity that can spawn subagents. Read state, enforce gates, invoke the right subagent, update state. Never do a subagent's work yourself.
 
@@ -22,11 +21,10 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 | Type | Phase | Model |
 |------|-------|-------|
 | `spec-gantry:ideation:ideation-subagent` | ideation + architecture | haiku-4-5 |
-| `spec-gantry:component-spec:component-spec-subagent` | component_spec | sonnet-4-6 |
-| `spec-gantry:development:development-subagent` | development | sonnet-4-6 |
-| `spec-gantry:integration-test:integration-test-subagent` | integration_test | sonnet-4-6 |
+| `spec-gantry:story-spec:story-spec-subagent` | story spec | sonnet-4-6 |
+| `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
-| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | sonnet-4-6 |
+| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse engineer | sonnet-4-6 |
 
 Always pass `project_dir: [absolute cwd]` to every subagent invocation.
 
@@ -38,13 +36,22 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 
 | File | Key fields |
 |------|------------|
-| `specs/project-state.yaml` | `project` (name, created, release) · `phase_gates` (all project-level gates incl. `build_phase_confirmed`, `integration_phase_confirmed`, `next_release_type`) · `components` map (spec_complete, dev_complete, tests_passing, deployed, assignee per COMP-ID) |
-| `.claude/local-state.yaml` | `role` (tl/dev) · `developer_name` · `active_components` · `current_component` · `gate_bypasses` (hot-path comp IDs, ephemeral) |
-| `specs/components/[COMP-ID]/component-spec.md` | YAML frontmatter: comp_id, domain, size, depends_on, features |
-| `specs/components/[COMP-ID]/build-report.yaml` | `overall_status` · `features_implemented` · `gap_specs` · `warnings` |
-| `.claude/components/[COMP-ID].lock` | concurrency guard — stale after 5 min |
+| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story) · `ideation_complete` · `stories` map (spec_done, built, deployed per STORY-ID) |
+| `specs/architecture.md` | Tech stack, guardrails, auth model, deployment target. One page. |
+| `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on |
+| `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` |
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
+
+---
+
+## GATE_FORMAT
+
+All subagents emit gate failures in this format:
+```
+✗ [gate name] gate FAILED · [reason] · [action]
+```
+Surface these verbatim if a subagent returns one.
 
 ---
 
@@ -52,25 +59,23 @@ Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass th
 
 **STRICT OUTPUT RULES — no exceptions:**
 - Render the full dashboard FIRST on every response, before any other output
-- Never show a separate component picker screen — the table IS the picker
+- Never show a separate story picker screen — the table IS the picker
 - Never append advice, roadmaps, recommendations, or commentary
 
 Render the full dashboard on every response. After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes:
 
 ```
-✓ [phase] complete  ·  [component or project level]
+✓ [phase] complete  ·  [story or project level]
 ──────────────────────────────────────────────────────────
 ```
 
 Examples:
 ```
-✓ Ideation complete  ·  system shaped — 5 components
-✓ Backlog approved  ·  5 components ready to spec
-✓ Component spec complete  ·  COMP-003 Notifications
+✓ Ideation complete  ·  system shaped — 4 stories
+✓ Story spec complete  ·  STORY-002 User authentication
 ✓ All specs complete  ·  ready to build
-✓ Build complete  ·  COMP-003 ready
-✓ Gap specs merged  ·  2 components updated
-✓ Integration tests passed  ·  ready to deploy
+✓ Build complete  ·  STORY-002 ready
+✓ Gap specs merged  ·  3 stories updated
 ✓ Deployed  ·  release 1.0.0
 ```
 
@@ -81,34 +86,26 @@ Examples:
 Always rendered first, same in all states:
 
 ```
-SpecGantry v[version]  |  [project.name or "New Project"]  |  release [project.release]
+SpecGantry v3  |  [project.name or "New Project"]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 ```
 
 In STATE 2 (pipeline active), append a progress line below the separator:
 
 ```
-Spec [███░░] 8/10  ·  Dev [██░░░] 5/10
-──────────────────────────────────────────────────────────
-```
-
-For **developer role**, append `You` inline on the same line:
-
-```
-Spec [███░░] 8/10  ·  Dev [██░░░] 5/10  ·  You [█░░░░] 1/3 assigned
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4
 ──────────────────────────────────────────────────────────
 ```
 
 Progress bars: 5 chars — `█` (U+2588) filled, `░` (U+2591) remaining.
-- **Spec** counts components where `spec_complete:true`
-- **Dev** counts components where `dev_complete:true` AND `tests_passing:true`
-- **You** counts developer's assigned components where `dev_complete:true` AND `tests_passing:true`, denominator is total assigned to them
+- **Spec** counts stories where `spec_done:true`
+- **Build** counts stories where `built:true`
 
 ---
 
-### STATE 1 — No components in pipeline
+### STATE 1 — No stories in pipeline
 
-Used when: no project exists, or ideation/approval still in progress.
+Used when: no project exists, or ideation still in progress.
 
 Middle section shows current phase status:
 
@@ -126,38 +123,31 @@ Examples:
 
 ---
 
-### STATE 2 — Pipeline dashboard (role: tl or dev)
+### STATE 2 — Pipeline dashboard
 
-Used when: `architecture_complete:true` and `project-state.yaml → components` has ≥1 entry.
+Used when: `ideation_complete:true` and `project-state.yaml → stories` has ≥1 entry.
 
-The pipeline table and action bar are one unified view. Everything is actionable from the front page. Internal features are never shown in the table.
-
-**TL** sees all components. **Developer** sees components grouped into three sections: "My components" (assigned to them), "Available to claim" (`assignee:null`, unblocked), "All components" (everything else, read-only).
-
-Middle section — component table:
+Middle section — story table:
 
 ```
-  ID      Component           Spec   Dev   Assignee
-  --------------------------------------------------
-  [001]  Authentication        ✅    🔄    alice
-  [002]  User Profile          ⏳    ○     unassigned
-  [003]  Notifications         🔴    ○     —          depends on 001
-  [004]  Admin Panel           ✅    ✅    bob  
+  ID       Story                              Spec   Build  Deploy
+  ────────────────────────────────────────────────────────────────
+  [001]   Student completes profile             ✅    🔄     ○
+  [002]   Student submits application           ⏳    ○      ○
+  [003]   Admin reviews applications            🔴    ○      ○     depends on 002
+  [004]   Admin manages settings                ✅    ✅     ✅
 ```
 
 - Always render the column header row
-- Always render ALL components — never omit any
-- Component IDs shown as `[NNN]` — directly typeable
-- Blocked components show `depends on NNN[,NNN]` inline at end of row
-- Icons: ✅ complete · 🔄 in progress · 👤 awaiting human · 🔴 blocked · ⏳ ready · ○ not reached
+- Always render ALL stories — never omit any
+- Story IDs shown as `[NNN]` — directly typeable
+- Blocked stories show `depends on NNN[,NNN]` inline at end of row
+- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached
 
-**Component column flags:**
-- Spec = `spec_complete`
-- Dev = `dev_complete` AND `tests_passing` (show 🔄 while in `active_components`, ✅ when both true, ✗ if `dev_complete:false` after failed run)
-
-**Assignee column:** show developer name or `unassigned`; show `—` for blocked components.
-
-**Dev column awaiting-confirm:** show 👤 on all components when all `spec_complete:true` but `build_phase_confirmed:false` in project-state.
+**Story column flags:**
+- Spec = `spec_done`
+- Build = `built` (show 🔄 while `project.active_story` matches this ID)
+- Deploy = `deployed`
 
 ---
 
@@ -177,54 +167,40 @@ Always the last element rendered. Two columns — left is contextual actions, ri
 **State 2 (pipeline active):**
 ```
 ──────────────────────────────────────────────────────────────────────
-  Type a component ID to manage it    `[$]` Cost
-  `[1]` New work  (TL only)           `[?]` Help
+  Type a story ID to manage it        `[$]` Cost
+  `[1]` [contextual action]           `[?]` Help
   `[2]` [contextual action]           `[X]` Exit
-  `[3]` [contextual action]
+  `[N]` New work
 ──────────────────────────────────────────────────────────────────────
-Enter component ID or action:  `>`
+Enter story ID or action:  `>`
 ```
 
-`[2]` is only rendered when the state offers two contextual actions. `New work` is only rendered for TL role, once ideation is complete — it always appears as the last numbered action regardless of how many contextual actions precede it.
-
-`[?]` expands inline to show secondary commands: `[A]` Architecture · `[I]` Integration scenarios · `[P]` Project · and a docs link.
+`[?]` expands inline to show secondary commands: `[A]` Architecture · docs link.
 
 **Left column — derivation rules:**
 
-Evaluate state flags in pipeline order. Each condition that is true and actionable contributes one numbered action. Number them sequentially `[1]`, `[2]`, etc. If a phase is blocked or already in progress (subagent running), show a status line instead of a numbered action.
+Evaluate state flags in pipeline order. Each condition that is true and actionable contributes one numbered action.
 
 | Condition | Action label |
 |-----------|-------------|
 | No project exists | `Start new project` · `Analyse existing codebase` (only if source files present) |
 | Ideation in progress | `Continue ideation` |
-| Architecture complete, backlog not approved | `Review and approve component backlog` |
-| Backlog approved, specs not started | `Spec all [n] components` |
-| Spec in progress | _(status line)_ `Spec in progress — [n] components running` |
-| All specs done (all `spec_complete:true`), build not confirmed | `Build all [n] components` — TL must select this to proceed; never auto-advanced |
-| Build in progress | _(status line)_ `Build in progress — [n] components running` |
-| All components built, integration not confirmed | `Run integration tests` · `Deploy directly — skip tests` |
-| Integration passed or skipped, deploy pending | `Deploy release [version]` |
-| Developer — assigned components ready to spec | `Continue spec — [COMP-ID]` |
-| Developer — spec complete, build not started | `Build [COMP-ID]` — developer must select this; never auto-advanced after spec |
-| Developer — assigned components build in progress | _(status line)_ `Build in progress — [COMP-ID]` |
-| Developer — no assigned components | `Claim a component` |
+| `ideation_complete:true` · any `spec_done:false` | `Spec next story — [STORY-ID]: [title]` |
+| All `spec_done:true` · any `built:false` | `Build next story — [STORY-ID]: [title]` |
+| All `built:true` · any `deployed:false` | `Deploy release [version]` |
+| All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 
-For TL: append `New work` as the final numbered action whenever `architecture_complete:true`.
-
-Label format: use the exact wording above. Insert counts (`[n]`) and IDs where shown.
+`[N] New work` always appears as the last item in the action bar whenever `ideation_complete:true`.
 
 **Right column — visibility rules:**
 - `[$]` always visible
-- `[?]` always visible — expands inline to: `[A]` Architecture (when `architecture-spec.md` exists) · `[I]` Integration scenarios (when `integration-scenarios.md` exists) · `[P]` Project · docs link
+- `[?]` always visible — expands inline to: `[A]` Architecture (when `architecture.md` exists) · docs link
 - `[X]` always visible
 
-
 **Input handling:**
-- Bare number (`001`, `1`) or full ID (`COMP-001`) → route to component's current phase
-- Blocked component typed → show one-line blocker, re-render
-- TL types component ID → manage it (assign developer, view spec, force retry)
-- Developer types their component ID → see internal features, continue build
-- Developer types unassigned component ID → offer to claim
+- Bare number (`001`, `1`) or full ID (`STORY-001`) → route to story's current phase
+- Blocked story typed → show one-line blocker, re-render
+- Typed story ID → manage it (view spec, force rebuild, remove)
 - Lettered command → execute that action
 - Invalid input → re-render with one-line error above header
 
@@ -234,31 +210,19 @@ Label format: use the exact wording above. Insert counts (`[n]`) and IDs where s
 
 Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
 
-**Component data source:** component identity (comp_id, title, domain, size, depends_on, features) is read from `specs/components/[COMP-ID]/component-spec.md` YAML frontmatter — written by the ideation agent and always present when `backlog_approved:true`. The `architecture-spec.md ## Component Backlog` table is the human-readable display; the frontmatter is the machine-readable source. For the dashboard title column, read frontmatter `comp_id` → use the matching title line in the spec's `# [COMP-ID]: [title]` heading. Pipeline flags (spec_complete, dev_complete, tests_passing, deployed, assignee) are read from `project-state.yaml → components`. Never read from a per-component state.yaml — that file does not exist.
-
-**Batch pipeline:** SpecGantry processes the full backlog in four batch phases, each separated by an explicit user confirmation. Within each phase, components are processed in dependency order.
-
-| # | Condition | Action | Pause after? |
-|---|-----------|--------|-------------|
-| 1 | No `.claude/local-state.yaml` · `specs/project-state.yaml` exists | **detect_role** | yes ⏸ |
-| 2 | No `.claude/local-state.yaml` · no `specs/project-state.yaml` · no source files | **init_project** | no — moves straight to ideation |
-| 3 | No `.claude/local-state.yaml` · no `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** | yes |
-| 4 | TL · `ideation_complete:false` OR `architecture_complete:false` | **start_ideation** | yes ⏸ |
-| 5 | TL · `architecture_complete:true` · `backlog_approved:false` | **approve_backlog** | yes ⏸ |
-| 6 | TL · `backlog_approved:true` · any component has `spec_complete:false` | **spec_all_components** (batch) | yes ⏸ — always stop after specs complete, wait for TL to confirm build |
-| 7 | TL · all components `spec_complete:true` · `build_phase_confirmed:false` | re-render dashboard · ⏸ — wait for TL to select `[1] Build all [n] components` | yes ⏸ |
-| 8 | TL · `build_phase_confirmed:true` · any component has `dev_complete:false` OR `tests_passing:false` | **build_all_components** | yes ⏸ |
-| 9 | TL · all `tests_passing:true` · `integration_tests_passing:false` · `integration_skipped:false` · `integration_phase_confirmed:false` | re-render dashboard · ⏸ — wait for `[1]` (→ **confirm_integration** → **run_integration_tests**) or `[2]` (→ **confirm_integration** → **deploy_release**) | yes ⏸ |
-| 10 | TL · (`integration_tests_passing:true` OR `integration_skipped:true`) · any component `deployed:false` | **deploy_release** | yes ⏸ |
-| 11 | New work selected · `architecture_complete:true` | **classify_and_route** | yes ⏸ |
-| 12 | All components `deployed:true` | View H → **classify_and_route** | yes ⏸ |
-| 13 | Dev · assigned components with `spec_complete:false` · `dev_complete:false` | **spec_component** (their component) | yes ⏸ — always stop after spec completes; never auto-advance to build |
-| 14 | Dev · assigned components with `spec_complete:true` · `dev_complete:false` · explicit `[1]` selected | **build_component** (their component) | yes ⏸ |
-| 15 | Dev · no assigned components | **claim_component** | yes ⏸ |
+| # | Condition | Action |
+|---|-----------|--------|
+| 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
+| 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
+| 3 | `ideation_complete:false` | **start_ideation** |
+| 4 | `ideation_complete:true` · any `spec_done:false` | **spec_next_story** |
+| 5 | All `spec_done:true` · any `built:false` | **build_next_story** |
+| 6 | All `built:true` · any `deployed:false` | **confirm_and_deploy** |
+| 7 | All `deployed:true` | **classify_and_route** |
 
 **⏸ Pause = re-render full dashboard + stop.**
 
-**Dependency ordering within phases:** always process components in topological order (no `depends_on` first, then their dependents). Within a tier of independent components, process one at a time to avoid file conflicts.
+**Dependency ordering:** always process stories in topological order (no `depends_on` first, then their dependents). Within a tier of independent stories, process the lowest-numbered first.
 
 **View A:**
 ```
@@ -267,37 +231,9 @@ Existing codebase detected — no SpecGantry project found.
   `[2]` Analyse existing codebase
 ```
 
-**View H:**
-```
-All [n] components deployed — release [project.release].
-Describe next work (bug fix / improvement / new feature / architectural change), or `X` to exit:  `>`
-```
-
-(Triggered when all components have `deployed:true` in project-state.)
-
 ---
 
 ## Actions
-
-### detect_role
-**Gate:** `specs/project-state.yaml` exists · no `.claude/local-state.yaml`
-
-A project exists but this machine has no local state — the user is either a developer joining the team, or the TL on a fresh clone.
-
-Show:
-```
-SpecGantry project found: [project.name] (release [project.release])
-
-Are you the Team Lead or a Developer?
-  [1] Team Lead / Architect
-  [2] Developer
-```
-
-On `[1]`: write `.claude/local-state.yaml` with `role: tl` · `active_components: []` · `current_component: null` · `gate_bypasses: []` → re-render dashboard · ⏸
-
-On `[2]`: prompt `Your name: >` · write `.claude/local-state.yaml` with `role: dev` · `developer_name: [name]` · `active_components: []` · `current_component: null` · `gate_bypasses: []` → re-render dashboard · ⏸
-
----
 
 ### init_project
 Collect inputs (re-prompt on blank):
@@ -305,7 +241,7 @@ Collect inputs (re-prompt on blank):
 Project name (max 60 chars):  `>`
 Project vision (2–4 sentences):  `>`
 ```
-Write `specs/architecture-spec.md` with the vision stub:
+Write `specs/architecture.md` with the vision stub:
 ```markdown
 # Architecture
 
@@ -324,13 +260,7 @@ _not yet written_
 ## Tech Stack
 _not yet written_
 
-## System Boundaries
-_not yet written_
-
 ## Guardrails
-_not yet written_
-
-## Component Backlog
 _not yet written_
 ```
 Write `specs/project-state.yaml`:
@@ -339,29 +269,22 @@ project:
   name: "[name]"
   created: [YYYY-MM-DD]
   release: "1.0.0"
-phase_gates:
-  ideation_complete: false
-  architecture_complete: false
-  backlog_approved: false
-  build_phase_confirmed: false
-  integration_tests_passing: false
-  integration_skipped: false
-  integration_phase_confirmed: false
   next_release_type: null
-components: {}
+  active_story: null
+ideation_complete: false
+stories: {}
 ```
-Write `.claude/local-state.yaml`: `role: tl` · `active_components: []` · `current_component: null` · `gate_bypasses: []`
-Create `.claude/components/` directory. Create `.claude/components/.gitkeep`.
-Append to `.gitignore` if absent: `specs/.current-session` · `.claude/components/*.lock`
+Create `specs/stories/` directory.
+Append to `.gitignore` if absent: `specs/.current-session`
 → **start_ideation**
 
 ---
 
-### start_ideation (TL path)
-**Gate:** `role:tl` · `specs/project-state.yaml` exists · `specs/architecture-spec.md` exists
-**Idempotency:** `ideation_complete:true` AND `architecture_complete:true` → re-render dashboard · stop
+### start_ideation
+**Gate:** `specs/project-state.yaml` exists · `specs/architecture.md` exists
+**Idempotency:** `ideation_complete:true` → re-render dashboard · stop
 **Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `project_dir`
-**After:** verify `ideation_complete:true` and `architecture_complete:true` · re-render dashboard showing full component backlog · emit compact hint below the transition note:
+**After:** verify `ideation_complete:true` · re-render dashboard showing full story list · emit compact hint below the transition note:
 ```
 💡 Good moment to /compact — ideation context is large, all decisions are on disk.
 ```
@@ -369,145 +292,75 @@ Append to `.gitignore` if absent: `specs/.current-session` · `.claude/component
 
 ---
 
-### approve_backlog (TL path)
-**Gate:** `architecture_complete:true` · `backlog_approved:false`
-Re-render the standard dashboard, then show the approval prompt below it:
-```
-  [Y] Approve — begin spec writing   [E] Edit backlog   [X] Hold
-```
-- `E` → re-invoke ideation subagent in amendment mode
-- `X` → re-render · ⏸
-- `Y` → set `backlog_approved:true` in `specs/project-state.yaml → phase_gates` → proceed to **spec_all_components**
+### spec_next_story
+**Gate:** `ideation_complete:true` · at least one story has `spec_done:false`
+**Idempotency:** all `spec_done:true` → re-render · stop
 
----
+Find the next story to spec: lowest-numbered story in topological order where `spec_done:false` and all stories in `depends_on` have `spec_done:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
-### spec_all_components (TL path)
-**Gate:** `backlog_approved:true` · at least one component has `spec_complete:false` in project-state
-**Idempotency:** all `spec_complete:true` → re-render · stop
+Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
 
-Process all components with `spec_complete:false` in topological order (depends_on from component-spec.md frontmatter). For each component:
-- **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append COMP-ID to `active_components` in `.claude/local-state.yaml` · set `current_component: [COMP-ID]`
-- **Invoke:** `spec-gantry:component-spec:component-spec-subagent` · description: `"Writing component spec for [comp_id]"` · pass `comp_id`, `project_dir`
-- **After:** verify `spec_complete:true` in project-state · remove lock · remove from `active_components` · set `current_component: null` · re-render dashboard progress line
-- If any spec fails: remove lock · remove from `active_components` · halt with the subagent's error message · stop — TL can re-run `/spec-gantry` to retry the failed component from where it left off
+**Invoke:** `spec-gantry:story-spec:story-spec-subagent` · description: `"Writing spec for [story_id]: [title]"` · pass `story_id`, `project_dir`
 
-When all components have `spec_complete:true`:
+**After:** verify `spec_done:true` in project-state · clear `project.active_story: null` · re-render dashboard.
+
+If spec failed: clear `active_story` · halt with the subagent's error message · ⏸
+
+When all stories have `spec_done:true`:
 - Re-render full dashboard with transition note `✓ All specs complete · ready to build`
-- Emit compact hint below the transition note:
+- Emit compact hint:
   ```
   💡 Good moment to /compact — spec context is large, all specs are on disk.
   ```
-- ⏸ **stop here** — routing row 7 will show `[1] Build all [n] components`; the TL must explicitly select it
+- ⏸ pause
 
 ---
 
-### build_all_components (TL path)
-**Gate:** `build_phase_confirmed:true` in project-state · at least one component has `dev_complete:false` OR `tests_passing:false`
-**Entry:** reached only when TL explicitly selects `[1] Build all [n] components` from the dashboard (routing row 7). On that selection, set `build_phase_confirmed:true` in `project-state.yaml → phase_gates` then proceed.
-**Idempotency:** all `tests_passing:true` → re-render · stop
+### build_next_story
+**Gate:** all stories `spec_done:true` · at least one story has `built:false`
+**Idempotency:** all `built:true` → re-render · stop
 
-Process all components with `tests_passing:false` in topological order. For each:
+Find the next story to build: lowest-numbered story in topological order where `built:false` and all stories in `depends_on` have `built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
-- **Gate:** `spec_complete:true` in project-state · `dev_complete:false` in project-state
-- **API contract gate:** read `## Interface Contract` from current + all previously processed component specs; halt on HTTP method+path duplicates, function name conflicts, or overlapping data ownership
-- **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
-- **Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [comp_id]"` · pass `comp_id`, `project_dir`; include `gate_bypass:true` if comp_id is in `local-state.yaml → gate_bypasses`
-- **After:** read `overall_status` from `build-report.yaml`; if `fail` → halt "Build or tests failed — run /spec-gantry to resume"; else update `project-state.yaml → components.COMP-ID`: `dev_complete:true` · `tests_passing:true` · remove from `active_components` · set `current_component: null` · remove lock · if comp_id in `gate_bypasses`, remove it · re-render dashboard progress line
+Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
 
-When all components have `tests_passing:true`:
-- Re-render full dashboard (action bar shows `[1]` Run integration tests · `[2]` Deploy directly)
-- ⏸ pause — wait for user input before proceeding to **confirm_integration**
+**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`; include `gate_bypass:true` if invoked from a bug-fix classify_and_route
+
+**After:** read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · halt "Build failed — run /spec-gantry to resume" · ⏸; else update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · re-render dashboard.
+
+When all stories have `built:true`:
+- Re-render full dashboard (action bar shows `[1] Deploy release [version]`)
+- ⏸ pause
 
 ---
 
-### merge_gap_specs (TL path)
-**Gate:** all components `tests_passing:true` in project-state · at least one `gap-*.md` file exists
-**Called from confirm_integration** — never invoked directly or automatically.
+### confirm_and_deploy
+**Gate:** all stories `built:true` · at least one `deployed:false`
+**Idempotency:** all `deployed:true` → re-render · stop
 
-1. Scan all `specs/components/*/gap-*.md`. Collect a list of `{comp_id, gap_files[]}` for every component that has at least one gap file.
+**Step 1 — Gap pre-check and merge (if needed).** Scan `specs/stories/*/gap-*.md`.
 
-2. For each affected component, invoke `spec-gantry:component-spec:component-spec-subagent` · description: `"Merging gap specs for [comp_id]"` · pass `comp_id`, `project_dir`, `merge_gaps: true`, `gap_files: [list]`
-   - Process components sequentially in topological order (same ordering as build phase)
-   - After each invocation, verify the gap files were deleted from disk
-   - Collect the summary returned by each invocation
-
-3. Return the consolidated summary to `confirm_integration`:
-   ```
-   COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
-   COMP-003: 1 gap(s) merged — Data section updated
-   ```
-
----
-
-### spec_component (developer path)
-**Gate:** `role:dev` · comp_id assigned to this developer · `spec_complete:false` in project-state
-
-- **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
-- **Invoke:** `spec-gantry:component-spec:component-spec-subagent` · description: `"Writing component spec for [comp_id]"` · pass `comp_id`, `project_dir`
-- **After:** verify `spec_complete:true` in project-state · remove lock · remove from `active_components` · set `current_component: null` · re-render
-
-⏸ pause
-
----
-
-### build_component (developer path)
-**Gate:** `role:dev` · comp_id assigned to this developer · `spec_complete:true` · `dev_complete:false` in project-state
-**Entry:** reached only when developer explicitly selects `[1] Build [COMP-ID]` from the dashboard. Never auto-invoked after spec completes — the developer must see the completed spec on the dashboard and choose to begin the build.
-
-- **Lock:** create `.claude/components/[COMP-ID].lock`
-- **Add to active:** append to `active_components` · set `current_component: [COMP-ID]`
-- **Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [comp_id]"` · pass `comp_id`, `project_dir`; include `gate_bypass:true` if comp_id in `gate_bypasses`
-- **After:** read `overall_status` from `build-report.yaml`; if `fail` → halt; else update `project-state.yaml → components.COMP-ID`: `dev_complete:true` · `tests_passing:true` · remove from `active_components` · set `current_component: null` · remove lock · re-render
-
-⏸ pause
-
----
-
-### claim_component (developer path)
-**Gate:** `role:dev` · at least one unassigned component with all depends_on met
-
-Show available components:
+**Gaps found** — show summary and ask to confirm merge:
 ```
-Available components:
-  COMP-002  User Profile    M   no dependencies
-  COMP-003  Notifications   M   depends on COMP-001 (complete)
+✓ All [n] stories built.
 
-Claim a component ID:  `>`
-```
-On selection: set `assignee: [developer name from local-state.yaml]` in `specs/project-state.yaml → components.[COMP-ID]`. Re-render. ⏸
+  Gap specs detected — specs must be updated before deploying:
 
-Developer name is read from `.claude/local-state.yaml → developer_name`. If not set, prompt once: `Your name:  >` and write it to local-state.yaml.
-
----
-
-### confirm_integration (TL path)
-**Gate:** all components `tests_passing:true` · `integration_phase_confirmed:false`
-**Entry point** for the integration phase — always reached directly from `build_all_components`. Never skipped.
-
-**Step 1 — Gap pre-check and merge (if needed).** Scan `specs/components/*/gap-*.md`.
-
-**Gaps found** — show summary and ask TL to confirm merge:
-```
-✓ All [n] components built and tested.
-
-  Gap specs detected — specs must be updated before proceeding:
-
-    COMP-001  2 gap file(s) — gap-2026-06-01.md, gap-2026-06-02.md
-    COMP-003  1 gap file(s) — gap-2026-06-05.md
+    STORY-001  2 gap file(s) — gap-2026-06-01.md, gap-2026-06-02.md
+    STORY-003  1 gap file(s) — gap-2026-06-05.md
 
   [Y] Merge gap specs   [X] Hold
 ```
 On `Y`:
-  - → invoke **merge_gap_specs** (processes all gaps, returns merge summary)
+  - For each story with gaps, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap specs for [story_id]"` · pass `story_id`, `project_dir`, `merge_gaps: true`, `gap_files: [list]`
+  - Process stories sequentially in topological order
+  - After each invocation, verify the gap files were deleted from disk
   - Show merge summary:
     ```
-    ✓ Gap specs merged — specs and architecture updated to reflect actual build
+    ✓ Gap specs merged — specs updated to reflect actual build
 
-      COMP-001: 2 gap(s) merged — Interface Contract updated, architecture amended
-      COMP-003: 1 gap(s) merged — Data section updated
+      STORY-001: 2 gap(s) merged — Data section updated
+      STORY-003: 1 gap(s) merged — AI integration section updated
 
     ```
   - → proceed to **Step 2**
@@ -515,125 +368,86 @@ On `X`: re-render · ⏸
 
 **No gaps found** — skip Step 1, proceed directly to **Step 2**.
 
-**Step 2 — Choose next phase.** Show:
+**Step 2 — Confirm deploy.** Show:
 ```
-  [1] Run integration tests   [2] Deploy directly — skip tests   [X] Hold
+  [1] Deploy release [version]   [X] Hold
 ```
-On `1`: set `integration_phase_confirmed:true` in `project-state.yaml → phase_gates` → proceed to **run_integration_tests**
-On `2`: set `integration_skipped:true` in `specs/project-state.yaml → phase_gates` → proceed to **deploy_release**
+On `1` → proceed to deploy:
+
+**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`
+
+**After:** if any story still `deployed:false` → halt with error; else:
+- Set `project.active_story: null` in project-state
+- Re-render · ⏸
+
 On `X`: re-render · ⏸
 
 ---
 
-### run_integration_tests
-**Gate:** `role:tl` · all components `tests_passing:true` in project-state · `integration_tests_passing:false`
-**Idempotency:** `integration_tests_passing:true` → re-render · stop
-**Invoke:** `spec-gantry:integration-test:integration-test-subagent` · description: `"Running integration tests"` · pass `project_dir`
-**After:** if any scenario failed → halt with failure summary; else re-render · show deploy gate prompt:
-```
-✓ Integration tests passed — [n]/[n] scenarios.
-
-  Ready to deploy release [next_version] — [n] components included.
-  [Y] Deploy   [X] Hold
-```
-⏸ pause — on `Y` proceed to **deploy_release**, on `X` re-render and stop.
-
----
-
-### deploy_release (TL path)
-**Gate:** `role:tl` · (`integration_tests_passing:true` OR `integration_skipped:true`)
-**Idempotency:** all components `deployed:true` in project-state → re-render · stop
-**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying full system"` · pass `project_dir`
-**After:** if any component still `deployed:false` → halt with error; else re-render · ⏸
-
----
-
-### classify_and_route (All paths)
+### classify_and_route
 Prompt: `Describe the next work (bug fix / improvement / new feature / architectural change):  >`
 
-**Step 1 — Classify and map to components:**
+**Step 1 — Classify and map to stories:**
 
-| Type | Condition | How to find affected components |
-|------|-----------|--------------------------------|
-| `bug_fix` | broken deployed behaviour | read component specs — derive owning component(s), do not ask TL |
-| `enhancement` | existing component does more/differently | read component specs — derive owning component(s), do not ask TL |
-| `new_component` | net-new capability | determine domain fit; propose title + domain |
-| `project_change` | infra, data model, cross-cutting | read architecture spec + component specs |
+| Type | Condition | How to find affected stories |
+|------|-----------|------------------------------|
+| `bug_fix` | broken deployed behaviour | read story specs — derive owning story(ies), do not ask |
+| `enhancement` | existing story does more/differently | read story specs — derive owning story(ies), do not ask |
+| `new_story` | net-new user capability | propose title and where it fits in the story order |
+| `project_change` | infra, data model, cross-cutting | read architecture + all story specs |
 
-**Step 2 — Confirm with TL:**
+**Step 2 — Confirm:**
 ```
-  Type: bug_fix
+  Type: enhancement
   Affects:
-    · COMP-001 Authentication — session expiry logic incorrect
+    · STORY-002 Student submits application — add draft-save capability
   [Y] Confirm  [E] Edit  [X] Cancel
 ```
 
 **Step 3 — Update state and route.**
 
-`bug_fix` or `enhancement` — for each affected component:
-- Reset phase flags in `project-state.yaml → components.COMP-ID`: `spec_complete:false · dev_complete:false · tests_passing:false · deployed:false`
-- For `bug_fix`: add comp_id to `local-state.yaml → gate_bypasses` (skips spec_complete prerequisite during build)
-- Set `project-state.yaml → phase_gates.next_release_type`: `patch` for bug_fix, `minor` for enhancement
-- Reset batch-phase flags in `project-state.yaml → phase_gates`: `build_phase_confirmed:false · integration_phase_confirmed:false · integration_tests_passing:false · integration_skipped:false`
-- Re-render · ⏸
+`bug_fix` or `enhancement` — for each affected story:
+- Reset in `project-state.yaml → stories.[story_id]`: `spec_done:false · built:false · deployed:false`
+- For `bug_fix`: pass `gate_bypass:true` when invoking the build subagent (skips spec_done prerequisite)
+- Set `project.next_release_type`: `patch` for bug_fix, `minor` for enhancement
+- Re-render · ⏸ — routing row 4 or 5 will pick up naturally on next `/spec-gantry`
 
-`new_component` → route to **start_ideation** (amendment mode). Set `next_release_type: minor` in project-state. Re-render after ideation completes. ⏸
+`new_story` → invoke **start_ideation** (amendment mode). Set `next_release_type: minor`. Re-render after ideation completes. ⏸
 
 `project_change`:
-- Reset all component phase flags in project-state
-- Set `next_release_type: major` in project-state
-- Reset batch-phase flags in project-state
+- Reset all story flags in project-state (`spec_done:false · built:false · deployed:false`)
+- Set `next_release_type: major`
+- Set `ideation_complete: false`
 - Re-render · ⏸ before **start_ideation** (amendment mode)
 
 ---
 
-### reverse_engineer (TL path)
+### reverse_engineer
 Confirm:
 ```
 Analysing codebase at: [cwd]
 Project name (blank to infer):  `>`
 Proceed? `[Y]`/`[N]`
 ```
-**Gate:** source files exist · `architecture_complete` not true
+**Gate:** source files exist · `ideation_complete` not true
 **Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · description: `"Reverse engineering existing codebase"` · pass `project_name`, `project_dir`
-**After:** verify `architecture_complete:true` · set `active_components: []` · set `current_component: null` in local-state · re-render dashboard · ⏸
+**After:** verify `ideation_complete:true` · re-render dashboard · ⏸
 
 ---
 
 ## Quick-Bar Actions
 
-**`[A]`** Display `specs/architecture-spec.md` in full, then re-render dashboard. Visible to all roles when file exists.
-**`[I]`** Display `specs/integration-scenarios.md` in full, then re-render dashboard. Visible to all roles when file exists.
-**`[P]`** Project menu. Show inline, then re-render dashboard on exit.
+**`[A]`** Display `specs/architecture.md` in full, then re-render dashboard. Visible when file exists.
 
-TL view:
-```
-Project: [name]  |  [vision from architecture-spec.md ## Vision, truncated to 80 chars]
+**`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and story.
 
-  [1] Edit project name and vision
-  [2] Assign component to developer
-  [3] Reorder / defer component
-  [4] View full backlog
-  [X] Back
-```
-Developer view:
-```
-Project: [name]
+**`[N]`** New work → **classify_and_route**. Always visible when `ideation_complete:true`.
 
-  My components:
-    [COMP-ID]  [title]  Spec: [status]  Dev: [status]
-
-  [X] Back
-```
-
-**`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and component. Visible to all roles.
-**New work** Prompt for next work → **classify_and_route**. Rendered for TL when `architecture_complete:true` — always as the last numbered action in the left column.
 **`[?]`** Expand inline — show secondary commands, then re-render dashboard on exit:
 ```
-  [A] Architecture spec     (visible when architecture-spec.md exists)
-  [I] Integration scenarios (visible when integration-scenarios.md exists)
-  [P] Project
+  [A] Architecture     (visible when architecture.md exists)
   [D] Docs — specgantry.github.io
   [X] Back
 ```
+
 **`[X]`** Exit: `Run /spec-gantry anytime to return.`

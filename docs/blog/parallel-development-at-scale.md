@@ -1,158 +1,131 @@
 ---
 layout: docs
-title: "From Solo Dev to Team at Scale — How SpecGantry Handles Parallel Component Development"
-description: Solo AI-assisted development is forgiving. Team development is not. Here's how SpecGantry's domain boundaries and gap specs prevent the architecture drift that kills parallel component work.
+title: "Building Coherent Systems with Story-Based Development"
+description: Component decomposition creates coordination overhead. Story-based decomposition eliminates it. Here's how SpecGantry's vertical-slice approach and gap specs keep your system coherent from spec to deployment.
 permalink: /blog/parallel-development-at-scale/
 ---
 
-# From Solo Dev to Team at Scale — How SpecGantry Handles Parallel Component Development
+# Building Coherent Systems with Story-Based Development
 
-*June 5, 2026 · 9 min read · Team Process*
-
----
-
-Most tools optimized for AI-assisted development are implicitly optimized for one developer.
-
-One context window. One set of decisions. One person keeping the full mental model of the system in their head. When something conflicts, they notice, because they made both decisions.
-
-Scale that to four developers working in parallel and the model breaks. Quietly, at first — then all at once, in integration.
-
-SpecGantry was designed with parallel development as a first-class concern, not an afterthought. The difference shows up in three properties: domain boundaries, gap spec management, and the orchestrator's phase gates. Here's how each one works and why it matters.
+*June 5, 2026 · 9 min read · Architecture*
 
 ---
 
-## The Integration Problem Is a Coordination Problem
+One of the most common failure modes in AI-assisted development isn't broken code. It's coherent code that doesn't form a coherent system.
 
-Before going further, it's worth naming the actual failure mode.
+The backend builds an extracurricular section for a student profile. The frontend never renders it. The AI extraction feature gets specced in detail, implemented correctly — and never actually called, because the flow that was supposed to trigger it was built as a separate component that didn't know the feature existed.
 
-When multiple developers build components in parallel, the typical post-mortem goes like this: "Component A and Component B both looked correct independently. But when we put them together, they conflicted." Sometimes the conflict is a schema collision — two components writing to the same table with different assumptions about the column types. Sometimes it's an API contract mismatch — Component A expects to call Component B at `/v1/payments/authorize` and Component B is exposing `/api/v2/payment`. Sometimes it's a library choice — Component A locked in one version of an auth library while Component B upgraded it to a semver-incompatible version.
-
-These aren't bugs in either component. They're failures of coordination — failures that happened before a line of code was written, because two developers made independent, locally-reasonable decisions about the same shared piece of the system.
-
-The traditional fix is coordination overhead: daily standups to talk through what everyone's building, architecture review boards, API design documents that live in wikis and get stale immediately. These help. But they require humans to do the coordination manually, which means the coordination is only as good as the humans' bandwidth and memory.
-
-SpecGantry automates the structural coordination. The human architect makes the design decisions; the system enforces them without requiring manual oversight of every component.
+These aren't bugs in any individual component. They're failures of **vertical coherence** — the frontend, backend, and AI integration of a single capability never got specified together in one place.
 
 ---
 
-## Domain Boundaries: The Unit of Isolation
+## The Component Decomposition Problem
 
-SpecGantry's architecture phase derives **domains** from the system design.
+Traditional architectural decomposition cuts the system horizontally: frontend, backend, data layer, AI layer. Each component is assigned to a phase. Each phase produces an artifact.
 
-A domain is a named, bounded segment of the system — a logical partition that groups related functionality, owns specific data, and has defined interfaces with other domains. The architecture agent infers domains from the natural structure of the system you've described: your API surface, your data model, your service boundaries.
+The problem is that a real user capability spans all of those layers. When each layer is specced and built in isolation, the question "does this feature actually work end-to-end?" isn't answered until integration — by which point you've already spent the tokens building it.
 
-A typical project might have domains like:
+Consider an AI-powered resume extraction feature:
+- The spec for the data layer: "Store resume file with extracted fields"
+- The spec for the AI integration: "Extract structured data from PDF"
+- The spec for the frontend: "Show form with profile fields"
 
-- `auth` — user identity, sessions, JWT issuance
-- `catalog` — product data, inventory, search
-- `orders` — purchase flow, payment integration, fulfillment
-- `notifications` — email/SMS dispatch, preferences, delivery tracking
+Three individually correct specs that leave open the most important questions: What happens when extraction fails? Which fields does the frontend show? Are the field names in the extracted data the same as the field names in the form? Which event triggers the extraction — file upload, form load, submit?
 
-These aren't arbitrary lines. They reflect the natural seams in the system — the places where you can cut without severing load-bearing dependencies.
-
-When a developer picks up a component, the component spec names a domain. That domain boundary defines what the component is allowed to do:
-
-- It can read and write data owned by its domain
-- It can call other domains through their defined API contracts
-- It **cannot** write to tables owned by another domain
-- It **cannot** introduce data or logic that belongs in another domain's responsibility
-
-The dev agent enforces this. It reads the component spec's domain assignment, checks it against the architecture spec, and refuses to implement logic that crosses the boundary.
+None of these questions get asked because no one spec owns the full user journey.
 
 ---
 
-## Why Boundaries Prevent Integration Failures
+## User Stories as Vertical Slices
 
-Here's the specific failure mode that domain boundaries eliminate.
+SpecGantry v3 structures work around **user stories** — vertical slices that own the complete capability from UI to backend to AI in a single spec.
 
-Without them: Developer A is building the `orders` component and needs the user's email address to send a receipt. The user data lives in the `auth` domain's `users` table. Developer A writes a direct query: `SELECT email FROM users WHERE id = ?`. It works. It's fast. It ships.
+A story spec for "Student uploads resume and sees pre-filled profile form" contains:
 
-Developer B is building the `auth` component and needs to migrate the `users` table to add OAuth support. The migration renames `email` to `primary_email` and adds `oauth_email`. Developer B's migration is correct for the auth domain. But it silently breaks Developer A's query, which was never supposed to be there.
+- **Every screen** in the flow — what it shows, what the user can do, what happens on each action
+- **Every data entity** — field names, types, validation rules, required vs. optional
+- **AI integration** — the exact prompt template, expected output schema, how each field maps to the UI
+- **Enterprise checks** — auth requirements, error states, what happens on failure, AI fallback
+- **Acceptance criteria** — numbered, observable, specific
 
-With domain boundaries enforced: Developer A can't write a direct query against `auth.users`. The boundary means `orders` must access user data through `auth`'s API — probably `GET /v1/auth/users/{id}/contact-info`. Developer B can restructure the `users` table freely, as long as the API contract is preserved. The coupling is through a versioned interface, not a raw table reference.
+This is the architecture in one document. The build agent reads exactly this. There's no cross-document inference required.
 
-This is the classic argument for service-oriented architecture, applied at the component level during development. SpecGantry enforces it without requiring separate services to be deployed.
+---
+
+## Why This Eliminates Incoherence
+
+When frontend and backend are specced together in one story, the question "does the form field match the API field?" is answered in the spec, not at runtime.
+
+When the AI integration is specced alongside the UI flow that triggers it, the question "what does the user see when AI fails?" must be answered before a line of code is written. The `## Enterprise checks` section makes it mandatory.
+
+When acceptance criteria describe observable end-to-end behavior — "submitting with a valid PDF triggers extraction within 3 seconds; if extraction fails, form fields remain empty and a 'Fill in manually' prompt appears" — the build agent has a precise target. Haiku-level models can execute against precise specs. It's vague specs that require expensive back-and-forth.
+
+The investment shifts: more tokens in the spec once, fewer tokens in confused build turns.
 
 ---
 
 ## Gap Specs: Handling Mid-Build Discoveries
 
-Domain boundaries handle structural isolation. But there's a second class of problem that boundaries alone don't catch: **mid-build discoveries** — cases where a developer is implementing correctly within their domain, but discovers the spec is incomplete, or that their implementation has a side-effect on another component's interface contract.
+Precise specs reduce mid-build surprises. They don't eliminate them entirely. When the build agent discovers the spec is incomplete, contradicted by the actual code shape, or has side-effects on another story's data model — the naive fix is to edit the main spec directly.
 
-The naive fix is to edit the main spec directly. But other developers may already be building against that spec. Changing it mid-flight breaks their in-progress work without warning.
+SpecGantry's answer is the **gap spec**: a delta document written during development instead of modifying the main spec. The gap spec records what changed, which files were affected, any side-effects on other stories, and a recommended spec update.
 
-SpecGantry's answer is the **gap spec**: a small delta document written during development instead of modifying the main spec. The gap spec records what changed, which files were affected, any side-effects on other components, and a recommended update to the component or architecture spec. The main specs stay frozen while other developers build.
+Before deployment, SpecGantry presents all unmerged gap specs, merges them into the relevant story specs and architecture, then proceeds to deploy. The main specs stay accurate. The audit trail is complete. Every `/spec-gantry` session in the future is working from specs that reflect what was actually built.
 
-Before integration testing begins, SpecGantry automatically merges all gap specs back into the relevant component and architecture specs, in chronological order. The TL receives a summary of what was merged. Only then does integration testing proceed.
-
-This means parallel builds stay stable — no one pulls a changed spec mid-implementation — while the architecture stays accurate for the integration test and beyond.
+This is the mechanism that makes evolution safe. When you return six months later to add a feature, the specs aren't stale documentation of original intent — they're accurate documentation of the current system.
 
 ---
 
 ## The Orchestrator as Air Traffic Control
 
-Think of the orchestrator as air traffic control for parallel component development.
+Think of the orchestrator as air traffic control for your development pipeline.
 
-Each component spec is a flight plan. Before the flight (implementation) begins, ATC (the orchestrator) checks:
+Each story spec is a flight plan. Before the build begins, the orchestrator checks:
 
-1. Is the plan internally coherent? (Component spec gate)
-2. Does it comply with architecture? (Architecture guardrails)
-3. Do the domain boundaries prevent cross-cutting assumptions?
+1. Is the spec internally complete? (Story spec gate — all 6 sections filled, guardrails verified)
+2. Are dependencies met? (The story's `depends_on` list)
+3. Is the architecture consistent? (Guardrail compliance check)
 
-If any check fails, the component doesn't advance to development. The developer addresses the specific issue flagged — not a vague "go talk to someone" but a specific, named problem with a specific section.
+If any check fails, the story doesn't advance to development. The specific section that needs work is named — not a vague "go fix the spec" but a precise gap in a specific section.
 
 Only after all checks pass does the dev agent receive the spec and start implementation.
 
-The result: when integration day comes, the components that made it through this process have a very high prior probability of composing correctly. The domain boundaries prevented cross-cutting assumptions. The architecture guardrails ensured everyone was building to the same system design. And gap specs captured any mid-build discoveries cleanly, without disrupting parallel work.
-
-This doesn't make integration trivial. Real systems have emergent behavior that's hard to spec in advance. But it eliminates the entirely preventable class of integration failures — the ones that stem from two developers making different assumptions about the same shared piece of the system.
+The result: when you reach deployment, the system that was built has a very high probability of composing correctly. The story spec made vertical coherence explicit. The guardrail checks ensured every story respects the system-wide constraints. Gap specs captured mid-build discoveries without letting them silently invalidate the specs.
 
 ---
 
-## Token Cost Visibility Across the Team
+## Token Cost Visibility
 
-There's a financial coordination problem that teams don't talk about enough: in AI-assisted development, parallel work means parallel token spend, and without visibility, you don't know what the team is actually spending.
+Because every SpecGantry agent runs through the same pipeline, every build is tracked. The `/track-cost` dashboard shows spend by phase and by story.
 
-SpecGantry tracks token usage per phase and per component. When four developers are running parallel component builds, the orchestrator's logs show:
+When a story costs significantly more than comparable stories, that's a signal. It usually means one of: the story was genuinely more complex, the spec required multiple revision cycles, or the build agent struggled with an underspecified section.
 
-- How many tokens each component consumed across spec and development
-- Which phase is the most expensive (usually development, but often architecture when the design is complex)
-- Whether any component has unusually high token spend — a signal that the implementation is struggling, possibly because the spec was underspecified
-
-This doesn't change the per-component cost. But it makes team-level AI spend visible and manageable, which is the prerequisite for managing it.
+You can't improve what you can't see. Story-level cost visibility gives you the data to have those conversations before the next release.
 
 ---
 
 ## What This Looks Like in Practice
 
-A realistic parallel development flow with SpecGantry looks like this:
+A development flow with SpecGantry:
 
-1. The architect runs ideation once, deriving system boundaries, domains, and guardrails from the vision.
-2. The Team Lead approves the component backlog before spec work begins.
-3. Components are assigned to (or claimed by) developers. Each developer runs the component-spec agent independently, in their own session.
-4. Cleared specs are picked up by dev agents. Multiple dev agents can be running in parallel — each constrained to its component's domain. Gap specs are written if mid-build adjustments are needed.
-5. Once all components pass, the TL is shown a confirm-integration prompt. Any gap specs are reviewed and merged with TL confirmation first, then the TL chooses to run integration tests or skip directly to deployment.
-6. If the TL runs integration tests, all critical cross-component scenarios execute against the real running system. The TL can also skip integration tests and go straight to deploy — recorded as an audit flag.
-7. The TL deploys the full system as a single release. Token usage is logged per phase and per component.
+1. Ideation derives the story list — 3–5 vertical slices ordered by dependency.
+2. Each story gets a full spec: 6 sections, all mandatory, enterprise checks included.
+3. The build agent implements each story in dependency order. Gap specs are written for any mid-build discoveries.
+4. Once all stories are built, a confirm-deploy prompt appears. Gap specs are reviewed and merged first, then deployment proceeds.
+5. The full system deploys as a single release.
 
-Steps 3–4 run in parallel across the team. The orchestrator serializes only what needs to be serialized: the confirm-integration step (which needs all components to have passed their unit tests before the TL can review gaps, choose integration tests or skip, and then deploy).
-
-Everything else — spec writing, development, gap specs — runs independently, as fast as each developer and their AI assistant can move.
-
-The coordination cost isn't zero, but it's a small, defined overhead at the spec stage — not the sprawling, unpredictable coordination debt of discovering conflicts at integration.
+Each spec is the complete contract for its story. The build agent needs only the story spec and the architecture — no cross-document inference, no implicit dependencies, no assumptions about what other stories are doing.
 
 ---
 
-## The Scaling Argument
+## The Core Argument
 
-Solo AI-assisted development has a forgiving dynamic. One developer, one context, one mental model. Misalignments are noticed quickly because the same person made all the decisions.
+AI-assisted development is fast. The failure mode isn't speed — it's coherence. Systems where each piece was built correctly but doesn't form a coherent whole.
 
-Team development doesn't scale the same way. Mental models diverge. Decisions compound. Integration surfaces grow. The probability of at least one integration failure per sprint, without structural coordination, reaches 60–80% with teams of four or more.
+Story-based decomposition forces coherence into the spec rather than hoping it emerges from integration. It makes the vertical slice explicit before code is written. It gives the build agent a precise target.
 
-Domain boundaries, gap spec management, and orchestrated phase gates don't eliminate that probability to zero. They reduce it to the level where the failures that remain are genuine design uncertainties — not preventable coordination failures.
-
-For teams trying to move fast with AI assistance, that's the difference between shipping and spending every integration cycle untangling assumptions.
+Precision in the spec means execution in the build. That's the combination that works at Haiku cost.
 
 ---
 
-*SpecGantry is open-source and runs inside Claude Code. [See how domains work in the architecture phase →](/docs/how-it-works)*
+*SpecGantry is open-source and runs inside Claude Code. [See the story spec format →](/docs/how-it-works)*

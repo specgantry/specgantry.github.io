@@ -19,7 +19,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
-| **track-cost** | `/track-cost` | Cost breakdown by phase, component, release, and model |
+| **track-cost** | `/track-cost` | Cost breakdown by phase, story, release, and model |
 
 ---
 
@@ -31,7 +31,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 /spec-gantry
 ```
 
-Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, joining a team mid-flight, picking up a component, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
+Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, picking up a story, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
 
 You never need to remember separate commands for different workflows. One command, every time.
 
@@ -41,13 +41,13 @@ You never need to remember separate commands for different workflows. One comman
 
 Two states depending on where you are in the pipeline.
 
-**State 1 — No components yet** (ideation in progress, or no project):
+**State 1 — No stories yet** (ideation in progress, or no project):
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.2.7  |  My App  |  release 1.0.0
+SpecGantry v3  |  My App  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
@@ -58,34 +58,34 @@ SpecGantry v2.2.7  |  My App  |  release 1.0.0
 ```
 </div>
 
-**State 2 — Component pipeline active:**
+**State 2 — Story pipeline active:**
 
-The pipeline table and component picker are unified. Every component is visible, its status is shown across all pipeline stages, and you can act on any component directly from the same screen — no navigation required.
+The pipeline table and story picker are unified. Every story is visible, its status is shown across all pipeline stages, and you can act on any story directly from the same screen — no navigation required.
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.2.7  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 5/8  ·  Dev [██░░░] 2/8
+SpecGantry v3  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 5/8  ·  Built [██░░░] 2/8
 ──────────────────────────────────────────────────────────
-  ID      Component           Spec   Dev   Assignee
+  ID      Story               Spec   Built
   ──────────────────────────────────────────────────
-  [001]  User Auth             ✅    ✅    alice
-  [002]  Search API            ✅    🔄    bob
-  [003]  Notifications         🔄    ○     carol
-  [004]  Export PDF            ⏳    ○     unassigned
-  [005]  Analytics             🔴    ○     —          depends on 003,004
+  [001]  User Auth             ✅    ✅
+  [002]  Search API            ✅    🔄
+  [003]  Notifications         🔄    ○
+  [004]  Export PDF            ⏳    ○
+  [005]  Analytics             🔴    ○     depends on 003,004
 ──────────────────────────────────────────────────────────
-  Type a component ID to manage it    [$] Cost
-  [1] Continue spec – COMP-003        [?] Help
-  [2] New work                        [X] Exit
+  Type a story ID to manage it        [$] Cost
+  [1] Continue spec – STORY-003       [?] Help
+  [N] New work                        [X] Exit
 ──────────────────────────────────────────────────────────
-Enter component ID or action:  `>`
+Enter story ID or action:  `>`
 ```
 </div>
 
-Type a component number directly (e.g. `004`) to pick it up. Blocked components show their dependency inline. The left column shows the most useful contextual actions for your current role and state.
+Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline. The left column shows the most useful contextual actions for your current state.
 
 **Pipeline stage icons:**
 
@@ -96,7 +96,6 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 | `👤` | Waiting for your action |
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
-| `↷` | Skipped by TL decision (integration tests) |
 | `○` | Not yet reached |
 
 ---
@@ -105,13 +104,10 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 
 **Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves straight into ideation.
 
-**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written.
+**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture, story backlog, and guardrails. You review and confirm before anything is written.
 
-**Joining a team** — Pull the repository after your Team Lead commits `specs/`, run `/spec-gantry`, and you'll be asked whether you are the Team Lead or a Developer. The full pipeline dashboard is shown immediately after.
-
-**Full component lifecycle** — From claiming a component through spec, development, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
-
-**Bug fixes and new work** — Use `[+] New work` (visible once architecture is complete) to describe a bug, improvement, new component, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and component specs to determine what's affected — you just describe the work.
+**Full story lifecycle** — From picking up a story through spec, build, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
+**Bug fixes and new work** — Use `[N] New work` (visible once ideation is complete) to describe a bug, improvement, new story, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and story specs to determine what's affected — you just describe the work.
 
 ---
 
@@ -119,30 +115,31 @@ Type a component number directly (e.g. `004`) to pick it up. Blocked components 
 
 | Command | Who | What it does |
 |---------|-----|-------------|
-| `[1]`–`[n]` New work | TL only | Describe a bug, improvement, new component, or change. Always the last numbered action in the left column once ideation is complete. |
-| `[$]` Cost | Both | Opens the cost dashboard — breakdown by phase, component, release, and model |
-| `[?]` Help | Both | Quick reference and secondary commands: `[A]` Architecture · `[I]` Integration scenarios · `[P]` Project · docs link |
-| `[X]` Exit | Both | Return to normal Claude Code |
+| `[1]`–`[n]` contextual | You | The pipeline action for your current state (e.g. spec next story, build next story, deploy) |
+| `[N]` New work | You | Describe a bug, improvement, new story, or change. Always visible once ideation is complete. |
+| `[$]` Cost | You | Opens the cost dashboard — breakdown by phase, story, release, and model |
+| `[?]` Help | You | Quick reference and secondary commands: `[A]` Architecture · docs link |
+| `[X]` Exit | You | Return to normal Claude Code |
 
 ---
 
 ### Classifying New Work
 
-When you use `[+] New work` or when all components are deployed, SpecGantry asks what you want to work on next. It then:
+When you use `[N] New work` or when all stories are deployed, SpecGantry asks what you want to work on next. It then:
 
 1. **Classifies** the type of work
-2. **Maps it to components** — reads the backlog and all component specs to determine which existing components are affected, or what new component to create. You don't need to specify this.
+2. **Maps it to stories** — reads all story specs to determine which existing stories are affected, or what new story to create. You don't need to specify this.
 3. **Confirms** the mapping with you before touching any state
 4. **Routes** — resets phase flags and re-enters the pipeline
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that was working is now broken — full spec → dev cycle on the affected component |
-| `enhancement` | An existing component needs to do more or work differently — same cycle, spec updated with change annotations |
-| `new_component` | A net-new capability — ideation agent runs in amendment mode to assign a component ID and update the backlog |
-| `project_change` | Cross-cutting: infrastructure, data model, multi-component scope — ideation agent runs in amendment mode first |
+| `bug_fix` | Something that was working is now broken — full spec → build cycle on the affected story |
+| `enhancement` | An existing story needs to do more or work differently — same cycle, spec updated with change annotations |
+| `new_story` | A net-new capability — ideation agent runs in amendment mode to assign a story ID and update the backlog |
+| `project_change` | Cross-cutting: infrastructure, data model, multi-story scope — ideation agent runs in amendment mode first |
 
-SpecGantry always confirms its classification and component mapping before proceeding.
+SpecGantry always confirms its classification and story mapping before proceeding.
 
 ---
 
@@ -162,7 +159,7 @@ All progress is saved after every question and every section. Every `/spec-gantr
 
 SpecGantry captures token usage automatically after every agent run. No manual steps, no estimates — real API counts. `/track-cost` renders that data as a navigable cost dashboard with four views.
 
-Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. Your whole team has shared visibility into AI spend over the full project lifetime.
+Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. You have shared visibility into AI spend over the full project lifetime.
 
 ---
 
@@ -174,8 +171,8 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v2.2.7  |  Acme Platform
-[██░░░░░░░░]  2/8 components deployed
+SpecGantry v3  |  Acme Platform
+[██░░░░░░░░]  2/8 stories deployed
 ──────────────────────────────────────────────────────────
 
 Cost Summary  |  release 1.0.0
@@ -183,16 +180,15 @@ Cost Summary  |  release 1.0.0
 Phase               Tokens       Cost
 ──────────────────────────────────────
 ideation            12,605      $1.26
-component_spec      14,209      $1.43
+story_spec          14,209      $1.43
 development         31,445      $3.14
-integration_test     6,112      $0.61
 deployment           3,890      $0.39
 ──────────────────────────────────────
-Total               68,261      $6.83
+Total               62,149      $6.22
 
 ──────────────────────────────────────────────────────────
-  [1] By component    [2] By release    [3] By model
-                                        [X] Return
+  [1] By story      [2] By release    [3] By model
+                                      [X] Return
 ──────────────────────────────────────────────────────────
 Enter option:  `>`
 ```
@@ -202,25 +198,25 @@ The menu bar persists across all views — switch between breakdowns without goi
 
 ---
 
-**[1] By Component** — total spend per component across all phases:
+**[1] By Story** — total spend per story across all phases:
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-Cost by Component  |  release 1.0.0
+Cost by Story  |  release 1.0.0
 
-Component        Tokens       Cost
+Story            Tokens       Cost
 ───────────────────────────────────
-COMP-001         26,209      $2.47
-COMP-002         18,441      $1.84
-COMP-003          9,112      $0.46
+STORY-001        26,209      $2.47
+STORY-002        18,441      $1.84
+STORY-003         9,112      $0.46
 ───────────────────────────────────
 Total            53,762      $4.77
 ```
 </div>
 
-Project-level phases (ideation, integration test, deployment) are excluded here — they belong to the project, not individual components.
+Project-level phases (ideation, deployment) are excluded here — they belong to the project, not individual stories.
 
 ---
 
@@ -262,19 +258,18 @@ Total           80,601      $7.79
 ```
 </div>
 
-Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for component spec, development, integration test, and deployment phases.
+Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for story spec, development, and deployment phases.
 
 **Typical cost profile per phase:**
 
 | Phase | Model | Relative cost |
 |-------|-------|--------------|
 | Ideation | Haiku 4.5 | Low — conversational, short outputs |
-| Component spec | Sonnet 4.6 | Medium — per component |
-| Development | Sonnet 4.6 | Highest — code generation + test runs |
-| Integration test | Sonnet 4.6 | Medium — scenario execution |
+| Story spec | Sonnet 4.6 | Medium — per story |
+| Development | Sonnet 4.6 | Highest — code generation |
 | Deployment | Sonnet 4.6 | Low — script generation, one-shot |
 
-Development dominates total spend. If costs are higher than expected, check the By Component view — a single complex component often accounts for a disproportionate share.
+Development dominates total spend. If costs are higher than expected, check the By Story view — a single complex story often accounts for a disproportionate share.
 
 ---
 
@@ -296,68 +291,59 @@ Cost tracking starts automatically once your first agent session completes. If t
 ### Starting a New Project
 
 ```
-Team Lead:
-  /spec-gantry → [1] Start new project
-              → Enter name and vision
-              → Beat 1: mature the idea  (~10 min)
-              → Beat 2: shape the system (~15 min)
-              → architecture-spec.md + backlog written
-              → [Y] Approve backlog
-              → Commit specs/ to git
-
-Developers:
-  git pull
-  /spec-gantry → detects project → type component ID to claim it
-              → domain elaboration (first of domain) → write spec → develop (TDD)
+/spec-gantry → [1] Start new project
+            → Enter name and vision
+            → Beat 1: mature the idea  (~10 min)
+            → Beat 2: shape the system (~15 min)
+            → architecture.md + backlog written
+            → Commit specs/ to git
+            → Type story ID to pick up first story
+            → story-spec → build
 ```
 
 ### Onboarding an Existing Codebase
 
 ```
-Team Lead:
-  /spec-gantry → detects source files, no project found
-              → [2] Analyse existing codebase
-              → Review proposed architecture and backlog
-              → Confirm → commit specs/ to git
+/spec-gantry → detects source files, no project found
+            → [2] Analyse existing codebase
+            → Review proposed architecture and backlog
+            → Confirm → commit specs/ to git
 ```
 
 ### Handling a Production Bug
 
 ```
-Team Lead:
-  /spec-gantry → [+] New work
-              → Describe the bug
-              → SpecGantry identifies affected component, confirms
-              → Developer picks it up — full spec → dev cycle
-              → All components pass → confirm-integration prompt
-              → Gap specs reviewed and merged (if any)
-              → [Y] Run integration tests  OR  [S] Skip → deploy
+/spec-gantry → [N] New work
+            → Describe the bug
+            → SpecGantry identifies affected story, confirms
+            → Full spec → build cycle
+            → All stories built → confirm deploy prompt
+            → Gap specs reviewed and merged (if any)
+            → [1] Deploy release
 ```
 
 ### Deploying a Release
 
 ```
-Team Lead (once all components pass unit tests):
-  /spec-gantry → confirm-integration prompt shown
-              → gap specs reviewed and confirmed (if any exist)
-              → [Y] Run integration tests  OR  [S] Skip — deploy directly
-              → (if Y) scenarios execute against real system → all pass
-              → [1] Deploy release 1.0.0
-              → Confirm
-              → SpecGantry generates deploy.sh (executable)
-              → Reviews deploy-artifact.md
-              → Runs specs/deploy.sh
+(once all stories are built):
+/spec-gantry → confirm deploy prompt shown
+            → gap specs reviewed and confirmed (if any exist)
+            → [1] Deploy release 1.0.0
+            → Confirm
+            → SpecGantry generates specs/deploy.sh (executable)
+            → deploy-artifact.md written (deployment summary)
+            → Run: specs/deploy.sh --dry-run   (local test)
+            → Run: specs/deploy.sh             (production deploy)
 ```
 
 ### Reviewing Project Costs
 
 ```
-Anyone:
-  /track-cost          → summary by phase
-  → type 1             → breakdown by component
-  → type 2             → breakdown by release
-  → type 3             → breakdown by model
-  → type X             → return to main dashboard
+/track-cost          → summary by phase
+  → type 1           → breakdown by story
+  → type 2           → breakdown by release
+  → type 3           → breakdown by model
+  → type X           → return to main dashboard
 ```
 
 ---

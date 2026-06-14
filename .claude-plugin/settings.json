@@ -16,9 +16,7 @@
       "Bash(find . *)",
       "Bash(node ${CLAUDE_PLUGIN_ROOT}/mcp/hooks.js *)",
       "Write(specs/**)",
-      "Write(.claude/local-state.yaml)",
-      "Edit(specs/**)",
-      "Edit(.claude/local-state.yaml)"
+      "Edit(specs/**)"
     ]
   }
 }

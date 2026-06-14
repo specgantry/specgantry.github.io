@@ -11,7 +11,7 @@ const {
   initLogger, setLogFile, logError, logInfo, logDebug,
   CLAUDE_HOME, PROJECT_DIR,
   AGENT_MAP, PROJECT_LEVEL_PHASES,
-  sumTokensFromTranscript, inferComponentFromTranscript,
+  sumTokensFromTranscript, inferStoryFromTranscript,
   projectSlug, buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
@@ -160,9 +160,9 @@ async function hookSubagentStop() {
   const model   = tokens.model || mapping.model;
   const component = PROJECT_LEVEL_PHASES.has(mapping.phase)
     ? null
-    : inferComponentFromTranscript(resolvedTranscript, projectDir);
+    : inferStoryFromTranscript(resolvedTranscript, projectDir);
 
-  logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'component:', component);
+  logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'story:', component);
 
   const entry = buildCostEntry({ phase: mapping.phase, agentType, model, component, projectDir, tokens });
 

@@ -49,16 +49,15 @@ const PRICING_URL  = 'https://platform.claude.com/docs/en/about-claude/pricing';
 
 // ─── Agent type → phase + model mapping ──────────────────────────────────────
 const AGENT_MAP = {
-  'spec-gantry:ideation:ideation-subagent':               { phase: 'ideation',          model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:component-spec:component-spec-subagent':   { phase: 'component_spec',     model: 'claude-sonnet-4-6' },
-  'spec-gantry:development:development-subagent':         { phase: 'development',        model: 'claude-sonnet-4-6' },
-  'spec-gantry:integration-test:integration-test-subagent': { phase: 'integration_test', model: 'claude-sonnet-4-6' },
-  'spec-gantry:deployment:deployment-subagent':           { phase: 'deployment',         model: 'claude-sonnet-4-6' },
-  'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-sonnet-4-6' },
+  'spec-gantry:ideation:ideation-subagent':                   { phase: 'ideation',          model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:story-spec:story-spec-subagent':               { phase: 'story_spec',         model: 'claude-sonnet-4-6' },
+  'spec-gantry:development:development-subagent':             { phase: 'development',        model: 'claude-sonnet-4-6' },
+  'spec-gantry:deployment:deployment-subagent':               { phase: 'deployment',         model: 'claude-sonnet-4-6' },
+  'spec-gantry:reverse-engineer:reverse-engineer-subagent':   { phase: 'reverse_engineer',   model: 'claude-sonnet-4-6' },
 };
 
-// Project-level phases — never associated with a feature ID
-const PROJECT_LEVEL_PHASES = new Set(['ideation', 'architecture', 'reverse_engineer']);
+// Project-level phases — never associated with a story ID
+const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer']);
 
 // ─── Fallback pricing ─────────────────────────────────────────────────────────
 // Used when live fetch from the pricing page fails.
@@ -182,15 +181,6 @@ function readProjectRelease(projectDir) {
   } catch { return null; }
 }
 
-function readCurrentComponentFromLocalState(projectDir) {
-  try {
-    const yaml = fs.readFileSync(path.join(projectDir, '.claude', 'local-state.yaml'), 'utf8');
-    const m = yaml.match(/^\s*current_component:\s*"?([^"\n]+)"?/m);
-    const val = m ? m[1].trim() : null;
-    return (val && val !== 'null' && val !== '') ? val : null;
-  } catch { return null; }
-}
-
 // ─── Transcript utilities ─────────────────────────────────────────────────────
 function sumTokensFromTranscript(transcriptPath) {
   let input_tokens = 0, output_tokens = 0, cache_creation_tokens = 0, cache_read_tokens = 0, model = null;
@@ -212,29 +202,38 @@ function sumTokensFromTranscript(transcriptPath) {
   return { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, model };
 }
 
-// Infer component ID from the subagent transcript.
+function readActiveStoryFromProjectState(projectDir) {
+  try {
+    const yaml = fs.readFileSync(path.join(projectDir, 'specs', 'project-state.yaml'), 'utf8');
+    const m = yaml.match(/^\s*active_story:\s*"?([^"\n]+)"?/m);
+    const val = m ? m[1].trim() : null;
+    return (val && val !== 'null' && val !== '') ? val : null;
+  } catch { return null; }
+}
+
+// Infer story ID from the subagent transcript.
 // Pass 1: first user message with parentUuid === null (canonical orchestrator prompt).
-// Pass 2: first 5 user messages scanning for comp_id: COMP-NNN key-value pattern.
-// Fallback: read current_component from .claude/local-state.yaml (always authoritative).
-function inferComponentFromTranscript(transcriptPath, projectDir) {
+// Pass 2: first 5 user messages scanning for story_id: STORY-NNN key-value pattern.
+// Fallback: read active_story from specs/project-state.yaml (always authoritative).
+function inferStoryFromTranscript(transcriptPath, projectDir) {
   try {
     const parsed = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean)
       .map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
     const userMessages = parsed.filter(r => r.type === 'user');
     for (const r of userMessages) {
       if (r.parentUuid === null) {
-        const m = JSON.stringify(r.message || '').match(/(COMP-\d+(?:-v\d+)?)/);
+        const m = JSON.stringify(r.message || '').match(/(STORY-\d+)/);
         if (m) return m[1];
       }
     }
     for (const r of userMessages.slice(0, 5)) {
-      const m = JSON.stringify(r.message || '').match(/comp_id[^\w]+(COMP-\d+(?:-v\d+)?)/i);
+      const m = JSON.stringify(r.message || '').match(/story_id[^\w]+(STORY-\d+)/i);
       if (m) return m[1];
     }
   } catch { /* transcript unreadable */ }
   if (projectDir) {
-    const fromState = readCurrentComponentFromLocalState(projectDir);
-    if (fromState) { logDebug('Component resolved from local-state.yaml fallback:', fromState); return fromState; }
+    const fromState = readActiveStoryFromProjectState(projectDir);
+    if (fromState) { logDebug('Story resolved from project-state.yaml active_story fallback:', fromState); return fromState; }
   }
   return null;
 }
@@ -299,7 +298,7 @@ function buildCostEntry({ phase, agentType, model, component, projectDir, tokens
   const cache_read_cost_usd  = +(tokens.cache_read_tokens     / M * rates.cache_read_per_1m).toFixed(8);
   const total_cost_usd       = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
   return {
-    phase, agent: agentType, model, component: component || null,
+    phase, agent: agentType, model, story: component || null,
     release: readProjectRelease(projectDir),
     date: new Date().toISOString().slice(0, 10),
     input_tokens: tokens.input_tokens, output_tokens: tokens.output_tokens,
@@ -325,7 +324,7 @@ module.exports = {
   AGENT_MAP, PROJECT_LEVEL_PHASES, FALLBACK_RATES,
   loadCachedRates, getRatesForModel, refreshPricing, atomicWriteJson,
   appendCostLog, readProjectRelease,
-  sumTokensFromTranscript, inferComponentFromTranscript, readCurrentComponentFromLocalState,
+  sumTokensFromTranscript, inferStoryFromTranscript, readActiveStoryFromProjectState,
   projectSlug, resolveAgentFromToolUseId, detectCurrentSession,
   buildCostEntry, readStdin,
 };

@@ -2,7 +2,7 @@
 layout: docs
 title: "AI Development Costs Are Visible — If You Track Them at the Right Level"
 description: "Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself."
-permalink: /blog/realtime-cost-tracking
+permalink: /blog/realtime-cost-tracking/
 ---
 
 # AI Development Costs Are Visible — If You Track Them at the Right Level

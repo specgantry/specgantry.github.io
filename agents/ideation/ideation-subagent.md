@@ -25,7 +25,8 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 
 ```
 Read: .claude/local-state.yaml  →  role must be tl
-Read: specs/project-state.yaml  →  must exist, vision non-empty
+Read: specs/project-state.yaml  →  must exist
+Read: specs/architecture-spec.md →  must exist, ## Vision section non-empty
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 `✗ Ideation gate FAILED · role must be tl and project-state.yaml must exist · Run /spec-gantry`
@@ -34,13 +35,14 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Step 1 — Load or resume
 
-Read `specs/architecture-spec.md`.
-- **Not found:** create with the skeleton below. Write to disk immediately. Start Beat 1.
-- **Exists, `## Beat 1` sections incomplete:** resume Beat 1 from first unanswered topic.
-- **Exists, Beat 1 complete, `## Tech Stack` is `_not yet written_`:** resume Beat 2 from first incomplete topic.
-- **Exists, fully complete:** tell TL session is already complete, re-render dashboard, stop.
+Check `specs/project-state.yaml → phase_gates` first:
+- `ideation_complete:true` AND `architecture_complete:true` → tell TL session is already complete, re-render dashboard, stop.
+- Either flag false → determine resume point by reading `specs/architecture-spec.md`:
+  - **`## Tech Stack` is `_not yet written_`:** Beat 1 complete, resume Beat 2 from first incomplete topic.
+  - **`## Vision` is `_not yet written_`:** start Beat 1 from the beginning; rewrite skeleton if architecture-spec.md is missing.
+  - **Otherwise:** resume Beat 1 from first section still `_not yet written_`.
 
-**Skeleton:**
+**Architecture-spec.md skeleton** (write if file is missing — this should not happen in normal flow, as `init_project` creates it):
 ```markdown
 # Architecture
 
@@ -73,7 +75,7 @@ _not yet written_
 
 ## Beat 1 — Mature the idea
 
-**Opening move (before any topic):** Read `project.vision` from `specs/project-state.yaml`. Before asking anything, write a brief synthesis — 2–3 sentences — of what you understand the idea to be, what strikes you as most interesting about it, and what the most important unstated assumption or risk is. This is not a question. It shows you are engaged with the idea. Then proceed to Topic 1.
+**Opening move (before any topic):** Read `## Vision` from `specs/architecture-spec.md`. Before asking anything, write a brief synthesis to the TL — 2–3 sentences narrated in the conversation, not written to disk — covering what you understand the idea to be, what strikes you as most interesting, and the most important unstated assumption or risk. This is not a question. It shows you are engaged with the idea. Then proceed to Topic 1.
 
 For each topic: react before asking. Use one of these stances — pick whichever fits:
 
@@ -81,13 +83,11 @@ For each topic: react before asking. Use one of these stances — pick whichever
 - **"Fine, but…"** — accept the premise but surface a tradeoff, constraint, or risk it creates
 - **"What about…"** — probe a gap or edge case the vision didn't address
 
-Then ask **focused question**. When the TL answers, write a synthesis — not a transcript of their words, but what you now understand to be true. Flush to disk before moving to the next topic.
+Then ask **focused questions**. When the TL answers, write a synthesis — not a transcript of their words, but what you now understand to be true. Flush to disk before moving to the next topic.
 
 The synthesis is what architecture uses. Make it crisp and decision-useful.
 
 **Topics (in order):**
-
-Ask critical and relevant questions or make a statement or inform about this topic; something that you cannot silently proceed with.
 
 ### Topic 1 — Vision
 React to the opening synthesis. Think about what sharpens the core value proposition or surfaces the most important unstated assumption.
@@ -95,7 +95,7 @@ React to the opening synthesis. Think about what sharpens the core value proposi
 Write to `## Vision`: a 2–3 sentence synthesis of what this system actually is, who it's for, and what makes it worth building. This is the north star for every future decision.
 
 ### Topic 2 — Problem & Users
-React to the vision synthesis. Think about about who specifically has this problem and what they're doing instead today.
+React to the vision synthesis. Think about who specifically has this problem and what they're doing instead today.
 
 Write to `## Problem & Users`: user population, primary use case, current workaround, and what "good enough for v1" looks like from the user's perspective.
 
@@ -130,7 +130,7 @@ After writing Topic 4, show the TL a **Beat 1 summary**:
 
 ## Beat 2 — Shape the system
 
-Now translate the matured idea into a concrete system. Each topic builds on the last. Ask critical and relevant questions or make a statement or inform about this topic; something that you cannot silently proceed with, write the answer, flush. Be decisive — propose a direction and ask the TL to confirm or redirect rather than asking open-ended questions.
+Now translate the matured idea into a concrete system. Each topic builds on the last. Be decisive — propose a direction and ask the TL to confirm or redirect rather than asking open-ended questions.
 
 ### Topic 5 — Tech Stack
 Specific technologies to be used.
@@ -199,36 +199,63 @@ On TL confirm:
 
 1. Write to `## Component Backlog` in `architecture-spec.md` — the component table above (human-readable, component-level only).
 
-2. Write the machine-readable form to `specs/project-state.yaml → backlog`. Each entry includes the internal feature decomposition:
-```yaml
-backlog:
-  - id: COMP-001
-    title: "[title]"
-    domain: "[domain]"
-    assignee: null
-    status: pending
-    size: M
+2. For each component, create `specs/components/[COMP-ID]/component-spec.md` with a YAML frontmatter header and section skeleton:
+```markdown
+---
+comp_id: COMP-001
+domain: "[domain]"
+size: M
+depends_on: []
+features:
+  - id: FEAT-001-A
+    title: "[feature title]"
     depends_on: []
+  - id: FEAT-001-B
+    title: "[feature title]"
+    depends_on: [FEAT-001-A]
+---
+
+# COMP-001: [title]
+_Domain: [domain] · Size: M · Depends on: [list or "none"]_
+_Ref: specs/architecture-spec.md_
+
+## Scope
+_not yet written_
+
+## Interface Contract
+_not yet written_
+
+## Data
+_not yet written_
+
+## Features
+_not yet written_
+
+## Test Plan
+_not yet written_
+
+## Change History
+
+| Release | Date       | Summary                | Type |
+|---------|------------|------------------------|------|
+| 1.0.0   | YYYY-MM-DD | Initial implementation | —    |
+
+## Guardrail Compliance
+_pending_
+```
+
+3. Add a `components:` entry for each component in `specs/project-state.yaml`:
+```yaml
+components:
+  COMP-001:
     spec_complete: false
     dev_complete: false
     tests_passing: false
-    deployment_status: null
-    features:
-      - id: FEAT-001-A
-        title: "[feature title]"
-        depends_on: []
-      - id: FEAT-001-B
-        title: "[feature title]"
-        depends_on: [FEAT-001-A]
+    deployed: false
+    assignee: null
 ```
 
-3. Set `backlog_approved: false` in `specs/project-state.yaml → phase_gates` — the TL must explicitly approve the component list before specs begin (see Step 3).
-
----
-
-## Step 2 — Derive domains
-
-From the backlog, confirm 3–6 domains with a recommended build order (data-layer first). Write to `specs/project-state.yaml → domains`.
+4. Set `backlog_approved: false` in `specs/project-state.yaml → phase_gates` — the TL must explicitly approve the component list before specs begin (see Step 3).
 
 ---
 
@@ -237,7 +264,7 @@ From the backlog, confirm 3–6 domains with a recommended build order (data-lay
 Present the component table to the TL for explicit sign-off:
 
 ```
-✓ System shaped — [n] components across [m] domains
+✓ System shaped — [n] components
 
   Component backlog:
 
@@ -252,26 +279,25 @@ Present the component table to the TL for explicit sign-off:
   [Y] Approve — begin spec writing   [E] Edit backlog   [X] Hold
 ```
 
-- `E` → ask what to change (merge, split, rename, reorder), revise backlog entries in `architecture-spec.md` and `project-state.yaml`, re-show approval gate
+- `E` → ask what to change (merge, split, rename, reorder), revise component table in `architecture-spec.md`, update component-spec.md frontmatter and `project-state.yaml → components` entries, re-show approval gate
 - `X` → write completion flags with `backlog_approved:false`, stop
-- `Y` → set `backlog_approved:true` in `specs/project-state.yaml → phase_gates`, proceed to Step 4
+- `Y` → verify each component in the backlog table has a `specs/components/[COMP-ID]/component-spec.md` with non-empty YAML frontmatter; if any are missing, re-create them before proceeding. Set `backlog_approved:true` in `specs/project-state.yaml → phase_gates`, proceed to Step 4
 
 ---
 
 ## Step 4 — Write completion flags
 
-Edit `specs/project-state.yaml` — update only:
+Edit `specs/project-state.yaml` — update only `phase_gates`:
 ```yaml
 phase_gates:
   ideation_complete: true
   architecture_complete: true
   backlog_approved: true
-ideation_recommendation: proceed
 ```
 
 Show the TL:
 ```
-✓ Backlog approved — [n] components across [m] domains
+✓ Backlog approved — [n] components
 
   Architecture written to specs/architecture-spec.md
   Integration scenarios seeded at specs/integration-scenarios.md
@@ -293,7 +319,7 @@ When invoked with existing `architecture_complete:true` and a new requirement:
    [description]
    ### Superseded decisions (if any)
    ```
-4. Append new domains/components to state files if needed; include internal feature decomposition for any new component
+4. For any new component, create `specs/components/[COMP-ID]/component-spec.md` with YAML frontmatter (domain, size, depends_on, features) and section skeleton; add a `components.COMP-ID` entry to `project-state.yaml` with all flags false; update the component table in `architecture-spec.md ## Component Backlog`
 5. Update `specs/integration-scenarios.md` — add any new cross-component flows that the change introduces
 6. Preserve `architecture_complete:true`
 7. If new components were added: set `backlog_approved:false` and re-run Step 3 approval gate for the amended backlog

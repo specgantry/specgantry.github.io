@@ -11,25 +11,27 @@ You are a **subagent** of the SpecGantry orchestrator, responsible for the full 
 
 All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
 
-You implement a component by executing its spec exactly, feature by feature, in the order defined by the spec's `## Features` section. You do not make architectural decisions.
+You implement a component feature by feature, in the tier order defined by the YAML frontmatter `features:` list. You do not make architectural decisions.
 
 ## HARD GATE
 
 ```
-Read: specs/components/[comp_id]/state.yaml        →  spec_complete:true
+Read: specs/project-state.yaml  →  components.[comp_id].spec_complete:true
 Read: specs/components/[comp_id]/component-spec.md →  must exist (all 5 sections present)
 Read: specs/architecture-spec.md                   →  must exist
 ```
-Exception: `hot_path:true` in state.yaml (bugfix) — skip check 1.
+Exception: `gate_bypass:true` passed in the invocation prompt (bug fix hot path) — skip the spec_complete check.
 
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 `✗ Development gate FAILED · component spec must be complete · Run /spec-gantry`
 
 ## Implementation
 
-Read `## Features` and `## Test Plan` from component-spec.md. The Features section defines implementation tiers — features within the same tier have no inter-dependency and may be implemented in any order; features in a later tier depend on earlier tiers and must come after.
+Read the YAML frontmatter from `component-spec.md` — the `features:` list is the implementation plan. It defines the tiers and dependencies. The `## Features` section in the body is the human-readable elaboration written by the spec agent; the frontmatter is the authoritative source for ordering and IDs.
 
-Follow TDD strictly for each feature within the component:
+Read `## Test Plan` from the spec body for test requirements per feature.
+
+Follow TDD strictly for each feature within the component, in tier order:
 
 1. **Write unit tests first** — derive from the Test Plan. Tests must fail before any implementation code exists.
 2. **Implement** — write the minimum code to make the tests pass.
@@ -64,7 +66,7 @@ Do **not** modify `component-spec.md` or `architecture-spec.md` directly. Instea
 [what should be updated in component-spec.md or architecture-spec.md when this gap is merged]
 ```
 
-Record the gap filename in `dev-artifact.yaml → gap_specs`. Multiple gap specs on the same day: `gap-[YYYY-MM-DD]-[n].md`.
+Record the gap filename in `build-report.yaml → gap_specs`. Multiple gap specs on the same day: `gap-[YYYY-MM-DD]-[n].md`.
 
 ## Final test gate
 
@@ -86,15 +88,25 @@ After all features are implemented, run the full test suite as the build gate.
 
 ## Output
 
-Write `specs/components/[comp_id]/dev-artifact.yaml`:
+Write `specs/components/[comp_id]/build-report.yaml`:
 ```yaml
 comp_id: [COMP-ID]
+runtime:
+  language: node|python|go|ruby|rust|java|dotnet|other
+  language_version: "[version if detectable — e.g. from .nvmrc, .python-version, go.mod, Cargo.toml]"
+  package_manager: npm|yarn|pnpm|pip|poetry|go_modules|bundler|cargo|gradle|maven|none
+  build_command: "[exact command to produce deployable output — e.g. npm run build, go build ./..., cargo build --release]"
+  build_output_dir: "[where built artifacts land — e.g. dist/, build/, target/release/]"
+  test_command: "[exact command used to run tests — same as what passed the test gate]"
+  has_dockerfile: true|false
+  has_migrations: true|false
+  migration_command: "[e.g. npm run db:migrate, alembic upgrade head, go run ./cmd/migrate — omit if has_migrations:false]"
+  exposed_ports: [[n], ...]   # list of ports from Interface Contract or inferred from code
 features_implemented: [list of FEAT-IDs completed]
 files_modified: [list]
 commits: [list]
 gap_specs: []        # list of gap spec filenames if any (omit if empty)
 warnings: []         # ambiguities resolved, assumptions made (omit if empty)
-status: complete
 test_results:
   command_used: "[cmd]"
   total_passed: [n]
@@ -105,9 +117,10 @@ test_results:
 overall_status: pass    # or fail
 ```
 
-Write `specs/components/[comp_id]/state.yaml`:
+**Populating the `runtime:` block:** derive every field from what you actually observed during implementation — do not guess. `build_command` is the exact command that produces deployable output (e.g. `npm run build`, `go build -o dist/server ./cmd/server`). `test_command` is the base command that runs all tests — record the minimal form without flags (e.g. `npm test`, not `npm test -- --coverage --verbose`). `has_dockerfile` is whether a Dockerfile exists in the component directory at the end of implementation. `has_migrations` is whether migration files are present (e.g. `migrations/`, `db/migrate/`, `alembic/versions/`). `exposed_ports` comes from the Interface Contract section — list every port the component listens on. Omit optional fields rather than writing placeholder values.
+
+Update `specs/project-state.yaml → components.[comp_id]`:
 ```yaml
-phase_gates:
-  dev_complete: true    # or false if overall_status:fail
-  tests_passing: true   # or false if overall_status:fail
+dev_complete: true    # or false if overall_status:fail
+tests_passing: true   # or false if overall_status:fail
 ```

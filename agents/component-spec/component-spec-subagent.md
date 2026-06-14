@@ -20,11 +20,14 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 ## HARD GATE
 
 ```
-Read: specs/project-state.yaml   →  architecture_complete:true · backlog_approved:true · comp_id in backlog
-Read: specs/architecture-spec.md →  must exist
+Read: specs/project-state.yaml              →  architecture_complete:true · backlog_approved:true · components.[comp_id].spec_complete:false
+Read: specs/architecture-spec.md            →  must exist
+Read: specs/components/[COMP-ID]/component-spec.md  →  must exist with non-empty YAML frontmatter (comp_id, domain, features)
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
-`✗ Component spec gate FAILED · architecture must be complete and backlog approved · Run /spec-gantry`
+`✗ Component spec gate FAILED · [failing condition] · Run /spec-gantry`
+
+If `spec_complete:true` already in project-state → idempotency: re-render dashboard, stop (do not re-spec).
 
 ---
 
@@ -32,7 +35,9 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 Read once, do not re-read:
 - `specs/architecture-spec.md` — guardrails, tech stack, all elaborated domain sections
-- `specs/project-state.yaml` — this component's entry: title, domain, size, depends_on, features list
+- `specs/components/[COMP-ID]/component-spec.md` YAML frontmatter — this component's comp_id, domain, size, depends_on, features list
+
+The component title comes from the spec file's `# [COMP-ID]: [title]` heading.
 
 Confirm: `📐 [COMP-ID]: [title]  ·  Domain: [domain]  ·  Size: [size]  ·  [n] internal features  ·  [n] guardrails active`
 
@@ -87,43 +92,13 @@ Write to disk. Then proceed to Step 2.
 
 ---
 
-## Step 2 — Load or resume spec file
+## Step 2 — Determine session type
 
-Read `specs/components/[COMP-ID]/component-spec.md`.
-- **Not found:** create directory `specs/components/[COMP-ID]/`, create spec with skeleton below. Write to disk. Proceed to Step 3 (full session).
-- **Exists, change cycle** (`spec_complete:false` after prior deployment): show Change History, proceed to Step 3 (change-cycle mode).
-- **Exists, resuming:** identify which sections remain incomplete. Resume from first incomplete section.
+The `component-spec.md` file was pre-created by the ideation agent and is guaranteed to exist. Read it and classify:
 
-**Spec skeleton:**
-```markdown
-# [COMP-ID]: [title]
-_Domain: [domain] · Size: [size] · Depends on: [list or "none"]_
-_Ref: specs/architecture-spec.md_
-
-## Scope
-_not yet written_
-
-## Interface Contract
-_not yet written_
-
-## Data
-_not yet written_
-
-## Features
-_not yet written_
-
-## Test Plan
-_not yet written_
-
-## Change History
-
-| Release | Date       | Summary                | Type |
-|---------|------------|------------------------|------|
-| 1.0.0   | YYYY-MM-DD | Initial implementation | —    |
-
-## Guardrail Compliance
-_pending_
-```
+- **All 5 sections still `_not yet written_`** → fresh session, proceed to Step 3.
+- **Any sections filled, `spec_complete:false` in project-state** → resuming after interruption; identify which sections are still `_not yet written_` and resume from the first.
+- **`spec_complete:false` AND `deployed:true` in project-state** → change-cycle: show Change History section, proceed to Step 3 in change-cycle mode.
 
 ---
 
@@ -133,14 +108,14 @@ For each incomplete section: derive the content from the architecture spec and t
 
 **Cross-reference rule:** for Sections 2 and 3, if the content is fully covered by the domain section in `architecture-spec.md`, write a reference: `→ See architecture-spec.md ## Domain: [domain] ### [subsection]`. Only write detail here if this component adds something the domain section doesn't cover.
 
-**Change-cycle mode:** show current content, ask `Any changes for [release]? [Y/N]`. On Y: strike through old text with `~~old~~`, append `` `__[release]__` `` to changed lines. Write before moving on. Append new Change History row at end.
+**Change-cycle mode:** for each section, show current content and ask `Any changes for release [current release]? [Y/N]`. On Y: strike through old text with `~~old~~`, append `` `__[release]__` `` tag to changed lines, write the new content. On N: leave the section unchanged. After all sections, append a new row to Change History.
 
 | # | Section | Content | Guardrail check |
 |---|---------|---------|-----------------|
 | 1 | Scope | What this component does and explicitly does NOT do. One `does:` list and one `does_not:` list. Stay within domain: [domain]. | Scope extends into another domain? |
 | 2 | Interface Contract | What this component exposes or consumes beyond the domain section. Protocol, key operations, auth. | Consistent with domain Interface Contract? Auth model respected? |
 | 3 | Data | Data this component owns or accesses beyond the domain data model. | Direct DB access from wrong layer? Consistent with domain Data Model? |
-| 4 | Features | Ordered list of internal features derived from `project-state.yaml → backlog[COMP-ID].features`. For each feature: one-line description, which features it depends on (if any), estimated size (S/M/L). Group into parallel tiers where features have no inter-dependency. | — |
+| 4 | Features | Ordered list of internal features from the component-spec.md YAML frontmatter `features:` list. For each feature: one-line description, which features it depends on (if any), estimated size (S/M/L). Group into parallel tiers where features have no inter-dependency. | — |
 | 5 | Test Plan | Unit tests, integration hooks, edge cases. Note which scenarios in `integration-scenarios.md` this component participates in. | — |
 
 **Section 4 format:**
@@ -175,7 +150,7 @@ If any `VIOLATION:` exists, block until resolved:
 
 ## Step 5 — Update integration scenarios
 
-Read `specs/integration-scenarios.md`. Based on this component's Interface Contract and the system's cross-component flows, identify any new or updated scenarios. Append to `## Critical Scenarios` — do not overwrite existing entries:
+Read `specs/integration-scenarios.md`. Based on this component's Interface Contract and the system's cross-component flows, identify any new or updated scenarios. For each candidate scenario: check if a `### [scenario name]` heading already exists in the file — if it does, skip it. Only append scenarios that span at least two components and are not already present.
 
 ```markdown
 ### [scenario name]
@@ -184,7 +159,7 @@ _Components: [list]_
 **Assertions:** [what must be true for this scenario to pass]
 ```
 
-Only add scenarios that span at least two components. Write to disk.
+Write to disk.
 
 ---
 
@@ -200,15 +175,15 @@ Display the completed spec. Prompt:
   x  Abandon — return to backlog
 ```
 
-- `y` → write `specs/components/[COMP-ID]/state.yaml`: `spec_complete:true`
+- `y` → write `spec_complete:true` to `specs/project-state.yaml → components.[COMP-ID]`
 - `e` → ask which section, revise, re-run guardrail compliance, re-show
-- `x` → set `status:abandoned` in state.yaml and `status:pending, assignee:null` in project-state.yaml; remove comp ID from `active_components` in local-state.yaml
+- `x` → write `spec_complete:false` to `specs/project-state.yaml → components.[COMP-ID]`; remove comp ID from `active_components` in local-state.yaml
 
 ---
 
 ## Gap Merge Mode
 
-Invoked by the orchestrator with `merge_gaps:true` and a list of `comp_ids` that have unmerged gap specs. This mode runs **instead of** the normal spec session — do not run Steps 1–6.
+Invoked by the orchestrator with `merge_gaps:true` and `gap_files: [list]` in the prompt. Check for `merge_gaps:true` at session start — if present, skip Steps 1–6 entirely and run only Steps G1–G3 below.
 
 ### Step G1 — Load gap files
 

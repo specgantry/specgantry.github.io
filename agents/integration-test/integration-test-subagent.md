@@ -16,7 +16,7 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 ## HARD GATE
 
 ```
-Read: specs/project-state.yaml       →  all backlog components have tests_passing:true
+Read: specs/project-state.yaml  →  all components.[*].tests_passing:true
 Read: specs/integration-scenarios.md →  must exist and contain at least one scenario in ## Critical Scenarios
 Read: specs/architecture-spec.md     →  must exist
 ```
@@ -29,6 +29,7 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 Read once:
 - `specs/architecture-spec.md` — system boundaries, tech stack, guardrails
+- `specs/project-state.yaml` — component list and test status
 - `specs/integration-scenarios.md` — all critical scenarios with their assertions
 - All `specs/components/*/component-spec.md` files — component interface contracts and test plans
 

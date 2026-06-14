@@ -47,7 +47,7 @@ Two states depending on where you are in the pipeline.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.2.4  |  My App  |  release 1.0.0
+SpecGantry v2.2.6  |  My App  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ The pipeline table and component picker are unified. Every component is visible,
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v2.2.4  |  Acme Platform  |  release 1.0.0
+SpecGantry v2.2.6  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 5/8  ·  Dev [██░░░] 2/8
 ──────────────────────────────────────────────────────────
   ID      Component           Spec   Dev   Assignee
@@ -174,7 +174,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v2.2.4  |  Acme Platform
+SpecGantry v2.2.6  |  Acme Platform
 [██░░░░░░░░]  2/8 components deployed
 ──────────────────────────────────────────────────────────
 

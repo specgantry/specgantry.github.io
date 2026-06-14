@@ -155,7 +155,7 @@ After all sections, guardrails from `architecture.md` are checked. Any violation
 The build phase turns the confirmed spec into working code. The dev agent works through each acceptance criterion, implementing each one and verifying it works before moving to the next.
 
 Key behaviors:
-- Stays within this story's domain boundary
+- Implements the full vertical slice — UI, backend, data layer, AI integration — exactly as specced
 - Respects every guardrail in `architecture.md`
 - Secrets and credentials come from environment variables — no literal values in source
 

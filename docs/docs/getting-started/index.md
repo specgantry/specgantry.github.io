@@ -80,26 +80,17 @@ claude plugin list
 To uninstall the plugin and remove the marketplace entry, run both commands in order:
 
 ```bash
-claude plugin uninstall spec-gantry
-claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+claude plugin uninstall spec-gantry@spec-gantry
+claude plugin marketplace remove spec-gantry
 ```
 
-Your project's `specs/` files are not touched — they stay in your repository.
+Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project's `specs/` files are not touched — they stay in your repository.
 
 ---
 
-## Step 2 — Open Your Project
+## Step 2 — Start Claude Code
 
-```
-File → Open Folder
-```
-
-Choose based on your situation:
-
-| Situation | What to open |
-|-----------|-------------|
-| New project | Empty folder |
-| Existing codebase | Your project root |
+Open Claude Code in your project directory. If you're starting a new project, open an empty folder. If you have an existing codebase, open your project root.
 
 ---
 

@@ -67,9 +67,9 @@ The pipeline table and story picker are unified. Every story is visible, its sta
 
 ```
 SpecGantry v3  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 5/8  ·  Built [██░░░] 2/8
+Spec [███░░] 5/8  ·  Build [██░░░] 2/8
 ──────────────────────────────────────────────────────────
-  ID      Story               Spec   Built
+  ID      Story               Spec   Build
   ──────────────────────────────────────────────────
   [001]  User Auth             ✅    ✅
   [002]  Search API            ✅    🔄
@@ -93,7 +93,6 @@ Type a story number directly (e.g. `004`) to pick it up. Blocked stories show th
 |------|---------|
 | `✅` | Complete |
 | `🔄` | Active / in progress |
-| `👤` | Waiting for your action |
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
@@ -159,7 +158,7 @@ All progress is saved after every question and every section. Every `/spec-gantr
 
 SpecGantry captures token usage automatically after every agent run. No manual steps, no estimates — real API counts. `/track-cost` renders that data as a navigable cost dashboard with four views.
 
-Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. You have shared visibility into AI spend over the full project lifetime.
+Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. Full visibility into AI spend over the full project lifetime.
 
 ---
 
@@ -172,7 +171,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 
 ```
 SpecGantry v3  |  Acme Platform
-[██░░░░░░░░]  2/8 stories deployed
+Spec [███░░] 5/8  ·  Build [██░░░] 2/8
 ──────────────────────────────────────────────────────────
 
 Cost Summary  |  release 1.0.0
@@ -362,7 +361,7 @@ Cost tracking starts automatically once your first agent session completes. If t
     <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <strong>FAQ</strong>
-      <span>Answers to common questions about installation, roles, the pipeline, and troubleshooting.</span>
+      <span>Answers to common questions about installation, the pipeline, costs, and troubleshooting.</span>
     </div>
   </a>
 </div>

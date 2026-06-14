@@ -53,7 +53,7 @@ specs/
         └── ...
 ```
 
-**Commit `specs/` to git.** This gives you shared visibility into project decisions, story progress, and cost data — with full history and meaningful diffs.
+**Commit `specs/` to git.** This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.
 
 ---
 
@@ -65,7 +65,7 @@ The project registry. Contains the project name and vision, `ideation_complete` 
 
 ### `specs/architecture.md`
 
-The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, and story backlog summary. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.
+The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, and guardrails. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.
 
 ### `specs/stories/STORY-NNN/story-spec.md`
 

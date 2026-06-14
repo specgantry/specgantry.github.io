@@ -45,11 +45,11 @@ Perspectives on structured development in the age of AI coding assistants — wh
 
   <a href="/blog/parallel-development-at-scale" class="blog-listing-card">
     <div class="blog-listing-meta">
-      <span class="blog-tag">Team Process</span>
+      <span class="blog-tag">Architecture</span>
       <span class="blog-date">June 5, 2026</span>
     </div>
-    <h2 class="blog-listing-title">From Solo Dev to Team at Scale — How SpecGantry Handles Parallel Feature Development</h2>
-    <p class="blog-listing-excerpt">Solo AI-assisted development is forgiving. Team development is not. Domain boundaries, contract conflict detection, and orchestrated phase gates are what prevent integration failures from becoming the norm.</p>
+    <h2 class="blog-listing-title">Building Coherent Systems with Story-Based Development</h2>
+    <p class="blog-listing-excerpt">Component decomposition creates incoherence — frontend built without the backend spec, AI integration never wired up. Story-based vertical slices fix this structurally. Here's how SpecGantry enforces coherence from spec to deployment.</p>
     <span class="blog-read-more">Read the post →</span>
   </a>
 

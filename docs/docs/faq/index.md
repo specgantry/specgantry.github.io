@@ -73,8 +73,8 @@ Both update to the latest version. `marketplace update` is recommended — it ve
 To remove the plugin and the marketplace entry completely:
 
 ```bash
-claude plugin uninstall spec-gantry
-claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+claude plugin uninstall spec-gantry@spec-gantry
+claude plugin marketplace remove spec-gantry
 ```
 
 Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project's `specs/` files are not affected.
@@ -270,7 +270,7 @@ If `/track-cost` shows no data after completing a phase:
    ```
 3. **Reinstall if needed:**
    ```bash
-   claude plugin uninstall spec-gantry
+   claude plugin uninstall spec-gantry@spec-gantry
    claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
    claude plugin install spec-gantry
    ```
@@ -318,7 +318,7 @@ Then restart your terminal and reopen Claude Code.
 Reinstall:
 
 ```bash
-claude plugin uninstall spec-gantry
+claude plugin uninstall spec-gantry@spec-gantry
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```

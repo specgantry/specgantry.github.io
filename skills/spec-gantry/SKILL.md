@@ -172,7 +172,10 @@ Always the last element rendered. Two columns — left is contextual actions, ri
   `[2]` [contextual action]           `[X]` Exit
   `[N]` New work
 ──────────────────────────────────────────────────────────────────────
+Enter story ID or action:  `>`
 ```
+
+⚠️ No additional instruction text should appear below this prompt. The action bar is self-documenting.
 
 `[?]` expands inline to show secondary commands: `[A]` Architecture · docs link.
 

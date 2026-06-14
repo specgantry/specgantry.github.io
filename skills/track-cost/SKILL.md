@@ -40,6 +40,8 @@ Enter option:  `>`
 
 `[X]` returns to the main SpecGantry dashboard. Any other input re-renders the current view with a one-line error above it.
 
+⚠️ No additional instruction text should appear below this prompt. The menu is self-documenting.
+
 ---
 
 ## View: Summary (default)

@@ -67,15 +67,14 @@ The pipeline table and story picker are unified. Every story is visible, its sta
 
 ```
 SpecGantry v3  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 5/8  ·  Build [██░░░] 2/8
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4
 ──────────────────────────────────────────────────────────
-  ID      Story               Spec   Build
-  ──────────────────────────────────────────────────
-  [001]  User Auth             ✅    ✅
-  [002]  Search API            ✅    🔄
-  [003]  Notifications         🔄    ○
-  [004]  Export PDF            ⏳    ○
-  [005]  Analytics             🔴    ○     depends on 003,004
+  ID      Story                          Spec   Build
+  ──────────────────────────────────────────────────────
+  [001]  User registers and logs in       ✅    ✅
+  [002]  User manages their profile       ✅    🔄
+  [003]  User submits application         🔄    ○
+  [004]  Admin reviews submissions        ⏳    ○
 ──────────────────────────────────────────────────────────
   Type a story ID to manage it        [$] Cost
   [1] Continue spec – STORY-003       [?] Help
@@ -171,7 +170,7 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 
 ```
 SpecGantry v3  |  Acme Platform
-Spec [███░░] 5/8  ·  Build [██░░░] 2/8
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4
 ──────────────────────────────────────────────────────────
 
 Cost Summary  |  release 1.0.0
@@ -207,11 +206,12 @@ Cost by Story  |  release 1.0.0
 
 Story            Tokens       Cost
 ───────────────────────────────────
-STORY-001        26,209      $2.47
-STORY-002        18,441      $1.84
-STORY-003         9,112      $0.46
+STORY-001        14,320      $1.34
+STORY-002        18,441      $1.74
+STORY-003         9,112      $0.86
+STORY-004         9,112      $0.86
 ───────────────────────────────────
-Total            53,762      $4.77
+Total            51,985      $4.80
 ```
 </div>
 

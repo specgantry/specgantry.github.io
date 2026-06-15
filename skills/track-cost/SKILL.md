@@ -20,6 +20,12 @@ Spec [███░░] [n]/[total]  ·  Build [██░░░] [n]/[total]
 
 Read `specs/project-state.yaml` to compute: Spec = count of `spec_done:true` stories, Build = count of `built:true` stories, total = total stories.
 
+**Aggregation step:** Before reading the cost log, execute:
+```bash
+node mcp/cost-aggregation.js || exit 1
+```
+This aggregates `specs/cost-log.ndjson` by (story, release, model, phase), summing all metrics. Creates backup in `specs/.backups/`. Output: one-line summary like `✓ 76→43 (43%) $461.09`. The `|| exit 1` ensures aggregation completes successfully before proceeding to read the file.
+
 Read `specs/cost-log.ndjson`. If absent or empty: show `No cost data recorded yet.` then show the menu bar and prompt.
 
 Parse each line as a JSON object. The active view is determined by the user's last input — default is Summary.

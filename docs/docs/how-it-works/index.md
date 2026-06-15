@@ -74,10 +74,23 @@ A complete walkthrough of the pipeline and what happens at each phase.
     </div>
   </div>
 
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-neutral">
+    <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">[N] New work — post-release modifications</div>
+      <div class="dg-flow-node-desc">Bug fix or enhancement: <strong>Investigate</strong> reads codebase · confirms with you · build agent fixes or writes gap.md · re-deploy</div>
+      <div class="dg-flow-node-meta">investigate-subagent (read-only) · then development-subagent</div>
+    </div>
+  </div>
+
 </div>
 </div>
 
 Stories run in dependency order. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.
+
+After deployment, use `[N] New work` for any changes. Bug fixes and enhancements always start with the investigation agent — it reads the actual codebase to locate the exact files and root cause before any code is touched.
 
 ---
 

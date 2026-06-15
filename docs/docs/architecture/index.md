@@ -195,8 +195,12 @@ How state and subagents connect across the full lifecycle:
   <div class="dg-flow-node dg-neutral">
     <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Post-deployment</div>
-      <div class="dg-flow-node-desc">[N] New work → classify_and_route → re-enters story loop</div>
+      <div class="dg-flow-node-title">Post-deployment — [N] New work</div>
+      <div class="dg-flow-node-desc">
+        <strong>Bug fix / Enhancement:</strong> Investigate agent reads codebase → confirms findings with user → build agent fixes or writes gap.md → re-deploy<br>
+        <strong>New story:</strong> Ideation (amendment mode) → normal story loop<br>
+        <strong>Project change:</strong> Ideation (amendment mode) → full re-spec
+      </div>
     </div>
   </div>
 
@@ -212,6 +216,7 @@ How state and subagents connect across the full lifecycle:
 | Build | `built` (per story) | confirm_deploy |
 | Gaps merged | gap.md deleted per story (no flag — orchestrator re-scans) | deploy |
 | Deploy | `deployed` (per story) | routing row 6 |
+| Post-deploy bug/enhancement | investigation findings (in-memory) | classify_and_route → build |
 
 ---
 

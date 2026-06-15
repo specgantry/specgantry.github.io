@@ -11,7 +11,7 @@ const {
   initLogger, setLogFile, logError, logInfo, logDebug,
   CLAUDE_HOME, PROJECT_DIR,
   AGENT_MAP, PROJECT_LEVEL_PHASES,
-  sumTokensFromTranscript, inferStoryFromTranscript,
+  sumTokensFromTranscript, inferStoryFromTranscript, readActiveStoryFromProjectState,
   projectSlug, buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
@@ -158,9 +158,19 @@ async function hookSubagentStop() {
 
   const tokens  = sumTokensFromTranscript(resolvedTranscript);
   const model   = tokens.model || mapping.model;
-  const component = PROJECT_LEVEL_PHASES.has(mapping.phase)
-    ? null
-    : inferStoryFromTranscript(resolvedTranscript, projectDir);
+  let component = null;
+
+  if (!PROJECT_LEVEL_PHASES.has(mapping.phase)) {
+    component = inferStoryFromTranscript(resolvedTranscript, projectDir);
+    if (!component) {
+      logDebug(`SubagentStop: story inference failed for ${mapping.phase}, rechecking active_story fallback`);
+      const activeStory = readActiveStoryFromProjectState(projectDir);
+      if (activeStory) {
+        component = activeStory;
+        logInfo(`SubagentStop: recovered story from active_story fallback: ${component}`);
+      }
+    }
+  }
 
   logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'story:', component);
 

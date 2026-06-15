@@ -57,7 +57,7 @@ const AGENT_MAP = {
 };
 
 // Project-level phases — never associated with a story ID
-const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer']);
+const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer', 'deployment']);
 
 // ─── Fallback pricing ─────────────────────────────────────────────────────────
 // Used when live fetch from the pricing page fails.
@@ -214,27 +214,37 @@ function readActiveStoryFromProjectState(projectDir) {
 // Infer story ID from the subagent transcript.
 // Pass 1: first user message with parentUuid === null (canonical orchestrator prompt).
 // Pass 2: first 5 user messages scanning for story_id: STORY-NNN key-value pattern.
-// Fallback: read active_story from specs/project-state.yaml (always authoritative).
+// Pass 3: read active_story from specs/project-state.yaml (fallback for story-level phases).
 function inferStoryFromTranscript(transcriptPath, projectDir) {
   try {
     const parsed = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean)
       .map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
     const userMessages = parsed.filter(r => r.type === 'user');
+
+    // Pass 1: Look in canonical orchestrator prompt (parentUuid === null)
     for (const r of userMessages) {
       if (r.parentUuid === null) {
         const m = JSON.stringify(r.message || '').match(/(STORY-\d+)/);
         if (m) return m[1];
       }
     }
+
+    // Pass 2: Scan first 5 user messages for story_id pattern
     for (const r of userMessages.slice(0, 5)) {
       const m = JSON.stringify(r.message || '').match(/story_id[^\w]+(STORY-\d+)/i);
       if (m) return m[1];
     }
-  } catch { /* transcript unreadable */ }
+  } catch (err) { logDebug('Error parsing transcript for story inference:', err.message); }
+
+  // Pass 3: Read from active_story in project-state.yaml (authoritative for story-level phases)
   if (projectDir) {
     const fromState = readActiveStoryFromProjectState(projectDir);
-    if (fromState) { logDebug('Story resolved from project-state.yaml active_story fallback:', fromState); return fromState; }
+    if (fromState) {
+      logDebug('Story resolved from project-state.yaml active_story:', fromState);
+      return fromState;
+    }
   }
+
   return null;
 }
 

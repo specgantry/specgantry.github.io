@@ -220,29 +220,45 @@ function inferStoryFromTranscript(transcriptPath, projectDir) {
     const parsed = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean)
       .map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
     const userMessages = parsed.filter(r => r.type === 'user');
+    logDebug(`inferStoryFromTranscript: found ${userMessages.length} user messages in transcript`);
 
     // Pass 1: Look in canonical orchestrator prompt (parentUuid === null)
     for (const r of userMessages) {
       if (r.parentUuid === null) {
-        const m = JSON.stringify(r.message || '').match(/(STORY-\d+)/);
-        if (m) return m[1];
+        const msg = JSON.stringify(r.message || '');
+        logDebug(`inferStoryFromTranscript Pass 1: checking canonical message (first 100 chars): ${msg.slice(0, 100)}`);
+        const m = msg.match(/(STORY-\d+)/);
+        if (m) {
+          logDebug(`inferStoryFromTranscript Pass 1: MATCHED ${m[1]}`);
+          return m[1];
+        }
       }
     }
+    logDebug('inferStoryFromTranscript Pass 1: no match in canonical message');
 
     // Pass 2: Scan first 5 user messages for story_id pattern
-    for (const r of userMessages.slice(0, 5)) {
-      const m = JSON.stringify(r.message || '').match(/story_id[^\w]+(STORY-\d+)/i);
-      if (m) return m[1];
+    for (let i = 0; i < Math.min(5, userMessages.length); i++) {
+      const msg = JSON.stringify(userMessages[i].message || '');
+      const m = msg.match(/story_id[^\w]+(STORY-\d+)/i);
+      if (m) {
+        logDebug(`inferStoryFromTranscript Pass 2: MATCHED ${m[1]} in message ${i}`);
+        return m[1];
+      }
     }
+    logDebug('inferStoryFromTranscript Pass 2: no match in first 5 messages');
   } catch (err) { logDebug('Error parsing transcript for story inference:', err.message); }
 
   // Pass 3: Read from active_story in project-state.yaml (authoritative for story-level phases)
   if (projectDir) {
+    logDebug(`inferStoryFromTranscript Pass 3: checking project-state.yaml at ${projectDir}`);
     const fromState = readActiveStoryFromProjectState(projectDir);
     if (fromState) {
-      logDebug('Story resolved from project-state.yaml active_story:', fromState);
+      logDebug(`inferStoryFromTranscript Pass 3: MATCHED ${fromState}`);
       return fromState;
     }
+    logDebug('inferStoryFromTranscript Pass 3: no active_story in project-state.yaml');
+  } else {
+    logDebug('inferStoryFromTranscript Pass 3: projectDir not provided, skipping');
   }
 
   return null;

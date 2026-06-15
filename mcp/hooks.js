@@ -143,6 +143,8 @@ async function hookSubagentStop() {
   logInfo(`SubagentStop: recording cost for ${mapping.phase} (${agentType})`);
 
   const projectDir = cwd || PROJECT_DIR;
+  logDebug(`SubagentStop: projectDir="${projectDir}" (cwd="${cwd}" PROJECT_DIR="${PROJECT_DIR}")`);
+
   const resolvedTranscript = transcript_path || (() => {
     const slug = projectSlug(projectDir);
     return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);

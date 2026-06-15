@@ -95,6 +95,9 @@ Type a story number directly (e.g. `004`) to pick it up. Blocked stories show th
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
+| `~` | Built but no spec written (reverse-engineered story) |
+
+Stories marked `~` are not pushed through the automatic spec pipeline — type their ID directly to write a spec for them at any time. They are immediately available for `[N] New work` (bug fixes and enhancements).
 
 ---
 
@@ -132,12 +135,14 @@ When you use `[N] New work` or when all stories are deployed, SpecGantry asks wh
 
 | Classification | When it applies |
 |---|---|
-| `bug_fix` | Something that was working is now broken — full spec → build cycle on the affected story |
-| `enhancement` | An existing story needs to do more or work differently — same cycle, spec updated with change annotations |
+| `bug_fix` | Something broken — investigation agent locates the exact files and root cause, confirms with you, then build agent fixes it directly. Spec not touched. |
+| `enhancement` | Existing story does more or works differently — investigation agent locates the change point, orchestrator writes to `gap.md`, build agent implements. Spec merges at deploy. |
 | `new_story` | A net-new capability — ideation agent runs in amendment mode to assign a story ID and update the backlog |
 | `project_change` | Cross-cutting: infrastructure, data model, multi-story scope — ideation agent runs in amendment mode first |
 
 SpecGantry always confirms its classification and story mapping before proceeding.
+
+**Investigation agent:** for bug fixes and enhancements, SpecGantry first invokes a read-only investigative agent that searches the codebase — using `@story`, `@entry`, `@contract`, and `@gap` anchor tags written by the build agent — to locate the exact files, entry points, and root cause. It presents findings and confirms with you before any changes are made. The investigation replaces spec-reading as the source of truth for what to change.
 
 ---
 
@@ -264,6 +269,7 @@ Useful for understanding whether your spend profile aligns with what you'd expec
 | Phase | Model | Relative cost |
 |-------|-------|--------------|
 | Ideation | Haiku 4.5 | Low — conversational, short outputs |
+| Investigation | Haiku 4.5 | Very low — read-only codebase search |
 | Story spec | Sonnet 4.6 | Medium — per story |
 | Development | Sonnet 4.6 | Highest — code generation |
 | Deployment | Sonnet 4.6 | Low — script generation, one-shot |
@@ -314,11 +320,11 @@ Cost tracking starts automatically once your first agent session completes. If t
 ```
 /spec-gantry → [N] New work
             → Describe the bug
-            → SpecGantry identifies affected story, confirms
-            → Full spec → build cycle
-            → All stories built → confirm deploy prompt
-            → Gap specs reviewed and merged (if any)
-            → [1] Deploy release
+            → Investigation agent reads codebase → confirms findings with you
+            → Build agent uses findings as targeted brief — no spec rewrite
+            → confirm deploy prompt
+            → gap.md reviewed and merged (if any)
+            → [1] Deploy release (patch version bump)
 ```
 
 ### Deploying a Release

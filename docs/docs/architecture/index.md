@@ -41,6 +41,7 @@ specs/
 ├── project-state.yaml              # Project metadata, story backlog, ideation_complete flag, active_story
 ├── architecture.md                 # Single source of truth — vision, constraints, tech stack, guardrails
 ├── cost-log.ndjson                 # Token usage and cost per agent session
+├── .env.example                    # All project env vars — safe to commit, placeholders for secrets
 ├── deploy.sh                       # Generated deployment script (whole system)
 ├── deploy.sh.old                   # Previous deployment script (backup)
 ├── deploy-artifact.md              # Deployment validation summary
@@ -48,7 +49,7 @@ specs/
     ├── STORY-001/
     │   ├── story-spec.md           # Six-section story spec (cross-references architecture.md)
     │   ├── build-report.yaml       # Build notes and results
-    │   └── gap-YYYY-MM-DD.md      # Gap spec (written mid-build; deleted after merge)
+    │   └── gap.md                 # Gap file (accumulates discoveries; deleted after deploy merge)
     └── STORY-002/
         └── ...
 ```
@@ -61,11 +62,11 @@ specs/
 
 ### `specs/project-state.yaml`
 
-The project registry. Contains the project name and vision, `ideation_complete` flag, `active_story`, and the full story backlog with each story's `spec_done`, `built`, and `deployed` flags.
+The project registry. Contains the project name and vision, `ideation_complete` flag, `active_story`, and the full story backlog with each story's `title`, `depends_on`, `spec_done`, `built`, and `deployed` flags.
 
 ### `specs/architecture.md`
 
-The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, and guardrails. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.
+The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, and a `## Configuration` table listing every env var the project uses with description and safe example value. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.
 
 ### `specs/stories/STORY-NNN/story-spec.md`
 
@@ -75,9 +76,9 @@ A six-section specification for a single story: what the user can do, screens an
 
 Written by the development agent on completion. Contains: acceptance criteria implemented, files modified, commits, any gap specs written, warnings, and `overall_status: pass | fail`.
 
-### `specs/stories/STORY-NNN/gap-YYYY-MM-DD.md`
+### `specs/stories/STORY-NNN/gap.md`
 
-Written during development when the spec is discovered to be incomplete or incorrect. Records what changed, files affected, and the recommended spec update. Gap files are deleted automatically after they are merged.
+One gap file per story. Written during development when the spec is discovered to be incomplete or incorrect, or when an enhancement is applied post-release. Records what changed, files affected, and the recommended spec update. Multiple discoveries accumulate as bullets in `## Changes` — no new files are created. Deleted automatically after it is merged at deploy time.
 
 ### `specs/deploy.sh`
 
@@ -98,6 +99,21 @@ An append-only record of token usage and cost for every agent session. Each entr
 ### Secrets Handling
 
 The story spec requires that every secret, API key, and credential used by the story is declared by its environment variable name. The development agent enforces this: no literal credential values in source files. If a violation is detected during build, it is reported immediately and must be resolved before proceeding.
+
+All runtime configuration — API keys, model names, ports, connection strings, timeouts — must come from environment variables. The build agent maintains `.env.example` at the project root on every build run, keeping it current with all variables across `architecture.md ## Configuration` and each story's enterprise checks section. `.env.example` values are safe to commit — placeholders for secrets, realistic defaults for config. The actual `.env` file is never written by SpecGantry.
+
+### Source Annotation Schema
+
+The build agent writes machine-readable anchor comments into every source file it creates or significantly modifies. These tags let the investigation agent navigate the codebase with targeted greps rather than full file reads.
+
+| Tag | Placement | Content |
+|-----|-----------|---------|
+| `@story` | Top of file | `@story STORY-NNN \| slug` — maps the file to its owning story |
+| `@entry` | Above route handlers / primary functions | `@entry METHOD /path \| description` — marks story entry points |
+| `@contract` | Above cross-layer functions | `@contract input: {shape} → output: {shape} \| errors` — documents data shapes |
+| `@gap` | Inline at spec divergences | `@gap YYYY-MM-DD reason` — mirrors the gap.md entry at the code location |
+
+Tags are written in the language's native comment syntax. The reverse-engineer agent also writes `@story`, `@entry`, and `@contract` tags into existing codebases during the reverse-engineering phase.
 
 ---
 
@@ -145,7 +161,7 @@ How state and subagents connect across the full lifecycle:
           <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: built</div>
         </div>
       </div>
-      <div class="dg-flow-node-meta" style="margin-top:6px">gap-*.md written if spec diverges from build</div>
+      <div class="dg-flow-node-meta" style="margin-top:6px">gap.md written if spec diverges from build</div>
     </div>
   </div>
 
@@ -194,7 +210,7 @@ How state and subagents connect across the full lifecycle:
 | Ideation complete | `ideation_complete` | story spec routing |
 | Story Spec | `spec_done` (per story) | build routing |
 | Build | `built` (per story) | confirm_deploy |
-| Gaps merged | gap-*.md files deleted (no flag — orchestrator re-scans) | deploy |
+| Gaps merged | gap.md deleted per story (no flag — orchestrator re-scans) | deploy |
 | Deploy | `deployed` (per story) | routing row 6 |
 
 ---

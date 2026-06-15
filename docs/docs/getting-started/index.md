@@ -228,7 +228,7 @@ project-root/
 │       ├── STORY-001/
 │       │   ├── story-spec.md       # Story specification
 │       │   ├── build-report.yaml   # Build notes and results
-│       │   └── gap-YYYY-MM-DD.md  # Gap spec (if written during build; deleted after merge)
+│       │   └── gap.md              # Gap file (if written during build or post-release; deleted after deploy merge)
 │       └── STORY-002/
 │           └── ...
 ├── src/                            # Your application source code
@@ -311,6 +311,7 @@ Enter story ID or action:  `>`
 | `🔴` | Blocked by a dependency |
 | `⏳` | Not started, ready to pick up |
 | `○` | Not yet reached |
+| `~` | Built but no spec written (reverse-engineered story) |
 
 Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline — no separate screen needed.
 

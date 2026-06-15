@@ -96,7 +96,9 @@ Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts
 
 ### I have an existing codebase. Should I reverse-engineer it?
 
-Yes, if you want SpecGantry's structure — architecture documentation, a story backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.
+Yes, if you want SpecGantry's structure — architecture documentation, a story backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent analyses your codebase and proposes a story list where each story is marked `built`, `partial`, or `missing`. You review, adjust statuses if needed, and confirm before anything is written.
+
+Built stories enter the modification pipeline immediately — use `[N] New work` for bug fixes and enhancements. Partial and missing stories follow the normal spec → build → deploy flow. Stories that are built but not yet specced show `~` in the dashboard — type their ID to write a spec at any time.
 
 ---
 
@@ -124,13 +126,13 @@ No. SpecGantry deploys the entire system as a single release. This is intentiona
 
 ### What are gap specs and when are they written?
 
-Gap specs are delta documents written during development when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects. Rather than editing the main spec, a `gap-YYYY-MM-DD.md` file is written recording what changed, files affected, and a recommended spec update.
+Gap specs are delta documents written to `specs/stories/STORY-NNN/gap.md` — one file per story. The build agent writes to this file when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects. Post-release enhancements are also recorded here by the orchestrator before building. Multiple discoveries accumulate as bullets in a single file — no new dated files are created.
 
-Gap specs are reviewed and merged at the confirm-deploy step, before deployment.
+Gap files are reviewed and merged at the confirm-deploy step, before deployment.
 
 ### What happens during gap merge?
 
-When all stories are built, SpecGantry checks for unmerged gap specs and presents any it finds. After confirmation, gaps are merged in chronological order: story spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content). Each gap file is deleted after it is merged. A summary of what changed is shown before the deploy prompt.
+When all stories are built, SpecGantry checks for unmerged gap specs and presents any it finds. After confirmation, the gap is merged into the story spec in place — sections are edited directly to reflect what was actually built. `gap.md` is deleted after it is merged. A summary of what changed is shown before the deploy prompt.
 
 ### How long does each phase take?
 
@@ -154,7 +156,7 @@ When in doubt, err toward fewer, larger stories. You can always add scope via `[
 
 ### What happens after all stories are deployed?
 
-SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[N] New work` or describe a change when prompted. SpecGantry classifies the work, reads the backlog and story specs to identify what's affected, confirms with you, and re-enters the pipeline. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
+SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[N] New work` or describe a change when prompted. For bugs and enhancements, SpecGantry first runs an investigation agent that searches the actual codebase to locate the affected files and root cause — then confirms findings with you before acting. New stories and architectural changes go straight to ideation amendment mode. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
 
 ### How do stories stay versioned over time?
 
@@ -166,7 +168,7 @@ Every project starts at `1.0.0`. The version only changes when a release is depl
 
 ### Who decides which stories are affected by a bug fix?
 
-SpecGantry does. When you describe new work via `[N] New work`, SpecGantry reads the backlog and all story specs to determine which stories own the described behaviour. It presents the mapping for your confirmation before touching any state.
+SpecGantry does — via a two-step process. First, a read-only investigation agent searches the actual codebase using anchor tags (`@story`, `@entry`, `@contract`) written by the build agent to locate the exact files, entry points, and root cause. Then it presents its findings and confirms with you before touching any state. This means the mapping is grounded in real code, not just spec inference.
 
 ### What's a "guardrail violation"?
 
@@ -189,12 +191,12 @@ Options to resolve a violation:
 
 A spec clear enough that you (or anyone) could pick it up and build the same thing. SpecGantry guides you through six sections:
 
-1. **What the user can do** — user-facing capability and scope
-2. **Screens and states** — UI flows and state transitions
-3. **Data and backend** — data owned, APIs, persistence
-4. **AI integration** — any AI-assisted behaviour in this story
-5. **Enterprise checks** — auth, compliance, audit requirements
-6. **Acceptance criteria** — conditions that must be true for the story to be done
+1. **What the user can do** — user-facing capabilities, including the full lifecycle of every entity the story manages: list, view, edit, delete. Any omitted operation must be explicitly declared out of scope.
+2. **Screens and states** — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions
+3. **Data and backend** — data owned, APIs, persistence. Every field named with its type and validation rule.
+4. **AI integration** — if AI is used: model ID, full literal prompt template, exact output schema, and a fallback path. The prompt must include an explicit instruction against adding commentary or filler. If no AI: N/A.
+5. **Enterprise checks** — auth, validation rules, error handling, data safety, rate limiting, and any new env vars this story needs
+6. **Acceptance criteria** — minimum 4, at least one must cover an error state
 
 ### Can I edit a spec after starting to build?
 

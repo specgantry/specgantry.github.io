@@ -55,7 +55,7 @@ A complete walkthrough of the pipeline and what happens at each phase.
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Build</div>
       <div class="dg-flow-node-desc">Implementation · gap specs written if needed</div>
-      <div class="dg-flow-node-meta">build-report.yaml · gap-YYYY-MM-DD.md (if any)</div>
+      <div class="dg-flow-node-meta">build-report.yaml · gap.md (if any)</div>
     </div>
   </div>
 
@@ -116,7 +116,7 @@ Four topics, one question each: vision, problem & users, constraints, risks & ou
 
 **Beat 2 — Shape the system**
 
-Directly from the matured idea, SpecGantry proposes the system shape — tech stack, story boundaries, guardrails, and a dependency-ordered story backlog. Each topic is a proposal for you to confirm or redirect, not an open-ended question.
+Directly from the matured idea, SpecGantry proposes the system shape — tech stack, story boundaries, guardrails, a configuration table, and a dependency-ordered story backlog. Each topic is a proposal for you to confirm or redirect, not an open-ended question.
 
 Everything is written to `specs/architecture.md` after every answer. A crash mid-session loses at most one exchange.
 
@@ -134,12 +134,12 @@ No code is written until a complete spec exists.
 
 The spec covers six sections:
 
-1. **What the user can do** — user-facing capability and scope
-2. **Screens and states** — UI flows and state transitions
-3. **Data and backend** — data owned, APIs, persistence
-4. **AI integration** — any AI-assisted behaviour in this story
-5. **Enterprise checks** — auth, compliance, audit requirements
-6. **Acceptance criteria** — conditions that must be true for the story to be done
+1. **What the user can do** — user-facing capabilities. Every entity the story manages must have its full lifecycle accounted for: list, view, edit, delete. Missing operations must be explicitly declared out of scope with a reason.
+2. **Screens and states** — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions
+3. **Data and backend** — data owned, APIs, persistence. Every field named with its type and validation rule. Every endpoint documented.
+4. **AI integration** — if AI is used: model ID, literal prompt template (full text, not a description), exact output schema, output-to-UI field mapping, fallback path. The prompt must include an anti-sycophancy instruction. If no AI: marked N/A.
+5. **Enterprise checks** — auth, validation, error states, data safety, rate limiting, and a list of any new env vars this story requires
+6. **Acceptance criteria** — minimum 4, at least one error-state criterion
 
 Each section is written to disk immediately — sessions resume from the next incomplete section.
 
@@ -156,8 +156,10 @@ The build phase turns the confirmed spec into working code. The dev agent works 
 
 Key behaviors:
 - Implements the full vertical slice — UI, backend, data layer, AI integration — exactly as specced
-- Respects every guardrail in `architecture.md`
-- Secrets and credentials come from environment variables — no literal values in source
+- Respects every guardrail in `architecture.md` and uses env var names exactly as defined in `## Configuration`
+- Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values
+- Maintains `.env.example` at the project root with every env var the project needs — safe to commit, placeholders for secrets
+- Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.
 
 A story is **complete** once all acceptance criteria are met.
 
@@ -185,25 +187,39 @@ Every release deploys the **entire system** — not individual stories.
 
 ### Gap Specs {#gap-specs}
 
-If during development the spec is discovered to be incomplete, incorrect, or causes side-effects, a gap spec is written rather than editing the main spec directly:
+If during development the spec is discovered to be incomplete, incorrect, or has side-effects, the build agent writes to the story's single gap file rather than editing the main spec directly:
 
-**File:** `specs/stories/STORY-NNN/gap-YYYY-MM-DD.md`
+**File:** `specs/stories/STORY-NNN/gap.md` — one file per story, persists until deploy-time merge
 
-The gap spec records: what changed, which files were affected, and a recommended spec update. The main specs remain stable.
-
-Multiple gap specs can accumulate during a build cycle. They are resolved before deployment.
+The gap file records: what changed, which files were affected, side-effects on other stories, and a recommended spec update. The main spec stays stable. Multiple discoveries accumulate as additional bullets in the same file — no new files are created.
 
 ### Gap Merge {#gap-merge}
 
 **Time:** 2–5 minutes
-**Output:** Updated `story-spec.md` and/or `architecture.md` · gap files deleted
+**Output:** Updated `story-spec.md` · gap.md deleted
 
-When all stories are built, SpecGantry checks for unmerged gap specs and presents them before deployment. If confirmed:
-1. Each gap file is applied in chronological order
-2. Each gap file is deleted after successful merge
-3. A summary is shown before the deploy prompt
+When all stories are built, SpecGantry checks for unmerged gap files and presents any it finds. After confirmation, each gap is merged into the story spec in place (sections edited, not appended). Each `gap.md` is deleted after successful merge. A summary is shown before the deploy prompt.
 
 If no gaps exist, SpecGantry skips straight to the deploy prompt.
+
+---
+
+## Reverse Engineering an Existing Codebase {#reverse-engineering}
+
+If `/spec-gantry` is run in a directory that has source files but no `specs/` folder, it detects this and offers a choice: start a new project or analyse the existing codebase. Selecting reverse-engineer runs a dedicated agent that:
+
+1. **Silently analyses** the codebase — tech stack, structure, user-facing capabilities, auth model, completion level per feature, env vars from `.env.example` or config files, and entry points per story
+2. **Presents a story list** with a `Status` column for each story: `built` (fully implemented), `partial` (exists but incomplete), or `missing` (not yet built). You can edit the list — merge, rename, change status — before confirming.
+3. **Writes spec files** — `specs/architecture.md` (including a populated `## Configuration` table), `specs/project-state.yaml` with correct `built`/`deployed` flags per story, and stub `build-report.yaml` files for built stories so the deployment agent can read their runtime profiles
+4. **Tags source files** — adds `@story`, `@entry`, and `@contract` anchor comments to route/handler files so the investigation agent can navigate the codebase immediately
+5. **Confirms** — shows a summary of stories identified, env vars documented, and files tagged
+
+**Status mapping in the pipeline:**
+- `built` stories → `built:true · deployed:true` — they enter the pipeline at the modification stage immediately. Use `[N] New work` to fix bugs or add enhancements.
+- `partial` / `missing` stories → `built:false · deployed:false` — they follow the normal spec → build → deploy pipeline
+- `partial` stories that you'd prefer to treat as enhancements (rather than a full rebuild) can be changed to `built` during the review step
+
+**Routing after reverse-engineering:** the pipeline skips the automatic "Spec next story" action for stories with `built:true · spec_done:false` — these already have running code and don't need a full spec cycle before modifications can begin. Their `~` status in the dashboard shows they have no written spec yet. Type a story ID directly to write its spec at any time.
 
 ---
 
@@ -235,7 +251,8 @@ The initial release always deploys as `1.0.0`.
 - **Risks & Out of Scope** — top risks with mitigations, explicit v1 deferral list
 - **Tech Stack** — confirmed choices per layer
 - **Guardrails** — enforceable rules every story must respect
-- **Amendment blocks** — appended by gap merge; never overwrite prior content
+- **Configuration** — env var table: every variable the project uses, its description, and a safe example value
+- **Change history** — gap merges append a row to each story spec's change history table; architecture is never overwritten
 
 Story specs **reference** this document rather than duplicating it. This keeps both the architecture and story specs slim.
 
@@ -247,8 +264,8 @@ Use `[N] New work` at any point to describe new work — bug fix, enhancement, n
 
 | Type | What happens |
 |---|---|
-| `bug_fix` | Affected story identified from specs. All phase flags reset — full spec → build cycle. Deploy re-runs before next deploy. |
-| `enhancement` | Same as bug_fix — spec updated with change annotations. |
+| `bug_fix` | Investigation agent reads the codebase to locate the exact files and root cause — confirms findings with you. Build agent uses the findings as a targeted brief. Spec is not touched. Patch release on next deploy. |
+| `enhancement` | Investigation agent locates where the change slots in. Orchestrator writes/appends to `gap.md` for the affected story. Build agent implements against spec + gap. Spec merges at deploy time. Minor release on next deploy. |
 | `new_story` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture. Then normal pipeline. |
 | `project_change` | Ideation agent runs in amendment mode first. Impacted story specs reset for re-spec. |
 

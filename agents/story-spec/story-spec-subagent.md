@@ -235,17 +235,20 @@ Enhancements are not amended here — the orchestrator writes a gap file and the
 
 When invoked with `merge_gaps: true` and `gap_files: [gap.md]`:
 
-1. Read `specs/stories/[story_id]/story-spec.md` in full
-2. Read `specs/stories/[story_id]/gap.md` in full. Extract:
+1. Check whether `specs/stories/[story_id]/story-spec.md` exists.
+   - If it does **not** exist (reverse-engineered story — built but never specced): create a minimal stub spec first. Write only frontmatter + Section 1 (derive from `gap.md ## Changes` and `architecture.md`) + a `## Change history` table. Mark it clearly at the top: `> ⚠ Stub spec — created at gap merge time. Sections 2–6 not yet written.` Then proceed with the merge.
+   - If it exists: proceed normally.
+2. Read `specs/stories/[story_id]/story-spec.md` in full
+3. Read `specs/stories/[story_id]/gap.md` in full. Extract:
    - `## Changes` — all changes accumulated since last deploy
    - `## Files affected` — what was built
    - `## Recommended spec update` — what should be updated in the spec
-3. Apply the recommended updates to the relevant section(s) of `story-spec.md` directly. Edit spec sections in place so the spec reflects what was actually built — do not append amendment blocks.
-4. If `## Side-effects on other stories` is non-empty, note it in a warning but do not modify other story specs — the orchestrator handles cross-story coordination.
-5. Append one row to the `## Change history` table summarising all changes in the gap:
+4. Apply the recommended updates to the relevant section(s) of `story-spec.md` directly. Edit spec sections in place so the spec reflects what was actually built — do not append amendment blocks.
+5. If `## Side-effects on other stories` is non-empty, note it in a warning but do not modify other story specs — the orchestrator handles cross-story coordination.
+6. Append one row to the `## Change history` table summarising all changes in the gap:
    ```
    | [release] | [YYYY-MM-DD] | Gap merged: [one-line summary of ## Changes] | gap-merge |
    ```
-6. Delete `gap.md` from disk. Verify deletion.
-7. Do NOT reset `spec_done` or `built` flags — gap merge happens after build, those flags are already true.
-8. Return a one-line summary: `[STORY-ID]: gap merged — [sections updated]`
+7. Delete `gap.md` from disk. Verify deletion.
+8. Do NOT reset `spec_done` or `built` flags — gap merge happens after build, those flags are already true.
+9. Return a one-line summary: `[STORY-ID]: gap merged — [sections updated]`

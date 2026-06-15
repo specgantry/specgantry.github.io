@@ -49,6 +49,39 @@ Rules:
 - **Secrets and config must come from environment variables.** This includes: API keys, model names, ports, connection strings, feature flags, max token limits, timeouts. If you find yourself about to hardcode any of these: stop and use the env var instead.
 - **`.env.example` is mandatory.** On every build: ensure `.env.example` exists at the project root and contains every variable from `architecture.md ## Configuration` plus any new vars from `story-spec.md ## Enterprise checks → Environment variables`. Values in `.env.example` must be safe to commit — placeholders for secrets, realistic defaults for config. Never write a `.env` file — only `.env.example`.
 
+## Code comment schema
+
+Write machine-readable anchor comments so the investigative agent can locate code without reading full files. These are not explanatory prose — they are structural tags. One line each.
+
+**`@story`** — top of every file you create or significantly modify:
+```
+// @story STORY-002 | submissions
+```
+
+**`@entry`** — above every route handler, server action, or primary function that is an entry point from the spec:
+```
+// @entry POST /api/submissions | create draft submission
+```
+
+**`@contract`** — above any function that receives or returns data crossing a layer boundary (API→DB, UI→API, AI call):
+```
+// @contract input: {title: string, body: string, user_id: uuid} → output: {id: uuid, status: draft} | errors: 422 missing fields, 401 unauth
+```
+
+**`@gap`** — inline at the exact line where your implementation diverges from the spec (same cases that trigger a gap spec entry):
+```
+// @gap 2026-06-15 status enum extended to include 'archived' — spec only defines draft|submitted
+```
+
+**Rules:**
+- Every new file gets `@story` at the top
+- Every entry point in every new file gets `@entry`
+- Every cross-layer function gets `@contract`
+- Every divergence from `story-spec.md` that produces a `gap.md` entry also gets `@gap` inline at the divergence point
+- Use the language's native comment syntax (`//`, `#`, `--`, etc.)
+- Keep tags on one line — never multi-line
+- When `investigation_findings` is passed by the orchestrator: the `files` list tells you which files to touch first; the `root_cause` is your implementation brief — start there, not from re-reading the full spec
+
 ## Gap specs
 
 If during implementation you discover that:

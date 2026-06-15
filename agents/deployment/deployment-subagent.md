@@ -16,7 +16,7 @@ You produce a single `deploy.sh` that: bumps the version, builds artifacts, and 
 ## HARD GATE
 
 ```
-Read: specs/project-state.yaml  →  must exist · all stories.[*].deployed must not already be true · all stories.[*].built:true
+Read: specs/project-state.yaml  →  must exist · at least one story.[*].deployed:false · all stories.[*].built:true
 Read: specs/architecture.md     →  must exist
 ```
 
@@ -61,9 +61,16 @@ Build a dependency graph and produce a topologically sorted deployment order —
 
 ## Read story runtime profiles
 
-For each story in deployment order, read `specs/stories/[STORY-ID]/build-report.yaml → runtime`. This block was written by the development agent from observed fact — it is the authoritative source for language, build tooling, and migration requirements. Do not re-infer from architecture prose.
+For each story in deployment order, read `specs/stories/[STORY-ID]/build-report.yaml → runtime`. This block is the authoritative source for language, build tooling, and migration requirements. Do not re-infer from architecture prose.
 
 If `build-report.yaml` is missing or its `runtime:` block is absent for a story: halt with `✗ Deployment gate FAILED · build-report.yaml missing or incomplete for [STORY-ID] · run /spec-gantry to rebuild`.
+
+If `build-report.yaml → source: reverse-engineered`: the runtime profile was inferred by the reverse-engineer agent, not observed from an actual build. Surface a warning (non-blocking):
+```
+⚠ Reverse-engineered runtime profile for [STORY-ID] — verify before deploying:
+  build_command: [value]
+  Confirm this is correct or update specs/stories/[STORY-ID]/build-report.yaml manually.
+```
 
 ## Determine infrastructure target
 

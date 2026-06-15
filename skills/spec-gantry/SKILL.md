@@ -22,6 +22,7 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 | Type | Phase | Model |
 |------|-------|-------|
 | `spec-gantry:ideation:ideation-subagent` | ideation + architecture | haiku-4-5 |
+| `spec-gantry:investigate:investigate-subagent` | investigation | haiku-4-5 |
 | `spec-gantry:story-spec:story-spec-subagent` | story spec | sonnet-4-6 |
 | `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
@@ -37,10 +38,10 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 
 | File | Key fields |
 |------|------------|
-| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story) · `ideation_complete` · `stories` map (spec_done, built, deployed per STORY-ID) |
-| `specs/architecture.md` | Tech stack, guardrails, auth model, deployment target. One page. |
+| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story) · `ideation_complete` · `stories` map (title, depends_on, spec_done, built, deployed per STORY-ID) |
+| `specs/architecture.md` | Tech stack, guardrails, auth model, deployment target, configuration table. One page. |
 | `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on |
-| `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` |
+| `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` · `source` (omitted unless reverse-engineered) |
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
 
@@ -143,10 +144,10 @@ Middle section — story table:
 - Always render ALL stories — never omit any
 - Story IDs shown as `[NNN]` — directly typeable
 - Blocked stories show `depends on NNN[,NNN]` inline at end of row
-- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached
+- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` inferred (built but no spec)
 
 **Story column flags:**
-- Spec = `spec_done`
+- Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, no spec written yet)
 - Build = `built` (show 🔄 while `project.active_story` matches this ID)
 - Deploy = `deployed`
 
@@ -188,7 +189,7 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 |-----------|-------------|
 | No project exists | `Start new project` · `Analyse existing codebase` (only if source files present) |
 | Ideation in progress | `Continue ideation` |
-| `ideation_complete:true` · any `spec_done:false` | `Spec next story — [STORY-ID]: [title]` |
+| `ideation_complete:true` · any `spec_done:false · built:false` | `Spec next story — [STORY-ID]: [title]` |
 | All `spec_done:true` · any `built:false` | `Build next story — [STORY-ID]: [title]` |
 | All `built:true` · any `deployed:false` | `Deploy release [version]` |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
@@ -218,10 +219,12 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
 | 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
 | 3 | `ideation_complete:false` | **start_ideation** |
-| 4 | `ideation_complete:true` · any `spec_done:false` | **spec_next_story** |
+| 4 | `ideation_complete:true` · any `spec_done:false` · any `built:false` | **spec_next_story** (only for stories where `built:false`) |
 | 5 | All `spec_done:true` · any `built:false` | **build_next_story** |
 | 6 | All `built:true` · any `deployed:false` | **confirm_and_deploy** |
 | 7 | All `deployed:true` | **classify_and_route** |
+
+**Row 4 note:** only routes to spec for stories that are not yet built. Stories with `built:true · spec_done:false` (reverse-engineered stories) are skipped — their specs can be written later via `[N] New work` or by typing the story ID directly. This means a fully reverse-engineered app with all stories `built:true · deployed:true` routes directly to row 7 → `classify_and_route`, which is the right entry point for modifications.
 
 **⏸ Pause = re-render full dashboard + stop.**
 
@@ -299,10 +302,10 @@ Append to `.gitignore` if absent: `specs/.current-session`
 ---
 
 ### spec_next_story
-**Gate:** `ideation_complete:true` · at least one story has `spec_done:false`
-**Idempotency:** all `spec_done:true` → re-render · stop
+**Gate:** `ideation_complete:true` · at least one story has `spec_done:false AND built:false`
+**Idempotency:** no story has `spec_done:false AND built:false` → re-render · stop
 
-Find the next story to spec: lowest-numbered story in topological order where `spec_done:false` and all stories in `depends_on` have `spec_done:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
+Find the next story to spec: lowest-numbered story in topological order where `spec_done:false AND built:false` and all stories in `depends_on` (read from `project-state.yaml`) have `spec_done:true OR built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
 Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
 
@@ -323,10 +326,10 @@ When all stories have `spec_done:true`:
 ---
 
 ### build_next_story
-**Gate:** all stories `spec_done:true` · at least one story has `built:false`
+**Gate:** at least one story has `built:false` · for each story where `built:false`, `spec_done:true` must hold (RE stories with `built:true` are excluded from this check)
 **Idempotency:** all `built:true` → re-render · stop
 
-Find the next story to build: lowest-numbered story in topological order where `built:false` and all stories in `depends_on` have `built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
+Find the next story to build: lowest-numbered story in topological order where `built:false` and all stories in `depends_on` (read from `project-state.yaml`) have `built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
 Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
 
@@ -393,57 +396,66 @@ On `X`: re-render · ⏸
 ### classify_and_route
 Prompt: `Describe the next work (bug fix / improvement / new feature / architectural change):  >`
 
-**Step 1 — Classify and map to stories:**
+**Step 1 — Investigate (bug_fix and enhancement only).**
 
-| Type | Condition | How to find affected stories |
-|------|-----------|------------------------------|
-| `bug_fix` | broken deployed behaviour | read story specs — derive owning story(ies), do not ask |
-| `enhancement` | existing story does more/differently | read story specs — derive owning story(ies), do not ask |
-| `new_story` | net-new user capability | propose title and where it fits in the story order |
-| `project_change` | infra, data model, cross-cutting | read architecture + all story specs |
+For any report that sounds like a bug or enhancement, invoke the investigative agent before doing anything else:
 
-**Step 2 — Confirm:**
+**Invoke:** `spec-gantry:investigate:investigate-subagent` · description: `"Investigating: [user's description]"` · pass `description`, `project_dir`
+
+- If the agent returns `status: cancelled` → re-render dashboard · ⏸
+- If the agent returns `status: confirmed` → proceed to Step 2 with findings in hand
+- If the description is clearly `new_story` or `project_change` (net-new capability, no existing code to investigate) → skip Step 1, go directly to Step 2
+
+**Step 2 — Classify using findings.**
+
+| Type | Condition |
+|------|-----------|
+| `bug_fix` | broken deployed behaviour — confirmed by investigation |
+| `enhancement` | existing story does more/differently — confirmed by investigation |
+| `new_story` | net-new user capability — no investigation needed |
+| `project_change` | infra, data model, cross-cutting — read architecture + all story specs |
+
+For `bug_fix` and `enhancement`: type and affected stories come directly from the findings report — do not re-derive from specs.
+
+**Step 3 — Confirm with user.**
+
+Show the confirmation using investigation findings:
+
 ```
-  Type: enhancement
-  Affects:
-    · STORY-002 Student submits application — add draft-save capability
+  Type:    bug_fix
+  Story:   STORY-002 — Student submits application
+  Files:   src/api/submissions.js · src/db/submissions.js
+  Finding: POST /api/submit does not validate draft status before inserting —
+           spec requires status check (criterion 3)
   [Y] Confirm  [E] Edit  [X] Cancel
 ```
 
-**Step 3 — Execute inline.**
+On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸.
+
+**Step 4 — Execute inline.**
 
 `bug_fix` — for each affected story, in topological order:
 - Set `project.next_release_type: patch`
 - Set `project.active_story: [story_id]` · re-render dashboard
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` — description: `"Bug fix: [story_id]: [title]"`
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `investigation_findings: [findings]` — description: `"Bug fix: [story_id]: [title]"`. Pass the `files` list and `root_cause` from findings as a targeted brief so the build agent goes directly to the right place.
 - After build: set `built:true · deployed:false` in project-state · clear `active_story` · re-render dashboard
 - Do **not** reset `spec_done` — spec is still valid, only the code changed
 
 `enhancement` — for each affected story, in topological order:
 - Set `project.next_release_type: minor`
 - Set `project.active_story: [story_id]` · re-render dashboard
-- Write or append to the story's single gap file (orchestrator, no subagent needed):
+- Write or append to the story's single gap file using investigation findings as content:
   **File:** `specs/stories/[story_id]/gap.md` — one file per story, persists until deploy-time merge
-  - If `gap.md` does not exist, create it:
-    ```markdown
-    # Gap: [STORY-ID]
-    ## Changes
-    - [YYYY-MM-DD] Enhancement: [description of the change as stated by the user]
-    ## Files affected
-    _to be filled during build_
-    ## Side-effects on other stories
-    None
-    ## Recommended spec update
-    [summarise what sections of story-spec.md should reflect these changes after deploy]
-    ```
-  - If `gap.md` already exists, append a new bullet under `## Changes`:
-    `- [YYYY-MM-DD] Enhancement: [description]`
-    and update `## Recommended spec update` to account for the new change
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. The build agent reads the gap file as its change brief alongside the existing spec.
+  - `## Changes` bullet: derived from `findings.root_cause` + `findings.recommended_action`
+  - `## Files affected`: pre-populated from `findings.files`
+  - `## Side-effects on other stories`: from `findings.side_effects`
+  - `## Recommended spec update`: from `findings.spec_alignment`
+  - If `gap.md` already exists, append under `## Changes` and update the other sections
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. Pass `investigation_findings` so the build agent has the precise file list.
 - After build: update `built:true` · clear `active_story` · re-render dashboard
 - Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
 
-Both types: after all affected stories are built, set `deployed:false` on each (a new deploy is needed) and re-render. Do **not** return to the normal pipeline — the work is already done.
+Both types: after all affected stories are built, set `deployed:false` on each and re-render. Do **not** return to the normal pipeline — the work is already done.
 
 `new_story` → invoke **start_ideation** (amendment mode). Set `next_release_type: minor`. Re-render after ideation completes. ⏸
 

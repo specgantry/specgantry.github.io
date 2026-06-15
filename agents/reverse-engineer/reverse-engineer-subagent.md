@@ -77,6 +77,9 @@ Write these files (create `specs/` directory if needed):
 
 ## Guardrails
 [mandatory structure rules + project-specific rules derived from existing patterns]
+
+## Configuration
+[table of every env var the project uses — derive from .env.example, config files, or code. Format: Variable | Description | Example value]
 ```
 
 **`specs/project-state.yaml`** — slim project state:

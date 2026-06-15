@@ -62,6 +62,9 @@ _not yet written_
 
 ## Guardrails
 _not yet written_
+
+## Configuration
+_not yet written_
 ```
 
 ---
@@ -144,7 +147,32 @@ Write to `## Guardrails`:
 
 **Project-specific guardrails:** derive from tech stack and constraints. Concrete and enforceable — no vague rules.
 
-### Topic 7 — Story List
+### Topic 7 — Configuration
+
+All runtime configuration must live in `.env`. No value that varies by environment, deployment, or operator may be hardcoded.
+
+Ask the user to confirm or extend this baseline — derive the initial list from the tech stack and vision decided in prior topics:
+
+Write to `## Configuration` a table of every env var the project will use:
+
+```
+| Variable               | Description                        | Example value         |
+|------------------------|------------------------------------|-----------------------|
+| PORT                   | HTTP server port                   | 3000                  |
+| DATABASE_URL           | Database connection string         | postgres://...        |
+| AI_MODEL               | LLM model ID                       | claude-haiku-4-5-20251001 |
+| AI_MAX_TOKENS          | Max tokens per AI response         | 1024                  |
+| AI_API_KEY             | Anthropic API key                  | sk-ant-...            |
+| SESSION_SECRET         | Session signing secret             | (random 32-char hex)  |
+```
+
+Rules:
+- Every AI model name, API key, port, connection string, and feature flag belongs here — not in source code
+- Include all vars the project needs at this stage; story specs will add more
+- `Example value` must be safe to commit — use placeholders for secrets, realistic values for config
+- This table is the source of truth for `.env.example`; the build agent keeps it in sync
+
+### Topic 8 — Story List
 
 User stories that define what the system does. A story is a complete vertical slice — one user-facing capability that requires UI, backend, data, and possibly AI working together.
 

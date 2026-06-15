@@ -22,7 +22,9 @@ Read: specs/project-state.yaml                        →  stories.[story_id].sp
 Read: specs/stories/[story_id]/story-spec.md          →  must exist
 Read: specs/architecture.md                           →  must exist
 ```
-Exception: `gate_bypass:true` passed in the invocation prompt (bug fix hot path) — skip the spec_done check.
+Exception: `gate_bypass:true` passed in the invocation prompt (bug fix or enhancement hot path) — skip the spec_done check.
+
+When `enhancement_gap:[filename]` is also passed: read `specs/stories/[story_id]/[filename]` immediately after passing the gate. The `## Changes` bullets are your change brief — implement each change on top of the existing built code. The existing `story-spec.md` describes the current state; the gap file describes what must change. After implementation, fill in the `## Files affected` section of the gap file with the actual files modified.
 
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 `✗ Development gate FAILED · story spec must be complete (spec_done:true) · Run /spec-gantry`
@@ -41,9 +43,11 @@ For each layer: implement the code, verify it works by running the application o
 
 Rules:
 - Read `specs/architecture.md → ## Guardrails` before writing any code — every guardrail applies to every story
+- Read `specs/architecture.md → ## Configuration` before writing any code — this is the authoritative list of env vars; use these names exactly
 - Respect the project structure: source under `/src/`, prompts under `/src/ai/`, config under `/src/config/`
 - Commit in logical units: `feat([STORY-ID]): [description]`
-- **Secrets must come from environment variables.** If you find yourself about to write a literal credential, API key, or connection string into any file: stop immediately and report it instead
+- **Secrets and config must come from environment variables.** This includes: API keys, model names, ports, connection strings, feature flags, max token limits, timeouts. If you find yourself about to hardcode any of these: stop and use the env var instead.
+- **`.env.example` is mandatory.** On every build: ensure `.env.example` exists at the project root and contains every variable from `architecture.md ## Configuration` plus any new vars from `story-spec.md ## Enterprise checks → Environment variables`. Values in `.env.example` must be safe to commit — placeholders for secrets, realistic defaults for config. Never write a `.env` file — only `.env.example`.
 
 ## Gap specs
 
@@ -52,23 +56,25 @@ If during implementation you discover that:
 - a decision in `architecture.md` needs to change, OR
 - another story's data or interface is affected by what you're building
 
-Do **not** modify `story-spec.md` or `architecture.md` directly. Instead, write a gap spec:
+Do **not** modify `story-spec.md` or `architecture.md` directly. Instead, write to the story's single gap file:
 
-**File:** `specs/stories/[story_id]/gap-[YYYY-MM-DD].md`
+**File:** `specs/stories/[story_id]/gap.md` — one file per story, append don't create
 
-```markdown
-# Gap: [STORY-ID] — [YYYY-MM-DD]
-## What changed
-[one paragraph: what you discovered and what decision you made instead]
-## Files affected
-[list of files modified beyond what the spec described]
-## Side-effects on other stories
-[list any other stories whose data model or interface may be affected — or "None"]
-## Recommended spec update
-[what should be updated in story-spec.md or architecture.md when this gap is merged]
-```
+- If `gap.md` does not exist, create it:
+  ```markdown
+  # Gap: [STORY-ID]
+  ## Changes
+  - [YYYY-MM-DD] [one sentence: what you discovered and what decision you made instead]
+  ## Files affected
+  [list of files modified beyond what the spec described]
+  ## Side-effects on other stories
+  [list any other stories whose data model or interface may be affected — or "None"]
+  ## Recommended spec update
+  [what should be updated in story-spec.md or architecture.md when this gap is merged]
+  ```
+- If `gap.md` already exists, append a new bullet under `## Changes` and update `## Recommended spec update` to account for the new discovery
 
-Record the gap filename in `build-report.yaml → gap_specs`. Multiple gap specs on the same day: `gap-[YYYY-MM-DD]-[n].md`.
+Record `gap.md` in `build-report.yaml → gap_specs` if not already listed.
 
 ## Output
 

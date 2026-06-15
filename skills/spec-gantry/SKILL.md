@@ -10,6 +10,7 @@ description: >
   asking about deployment, release status, or project costs.
   Do NOT invoke for general coding questions, debugging unrelated code, or one-off tasks with no project context.
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
+blocked-tools: Explore
 ---
 
 # SpecGantry v3
@@ -264,6 +265,9 @@ _not yet written_
 
 ## Guardrails
 _not yet written_
+
+## Configuration
+_not yet written_
 ```
 Write `specs/project-state.yaml`:
 ```yaml
@@ -326,7 +330,7 @@ Find the next story to build: lowest-numbered story in topological order where `
 
 Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
 
-**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`; include `gate_bypass:true` if invoked from a bug-fix classify_and_route
+**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`
 
 **After:** read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · halt "Build failed — run /spec-gantry to resume" · ⏸; else update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · re-render dashboard.
 
@@ -340,7 +344,7 @@ When all stories have `built:true`:
 **Gate:** all stories `built:true` · at least one `deployed:false`
 **Idempotency:** all `deployed:true` → re-render · stop
 
-**Step 1 — Gap pre-check and merge (if needed).** Scan `specs/stories/*/gap-*.md`.
+**Step 1 — Gap pre-check and merge (if needed).** Scan `specs/stories/*/gap.md`.
 
 **Gaps found** — show summary and ask to confirm merge:
 ```
@@ -348,21 +352,21 @@ When all stories have `built:true`:
 
   Gap specs detected — specs must be updated before deploying:
 
-    STORY-001  2 gap file(s) — gap-2026-06-01.md, gap-2026-06-02.md
-    STORY-003  1 gap file(s) — gap-2026-06-05.md
+    STORY-001  gap.md
+    STORY-003  gap.md
 
   [Y] Merge gap specs   [X] Hold
 ```
 On `Y`:
-  - For each story with gaps, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap specs for [story_id]"` · pass `story_id`, `project_dir`, `merge_gaps: true`, `gap_files: [list]`
+  - For each story with a gap, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap for [story_id]"` · pass `story_id`, `project_dir`, `merge_gaps: true`, `gap_files: [gap.md]`
   - Process stories sequentially in topological order
-  - After each invocation, verify the gap files were deleted from disk
+  - After each invocation, verify `gap.md` was deleted from disk
   - Show merge summary:
     ```
     ✓ Gap specs merged — specs updated to reflect actual build
 
-      STORY-001: 2 gap(s) merged — Data section updated
-      STORY-003: 1 gap(s) merged — AI integration section updated
+      STORY-001: gap merged — Data section updated
+      STORY-003: gap merged — AI integration section updated
 
     ```
   - → proceed to **Step 2**
@@ -406,13 +410,40 @@ Prompt: `Describe the next work (bug fix / improvement / new feature / architect
   [Y] Confirm  [E] Edit  [X] Cancel
 ```
 
-**Step 3 — Update state and route.**
+**Step 3 — Execute inline.**
 
-`bug_fix` or `enhancement` — for each affected story:
-- Reset in `project-state.yaml → stories.[story_id]`: `spec_done:false · built:false · deployed:false`
-- For `bug_fix`: pass `gate_bypass:true` when invoking the build subagent (skips spec_done prerequisite)
-- Set `project.next_release_type`: `patch` for bug_fix, `minor` for enhancement
-- Re-render · ⏸ — routing row 4 or 5 will pick up naturally on next `/spec-gantry`
+`bug_fix` — for each affected story, in topological order:
+- Set `project.next_release_type: patch`
+- Set `project.active_story: [story_id]` · re-render dashboard
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` — description: `"Bug fix: [story_id]: [title]"`
+- After build: set `built:true · deployed:false` in project-state · clear `active_story` · re-render dashboard
+- Do **not** reset `spec_done` — spec is still valid, only the code changed
+
+`enhancement` — for each affected story, in topological order:
+- Set `project.next_release_type: minor`
+- Set `project.active_story: [story_id]` · re-render dashboard
+- Write or append to the story's single gap file (orchestrator, no subagent needed):
+  **File:** `specs/stories/[story_id]/gap.md` — one file per story, persists until deploy-time merge
+  - If `gap.md` does not exist, create it:
+    ```markdown
+    # Gap: [STORY-ID]
+    ## Changes
+    - [YYYY-MM-DD] Enhancement: [description of the change as stated by the user]
+    ## Files affected
+    _to be filled during build_
+    ## Side-effects on other stories
+    None
+    ## Recommended spec update
+    [summarise what sections of story-spec.md should reflect these changes after deploy]
+    ```
+  - If `gap.md` already exists, append a new bullet under `## Changes`:
+    `- [YYYY-MM-DD] Enhancement: [description]`
+    and update `## Recommended spec update` to account for the new change
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. The build agent reads the gap file as its change brief alongside the existing spec.
+- After build: update `built:true` · clear `active_story` · re-render dashboard
+- Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
+
+Both types: after all affected stories are built, set `deployed:false` on each (a new deploy is needed) and re-render. Do **not** return to the normal pipeline — the work is already done.
 
 `new_story` → invoke **start_ideation** (amendment mode). Set `next_release_type: minor`. Re-render after ideation completes. ⏸
 

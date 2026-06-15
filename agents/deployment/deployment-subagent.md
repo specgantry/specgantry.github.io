@@ -32,12 +32,12 @@ Collect all `build-report.yaml → warnings` across all stories. If any exist, s
   ...
 ```
 
-**Gap spec review:** scan all `specs/stories/*/gap-*.md`. If any exist, surface them:
+**Gap spec review:** scan all `specs/stories/*/gap.md`. If any exist, surface them:
 ```
 ⚠ Unmerged gap specs — these document mid-build adjustments:
-  STORY-001: gap-[date].md — [first line of ## What changed]
+  STORY-001: gap.md — [first bullet from ## Changes]
   ...
-  Recommended: merge gap specs into story-spec.md and architecture.md after this release.
+  Recommended: merge gap specs into story-spec.md before deploying.
 ```
 This is non-blocking — gap specs are informational at deploy time.
 

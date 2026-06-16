@@ -20,8 +20,8 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 ## HARD GATE
 
 ```
-Read: specs/project-state.yaml   →  must exist · ideation_complete:true
-Read: specs/architecture.md      →  must exist
+Read: specs/project-state.yaml             →  must exist · ideation_complete:true · arch_seeded:true
+Read: specs/architecture/architecture.md   →  must exist · ## Artifact Index present
 ```
 On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 `✗ Investigate gate FAILED · [failing condition] · Run /spec-gantry`
@@ -31,10 +31,14 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 ## Step 1 — Load context
 
 Read silently:
-1. `specs/architecture.md` — tech stack, guardrails, data model overview
-2. `specs/project-state.yaml → stories` — all story IDs and titles
-3. For each story: `specs/stories/[STORY-ID]/story-spec.md` — skim Section 1 (capabilities) and Section 3 (data/endpoints) only. Do not read full specs unless needed.
-4. Any existing `specs/stories/[STORY-ID]/gap.md` files — note open deltas
+1. `specs/architecture/architecture.md` — extract `## Artifact Index` and `## Guardrails` (one read, both sections). The Artifact Index is a fenced ` ```yaml ``` ` block under the `## Artifact Index` heading at the bottom of the file — parse the fenced block to get the navigation map of artifact type → file path. Also extract the rules from `## Guardrails`.
+2. `specs/architecture/actors.md` — full read. Always relevant for permission bugs and access control issues.
+3. `specs/project-state.yaml → stories` — all story IDs and titles.
+4. For the most likely involved story: `specs/stories/[STORY-ID]/story-spec.md` only — read the `reads:` block and `## Criteria` to understand what was specced. Do not load intent.md or other stories unless cross-story scope is confirmed.
+
+   **Stub detection:** if the loaded `story-spec.md` contains `⚠ Stub spec — created by reverse-engineer`, the spec has not yet been written. In this case: note "no acceptance criteria — spec not yet written" in your investigation context. Use the stub's `reads:` block to identify which entities, actors, and contracts the code touches. Rely on `@entry`, `@intent`, and `@contract` anchor search plus the arch artifacts (`actors.md`, `data-model.md`) for spec alignment — the findings report's `spec_alignment` field should say "criteria not yet specced — alignment based on code structure and arch artifacts."
+
+Do not load multiple story specs unless the description clearly spans stories.
 
 ---
 
@@ -45,9 +49,10 @@ Search the actual source code. Use grep and glob — do not read files exhaustiv
 **Primary anchors (search in this order):**
 
 1. **`@story` tags** — `grep -r "@story" src/` — maps files to stories instantly. Start here.
-2. **`@entry` tags** — `grep -r "@entry" src/` — finds route handlers and action entry points
-3. **`@contract` tags** — `grep -r "@contract" src/` — finds data shape at boundaries
-4. **`@gap` tags** — `grep -r "@gap" src/` — finds known divergences from spec already noted in code
+2. **`@intent` tags** — `grep -r "@intent" src/` — one-line functional purpose per file. Use to orient across stories without loading intent.md files. Particularly useful for cross-story bugs.
+3. **`@entry` tags** — `grep -r "@entry" src/` — finds route handlers and action entry points
+4. **`@contract` tags** — `grep -r "@contract" src/` — finds data shape at boundaries
+5. **`@gap` tags** — `grep -r "@gap" src/` — finds known divergences from spec already noted in code
 
 If `@story` tags are absent (older codebase or first story not yet built with the new schema): fall back to searching by route paths, function names, and entity names derived from the story specs.
 
@@ -56,7 +61,7 @@ If `@story` tags are absent (older codebase or first story not yet built with th
 - Trace the data flow from entry to the likely failure point
 - Read the minimal set of files needed to understand the broken behaviour
 - Check if a `@gap` tag already documents this divergence
-- Cross-reference against the story spec's `## Acceptance criteria` — identify which criterion is violated
+- Cross-reference against the story spec's `## Criteria` — identify which criterion is violated
 
 **For an enhancement request:**
 - Identify which story owns the area being extended

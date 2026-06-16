@@ -65,7 +65,7 @@ Concretely, that means:
 
 **Knowing cost by story.** A story that cost $50 to develop is a different story than one that cost $8. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can't improve what you can't measure.
 
-**Knowing cost by model.** Different SpecGantry agents use different models — ideation uses Haiku (lightweight, fast), while story spec, development, and deployment use Sonnet (capable, more expensive). If your model spend profile looks wrong — too much Sonnet in phases that should be Haiku — that's actionable information.
+**Knowing cost by model.** Different SpecGantry agents use different models — investigation uses Haiku (lightweight, read-only search), while ideation, story spec, development, and deployment use Sonnet (capable, more thorough). If your model spend profile looks wrong — too much Sonnet in phases that should be completing quickly — that's actionable information.
 
 **Knowing cost by release.** As your project matures and the codebase grows, per-feature costs may increase because agents are working against more context. Tracking cost per release lets you spot this trend early.
 
@@ -93,52 +93,61 @@ The consequence of that premise is that cost data is:
 
 ## The /track-cost Dashboard
 
-Running `/track-cost` from anywhere in Claude Code opens a dedicated cost dashboard. The default view shows spend by phase for the current release:
+Running `/track-cost` from anywhere in Claude Code opens a dedicated cost dashboard. The default view is the Cost Matrix — stories as rows, phases as columns — giving you cost and token counts for every story and phase combination in one view:
 
 ```
-Cost Summary  |  release 1.1.0
+SpecGantry v4  |  MyProject  |  release 1.1.0
+Spec [█████] 4/4  ·  Build [█████] 4/4
+──────────────────────────────────────────────────────────
 
-Phase               Tokens       Cost
-──────────────────────────────────────
-ideation             4,404      $0.47
-story_spec          14,209      $1.43
-development         31,445      $3.14
-deployment           3,890      $0.39
-──────────────────────────────────────
-Total               53,948      $5.43
+Cost Matrix  |  release 1.1.0
+
+Story        ideation   story_spec  development  deployment    Total
+────────────────────────────────────────────────────────────────────
+PROJECT        $0.82        —            —          $0.49      $1.31
+STORY-001        —        $0.54        $0.41          —        $0.95
+STORY-002        —        $0.61        $0.35          —        $0.96
+STORY-003        —        $0.48        $0.28          —        $0.76
+STORY-004        —        $0.43        $0.40          —        $0.83
+────────────────────────────────────────────────────────────────────
+Total          $0.82      $2.06        $1.44        $0.49      $4.81
+
+──────────────────────────────────────────────────────────
+  [1] Matrix        [2] By release    [3] By model
+                                      [X] Return
+──────────────────────────────────────────────────────────
+Enter option:  >
 ```
 
 From there, three drill-down views are one keypress away:
 
-**By Story** — which stories cost the most, without the phase noise:
+**[2] By Release** — how costs have evolved across the project lifetime:
 
 ```
-Story            Tokens       Cost
-───────────────────────────────────
-STORY-001        26,209      $2.47
-STORY-002        18,441      $1.84
-STORY-003         9,112      $0.46
+Cost by Release
+
+Release       Tokens        Cost
+─────────────────────────────────
+1.0.0         80,601       $7.79
+1.1.0         42,340       $4.12
+─────────────────────────────────
+Total        122,941      $11.91
 ```
 
-**By Release** — how costs have evolved across the project lifetime:
+**[3] By Model** — where spend is concentrated across model tiers:
 
 ```
-Release      Tokens       Cost
-──────────────────────────────
-1.0.0        80,601      $7.79
-1.1.0        42,340      $4.12
+Cost by Model  |  release 1.1.0
+
+Model            Tokens        Cost
+────────────────────────────────────
+sonnet-4-6       62,301       $6.23
+haiku-4-5        18,300       $0.92
+────────────────────────────────────
+Total            80,601       $7.79
 ```
 
-**By Model** — where spend is concentrated across model tiers:
-
-```
-Model           Tokens       Cost
-──────────────────────────────────
-sonnet-4-6      62,301      $6.23
-haiku-4-5       18,300      $0.92
-```
-
-All four views are available from within the same dashboard — no separate tool, no browser tab, no export required.
+All three views are accessible from within the same dashboard — no separate tool, no browser tab, no export required.
 
 ---
 

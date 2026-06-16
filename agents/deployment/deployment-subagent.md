@@ -17,7 +17,7 @@ You produce a single `deploy.sh` that: bumps the version, builds artifacts, and 
 
 ```
 Read: specs/project-state.yaml  →  must exist · at least one story.[*].deployed:false · all stories.[*].built:true
-Read: specs/architecture.md     →  must exist
+Read: specs/architecture/architecture.md     →  must exist
 ```
 
 On any failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
@@ -74,7 +74,7 @@ If `build-report.yaml → source: reverse-engineered`: the runtime profile was i
 
 ## Determine infrastructure target
 
-Read `specs/architecture.md → ## Tech Stack` and `## Guardrails` to determine the **deployment target** (where the built artifacts run). This is a project-level decision, not per-story. The runtime profile tells you *what* to build; the infrastructure target tells you *where* to deploy it.
+Read `specs/architecture/architecture.md → ## Tech Stack` and `## Guardrails` to determine the **deployment target** (where the built artifacts run). This is a project-level decision, not per-story. The runtime profile tells you *what* to build; the infrastructure target tells you *where* to deploy it.
 
 | Signal in tech stack / guardrails | Target | Deploy pattern |
 |-----------------------------------|--------|----------------|
@@ -173,7 +173,7 @@ else
   [runtime.migration_command]
 fi
 ```
-For the default local URL: derive from `## Data and backend` in story-spec.md. If nothing is documented, use `postgresql://localhost/[story-title-kebab]_dev` and emit a `# MANUAL:` comment with the actual value. Migrations run before the deploy step for this story (data layer first).
+For the default local URL: derive from `## Data` in story-spec.md or `## entity:[name]` in `specs/architecture/data-model.md`. If nothing is documented, use `postgresql://localhost/[story-title-kebab]_dev` and emit a `# MANUAL:` comment with the actual value. Migrations run before the deploy step for this story (data layer first).
 
 **C. Deploy**
 ```bash
@@ -215,7 +215,7 @@ echo "→ Setting up runtime storage"
 mkdir -p data/[required-subdirs]
 # MANUAL: mount ./data as a persistent volume in production
 ```
-Derive required subdirs from `## Data and backend` sections across all story specs. Runs unconditionally in both modes.
+Derive required subdirs from `## Data` sections across all story specs and entity definitions in `specs/architecture/data-model.md`. Runs unconditionally in both modes.
 
 ### Script footer
 ```bash

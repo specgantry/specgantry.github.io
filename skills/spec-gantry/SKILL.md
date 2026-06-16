@@ -13,7 +13,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 blocked-tools: Explore
 ---
 
-# SpecGantry v3
+# SpecGantry v4
 
 You are the **orchestrator** — the only session-level entity that can spawn subagents. Read state, enforce gates, invoke the right subagent, update state. Never do a subagent's work yourself.
 
@@ -21,14 +21,14 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 
 | Type | Phase | Model |
 |------|-------|-------|
-| `spec-gantry:ideation:ideation-subagent` | ideation + architecture | haiku-4-5 |
+| `spec-gantry:ideation:ideation-subagent` | ideation + architecture | sonnet-4-6 |
 | `spec-gantry:investigate:investigate-subagent` | investigation | haiku-4-5 |
 | `spec-gantry:story-spec:story-spec-subagent` | story spec | sonnet-4-6 |
 | `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
 | `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse engineer | sonnet-4-6 |
 
-Always pass `project_dir: [absolute cwd]` to every subagent invocation.
+Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/architecture.md` to every subagent invocation. Agents extract the `## Artifact Index` from `arch_ref` to resolve arch file paths.
 
 ## System Wiring
 
@@ -38,9 +38,15 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 
 | File | Key fields |
 |------|------------|
-| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story) · `ideation_complete` · `stories` map (title, depends_on, spec_done, built, deployed per STORY-ID) |
-| `specs/architecture.md` | Tech stack, guardrails, auth model, deployment target, configuration table. One page. |
-| `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on |
+| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story, active_phase) · `ideation_complete` · `arch_seeded` · `pending_arch_gap` · `pending_spec_gap` · `stories` map (title, depends_on, intent_done, spec_done, built, deployed per STORY-ID) |
+| `specs/architecture/architecture.md` | Narrative sections (Vision, Problem & Users, Constraints, Risks, Tech Stack, Guardrails, Configuration, UX Model) + `## Artifact Index` YAML block (last section). Single entry point for all arch context. |
+| `specs/architecture/data-model.md` | All entities, fields, types, relationships, state machines. `## entity:[name]` anchors. |
+| `specs/architecture/actors.md` | All roles, permissions, ownership rules. `## actor:[name]` anchors. |
+| `specs/architecture/contracts.md` | Shared API shapes, error envelopes. `## contract:[name]` anchors. |
+| `specs/architecture/patterns.md` | Dominant backend interaction patterns. `## pattern:[name]` anchors. |
+| `specs/architecture/ux.md` | Navigation model, visual system, component conventions, screen template. `## ux:[name]` anchors. |
+| `specs/stories/[STORY-ID]/intent.md` | 2 paragraphs: functional purpose + objective and outcome. Seeded by ideation, finalized by story-spec. |
+| `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on, reads: block. Five sections: criteria, interfaces, permissions, state, data. Max 60 lines. |
 | `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` · `source` (omitted unless reverse-engineered) |
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
@@ -88,7 +94,7 @@ Examples:
 Always rendered first, same in all states:
 
 ```
-SpecGantry v3  |  [project.name or "New Project"]  |  release [project.release]
+SpecGantry v4  |  [project.name or "New Project"]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 ```
 
@@ -144,10 +150,10 @@ Middle section — story table:
 - Always render ALL stories — never omit any
 - Story IDs shown as `[NNN]` — directly typeable
 - Blocked stories show `depends on NNN[,NNN]` inline at end of row
-- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` inferred (built but no spec)
+- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` stub (built by RE — spec not yet written)
 
 **Story column flags:**
-- Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, no spec written yet)
+- Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, stub spec only)
 - Build = `built` (show 🔄 while `project.active_story` matches this ID)
 - Deploy = `deployed`
 
@@ -157,27 +163,27 @@ Middle section — story table:
 
 Always the last element rendered. Two columns — left is contextual actions, right is fixed lettered commands.
 
-**State 1 (no pipeline):**
+State 1 (no pipeline):
 ```
 ──────────────────────────────────────────────────────────────────────
-  `[1]` [action one]                  `[$]` Cost
-  `[2]` [action two]                  `[?]` Help
-                                      `[X]` Exit
+  [1] [action one]                    [$] Cost
+  [2] [action two]                    [?] Help
+                                      [X] Exit
 ──────────────────────────────────────────────────────────────────────
-```
-
-**State 2 (pipeline active):**
-```
-──────────────────────────────────────────────────────────────────────
-  Type a story ID to manage it        `[$]` Cost
-  `[1]` [contextual action]           `[?]` Help
-  `[2]` [contextual action]           `[X]` Exit
-  `[N]` New work
-──────────────────────────────────────────────────────────────────────
-Enter story ID or action:  `>`
 ```
 
-⚠️ No additional instruction text should appear below this prompt. The action bar is self-documenting.
+State 2 (pipeline active):
+```
+──────────────────────────────────────────────────────────────────────
+  Type a story ID to manage it        [$] Cost
+  [1] [contextual action]             [?] Help
+  [2] [contextual action]             [X] Exit
+  [N] New work
+──────────────────────────────────────────────────────────────────────
+Enter story ID or action:  >
+```
+
+No additional instruction text should appear below this prompt. The action bar is self-documenting.
 
 `[?]` expands inline to show secondary commands: `[A]` Architecture · docs link.
 
@@ -192,19 +198,22 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 | `ideation_complete:true` · any `spec_done:false · built:false` | `Spec next story — [STORY-ID]: [title]` |
 | All `spec_done:true` · any `built:false` | `Build next story — [STORY-ID]: [title]` |
 | All `built:true` · any `deployed:false` | `Deploy release [version]` |
+| `ideation_complete:true` · any `built:true · spec_done:false` | `Complete stub spec — [STORY-ID]: [title]` (lowest-numbered stub first) |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 
 `[N] New work` always appears as the last item in the action bar whenever `ideation_complete:true`.
 
+**Note on stub spec action:** this action appears alongside (not instead of) the pipeline actions above. A user can be speccing a `built:false` story AND have stub specs pending — both actions are shown. The stub spec action routes to the story-spec subagent for the lowest-numbered `built:true · spec_done:false` story. Typing a story ID directly also reaches a stub spec.
+
 **Right column — visibility rules:**
 - `[$]` always visible
-- `[?]` always visible — expands inline to: `[A]` Architecture (when `architecture.md` exists) · docs link
+- `[?]` always visible — expands inline to: `[A]` Architecture (when `architecture/architecture.md` exists) · docs link
 - `[X]` always visible
 
 **Input handling:**
 - Bare number (`001`, `1`) or full ID (`STORY-001`) → route to story's current phase
 - Blocked story typed → show one-line blocker, re-render
-- Typed story ID → manage it (view spec, force rebuild, remove)
+- Typed story ID with `built:true · spec_done:false` → invoke **spec_next_story** targeting that story directly (stub spec path)
 - Lettered command → execute that action
 - Invalid input → re-render with one-line error above header
 
@@ -214,8 +223,13 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 
 Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
 
+**P0/P1 rows are checked BEFORE rows 1–7:**
+
 | # | Condition | Action |
 |---|-----------|--------|
+| P0 | `pending_arch_gap` non-null | invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) |
+| P1 | `pending_spec_gap` non-null | invoke story-spec (spec gap mode) with gap reason · after complete: (1) clear `pending_spec_gap: null` in project-state · (2) restore `project.active_story: [pending_spec_gap.story_id]` · (3) restore `project.active_phase: development` · (4) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
+| P2 | `ideation_complete:true` · `arch_seeded:false` | RE or ideation crashed mid-artifact-write · set `pending_arch_gap: {triggered_by: orchestrator, story_id: null, reason: "arch artifacts incomplete — arch_seeded:false after ideation_complete:true", resume_phase: null}` · re-route to P0 to trigger ideation arch gap mode |
 | 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
 | 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
 | 3 | `ideation_complete:false` | **start_ideation** |
@@ -224,7 +238,9 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | 6 | All `built:true` · any `deployed:false` | **confirm_and_deploy** |
 | 7 | All `deployed:true` | **classify_and_route** |
 
-**Row 4 note:** only routes to spec for stories that are not yet built. Stories with `built:true · spec_done:false` (reverse-engineered stories) are skipped — their specs can be written later via `[N] New work` or by typing the story ID directly. This means a fully reverse-engineered app with all stories `built:true · deployed:true` routes directly to row 7 → `classify_and_route`, which is the right entry point for modifications.
+**Row 4 note:** only routes to spec for stories that are not yet built. Stories with `built:true · spec_done:false` (reverse-engineered stubs) are skipped in automatic pipeline order — their specs can be written via the `Complete stub spec` action bar entry, `[N] New work`, or by typing the story ID directly. This means a fully reverse-engineered app with all stories `built:true · deployed:true` routes directly to row 7 → `classify_and_route`, which is the right entry point for modifications.
+
+**P2 note:** P2 fires when `arch_seeded:false` but `ideation_complete:true` — this means ideation or RE completed story creation but crashed before finishing the arch artifact writes. P2 synthesises a `pending_arch_gap` with `story_id: null` to trigger ideation arch gap mode, which will inspect what's missing and fill in the gaps. The `story_id: null` tells ideation this is a project-level gap, not a story-level one.
 
 **⏸ Pause = re-render full dashboard + stop.**
 
@@ -233,8 +249,8 @@ Re-read all state files before routing. Every action ends by updating state, re-
 **View A:**
 ```
 Existing codebase detected — no SpecGantry project found.
-  `[1]` Start new project
-  `[2]` Analyse existing codebase
+  [1] Start new project
+  [2] Analyse existing codebase
 ```
 
 ---
@@ -244,10 +260,11 @@ Existing codebase detected — no SpecGantry project found.
 ### init_project
 Collect inputs (re-prompt on blank):
 ```
-Project name (max 60 chars):  `>`
-Project vision (2–4 sentences):  `>`
+Project name (max 60 chars):  >
+Project vision (2–4 sentences):  >
 ```
-Write `specs/architecture.md` with the vision stub:
+Create `specs/architecture/` directory.
+Write `specs/architecture/architecture.md` with the vision stub:
 ```markdown
 # Architecture
 
@@ -271,6 +288,9 @@ _not yet written_
 
 ## Configuration
 _not yet written_
+
+## UX Model
+_not yet written_
 ```
 Write `specs/project-state.yaml`:
 ```yaml
@@ -280,7 +300,11 @@ project:
   release: "1.0.0"
   next_release_type: null
   active_story: null
+  active_phase: null
 ideation_complete: false
+arch_seeded: false
+pending_arch_gap: null
+pending_spec_gap: null
 stories: {}
 ```
 Create `specs/stories/` directory.
@@ -290,10 +314,19 @@ Append to `.gitignore` if absent: `specs/.current-session`
 ---
 
 ### start_ideation
-**Gate:** `specs/project-state.yaml` exists · `specs/architecture.md` exists
+**Gate:** `specs/project-state.yaml` exists · `specs/architecture/architecture.md` exists
 **Idempotency:** `ideation_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `project_dir`
-**After:** verify `ideation_complete:true` · re-render dashboard showing full story list · emit compact hint below the transition note:
+**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `project_dir`, `arch_ref`
+**After:** verify all of the following. If any check fails, set `pending_arch_gap` with reason "arch artifacts incomplete after ideation" and re-route to P0:
+- `ideation_complete: true`
+- `arch_seeded: true`
+- `specs/architecture/architecture.md` contains `## Artifact Index`
+- `specs/architecture/data-model.md` exists
+- `specs/architecture/actors.md` exists
+- `specs/architecture/ux.md` exists
+- Every story in `project-state.yaml` with `intent_done:true` has a corresponding `specs/stories/[story_id]/intent.md` on disk — if any are missing, set `pending_arch_gap` with `story_id: null` and reason "one or more intent.md files missing after ideation"
+
+Re-render dashboard showing full story list · emit compact hint below the transition note:
 ```
 💡 Good moment to /compact — ideation context is large, all decisions are on disk.
 ```
@@ -302,18 +335,28 @@ Append to `.gitignore` if absent: `specs/.current-session`
 ---
 
 ### spec_next_story
-**Gate:** `ideation_complete:true` · at least one story has `spec_done:false AND built:false`
-**Idempotency:** no story has `spec_done:false AND built:false` → re-render · stop
+**Gate:** `ideation_complete:true` · at least one story has `spec_done:false AND built:false` — OR — invoked directly for a `built:true · spec_done:false` story (stub spec path)
+**Idempotency:** no story has `spec_done:false AND built:false` AND not directly targeted → re-render · stop
 
-Find the next story to spec: lowest-numbered story in topological order where `spec_done:false AND built:false` and all stories in `depends_on` (read from `project-state.yaml`) have `spec_done:true OR built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
+Find the next story to spec: lowest-numbered story in topological order where `spec_done:false AND built:false` and all stories in `depends_on` have `spec_done:true OR built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
-Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
+**Stub spec path (directly targeted story, `built:true · spec_done:false`):** use the explicitly requested story ID. Skip dependency-order check — built stories have no unresolved prerequisites.
 
-**Invoke:** `spec-gantry:story-spec:story-spec-subagent` · description: `"Writing spec for [story_id]: [title]"` · pass `story_id`, `project_dir`
+Set `project.active_story: [story_id]` and `project.active_phase: story-spec` in `specs/project-state.yaml`.
 
-**After:** verify `spec_done:true` in project-state · clear `project.active_story: null` · re-render dashboard.
+**Invoke:** `spec-gantry:story-spec:story-spec-subagent` · description: `"Writing spec for [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
 
-If spec failed: clear `active_story` · halt with the subagent's error message · ⏸
+**After:** verify all of the following:
+- `spec_done: true` in project-state
+- `intent_done: true` in project-state for this story
+- `specs/stories/[story_id]/intent.md` exists
+- `specs/stories/[story_id]/story-spec.md` exists
+- `pending_arch_gap` is null
+
+If `pending_arch_gap` is non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P0 immediately.
+If any other verification check fails: clear `active_story` · clear `active_phase` · halt with the subagent's error message · ⏸
+
+Clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard.
 
 When all stories have `spec_done:true`:
 - Re-render full dashboard with transition note `✓ All specs complete · ready to build`
@@ -331,11 +374,14 @@ When all stories have `spec_done:true`:
 
 Find the next story to build: lowest-numbered story in topological order where `built:false` and all stories in `depends_on` (read from `project-state.yaml`) have `built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
 
-Set `project.active_story: [story_id]` in `specs/project-state.yaml`.
+Set `project.active_story: [story_id]` and `project.active_phase: development` in `specs/project-state.yaml`.
 
-**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`
+**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
 
-**After:** read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · halt "Build failed — run /spec-gantry to resume" · ⏸; else update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · re-render dashboard.
+**After:** 
+- If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
+- Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · halt "Build failed — run /spec-gantry to resume" · ⏸
+- Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard.
 
 When all stories have `built:true`:
 - Re-render full dashboard (action bar shows `[1] Deploy release [version]`)
@@ -361,7 +407,7 @@ When all stories have `built:true`:
   [Y] Merge gap specs   [X] Hold
 ```
 On `Y`:
-  - For each story with a gap, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap for [story_id]"` · pass `story_id`, `project_dir`, `merge_gaps: true`, `gap_files: [gap.md]`
+  - For each story with a gap, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap for [story_id]"` · pass `story_id`, `project_dir`, `arch_ref`, `merge_gaps: true`, `gap_files: [gap.md]`
   - Process stories sequentially in topological order
   - After each invocation, verify `gap.md` was deleted from disk
   - Show merge summary:
@@ -383,10 +429,11 @@ On `X`: re-render · ⏸
 ```
 On `1` → proceed to deploy:
 
-**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`
+**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`, `arch_ref`
 
 **After:** if any story still `deployed:false` → halt with error; else:
 - Set `project.active_story: null` in project-state
+- Set `project.active_phase: null` in project-state
 - Re-render · ⏸
 
 On `X`: re-render · ⏸
@@ -400,7 +447,7 @@ Prompt: `Describe the next work (bug fix / improvement / new feature / architect
 
 For any report that sounds like a bug or enhancement, invoke the investigative agent before doing anything else:
 
-**Invoke:** `spec-gantry:investigate:investigate-subagent` · description: `"Investigating: [user's description]"` · pass `description`, `project_dir`
+**Invoke:** `spec-gantry:investigate:investigate-subagent` · description: `"Investigating: [user's description]"` · pass `description`, `project_dir`, `arch_ref`
 
 - If the agent returns `status: cancelled` → re-render dashboard · ⏸
 - If the agent returns `status: confirmed` → proceed to Step 2 with findings in hand
@@ -437,7 +484,7 @@ On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸.
 `bug_fix` — for each affected story, in topological order:
 - Set `project.next_release_type: patch`
 - Set `project.active_story: [story_id]` · re-render dashboard
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `investigation_findings: [findings]` — description: `"Bug fix: [story_id]: [title]"`. Pass the `files` list and `root_cause` from findings as a targeted brief so the build agent goes directly to the right place.
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `investigation_findings: [findings]` — description: `"Bug fix: [story_id]: [title]"`. Pass `project_dir`, `arch_ref`, the `files` list and `root_cause` from findings as a targeted brief so the build agent goes directly to the right place.
 - After build: set `built:true · deployed:false` in project-state · clear `active_story` · re-render dashboard
 - Do **not** reset `spec_done` — spec is still valid, only the code changed
 
@@ -451,7 +498,7 @@ On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸.
   - `## Side-effects on other stories`: from `findings.side_effects`
   - `## Recommended spec update`: from `findings.spec_alignment`
   - If `gap.md` already exists, append under `## Changes` and update the other sections
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. Pass `investigation_findings` so the build agent has the precise file list.
+- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. Pass `project_dir`, `arch_ref`, `investigation_findings` so the build agent has the precise file list.
 - After build: update `built:true` · clear `active_story` · re-render dashboard
 - Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
 
@@ -463,7 +510,11 @@ Both types: after all affected stories are built, set `deployed:false` on each a
 - Reset all story flags in project-state (`spec_done:false · built:false · deployed:false`)
 - Set `next_release_type: major`
 - Set `ideation_complete: false`
-- Re-render · ⏸ before **start_ideation** (amendment mode)
+- Set `arch_seeded: false` — arch artifacts will be updated via amendment mode, not re-seeded from scratch; resetting this flag ensures ideation verifies artifact completeness on resume
+- Clear `pending_arch_gap: null` and `pending_spec_gap: null` — any in-flight gaps are superseded by the project change
+- Re-render · ⏸ before start_ideation (amendment mode)
+
+Note: when ideation runs after a `project_change`, `arch_seeded:false` causes it to resume at Step 3 (update arch artifacts) after completing Beat 2 topics — it does NOT overwrite existing artifacts from scratch. Amendment mode preserves prior content and appends dated amendment blocks.
 
 ---
 
@@ -471,28 +522,35 @@ Both types: after all affected stories are built, set `deployed:false` on each a
 Confirm:
 ```
 Analysing codebase at: [cwd]
-Project name (blank to infer):  `>`
-Proceed? `[Y]`/`[N]`
+Project name (blank to infer):  >
+Proceed? [Y]/[N]
 ```
 **Gate:** source files exist · `ideation_complete` not true
-**Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · description: `"Reverse engineering existing codebase"` · pass `project_name`, `project_dir`
-**After:** verify `ideation_complete:true` · re-render dashboard · ⏸
+**Invoke:** `spec-gantry:reverse-engineer:reverse-engineer-subagent` · description: `"Reverse engineering existing codebase"` · pass `project_name`, `project_dir`, `arch_ref`
+**After:** verify all of the following. If any check fails, set `pending_arch_gap` with reason "arch artifacts incomplete after reverse engineering" and re-route to P0:
+- `ideation_complete: true`
+- `arch_seeded: true`
+- `specs/architecture/architecture.md` contains `## Artifact Index`
+- `specs/architecture/data-model.md` exists
+- `specs/architecture/actors.md` exists
+
+Re-render dashboard · ⏸
 
 ---
 
 ## Quick-Bar Actions
 
-**`[A]`** Display `specs/architecture.md` in full, then re-render dashboard. Visible when file exists.
+[A] — Display `specs/architecture/architecture.md` in full, then re-render dashboard. Visible when file exists.
 
-**`[$]`** Invoke `/track-cost` — show full cost breakdown by phase and story.
+[$] — Invoke `/track-cost` — show full cost breakdown by phase and story.
 
-**`[N]`** New work → **classify_and_route**. Always visible when `ideation_complete:true`.
+[N] — New work → classify_and_route. Always visible when `ideation_complete:true`.
 
-**`[?]`** Expand inline — show secondary commands, then re-render dashboard on exit:
+[?] — Expand inline — show secondary commands, then re-render dashboard on exit:
 ```
   [A] Architecture     (visible when architecture.md exists)
   [D] Docs — specgantry.github.io
   [X] Back
 ```
 
-**`[X]`** Exit: `Run /spec-gantry anytime to return.`
+[X] — Exit. Output: `Run /spec-gantry anytime to return.`

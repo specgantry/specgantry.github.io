@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: SpecGantry Documentation
-description: Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.
+description: Complete documentation for SpecGantry v4 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.
 permalink: /docs/
 next_page: "Getting Started"
 next_page_url: "/docs/getting-started"
@@ -9,7 +9,7 @@ next_page_url: "/docs/getting-started"
 
 # SpecGantry Documentation
 
-**AI-assisted SDLC pipeline for Claude Code.** Bring structure to your AI development workflow — from first idea through deployment — with specs before code, architectural guardrails, and real cost visibility.
+**Reference-driven SDLC for Claude Code.** Architecture artifacts written once. Story specs that reference them. Agents that read only what they need. Enforced phase gates from first idea through deployment.
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -19,42 +19,42 @@ next_page_url: "/docs/getting-started"
 
 ## What Is SpecGantry?
 
-SpecGantry is a Claude Code plugin that guides you through a structured development process. Instead of jumping straight into code, it ensures every story is grounded in a validated idea, a thoughtful architecture, and a precise spec — before a single line is written.
+SpecGantry is a Claude Code plugin that enforces a structured development process. The core v4 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.
 
-The result: less rework, fewer surprises, and a codebase that reflects deliberate decisions rather than accumulated shortcuts.
+The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The SpecGantry Pipeline</div>
+<div class="dg-diagram-title">The SpecGantry v4 Pipeline</div>
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">
     <div class="dg-node-num">01</div>
-    <div class="dg-node-name">Ideation</div>
-    <div class="dg-node-output">architecture.md</div>
+    <div class="dg-node-name">Ideation + Architecture</div>
+    <div class="dg-node-output">architecture/ · 5 artifacts · intent.md</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-spec">
     <div class="dg-node-num">02</div>
     <div class="dg-node-name">Story Spec</div>
-    <div class="dg-node-output">story-spec.md</div>
+    <div class="dg-node-output">story-spec.md (≤60 lines) + reads: block</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_done per story"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_done + intent_done per story"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-build">
     <div class="dg-node-num">03</div>
     <div class="dg-node-name">Build</div>
-    <div class="dg-node-output">build-report.yaml × N</div>
+    <div class="dg-node-output">@story @intent @entry @contract · build-report.yaml</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built:true"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-deploy">
     <div class="dg-node-num">04</div>
     <div class="dg-node-name">Deploy Release</div>
-    <div class="dg-node-output">deploy.sh</div>
+    <div class="dg-node-output">deploy.sh · gap specs merged</div>
   </div>
 
 </div>
@@ -76,28 +76,28 @@ The result: less rework, fewer surprises, and a codebase that reflects deliberat
     <div class="doc-nav-icon"><i class="bi bi-gear"></i></div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">A complete walkthrough of all phases, gap specs, release management, and how SpecGantry keeps your project moving.</div>
+      <div class="doc-nav-desc">Complete walkthrough — the architecture layer, all pipeline phases, gap flows, reverse engineering, and release management.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
-      <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — the two commands you need and everything they do.</div>
+      <div class="doc-nav-title">Skills & Agents</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 7 agents, the dashboard, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <div class="doc-nav-title">Reference</div>
-      <div class="doc-nav-desc">Design principles, file structure, security model, and how to extend SpecGantry.</div>
+      <div class="doc-nav-desc">File structure, state flags, agent ownership, the Artifact Index format, and how to extend SpecGantry.</div>
     </div>
   </a>
   <a href="/docs/faq" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, pipeline phases, costs, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, pipeline phases, costs, v3→v4 differences, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -105,8 +105,6 @@ The result: less rework, fewer surprises, and a codebase that reflects deliberat
 ---
 
 ## Quick Install
-
-Run both commands in order — the marketplace must be registered before installing:
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
@@ -119,11 +117,9 @@ Then in any Claude Code project:
 /spec-gantry
 ```
 
-The dashboard guides you from there.
+The dashboard reads your project state and routes you to the right next action automatically.
 
 ### Keep SpecGantry Updated
-
-Update to the latest version anytime:
 
 ```bash
 claude plugin marketplace update spec-gantry
@@ -135,40 +131,68 @@ Or from within Claude Code:
 /plugin marketplace update spec-gantry
 ```
 
-See [Getting Started → Install, Update & Remove](/docs/getting-started#step-1--install-the-plugin) for all options including uninstall.
-
 ---
 
 ## Key Concepts
 
-### Story-Based Pipeline
+### The Architecture Layer (new in v4)
 
-Every feature is a story. SpecGantry routes you through four phases — ideation, story spec, build, and deploy — and tracks each story's progress with three flags: `spec_done`, `built`, and `deployed`. The dashboard always shows you the next action.
+SpecGantry v4 introduces a dedicated `specs/architecture/` directory containing five structured files:
 
-### Architecture as Guardrails
+| File | Contains |
+|------|----------|
+| `data-model.md` | All entities, fields, types, relationships, state machines |
+| `actors.md` | All roles, permissions, what each role can and cannot do |
+| `contracts.md` | Shared API response shapes, error envelopes |
+| `patterns.md` | Dominant backend interaction patterns |
+| `ux.md` | Navigation model, visual system, component conventions, screen template |
 
-When you define the architecture during ideation, every decision becomes a rule that every story builds to. During the Story Spec phase, SpecGantry checks every spec against those rules before development can begin. If a spec contradicts the architecture — wrong auth pattern, wrong data ownership, wrong layer access — it fails with a specific explanation before any code is written.
+These are written once during ideation and referenced by every story spec via a `reads:` block. An agent building a story loads only the specific sections that story uses — not the full architecture.
 
-### Gap Specs
+### The reads: Block
 
-When a mid-build discovery reveals that the spec needs adjustment — an incomplete contract, a side-effect — a gap spec file is written rather than editing the main spec. Before deployment, SpecGantry merges gap specs back into the relevant story and architecture specs.
+Every story spec declares exactly what it needs:
 
-### State That Survives Interruption
+```yaml
+reads:
+  actors:    [applicant, admin]
+  data:      [application, user]
+  contracts: [submission-response, error-envelope]
+  ux:        [component-conventions, screen-template]
+```
 
-All progress is saved after every question and every section. If your session is interrupted for any reason — context reset, network drop, end of day — the next `/spec-gantry` picks up exactly where you left off. Nothing is lost.
+The development agent resolves each entry through the Artifact Index and loads only those sections — approximately 130 lines of targeted context rather than the entire architecture.
+
+### Slim Story Specs (≤60 lines)
+
+Story specs are navigation maps, not knowledge dumps. They contain five sections: criteria, interfaces, permissions, state, and data — all as references to shared artifacts. The 60-line limit is enforced before `spec_done:true` can be set.
+
+### Self-Healing Gap Flows
+
+When story-spec finds a missing arch section (P0 gap) or development finds a wrong contract (P1 gap), SpecGantry automatically fills the gap via the ideation agent and resumes — no user intervention required.
+
+### The intent.md
+
+Every story has a 2-paragraph `intent.md` that states the functional purpose and outcome in plain English. It grounds the development agent's judgment calls and propagates as a one-line `@intent` anchor in every source file — so investigation never needs to load full specs to understand what a file does.
+
+### State That Survives Anything
+
+All progress is written after every answer and every phase transition. State flags in `project-state.yaml` tell the orchestrator exactly where to resume. A crash between any two writes triggers P2 routing on next run, which detects incomplete state and recovers automatically.
 
 ### Specs in Git
 
-All project state — ideation, architecture, story specs, and cost data — lives in plain-text files under `specs/` in your project. Commit them to git for a single source of truth, complete history, and meaningful diffs.
+Everything under `specs/` is plain-text YAML and Markdown. Commit it for complete history, meaningful diffs, and a single source of truth across sessions.
 
 ---
 
 ## Who Should Use SpecGantry?
 
-| Use Case |
-|----------|
-| **Solo Developer** — Bring discipline to your own AI workflow; avoid building fast in the wrong direction |
-| **Engineering Manager** — Get cost visibility and an audit trail for every AI-assisted story |
+| Use Case | Why |
+|----------|-----|
+| New project from scratch | Ideation shapes your system as a partner conversation. Architecture seeded once. Stories built against a shared contract. |
+| Existing codebase | Reverse engineering synthesizes the full architecture layer from your code. Stub specs and anchor tags generated automatically. |
+| Solo developer | Forces you to answer the hard questions before building. Prevents fast progress in the wrong direction. |
+| Any project using Claude Code | Token cost visibility by phase, story, and release. Know exactly what each feature cost. |
 
 ---
 

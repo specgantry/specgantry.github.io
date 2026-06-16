@@ -190,6 +190,7 @@ Tag source files with the comment schema so the investigative agent can navigate
 - Only tag where confident — skip files you cannot map to a story; do not guess
 - If a file already has comments at the top, insert after them
 - Never modify logic
+- **Never modify `specs/project-state.yaml` during this step** — it was written in Step 3 and must not be touched
 - Work in order: route/handler files → data layer → UI → utilities
 - Stop when all entry points are tagged — full coverage is not required
 

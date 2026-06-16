@@ -5,6 +5,8 @@
   },
   "permissions": {
     "allow": [
+      "Skill(spec-gantry:spec-gantry)",
+      "Skill(spec-gantry:track-cost)",
       "Bash(git *)",
       "Bash(bash *)",
       "Bash(chmod *)",

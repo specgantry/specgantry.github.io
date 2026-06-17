@@ -57,8 +57,9 @@ const AGENT_MAP = {
   'spec-gantry:reverse-engineer:reverse-engineer-subagent':   { phase: 'reverse_engineer',   model: 'claude-sonnet-4-6' },
 };
 
-// Project-level phases — never associated with a story ID
-const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer', 'deployment']);
+// Project-level phases — never associated with a story ID.
+// investigation is included because the story is discovered by investigation, not known before it.
+const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer', 'deployment', 'investigation']);
 
 // ─── Fallback pricing ─────────────────────────────────────────────────────────
 // Used when live fetch from the pricing page fails.
@@ -267,7 +268,9 @@ function inferStoryFromTranscript(transcriptPath, projectDir) {
 
 // ─── Session resolution ───────────────────────────────────────────────────────
 function projectSlug(dir) {
-  return path.normalize(dir).replace(/[/\\]/g, '-').replace(/:/g, '-').replace(/^-/, '');
+  // Claude Code project dirs use the absolute path with / replaced by - (leading - preserved).
+  // e.g. /Users/foo/myapp → -Users-foo-myapp  (NOT Users-foo-myapp)
+  return path.normalize(dir).replace(/[/\\]/g, '-').replace(/:/g, '-');
 }
 
 function resolveAgentFromToolUseId(toolUseId, projectDir) {

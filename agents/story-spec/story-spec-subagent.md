@@ -268,14 +268,19 @@ When invoked with `merge_gaps: true` and `gap_files: [gap.md]`:
    - `## Changes` — all changes accumulated since last deploy
    - `## Files affected` — what was built
    - `## Recommended spec update` — what should be updated in the spec
-4. Apply the recommended updates to the relevant section(s) of `story-spec.md` directly. Edit spec sections in place so the spec reflects what was actually built — do not append amendment blocks.
-5. If `## Side-effects on other stories` is non-empty, note it in a warning but do not modify other story specs — the orchestrator handles cross-story coordination.
-6. If the gap changes the story's fundamental purpose or outcome: also update `specs/stories/[story_id]/intent.md` to reflect what was actually built.
-7. Append one row to the `## Change history` table summarising all changes in the gap:
+4. Classify every item in `## Recommended spec update` and `## Changes` by its target before writing anything:
+   - **Story-spec target**: changes to criteria, acceptance conditions, interfaces (API shapes, inputs/outputs), permissions, state transitions, or data fields that are story-specific — these go into `story-spec.md`
+   - **Arch target**: changes to a shared architecture artifact referenced by its anchor (`ux:*`, `entity:*`, `contract:*`, `actor:*`, `pattern:*`) — these go into the relevant `specs/architecture/*.md` file at the anchor, not into the story spec
+   - A single gap item may touch both: write the story-spec change to `story-spec.md` AND the arch change to the arch file. Never write arch-level content into `story-spec.md`.
+5. Apply story-spec changes: edit the relevant section(s) of `story-spec.md` in place. Do not append amendment blocks.
+6. Apply arch changes: for each arch target identified in step 4, read the relevant arch file, find the `## [type]:[name]` anchor, and edit that section in place to reflect what was actually built. Do NOT append a new section. If the anchor does not exist, create it as a new section in the correct arch file.
+7. If `## Side-effects on other stories` is non-empty, note it in a warning but do not modify other story specs — the orchestrator handles cross-story coordination.
+8. If the gap changes the story's fundamental purpose or outcome: also update `specs/stories/[story_id]/intent.md` to reflect what was actually built.
+9. Append one row to the `## Change history` table summarising all changes in the gap:
    ```
    | [release] | [YYYY-MM-DD] | Gap merged: [one-line summary of ## Changes] | gap-merge |
    ```
    If `## Change history` does not exist in the spec, append it after the last section.
-8. Delete `gap.md` from disk. Verify deletion.
-9. Do NOT reset `spec_done` or `built` flags — gap merge happens after build, those flags are already true.
-10. Return a one-line summary: `[STORY-ID]: gap merged — [sections updated]`
+10. Delete `gap.md` from disk. Verify deletion.
+11. Do NOT reset `spec_done` or `built` flags — gap merge happens after build, those flags are already true.
+12. Return a one-line summary: `[STORY-ID]: gap merged — [spec sections, arch sections] updated`

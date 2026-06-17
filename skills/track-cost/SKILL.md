@@ -48,36 +48,36 @@ No additional instruction text should appear below this prompt. The menu is self
 
 Stories as rows, phases as columns. Two tables: cost in dollars (first), then tokens (second).
 
-Project-level phases (ideation, deployment) with `story: null` appear in the "PROJECT" row.
+Project-level phases (ideation, reverse_engineer, investigation, deployment) with `story: null` appear in the "PROJECT" row.
 
 Table 1: Cost by Story × Phase (USD)
 
 ```
 Cost Matrix  |  release 1.0.0
 
-Story        ideation   story_spec  development  deployment    Total
-────────────────────────────────────────────────────────────────────
-PROJECT        $0.52        —            —          $0.18      $0.70
-STORY-001        —        $1.34        $0.64          —        $1.98
-STORY-002        —        $0.98        $0.51          —        $1.49
-STORY-003        —        $0.76        $0.38          —        $1.14
-STORY-004        —        $0.68        $0.54          —        $1.22
-────────────────────────────────────────────────────────────────────
-Total          $0.52      $3.76        $2.07        $0.18      $6.53
+Story        ideation  rev-engg  investigate  story-spec     dev      deploy     Total
+──────────────────────────────────────────────────────────────────────────────────────
+PROJECT        $0.52      —         $0.12          —           —       $0.18      $0.82
+STORY-001        —        —           —           $1.34      $0.64      —         $1.98
+STORY-002        —        —           —           $0.98      $0.51      —         $1.49
+STORY-003        —        —           —           $0.76      $0.38      —         $1.14
+STORY-004        —        —           —           $0.68      $0.54      —         $1.22
+──────────────────────────────────────────────────────────────────────────────────────
+Total          $0.52      —         $0.12         $3.76      $2.07    $0.18       $6.65
 ```
 
 Table 2: Tokens by Story × Phase
 
 ```
-Story        ideation   story_spec  development  deployment    Total
-────────────────────────────────────────────────────────────────────
-PROJECT       42,340        —            —         1,560      43,900
-STORY-001        —       31,080       20,840          —       51,920
-STORY-002        —       23,540       17,120          —       40,660
-STORY-003        —       18,720       13,260          —       31,980
-STORY-004        —       16,820       18,540          —       35,360
-────────────────────────────────────────────────────────────────────
-Total         42,340     90,160       69,760        1,560    203,820
+Story        ideation  rev-engg  investigate  story-spec     dev      deploy     Total
+──────────────────────────────────────────────────────────────────────────────────────
+PROJECT       42,340      —        8,420           —           —       1,560     52,320
+STORY-001        —        —          —           31,080     20,840      —        51,920
+STORY-002        —        —          —           23,540     17,120      —        40,660
+STORY-003        —        —          —           18,720     13,260      —        31,980
+STORY-004        —        —          —           16,820     18,540      —        35,360
+──────────────────────────────────────────────────────────────────────────────────────
+Total         42,340      —        8,420         90,160     69,760    1,560     212,240
 ```
 
 Rules:

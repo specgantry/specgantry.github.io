@@ -45,6 +45,7 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 | `specs/architecture/contracts.md` | Shared API shapes, error envelopes. `## contract:[name]` anchors. |
 | `specs/architecture/patterns.md` | Dominant backend interaction patterns. `## pattern:[name]` anchors. |
 | `specs/architecture/ux.md` | Navigation model, visual system, component conventions, screen template. `## ux:[name]` anchors. |
+| `specs/architecture/deployment.md` | Deployment target, services, secrets, ingress, CI/CD config. `## deployment:[name]` anchors. Written by ideation (Topic 10). Read by deployment subagent. |
 | `specs/stories/[STORY-ID]/intent.md` | 2 paragraphs: functional purpose + objective and outcome. Seeded by ideation, finalized by story-spec. |
 | `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on, reads: block. Five sections: criteria, interfaces, permissions, state, data. Max 60 lines. |
 | `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` · `source` (omitted unless reverse-engineered) |
@@ -101,13 +102,14 @@ SpecGantry v4  |  [project.name or "New Project"]  |  release [project.release]
 In STATE 2 (pipeline active), append a progress line below the separator:
 
 ```
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
 ```
 
 Progress bars: 5 chars — `█` (U+2588) filled, `░` (U+2591) remaining.
 - **Spec** counts stories where `spec_done:true`
 - **Build** counts stories where `built:true`
+- **Deploy** is project-level and binary (deployment sets all stories at once): show `[█████] deployed` when all stories `deployed:true`, `[░░░░░] not deployed` otherwise. Deployment sets stories `deployed:true` in a per-story loop — if the deployment subagent crashes mid-loop, a partial state (some deployed, some not) is possible; the `[░░░░░]` bar and `○ not deployed` Release row will both show until re-deploy completes.
 
 ---
 
@@ -138,24 +140,30 @@ Used when: `ideation_complete:true` and `project-state.yaml → stories` has ≥
 Middle section — story table:
 
 ```
-  ID       Story                              Spec   Build  Deploy
+  ID       Story                              Spec   Build
   ────────────────────────────────────────────────────────────────
-  [001]   Student completes profile             ✅    🔄     ○
-  [002]   Student submits application           ⏳    ○      ○
-  [003]   Admin reviews applications            🔴    ○      ○     depends on 002
-  [004]   Admin manages settings                ✅    ✅     ✅
+  [001]   Student completes profile             ✅    🔄
+  [002]   Student submits application           ⏳    ○
+  [003]   Admin reviews applications            🔴    ○        depends on 002
+  [004]   Admin manages settings                ✅    ✅
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                       ○ not deployed
 ```
 
 - Always render the column header row
 - Always render ALL stories — never omit any
 - Story IDs shown as `[NNN]` — directly typeable
 - Blocked stories show `depends on NNN[,NNN]` inline at end of row
-- Icons: ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` stub (built by RE — spec not yet written)
+- Icons (Spec/Build): ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` stub (built by RE — spec not yet written)
 
 **Story column flags:**
 - Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, stub spec only)
 - Build = `built` (show 🔄 while `project.active_story` matches this ID)
-- Deploy = `deployed`
+
+**Release row** — always the last row, separated by a line:
+- `○ not deployed` — any story has `deployed:false`
+- `🔄 deploying` — deployment in progress (`project.active_phase: deployment`)
+- `✅ deployed [YYYY-MM-DD]` — all stories `deployed:true` (date from `specs/deploy-artifact.md` if present, otherwise omit date)
 
 ---
 
@@ -201,6 +209,8 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 | `ideation_complete:true` · any `built:true · spec_done:false` | `Complete stub spec — [STORY-ID]: [title]` (lowest-numbered stub first) |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 
+**Important:** `Deploy release [version]` ONLY appears when ALL stories have `built:true`. If even one story is `built:false`, this action is invisible — it cannot be triggered prematurely.
+
 `[N] New work` always appears as the last item in the action bar whenever `ideation_complete:true`.
 
 **Note on stub spec action:** this action appears alongside (not instead of) the pipeline actions above. A user can be speccing a `built:false` story AND have stub specs pending — both actions are shown. The stub spec action routes to the story-spec subagent for the lowest-numbered `built:true · spec_done:false` story. Typing a story ID directly also reaches a stub spec.
@@ -227,8 +237,8 @@ Re-read all state files before routing. Every action ends by updating state, re-
 
 | # | Condition | Action |
 |---|-----------|--------|
-| P0 | `pending_arch_gap` non-null | invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) |
-| P1 | `pending_spec_gap` non-null | invoke story-spec (spec gap mode) with gap reason · after complete: (1) clear `pending_spec_gap: null` in project-state · (2) restore `project.active_story: [pending_spec_gap.story_id]` · (3) restore `project.active_phase: development` · (4) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
+| P0 | `pending_arch_gap` non-null | invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) · **progress note:** if re-routing to P0 again (another gap was signalled), emit one line above the dashboard: `✓ Arch gap resolved ([n] of [total] gaps) · resuming` where n is the count of gaps cleared this session |
+| P1 | `pending_spec_gap` non-null | invoke story-spec (spec gap mode) with gap reason · after complete: (1) check `pending_arch_gap` — if non-null (spec gap escalated to arch gap), do NOT clear `pending_spec_gap` yet; re-route to P0 to resolve the arch gap first, then return to P1 on the next invocation · (2) if `pending_arch_gap` is null: clear `pending_spec_gap: null` in project-state · (3) restore `project.active_story: [pending_spec_gap.story_id]` · (4) restore `project.active_phase: development` · (5) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
 | P2 | `ideation_complete:true` · `arch_seeded:false` | RE or ideation crashed mid-artifact-write · set `pending_arch_gap: {triggered_by: orchestrator, story_id: null, reason: "arch artifacts incomplete — arch_seeded:false after ideation_complete:true", resume_phase: null}` · re-route to P0 to trigger ideation arch gap mode |
 | 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
 | 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
@@ -324,6 +334,7 @@ Append to `.gitignore` if absent: `specs/.current-session`
 - `specs/architecture/data-model.md` exists
 - `specs/architecture/actors.md` exists
 - `specs/architecture/ux.md` exists
+- `specs/architecture/deployment.md` exists (if missing: set `pending_arch_gap` with reason "deployment.md missing — Topic 10 not completed")
 - Every story in `project-state.yaml` with `intent_done:true` has a corresponding `specs/stories/[story_id]/intent.md` on disk — if any are missing, set `pending_arch_gap` with `story_id: null` and reason "one or more intent.md files missing after ideation"
 
 Re-render dashboard showing full story list · emit compact hint below the transition note:
@@ -369,7 +380,7 @@ When all stories have `spec_done:true`:
 ---
 
 ### build_next_story
-**Gate:** at least one story has `built:false` · for each story where `built:false`, `spec_done:true` must hold (RE stories with `built:true` are excluded from this check)
+**Gate:** at least one story has `built:false` · for each story where `built:false`, `spec_done:true` must hold (RE stories with `built:true` are excluded from this check). If any `built:false` story has `spec_done:false`, halt: "Cannot build — [STORY-ID]: [title] has built:false but spec_done:false. Run /spec-gantry to spec it first." · ⏸
 **Idempotency:** all `built:true` → re-render · stop
 
 Find the next story to build: lowest-numbered story in topological order where `built:false` and all stories in `depends_on` (read from `project-state.yaml`) have `built:true`. If no story is unblocked: show the blocked story list and re-render · ⏸
@@ -380,6 +391,7 @@ Set `project.active_story: [story_id]` and `project.active_phase: development` i
 
 **After:** 
 - If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
+- If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · halt "Build report missing for [STORY-ID] — agent crashed before completing. Run /spec-gantry to rebuild." · ⏸
 - Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · halt "Build failed — run /spec-gantry to resume" · ⏸
 - Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard.
 
@@ -392,6 +404,38 @@ When all stories have `built:true`:
 ### confirm_and_deploy
 **Gate:** all stories `built:true` · at least one `deployed:false`
 **Idempotency:** all `deployed:true` → re-render · stop
+
+**Pre-gate check — build reports:** before any other step, verify that `specs/stories/[STORY-ID]/build-report.yaml` exists and contains `overall_status: pass` for every story. If any story is missing a build-report or has `overall_status: fail`:
+```
+✗ Cannot deploy — build report missing or failed:
+  [STORY-ID]: [title] — [missing | overall_status: fail]
+
+  Fix: run /spec-gantry to rebuild the failing story.
+```
+Halt · ⏸
+
+**Step 0 — Deployment readiness check.**
+
+Read `specs/architecture/deployment.md`.
+
+If file missing or `## deployment:target` contains `_not yet written_`:
+```
+⚠ Deployment target not configured.
+
+  The deployment phase requires deployment configuration from ideation (Topic 10).
+  Run ideation to complete Topic 10, which captures:
+    - Cloud platform (GCP / AWS / Azure / Docker Compose)
+    - Container registry
+    - Service architecture and scaling
+    - Secrets strategy
+    - Domain and CI/CD config
+
+  [1] Return to ideation   [X] Cancel
+```
+On `1`: set `ideation_complete: false` · set `arch_seeded: false` · re-route to `start_ideation`.
+On `X`: re-render · ⏸
+
+If file exists and `## deployment:target` is configured: proceed to Step 1.
 
 **Step 1 — Gap pre-check and merge (if needed).** Scan `specs/stories/*/gap.md`.
 
@@ -407,9 +451,10 @@ When all stories have `built:true`:
   [Y] Merge gap specs   [X] Hold
 ```
 On `Y`:
-  - For each story with a gap, invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap for [story_id]"` · pass `story_id`, `project_dir`, `arch_ref`, `merge_gaps: true`, `gap_files: [gap.md]`
-  - Process stories sequentially in topological order
-  - After each invocation, verify `gap.md` was deleted from disk
+  - For each story with a gap, in topological order:
+    - **Before invoking:** verify `gap.md` still exists on disk for this story — if it was already deleted (partial prior run), skip it and note "already merged" in the summary
+    - Invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Merging gap for [story_id]"` · pass `story_id`, `project_dir`, `arch_ref`, `merge_gaps: true`, `gap_files: [gap.md]`
+    - After each invocation, verify `gap.md` was deleted from disk
   - Show merge summary:
     ```
     ✓ Gap specs merged — specs updated to reflect actual build
@@ -418,7 +463,8 @@ On `Y`:
       STORY-003: gap merged — AI integration section updated
 
     ```
-  - → proceed to **Step 2**
+  - → **Re-scan** `specs/stories/*/gap.md` after all merges complete. If any new gap files were created during the merge process (side-effects from `## Side-effects on other stories`), show them and return to the merge prompt — do not proceed to Step 2 until no gaps remain.
+  - → proceed to **Step 2** when re-scan finds no gaps
 On `X`: re-render · ⏸
 
 **No gaps found** — skip Step 1, proceed directly to **Step 2**.
@@ -429,9 +475,11 @@ On `X`: re-render · ⏸
 ```
 On `1` → proceed to deploy:
 
-**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`, `arch_ref`
+Set `project.active_phase: deployment` in `specs/project-state.yaml` — this makes the Release row show `🔄 deploying` during script generation.
 
-**After:** if any story still `deployed:false` → halt with error; else:
+**Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`, `arch_ref`, `deployment_ref: specs/architecture/deployment.md`
+
+**After:** if any story still `deployed:false` → clear `project.active_phase: null` · halt with error; else:
 - Set `project.active_story: null` in project-state
 - Set `project.active_phase: null` in project-state
 - Re-render · ⏸
@@ -490,6 +538,7 @@ On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸.
 
 `enhancement` — for each affected story, in topological order:
 - Set `project.next_release_type: minor`
+- Set `deployed:false` for this story in project-state **immediately** — before invoking the build agent, so the dashboard never shows `✅ deployed` for code that has been modified but not yet re-deployed
 - Set `project.active_story: [story_id]` · re-render dashboard
 - Write or append to the story's single gap file using investigation findings as content:
   **File:** `specs/stories/[story_id]/gap.md` — one file per story, persists until deploy-time merge
@@ -499,22 +548,29 @@ On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸.
   - `## Recommended spec update`: from `findings.spec_alignment`
   - If `gap.md` already exists, append under `## Changes` and update the other sections
 - Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. Pass `project_dir`, `arch_ref`, `investigation_findings` so the build agent has the precise file list.
-- After build: update `built:true` · clear `active_story` · re-render dashboard
+- After build: set `built:true` in project-state · clear `active_story` · re-render dashboard
 - Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
 
-Both types: after all affected stories are built, set `deployed:false` on each and re-render. Do **not** return to the normal pipeline — the work is already done.
+Both types: after all affected stories are built, re-render. Do **not** return to the normal pipeline — the work is already done.
+Note: for `enhancement`, `deployed:false` was already set per-story before each build — no further flag update needed here.
 
-`new_story` → invoke **start_ideation** (amendment mode). Set `next_release_type: minor`. Re-render after ideation completes. ⏸
+`new_story` → invoke **start_ideation** (amendment mode):
+- Set `next_release_type: minor`
+- Set `ideation_complete: false` — required to bypass the `start_ideation` idempotency gate; without this the gate fires and amendment mode never runs
+- Do NOT reset `arch_seeded` or story flags — amendment mode preserves all existing state
+- After ideation completes: emit transition note `✓ Ideation complete · [n] stories ([x] new)` · re-render dashboard · ⏸
 
 `project_change`:
 - Reset all story flags in project-state (`spec_done:false · built:false · deployed:false`)
 - Set `next_release_type: major`
 - Set `ideation_complete: false`
 - Set `arch_seeded: false` — arch artifacts will be updated via amendment mode, not re-seeded from scratch; resetting this flag ensures ideation verifies artifact completeness on resume
+- Set `project.active_phase: amendment` — signals ideation resume tree to enter amendment mode directly, bypassing Beat 1/2 re-run detection
 - Clear `pending_arch_gap: null` and `pending_spec_gap: null` — any in-flight gaps are superseded by the project change
+- Clear `project.active_story: null` — wipe any in-progress story state
 - Re-render · ⏸ before start_ideation (amendment mode)
 
-Note: when ideation runs after a `project_change`, `arch_seeded:false` causes it to resume at Step 3 (update arch artifacts) after completing Beat 2 topics — it does NOT overwrite existing artifacts from scratch. Amendment mode preserves prior content and appends dated amendment blocks.
+Note: when ideation runs after a `project_change`, resume rule 0.5 fires on `active_phase: amendment` and routes directly to Amendment mode — existing arch artifacts are updated, never re-seeded from scratch. Beat 1 and Beat 2 do not re-run.
 
 ---
 
@@ -533,6 +589,8 @@ Proceed? [Y]/[N]
 - `specs/architecture/architecture.md` contains `## Artifact Index`
 - `specs/architecture/data-model.md` exists
 - `specs/architecture/actors.md` exists
+
+Note: `deployment.md` is NOT verified after reverse engineering — the reverse-engineer agent does not run Topic 10. The deployment readiness check in `confirm_and_deploy` Step 0 will surface this gap when the user attempts to deploy.
 
 Re-render dashboard · ⏸
 

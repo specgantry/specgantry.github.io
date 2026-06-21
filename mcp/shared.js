@@ -49,7 +49,7 @@ const PRICING_URL  = 'https://platform.claude.com/docs/en/about-claude/pricing';
 
 // ─── Agent type → phase + model mapping ──────────────────────────────────────
 const AGENT_MAP = {
-  'spec-gantry:ideation:ideation-subagent':                   { phase: 'ideation',          model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:ideation:ideation-subagent':                   { phase: 'ideation',          model: 'claude-sonnet-4-6' },
   'spec-gantry:investigate:investigate-subagent':             { phase: 'investigation',      model: 'claude-haiku-4-5-20251001' },
   'spec-gantry:story-spec:story-spec-subagent':               { phase: 'story_spec',         model: 'claude-sonnet-4-6' },
   'spec-gantry:development:development-subagent':             { phase: 'development',        model: 'claude-sonnet-4-6' },

@@ -51,11 +51,13 @@ Read silently:
 
 **Stub detection:** if the existing `story-spec.md` contains `⚠ Stub spec — created by reverse-engineer`, this is a RE stub, not a prior spec attempt. Set an internal `is_stub: true` flag that changes behavior in Steps 2, 3, and 4 as described below.
 
+**Held spec detection:** if `story-spec.md` exists, does NOT contain `⚠ Stub spec`, and `spec_done:false` in project-state — this is a held partial spec from a prior `[X] Hold`. Set an internal `is_held: true` flag. In Step 4, do NOT overwrite the held file — present it to the user for review instead (see Step 4 held path).
+
 ---
 
 ## Step 2 — Finalize intent.md
 
-**Skip this step if `intent_done:true` for this story in project-state** (P0 resume path — intent was finalized before the arch gap was triggered, or RE set `intent_done:true` after writing intent files). Proceed directly to Step 3.
+**Skip this step if `intent_done:true` for this story in project-state** (P0 resume path — intent was finalized before the arch gap was triggered, or RE set `intent_done:true` after writing intent files, or `is_held:true` and `intent_done:true` from the prior session). Proceed directly to Step 3.
 
 Read the seeded `intent.md`. It contains two paragraphs written by ideation or RE. Assess:
 - Paragraph 1 (functional purpose): Is it specific enough to ground a build agent's judgment calls? Does it name the actor, the need, and why this story exists?
@@ -101,7 +103,23 @@ The orchestrator will invoke ideation (arch gap mode) to fill the gap, then resu
 
 ## Step 4 — Write story-spec.md
 
-Create (or overwrite if stub) the file: `specs/stories/[story_id]/story-spec.md`
+**If `is_held: true` (held partial spec — no stub marker, `spec_done:false`):**
+- Do NOT overwrite the existing file.
+- Read it in full and show the user a resume summary:
+  ```
+  Resuming held spec — [story_id]: [title]
+
+    Criteria:   [n defined so far, or "none yet"]
+    Interfaces: [n defined so far, or "none yet"]
+    Lines:      [n]/60
+
+    [Y] Continue editing this spec   [R] Start fresh   [X] Hold again
+  ```
+- `Y` → **run Step 3 arch reference validation against the held spec's `reads:` block first** (arch may have changed since the hold — treat the held file's `reads:` as a normal path, not a stub hint). If a reference is missing, signal `pending_arch_gap` exactly as Step 3 normal path does and stop. If validation passes, present the existing spec content and ask what to change. Apply edits, proceed to Step 5.
+- `R` → discard the held file (user confirmed), write fresh spec as per normal path below.
+- `X` → save as-is (`spec_done` remains `false`), stop.
+
+**Normal path** — Create (or overwrite if stub) the file: `specs/stories/[story_id]/story-spec.md`
 
 **If `is_stub: true`:** the existing stub file will be fully replaced with a complete spec. Use the stub's `reads:` block as a starting-point hint for which entities, actors, and contracts to include — but reason from `intent.md`, the arch artifacts, and the codebase context to determine the complete set. Do not be constrained by what the stub declared.
 

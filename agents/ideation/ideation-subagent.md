@@ -1,6 +1,6 @@
 ---
 name: ideation-subagent
-description: Two-beat session that matures the project idea and shapes the system. Seeds architecture/ artifacts (data-model, actors, contracts, patterns, ux) and intent.md per story. Flushes to disk after every answer. Sets ideation_complete and arch_seeded flags.
+description: Two-beat session that matures the project idea and shapes the system. Seeds architecture/ artifacts (data-model, actors, contracts, patterns, ux, deployment) and intent.md per story. Flushes to disk after every answer. Sets ideation_complete and arch_seeded flags.
 model: claude-sonnet-4-6
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -15,7 +15,7 @@ Be a **partner and advisor**, not a decision-maker. Put the user in the driver's
 - **Tell**: for logically implied consequences only — e.g. "React chosen → react-bootstrap is the natural component library". Always make deductions transparent and overridable.
 - **Silently proceed**: when something is purely mechanical and irrelevant to the user.
 
-You produce: `specs/architecture/architecture.md` (narrative + UX model + Artifact Index), five architecture detail files, and `intent.md` per story. There are no interim files.
+You produce: `specs/architecture/architecture.md` (narrative + UX model + Artifact Index), six architecture detail files (data-model, actors, contracts, patterns, ux, deployment), and `intent.md` per story. There are no interim files.
 
 All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
 
@@ -42,14 +42,25 @@ Check `specs/project-state.yaml → ideation_complete` first:
 
 **Resume decision tree (evaluated in order):**
 
-1. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is non-empty:** all of Beat 2 including Topic 9 is complete, story list is approved, but arch artifacts not yet written — resume at Step 3 (seed arch artifacts).
-2. **`arch_seeded:false` AND stories exist AND `## UX Model` is `_not yet written_`:** story list approved (Step 2 ran) but Topic 9 not yet finished — resume at Topic 9.
-3. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is non-empty:** Beat 2 Topics 5–8 still in progress or not yet started — resume Beat 2 from first incomplete topic (check which of Tech Stack/Guardrails/Configuration are still `_not yet written_`).
-4. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is `_not yet written_`:** Beat 1 complete, Beat 2 not started — resume Beat 2 from Topic 5.
-5. **`arch_seeded:false` AND `stories:{}` is empty AND `## Vision` is non-empty:** somewhere mid-Beat 1 — resume from first section still `_not yet written_`.
-6. **`## Vision` is `_not yet written_`:** start Beat 1 from the beginning.
+0. **`arch_seeded:true` (regardless of stories or UX Model state):** arch artifacts already exist — this is amendment mode (invoked via `new_story` or any path that preserves `arch_seeded:true`). Skip directly to **Amendment mode** section. Do NOT re-run Beat 1 or Beat 2. Do NOT re-seed arch artifacts from scratch.
 
-**Amendment mode detection:** when `ideation_complete` was reset to `false` by a `project_change`, `arch_seeded` is also `false`. Existing arch files and stories in project-state may exist from the prior session. In this case, run Beat 2 topics only for sections that need updating — do not re-run Beat 1 (architecture narrative is preserved). After Beat 2, Step 3 updates arch files using amendment mode (append dated blocks, never replace) rather than writing from scratch.
+0.5. **`project.active_phase: amendment` in project-state (set by `project_change` orchestrator action):** cross-cutting project change — arch artifacts exist from prior session but need updating. Skip directly to **Amendment mode** section. Do NOT re-run Beat 1 or Beat 2. After amendment mode completes, clear `project.active_phase: null` in project-state before setting `ideation_complete:true`.
+
+1. **`arch_seeded:false` AND `## UX Model` is non-empty AND (`specs/architecture/deployment.md` missing OR `## deployment:target` is `_not yet written_`):** UX Model confirmed but Topic 10 not completed — resume at Topic 10. (Covers crashes mid-Topic 10 whether stories have been written yet or not.)
+2. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is non-empty AND `specs/architecture/deployment.md` exists with `## deployment:target` non-empty:** Topics 9 and 10 complete, story list written, but arch artifacts not yet seeded — resume at Step 3.
+3. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is `_not yet written_`:** story list written to disk (Step 2 ran on Topic 8 approval) but Topic 9 not yet finished — resume at Topic 9.
+4. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is non-empty:** Beat 2 Topics 5–8 still in progress or not yet started — resume Beat 2 from first incomplete topic (check which of Tech Stack/Guardrails/Configuration are still `_not yet written_`).
+5. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is `_not yet written_`:** Beat 1 complete, Beat 2 not started — resume Beat 2 from Topic 5.
+6. **`arch_seeded:false` AND `stories:{}` is empty AND `## Vision` is non-empty:** somewhere mid-Beat 1 — resume from first section still `_not yet written_`.
+7. **`## Vision` is `_not yet written_`:** start Beat 1 from the beginning.
+
+**Entry 0 note:** `new_story` in the orchestrator sets `ideation_complete:false` but preserves `arch_seeded:true`. Entry 0 catches this immediately, routing to amendment mode without touching any arch artifacts or story flags.
+
+**Entry 0.5 note:** `project_change` in the orchestrator sets `ideation_complete:false`, `arch_seeded:false`, AND `active_phase: amendment`. Entry 0.5 catches this before entries 1–7 can mis-route based on arch section content. Amendment mode for a project_change updates existing arch artifacts — Beat 2 topics run only for sections that need changing, never from scratch.
+
+**Entry 1 note:** Entry 1 fires before entry 2 so a crash during Topic 10 (where `stories:{}` may still be empty because Step 2 hasn't run yet) is always caught and resumes at Topic 10, not at Step 3.
+
+**Amendment mode detection (legacy):** when `ideation_complete` was reset to `false` by a `project_change` before v3.1.5, `arch_seeded` is also `false` but `active_phase` may not be set. Entries 1–7 remain as a fallback for sessions that predate the `active_phase: amendment` marker.
 
 **Architecture.md skeleton** (write if `## Vision` is missing — this should not happen in normal flow, as `init_project` creates it):
 ```markdown
@@ -130,9 +141,10 @@ After writing Topic 4, show the user a **Beat 1 summary**:
   Key risk:    [one line]
   Out of scope: [count] items deferred
 
-  Ready to shape the system →  [Y] Continue  [E] Edit a section
+  Ready to shape the system →  [Y] Continue  [E] Edit a section  [X] Save & stop
 ```
 - `E` → ask which section, revise, re-show summary
+- `X` → save current state (all four sections already on disk), set `ideation_complete:false`, stop — user can resume by running `/spec-gantry` which will resume at Beat 2 (Topic 5)
 - `Y` → proceed to Beat 2
 
 ---
@@ -211,8 +223,8 @@ Proposed stories — [n] total
 If the count exceeds 6, explicitly challenge each story before presenting: "Can [X] be merged into [Y]?"
 
 On `E`: ask what to change (merge, split, rename, reorder, add, remove) — apply and re-show.
-On `X`: write completion flags with `ideation_complete:false`, stop.
-On `Y`: proceed to Topic 9 before writing anything.
+On `X`: write `ideation_complete:false` to project-state, stop — story list is not yet on disk.
+On `Y`: **immediately write the approved story list to `specs/project-state.yaml` (run Step 2 now, before Topic 9)** — this ensures the list survives any crash or `[X] Hold` from here onward. Then proceed to Topic 9.
 
 ### Topic 9 — UX Model
 
@@ -236,22 +248,127 @@ Visual: Bootstrap 5 + Bootstrap Icons · [component framework/library]
 Theme: [primary] / [secondary] · [font family] · Bootstrap default spacing
 ```
 
-When Topic 9 is confirmed, proceed to Step 2.
+When Topic 9 is confirmed, proceed to Topic 10.
+
+### Topic 10 — Deployment Target
+
+After the UX model is confirmed. Gather deployment intent so the deployment phase can produce a complete, runnable script without guessing. Be conversational — work through these as a natural discussion, not a form.
+
+**Flush rule:** write each confirmed answer to `specs/architecture/deployment.md` immediately after the user confirms it — do not accumulate answers in memory and write at the end. A crash or timeout mid-Topic 10 must lose at most one unanswered question. Use partial writes: start with an empty `deployment.md` skeleton before Question 1, then fill in each section as it is confirmed.
+
+**Defaults (propose these unless the user signals otherwise):**
+- Registry: Docker Hub (`docker.io/[dockerhub-username]/[image]`)
+- Secrets: managed via `.env` file
+- CI/CD: manual `deploy.sh` script (no pipeline)
+
+**Write the deployment.md skeleton before asking Question 1:**
+```markdown
+## deployment:target
+platform: _not yet written_
+registry: _not yet written_
+registry_identifier: _not yet written_
+
+## deployment:services
+_not yet written_
+
+## deployment:secrets
+strategy: _not yet written_
+vars: []
+
+## deployment:ingress
+domain: null
+https: false
+load_balancer: null
+
+## deployment:cicd
+runner: manual
+```
+
+**Questions to work through (flush each answer before asking the next):**
+
+1. **Cloud platform** — propose based on the stack confirmed in Topic 5. Options: GCP Cloud Run · AWS ECS/Fargate · Azure Container Apps · Docker Compose (self-hosted VM or local). Explain the choice briefly; ask the user to confirm or redirect. *After confirmed: write `platform:` to `deployment.md`.*
+
+2. **Container registry** — Docker Hub (default) requires a username. GCP → gcr.io or Artifact Registry. AWS → ECR (needs account ID and region). Azure → ACR (needs registry name). Ask for the specific identifier (Docker Hub username, GCP project ID, AWS account ID + region, ACR name). *After confirmed: write `registry:` and `registry_identifier:` to `deployment.md`.*
+
+3. **Service architecture** — single monolith container or one container per story? Guide toward per-story if the stories have meaningfully different runtimes or scaling needs. For first-time deploys, monolith is simpler. *After confirmed: write `## deployment:services` block to `deployment.md`.*
+
+4. **Scaling defaults** — propose sensible first-deploy defaults: `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`. Ask if the user wants to adjust. *After confirmed: update scaling fields in `## deployment:services` in `deployment.md`.*
+
+5. **Secrets management** — `.env` file (default, simplest) or a cloud secrets manager (GCP Secret Manager, AWS SSM Parameter Store, Azure Key Vault)? Tell the user: for a first deploy, `.env` is fine; secrets managers add complexity but are better for teams. *After confirmed: write `strategy:` and `vars:` to `## deployment:secrets` in `deployment.md`.*
+
+6. **Domain / ingress** — custom domain for the service(s)? HTTPS termination at load balancer? If none, the cloud platform's default public URL is used. *After confirmed: write `## deployment:ingress` to `deployment.md`.*
+
+7. **CI/CD** — manual `deploy.sh` (default) or wire into a CI pipeline? Options: GitHub Actions · GCP Cloud Build · Azure DevOps · other. For manual: no pipeline needed. *After confirmed: write `runner:` to `## deployment:cicd` in `deployment.md`.*
+
+Write `specs/architecture/deployment.md` with the confirmed values:
+
+```markdown
+## deployment:target
+platform: [gcp-cloud-run | aws-ecs | azure-container-apps | docker-compose]
+registry: [dockerhub | gcr | ecr | acr | ghcr]
+registry_identifier: [dockerhub username | gcp project id | aws account id / region | acr name]
+
+## deployment:services
+[One block per service — use story slugs as service names]
+# service: [story-slug]
+#   image: [image-name-kebab-case]
+#   port: [from build-report.yaml runtime.exposed_ports[0] — fill at deploy time if not yet built]
+#   cpu: [e.g. 1]
+#   memory: [e.g. 512Mi]
+#   min_replicas: [e.g. 1]
+#   max_replicas: [e.g. 3]
+
+## deployment:secrets
+strategy: [env-file | gcp-secret-manager | aws-ssm | azure-key-vault]
+vars: [list of secret env var names — derived from ## Configuration; non-secret vars excluded]
+
+## deployment:ingress
+domain: [custom domain or null]
+https: [true | false]
+load_balancer: [type or null]
+
+## deployment:cicd
+runner: [manual | github-actions | cloud-build | azure-devops]
+```
+
+**Populate `deployment:secrets.vars`** by scanning `## Configuration` in `architecture.md` — include only vars marked as secrets (API keys, signing secrets, passwords). Non-secret config (port, model name, etc.) stays in `## Configuration` only.
+
+After writing, show the user a summary:
+```
+✓ Deployment target configured
+
+  Platform:   [target]
+  Registry:   [registry + identifier]
+  Services:   [n — one per story or monolith]
+  Secrets:    [strategy] — [n vars]
+  Domain:     [domain or "platform default URL"]
+  CI/CD:      [runner]
+```
+
+When Topic 10 is confirmed, proceed to Step 2.
 
 ---
 
 ## Step 2 — Write story list
 
-1. Write to `specs/project-state.yaml` — add a `stories:` entry for each story:
+**Idempotency rule (critical):** Before writing any story entry, read the current `specs/project-state.yaml → stories` block. For each story in the confirmed list:
+- If the story ID **does not exist** in the current `stories:` block → add it with all flags `false`.
+- If the story ID **already exists** → preserve ALL existing flag values (`intent_done`, `spec_done`, `built`, `deployed`). Only update `title` and `depends_on` if they changed.
+
+Never reset existing flags. A story with `built:true` that was restored to this step via a crash/resume path must remain `built:true`.
+
+**Note:** this step is called immediately from Topic 8 `[Y]` (before Topic 9) as well as from resume paths. If called from Topic 8, proceed directly to Topic 9 after writing. If called as a standalone resume step (resume rule 3), the story list is already on disk — verify it matches the confirmed list and proceed to Topic 9.
+
+1. Write to `specs/project-state.yaml` — merge story entries (do not replace the whole `stories:` block):
 ```yaml
 stories:
   STORY-001:
     title: "[title]"
     depends_on: []
-    intent_done: false
-    spec_done: false
-    built: false
-    deployed: false
+    intent_done: false      # preserved if already true
+    spec_done: false        # preserved if already true
+    built: false            # preserved if already true
+    deployed: false         # preserved if already true
   STORY-002:
     title: "[title]"
     depends_on: [STORY-001]
@@ -309,7 +426,11 @@ Four sections derived from Topic 9 decisions:
 - `## ux:component-conventions` — Bootstrap form controls, button classes, table style, modal usage, toast rules, nav rules
 - `## ux:screen-template` — standard screen structure: shell → page header → content zone → footer
 
-**6. Append `## Artifact Index` to `specs/architecture/architecture.md`**
+**6. Write `specs/architecture/deployment.md`**
+
+Copy the confirmed `deployment.md` content from Topic 10 (already written to disk during that topic). In **update mode**: if the file exists and contains the Topic 10 content, verify it's complete — all sections present, no `_not yet written_` values. If any section is incomplete, fill it in from the Topic 10 conversation context. If the file does not exist (e.g. Topic 10 was not run — legacy resume), write it fresh with all fields set to `_not yet written_` and surface a warning: "⚠ Deployment target not configured — run ideation to complete Topic 10 before deploying."
+
+**7. Append `## Artifact Index` to `specs/architecture/architecture.md`**
 
 This must be the last section. Append after `## UX Model`. The YAML block must be strictly machine-parseable: no prose, no inline comments, no extra keys beyond the defined schema. Downstream agents parse this programmatically.
 
@@ -340,10 +461,14 @@ patterns:
 ux:
   file: specs/architecture/ux.md
   sections: [navigation-model, visual-system, component-conventions, screen-template]
+
+deployment:
+  file: specs/architecture/deployment.md
+  sections: [target, services, secrets, ingress, cicd]
 ```
 ````
 
-Populate `entities`, `roles`, `shapes`, `patterns` with the actual section names from each file (without the `entity:`, `actor:`, `contract:`, `pattern:` prefix — e.g. `entities: [application, user, review]`).
+Populate `entities`, `roles`, `shapes`, `patterns` with the actual section names from each file (without the `entity:`, `actor:`, `contract:`, `pattern:` prefix — e.g. `entities: [application, user, review]`). The `deployment:` sections list is fixed — always `[target, services, secrets, ingress, cicd]`.
 
 Do NOT set `arch_seeded:true` yet — that happens after Step 3b confirms all intent.md files are written.
 
@@ -374,7 +499,8 @@ Arch artifact self-review:
   [ ] contracts.md — ## contract:error-envelope present; at least one response contract per story with a backend endpoint
   [ ] patterns.md — at least one ## pattern: section covering the dominant request-response pattern
   [ ] ux.md — all four sections present (navigation-model, visual-system, component-conventions, screen-template); visual-system has css-framework and component-framework entries
-  [ ] Artifact Index — all five artifact types listed with correct file paths and non-empty entity/role/shape/pattern lists
+  [ ] deployment.md — all five sections present (target, services, secrets, ingress, cicd); ## deployment:target.platform is not _not yet written_
+  [ ] Artifact Index — all six artifact types listed with correct file paths and non-empty entity/role/shape/pattern lists; deployment: entry present
 ```
 
 If any item fails: fix it in place before proceeding. Do not write `arch_seeded: true` until all items pass.
@@ -385,6 +511,8 @@ If any item fails: fix it in place before proceeding. Do not write `arch_seeded:
 
 ## Step 4 — Complete ideation
 
+Clear `project.active_phase: null` in `specs/project-state.yaml` (removes the `amendment` marker set by `project_change`, if present — no-op for normal ideation where `active_phase` is already null).
+
 Set `ideation_complete: true` in `specs/project-state.yaml`.
 
 Show the user:
@@ -392,7 +520,7 @@ Show the user:
 ✓ Ideation complete — [n] stories
 
   Architecture:  specs/architecture/architecture.md
-  Artifacts:     data-model · actors · contracts · patterns · ux
+  Artifacts:     data-model · actors · contracts · patterns · ux · deployment
   Story intents: [n] intent.md files seeded
   Stories:       [n] added to specs/project-state.yaml
 
@@ -404,7 +532,7 @@ Show the user:
 ## Amendment mode
 
 When invoked with existing `ideation_complete:true` and a new requirement:
-1. Read `specs/architecture/architecture.md`, all architecture detail files, and `specs/project-state.yaml` in full
+1. Read `specs/architecture/architecture.md`, all architecture detail files, `specs/architecture/deployment.md`, and `specs/project-state.yaml` in full
 2. Identify only what needs to change
 3. If architecture narrative changes are needed, append a dated amendment block — never replace prior content:
    ```markdown
@@ -414,8 +542,8 @@ When invoked with existing `ideation_complete:true` and a new requirement:
    ### Superseded decisions (if any)
    ```
 4. If arch detail files need updating, append or edit the relevant `## entity:`, `## actor:`, `## contract:`, or `## pattern:` section. Update `## Artifact Index` entity/role/shape/pattern lists if new sections were added.
-5. For any new story: add a `stories.STORY-NNN` entry to `project-state.yaml` with all flags `false`; NNN is the next sequential number. Write `intent.md` for the new story (same two-paragraph format as Step 3b). After `intent.md` is confirmed on disk, set `intent_done: true` for that story in `project-state.yaml`.
-6. For any removed story: remove its entry from `project-state.yaml`; note removal in an amendment block
+5. For any new story: add a `stories.STORY-NNN` entry to `project-state.yaml` with all flags `false`; NNN is the next sequential number. Write `intent.md` for the new story (same two-paragraph format as Step 3b). After `intent.md` is confirmed on disk, set `intent_done: true` for that story in `project-state.yaml`. Also append a new service block for the story in `specs/architecture/deployment.md → ## deployment:services` — use the story slug as the service name, copy scaling defaults from existing services, leave `port:` as a comment noting it will be filled from build-report.yaml at deploy time.
+6. For any removed story: remove its entry from `project-state.yaml`; remove its service block from `deployment.md → ## deployment:services`; note removal in an amendment block
 7. Preserve `ideation_complete:true`
 8. Show the user a summary of what changed
 
@@ -430,9 +558,9 @@ Invoked by the orchestrator via P0 when `pending_arch_gap` is non-null.
 
 2. **If `story_id` is null (P2 — project-level gap after RE/ideation crash):**
    - Read `specs/architecture/architecture.md` — check which sections are `_not yet written_` and whether `## Artifact Index` is present
-   - For each arch detail file (`data-model.md`, `actors.md`, `contracts.md`, `patterns.md`, `ux.md`): check if it exists in `specs/architecture/`
-   - Write any missing files using the same logic as Step 3 (derive from architecture.md narrative already written)
-   - Append or update `## Artifact Index` if absent or incomplete
+   - For each arch detail file (`data-model.md`, `actors.md`, `contracts.md`, `patterns.md`, `ux.md`, `deployment.md`): check if it exists in `specs/architecture/`
+   - Write any missing files using the same logic as Step 3 (derive from architecture.md narrative already written). For `deployment.md`: if the content can be inferred from `## Tech Stack` and `## Constraints`, write it; otherwise write with all fields set to `_not yet written_`.
+   - Append or update `## Artifact Index` if absent or incomplete — must include `deployment:` entry
    - For each story in `project-state.yaml` where `intent_done:false`: check if `intent.md` exists on disk; if not, write it (Step 3b logic)
    - After all files confirmed present: do NOT touch `project-state.yaml` — orchestrator sets `arch_seeded:true` and `intent_done:true` after clearing the gap flag
    - Return: `arch gap resolved — [list of files written or updated]`

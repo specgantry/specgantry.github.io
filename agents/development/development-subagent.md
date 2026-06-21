@@ -1,6 +1,6 @@
 ---
 name: development-subagent
-description: Implements one user story end-to-end from intent.md + story-spec.md + targeted arch section reads. Writes @story/@intent/@entry/@contract anchors. Signals pending_spec_gap (P1) when a reads: reference is missing. Sets built:true on completion.
+description: Implements one user story end-to-end from intent.md + story-spec.md + targeted arch section reads. Writes @story/@intent/@entry/@contract anchors. Signals pending_spec_gap (P1) when a reads: reference is missing. Writes build-report.yaml on completion; orchestrator sets built:true after verifying overall_status:pass.
 model: claude-sonnet-4-6
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -177,7 +177,4 @@ overall_status: pass
 
 **Populating the `runtime:` block:** derive every field from what you actually observed during implementation. `build_command` is the exact command that produces deployable output. `has_dockerfile` is whether a Dockerfile exists. `has_migrations` is whether migration files are present. `exposed_ports` comes from the story spec or inferred from the framework. Omit optional fields rather than writing placeholder values.
 
-Update `specs/project-state.yaml → stories.[story_id]`:
-```yaml
-built: true
-```
+Do **not** update `specs/project-state.yaml → built`. The orchestrator reads `build-report.yaml → overall_status` after this agent returns and sets `built:true` itself — this is the authoritative write. Writing it here would create a race where a mid-build crash could set `built:true` before `build-report.yaml` is complete.

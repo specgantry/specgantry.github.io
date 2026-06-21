@@ -113,7 +113,7 @@ After deployment, use `[N] New work` for any changes. Bug fixes and enhancements
 ### Phase 1 — Ideation {#ideation}
 
 **Time:** 15–30 minutes
-**Output:** `specs/architecture.md` · story backlog in `specs/project-state.yaml`
+**Output:** `specs/architecture/` (6 artifacts) · story backlog in `specs/project-state.yaml`
 
 Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.
 
@@ -125,13 +125,20 @@ SpecGantry acts as a thinking partner, not an interviewer. It reads your vision 
 - **"Fine, but…"** — accepts the premise but surfaces a tradeoff, constraint, or risk it creates
 - **"What about…"** — probes a gap or edge case the vision didn't address
 
-Four topics, one question each: vision, problem & users, constraints, risks & out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on.
+Four topics, one question each: vision, problem & users, constraints, risks & out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on. You can save and stop at the Beat 1 summary — ideation will resume at Beat 2 on the next `/spec-gantry`.
 
 **Beat 2 — Shape the system**
 
-Directly from the matured idea, SpecGantry proposes the system shape — tech stack, story boundaries, guardrails, a configuration table, and a dependency-ordered story backlog. Each topic is a proposal for you to confirm or redirect, not an open-ended question.
+Directly from the matured idea, SpecGantry proposes the system shape across six topics — each a proposal for you to confirm or redirect, not an open-ended question:
 
-Everything is written to `specs/architecture.md` after every answer. A crash mid-session loses at most one exchange.
+- **Tech stack** — one clear choice per layer
+- **Guardrails** — enforceable rules every story must follow
+- **Configuration** — every env var the project needs, in a table
+- **Story list** — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval.
+- **UX model** — navigation pattern, visual system, component conventions
+- **Deployment target** — cloud platform, container registry, service architecture, secrets strategy, CI/CD. Each answer is flushed to `specs/architecture/deployment.md` immediately — a crash mid-topic loses at most one answer.
+
+Everything is written to `specs/architecture/` after every answer. A crash mid-session loses at most one exchange.
 
 **Story granularity — Goldilocks rule:**
 Stories are building blocks, not micro-tasks. A story is a vertical slice — something completable in 1–3 sessions and demonstrable independently. Related capabilities belong in one story. When in doubt, merge — a story can always be extended later via `[N] New work`.
@@ -181,18 +188,21 @@ A story is **complete** once all acceptance criteria are met.
 ### Phase 4 — Deploy Release {#deploy}
 
 **Time:** 5–10 minutes
-**Output:** `specs/deploy.sh` + `specs/deploy-artifact.md`
+**Output:** `specs/deploy.sh` · `specs/docker-compose.yml` · `specs/.env.example` · `src/[story]/Dockerfile` · `specs/deploy-artifact.md`
 
 Once all stories are built (and any gap specs are merged), you are prompted to confirm deployment.
 
 The deployment agent:
-1. Computes the next release version from change types in the backlog
-2. Resolves deployment order via the dependency graph
-3. Backs up the previous `deploy.sh` to `deploy.sh.old`
-4. Generates a single `deploy.sh` covering all stories
-5. Validates the script with `bash -n` and sets executable permissions
-6. Writes `deploy-artifact.md` summarising the release
-7. Marks all stories deployed and updates `project.release`
+1. Gathers any missing deployment details interactively (registry identifier, domain, etc.)
+2. Runs platform-specific pre-flight checks (CLI installed, auth active, APIs enabled) — shows a pass/fail table before generating anything
+3. Computes the next release version from change types in the backlog
+4. Resolves deployment order via the dependency graph
+5. Generates per-service Dockerfiles and a `docker-compose.yml` for local production-parity testing
+6. Generates `specs/.env.example` with every env var the project needs
+7. Generates `specs/deploy.sh` covering build, push, migrations, deploy, and health checks per story — with `--dry-run` for local Docker testing
+8. Validates the script with `bash -n` and sets executable permissions
+9. Writes `deploy-artifact.md` summarising the release
+10. Marks all stories deployed and updates `project.release`
 
 Every release deploys the **entire system** — not individual stories.
 

@@ -39,15 +39,17 @@ SpecGantry reads `specs/project-state.yaml`, determines where you are in the pip
 ```
 SpecGantry v4  |  MyProject  |  release 1.0.0
 ──────────────────────────────────────────────────────────────────
-Spec [███░░] 3/5  ·  Build [██░░░] 2/5
+Spec [███░░] 3/5  ·  Build [██░░░] 2/5  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────────────
-  ID      Story                              Spec   Build  Deploy
+  ID      Story                              Spec   Build
   ────────────────────────────────────────────────────────────────
-  [001]   User authentication                  ✅     ✅     ✅
-  [002]   User profile management              ✅     ✅     ○
-  [003]   User submits application             ✅     🔄     ○
-  [004]   Admin reviews submissions            ✅     ○      ○     depends on 003
-  [005]   Admin manages settings               ⏳     ○      ○
+  [001]   User authentication                  ✅     ✅
+  [002]   User profile management              ✅     ✅
+  [003]   User submits application             ✅     🔄
+  [004]   Admin reviews submissions            ✅     ○      depends on 003
+  [005]   Admin manages settings               ⏳     ○
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                       ○ not deployed
 ──────────────────────────────────────────────────────────────────
   Type a story ID to manage it            [$] Cost
   [1] Build next story — STORY-003        [?] Help
@@ -106,7 +108,7 @@ Two tables — cost in USD first, then token counts. Stories as rows, phases as 
 
 ```
 SpecGantry v4  |  MyProject
-Spec [█████] 4/4  ·  Build [█████] 4/4
+Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
 ──────────────────────────────────────────────────────────
 
 Cost Matrix  |  release 1.0.0
@@ -187,7 +189,7 @@ Runs a two-beat conversational session that matures your idea and shapes the sys
 **Beat 1 (4 topics):** Vision → Problem & Users → Constraints → Risks & Out of Scope  
 **Beat 2 (5 topics):** Tech Stack → Guardrails → Configuration → Story List → UX Model
 
-After Beat 2: seeds all 5 architecture artifacts + Artifact Index + `intent.md` per story. Runs a self-review before setting `arch_seeded:true`.
+After Beat 2: seeds all 6 architecture artifacts + Artifact Index + `intent.md` per story. Runs a self-review before setting `arch_seeded:true`.
 
 **Arch gap mode (P0/P2):** when invoked for a missing arch section, reads the Artifact Index, adds the missing entity/actor/contract/pattern/ux section to the appropriate file, and updates the index. Story-level gaps target one section; project-level gaps (P2) check all missing files and write them.
 

@@ -140,14 +140,16 @@ After ideation or reverse engineering completes, the dashboard shows your projec
 ```
 SpecGantry v4  |  MyProject  |  release 1.0.0
 ──────────────────────────────────────────────────────────────────
-Spec [░░░░░] 0/4  ·  Build [░░░░░] 0/4
+Spec [░░░░░] 0/4  ·  Build [░░░░░] 0/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────────────
-  ID      Story                              Spec   Build  Deploy
+  ID      Story                              Spec   Build
   ────────────────────────────────────────────────────────────────
-  [001]   User authentication                  ⏳     ○      ○
-  [002]   User profile management              🔴     ○      ○     depends on 001
-  [003]   User submits application             🔴     ○      ○     depends on 001
-  [004]   Admin reviews submissions            🔴     ○      ○     depends on 003
+  [001]   User authentication                  ⏳     ○
+  [002]   User profile management              🔴     ○      depends on 001
+  [003]   User submits application             🔴     ○      depends on 001
+  [004]   Admin reviews submissions            🔴     ○      depends on 003
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                       ○ not deployed
 ──────────────────────────────────────────────────────────────────
   Type a story ID to manage it            [$] Cost
   [1] Spec next story — STORY-001         [?] Help

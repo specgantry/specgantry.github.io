@@ -97,7 +97,7 @@ Running `/track-cost` from anywhere in Claude Code opens a dedicated cost dashbo
 
 ```
 SpecGantry v4  |  MyProject  |  release 1.1.0
-Spec [█████] 4/4  ·  Build [█████] 4/4
+Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
 ──────────────────────────────────────────────────────────
 
 Cost Matrix  |  release 1.1.0

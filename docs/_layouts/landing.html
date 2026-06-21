@@ -172,14 +172,16 @@
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  <span class="hl-blue">SpecGantry v4</span>  |  Acme Platform  |  release 1.0.0</div>
-            <div class="terminal-line output">  Spec [███░░] 3/4  ·  Build [██░░░] 2/4</div>
+            <div class="terminal-line output">  Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  ID      Story                         Spec  Build  Deploy</div>
+            <div class="terminal-line output">  ID      Story                         Spec  Build</div>
             <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  [001]  User registers and logs in      ✅    ✅     ✅</div>
-            <div class="terminal-line output">  [002]  User manages their profile      ✅    🔄     ○</div>
-            <div class="terminal-line output">  [003]  User submits application        🔄    ○      ○</div>
-            <div class="terminal-line output">  [004]  Admin reviews submissions       ⏳    ○      ○</div>
+            <div class="terminal-line output">  [001]  User registers and logs in      ✅    ✅</div>
+            <div class="terminal-line output">  [002]  User manages their profile      ✅    🔄</div>
+            <div class="terminal-line output">  [003]  User submits application        🔄    ○</div>
+            <div class="terminal-line output">  [004]  Admin reviews submissions       ⏳    ○</div>
+            <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  Release 1.0.0                               ○ not deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  Type a story ID to manage it     [$] Cost</div>
             <div class="terminal-line output">  [1] Spec next – STORY-003         [?] Help</div>
@@ -317,7 +319,7 @@
 
         <!-- Architecture layer callout -->
         <div class="pipeline-note" style="margin-top:0.75rem;">
-          <strong>Architecture layer is the key v4 change:</strong> <code>data-model.md</code> · <code>actors.md</code> · <code>contracts.md</code> · <code>patterns.md</code> · <code>ux.md</code> — written once during ideation, referenced by every story spec via a <code>reads:</code> block. Development agents load only the sections they need (~130 lines total), not the full spec context.
+          <strong>Architecture layer is the key v4 change:</strong> <code>data-model.md</code> · <code>actors.md</code> · <code>contracts.md</code> · <code>patterns.md</code> · <code>ux.md</code> · <code>deployment.md</code> — written once during ideation, referenced by every story spec via a <code>reads:</code> block. Development agents load only the sections they need (~130 lines total), not the full spec context.
         </div>
       </div>
     </section>
@@ -332,7 +334,7 @@
             <div class="feat-icon"><i class="bi bi-diagram-3-fill"></i></div>
             <h3>Shared Architecture Layer — Written Once, Referenced Everywhere</h3>
             <p>v4 introduces a dedicated <code>specs/architecture/</code> layer: entities, actors, contracts, patterns,
-              and UX conventions live in five structured files. Every story spec references them via a
+              UX conventions, and deployment configuration live in six structured files. Every story spec references them via a
               <code>reads:</code> block — never duplicates them. Architecture drift across stories is structurally
               impossible.</p>
             <a href="{{ '/docs/how-it-works' | relative_url }}#architecture-layer" class="feat-link">How the architecture layer works →</a>
@@ -434,7 +436,7 @@
             <div class="stat-label">Agents — Ideation through deployment, plus investigation and reverse engineering</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">5</div>
+            <div class="stat-num">6</div>
             <div class="stat-label">Architecture artifacts — written once, referenced by every story and every agent</div>
           </div>
           <div class="stat-item">
@@ -476,7 +478,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> Ideation</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Two-beat conversational session. Matures your idea through 9 topics — vision, users, constraints, tech stack, guardrails, configuration, story list, UX model. Seeds all 5 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
+            <div class="agent-desc">Two-beat conversational session. Matures your idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, story list, UX model, and deployment target. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> Story Spec</div>
@@ -501,7 +503,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> Reverse Engineer</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Analyzes an existing codebase and synthesizes the full v4 project structure — architecture layer (all 5 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
+            <div class="agent-desc">Analyzes an existing codebase and synthesizes the full v4 project structure — architecture layer (all 6 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-puzzle-fill"></i> Ideation (gap mode)</div>

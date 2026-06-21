@@ -17,7 +17,7 @@ SpecGantry enforces a structured development process through a series of phases 
 
 ## The Architecture Layer {#architecture-layer}
 
-The central v4 change is a dedicated `specs/architecture/` directory containing five structured files. These are the shared source of truth for every downstream agent.
+The central v4 change is a dedicated `specs/architecture/` directory containing six structured files. These are the shared source of truth for every downstream agent.
 
 | File | Anchor format | Contains |
 |------|--------------|----------|

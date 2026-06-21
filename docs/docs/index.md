@@ -30,7 +30,7 @@ The result: architecture that stays consistent across stories, story specs that 
   <div class="dg-node dg-ideation">
     <div class="dg-node-num">01</div>
     <div class="dg-node-name">Ideation + Architecture</div>
-    <div class="dg-node-output">architecture/ · 5 artifacts · intent.md</div>
+    <div class="dg-node-output">architecture/ · 6 artifacts · intent.md</div>
   </div>
 
   <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
@@ -137,7 +137,7 @@ Or from within Claude Code:
 
 ### The Architecture Layer (new in v4)
 
-SpecGantry v4 introduces a dedicated `specs/architecture/` directory containing five structured files:
+SpecGantry v4 introduces a dedicated `specs/architecture/` directory containing six structured files:
 
 | File | Contains |
 |------|----------|
@@ -146,6 +146,7 @@ SpecGantry v4 introduces a dedicated `specs/architecture/` directory containing 
 | `contracts.md` | Shared API response shapes, error envelopes |
 | `patterns.md` | Dominant backend interaction patterns |
 | `ux.md` | Navigation model, visual system, component conventions, screen template |
+| `deployment.md` | Cloud platform, registry, service architecture, secrets, CI/CD config |
 
 These are written once during ideation and referenced by every story spec via a `reads:` block. An agent building a story loads only the specific sections that story uses — not the full architecture.
 

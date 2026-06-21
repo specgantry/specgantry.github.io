@@ -285,7 +285,7 @@ Shown once ideation is complete. The pipeline table and story picker are unified
 
 ```
 SpecGantry v3.1.5  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build
   ──────────────────────────────────────────────────
@@ -293,6 +293,8 @@ Spec [███░░] 3/4  ·  Build [██░░░] 2/4
   [002]  User manages their profile       ✅    🔄
   [003]  User submits application         🔄    ○
   [004]  Admin reviews submissions        ⏳    ○
+  ──────────────────────────────────────────────────
+  Release 1.0.0                                ○ not deployed
 ──────────────────────────────────────────────────────────
   Type a story ID to pick it up       [$] Cost
   [1] Continue spec – STORY-003       [?] Help

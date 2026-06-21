@@ -47,7 +47,7 @@ Two states depending on where you are in the pipeline.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v3  |  My App  |  release 1.0.0
+SpecGantry v4  |  My App  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 3/4 topics answered.
 ──────────────────────────────────────────────────────────
@@ -66,8 +66,8 @@ The pipeline table and story picker are unified. Every story is visible, its sta
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v3  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4
+SpecGantry v4  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build
   ──────────────────────────────────────────────────────
@@ -75,6 +75,8 @@ Spec [███░░] 3/4  ·  Build [██░░░] 2/4
   [002]  User manages their profile       ✅    🔄
   [003]  User submits application         🔄    ○
   [004]  Admin reviews submissions        ⏳    ○
+  ──────────────────────────────────────────────────────
+  Release 1.0.0                                ○ not deployed
 ──────────────────────────────────────────────────────────
   Type a story ID to manage it        [$] Cost
   [1] Continue spec – STORY-003       [?] Help
@@ -174,8 +176,8 @@ Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your spec
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v3  |  Acme Platform
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4
+SpecGantry v4  |  Acme Platform
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
 
 Cost Summary  |  release 1.0.0

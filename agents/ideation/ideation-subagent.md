@@ -386,7 +386,7 @@ Do not create story-spec.md files yet — the story-spec subagent writes those.
 
 Create `specs/architecture/` directory if it does not exist.
 
-**Check for existing arch files first.** If `specs/architecture/data-model.md` already exists (resuming after crash or `project_change`), this step runs in **update mode**: read the existing file, identify what's missing or needs changing, and append/edit — never replace the whole file. If the file does not exist, write it fresh.
+**Check for existing architecture artifacts first.** If `specs/architecture/data-model.md` already exists (resuming after crash or `project_change`), this step runs in **update mode**: read the existing file, identify what's missing or needs changing, and append/edit — never replace the whole file. If the file does not exist, write it fresh.
 
 For each artifact below, derive content from the story list, tech stack, actor model, and UX model decisions made in Beat 2. Mark uncertain inferences with `# inferred` — story-spec fills gaps via P0 flow.
 
@@ -541,7 +541,7 @@ When invoked with existing `ideation_complete:true` and a new requirement:
    [description]
    ### Superseded decisions (if any)
    ```
-4. If arch detail files need updating, append or edit the relevant `## entity:`, `## actor:`, `## contract:`, or `## pattern:` section. Update `## Artifact Index` entity/role/shape/pattern lists if new sections were added.
+4. If architecture artifacts need updating, append or edit the relevant `## entity:`, `## actor:`, `## contract:`, or `## pattern:` section. Update `## Artifact Index` entity/role/shape/pattern lists if new sections were added.
 5. For any new story: add a `stories.STORY-NNN` entry to `project-state.yaml` with all flags `false`; NNN is the next sequential number. Write `intent.md` for the new story (same two-paragraph format as Step 3b). After `intent.md` is confirmed on disk, set `intent_done: true` for that story in `project-state.yaml`. Also append a new service block for the story in `specs/architecture/deployment.md → ## deployment:services` — use the story slug as the service name, copy scaling defaults from existing services, leave `port:` as a comment noting it will be filled from build-report.yaml at deploy time.
 6. For any removed story: remove its entry from `project-state.yaml`; remove its service block from `deployment.md → ## deployment:services`; note removal in an amendment block
 7. Preserve `ideation_complete:true`
@@ -558,7 +558,7 @@ Invoked by the orchestrator via P0 when `pending_arch_gap` is non-null.
 
 2. **If `story_id` is null (P2 — project-level gap after RE/ideation crash):**
    - Read `specs/architecture/architecture.md` — check which sections are `_not yet written_` and whether `## Artifact Index` is present
-   - For each arch detail file (`data-model.md`, `actors.md`, `contracts.md`, `patterns.md`, `ux.md`, `deployment.md`): check if it exists in `specs/architecture/`
+   - For each architecture artifact (`data-model.md`, `actors.md`, `contracts.md`, `patterns.md`, `ux.md`, `deployment.md`): check if it exists in `specs/architecture/`
    - Write any missing files using the same logic as Step 3 (derive from architecture.md narrative already written). For `deployment.md`: if the content can be inferred from `## Tech Stack` and `## Constraints`, write it; otherwise write with all fields set to `_not yet written_`.
    - Append or update `## Artifact Index` if absent or incomplete — must include `deployment:` entry
    - For each story in `project-state.yaml` where `intent_done:false`: check if `intent.md` exists on disk; if not, write it (Step 3b logic)
@@ -566,8 +566,8 @@ Invoked by the orchestrator via P0 when `pending_arch_gap` is non-null.
    - Return: `arch gap resolved — [list of files written or updated]`
 
 3. **If `story_id` is non-null (normal P0 — story-level gap):**
-   - Read `specs/architecture/architecture.md → ## Artifact Index` to find the relevant arch file
-   - Read the relevant arch file in full
+   - Read `specs/architecture/architecture.md → ## Artifact Index` to find the relevant architecture artifact
+   - Read the relevant architecture artifact in full
    - Add or update the missing section identified in `reason`:
      - New entity → add `## entity:[name]` section
      - New actor → add `## actor:[name]` section

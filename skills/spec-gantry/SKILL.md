@@ -28,7 +28,7 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
 | `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse engineer | sonnet-4-6 |
 
-Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/architecture.md` to every subagent invocation. Agents extract the `## Artifact Index` from `arch_ref` to resolve arch file paths.
+Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/architecture.md` to every subagent invocation. Agents extract the `## Artifact Index` from `arch_ref` to resolve architecture artifact paths.
 
 ## System Wiring
 

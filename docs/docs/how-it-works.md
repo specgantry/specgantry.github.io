@@ -80,7 +80,7 @@ The ideation subagent runs a two-beat conversational session. It acts as a partn
 
 After Beat 2, the ideation agent seeds all artifacts in two passes:
 
-**Pass 1** (arch files + Artifact Index):
+**Pass 1** (architecture artifacts + Artifact Index):
 - Creates `specs/architecture/data-model.md` — entities inferred from story list
 - Creates `specs/architecture/actors.md` — roles from auth model
 - Creates `specs/architecture/contracts.md` — response shapes from inferred interfaces
@@ -93,7 +93,7 @@ After Beat 2, the ideation agent seeds all artifacts in two passes:
 - Sets `arch_seeded: true` and `intent_done: true` per story atomically
 - If crashed before Pass 2: P2 routing detects `arch_seeded:false` and recovers automatically
 
-**Gate to Phase 2:** `ideation_complete:true` + `arch_seeded:true` + Artifact Index present + all arch files exist
+**Gate to Phase 2:** `ideation_complete:true` + `arch_seeded:true` + Artifact Index present + all architecture artifacts exist
 
 ### The intent.md
 
@@ -112,7 +112,7 @@ The story-spec subagent writes a slim, precise spec for one story at a time. It 
 
 **Steps:**
 
-1. Load `architecture.md` (narrative + Artifact Index in one read) + all 5 arch files
+1. Load `architecture.md` (narrative + Artifact Index in one read) + all 6 architecture artifacts
 2. Finalize `intent.md` if not already done — deepen thin drafts, set `intent_done:true`
 3. Validate arch references — for each entity/actor/contract the story needs, check the Artifact Index. If a required section is missing → signal P0 arch gap and stop
 4. Write `story-spec.md` — five sections + `reads:` block
@@ -162,7 +162,7 @@ POST /api/applications/:id/submit
 - new fields: none
 ```
 
-**The reads: block** is the agent's fetch list. Development loads only these sections from the arch files — approximately 130 lines of targeted context total.
+**The reads: block** is the agent's fetch list. Development loads only these sections from the architecture artifacts — approximately 130 lines of targeted context total.
 
 **The 60-line limit** is a hard stop enforced in the self-review. If exceeded, the overrun must be moved to an arch artifact and referenced — not trimmed.
 
@@ -177,7 +177,7 @@ The development subagent implements one story end-to-end. It loads context via a
 1. `intent.md` — functional grounding for judgment calls
 2. `story-spec.md` — extract `reads:` block
 3. `architecture.md` — Artifact Index (to resolve reads: paths) + Guardrails + Configuration
-4. For each `reads:` entry: load only that specific `## section` from the relevant arch file — stop at the next `##`
+4. For each `reads:` entry: load only that specific `## section` from the relevant architecture artifact — stop at the next `##`
 
 Total context: ~130 lines. Precise, not broad.
 
@@ -195,7 +195,7 @@ Every new file gets structural anchor tags so the investigative agent can naviga
 // @contract input: {id: uuid} → output: contract:submission-response | errors: 400, 401, 403, 422
 ```
 
-**Gap specs:** if an arch artifact is wrong, a contract is missing, or a side-effect is discovered — the build agent does NOT modify arch files or specs directly. It writes to `specs/stories/[STORY-ID]/gap.md` and records what needs to change. If a referenced section doesn't exist at read time, it signals a P1 spec gap and stops — the pipeline fills the gap automatically.
+**Gap specs:** if an arch artifact is wrong, a contract is missing, or a side-effect is discovered — the build agent does NOT modify architecture artifacts or specs directly. It writes to `specs/stories/[STORY-ID]/gap.md` and records what needs to change. If a referenced section doesn't exist at read time, it signals a P1 spec gap and stops — the pipeline fills the gap automatically.
 
 **Gate to Phase 4:** all stories `built:true`
 
@@ -234,7 +234,7 @@ Triggered when: story-spec finds an entity/actor/contract/pattern that doesn't e
 Flow:
 1. Story-spec writes `pending_arch_gap` to project-state with the missing section name
 2. Orchestrator detects P0 and invokes ideation in arch gap mode
-3. Ideation adds the missing section to the relevant arch file and updates the Artifact Index
+3. Ideation adds the missing section to the relevant architecture artifact and updates the Artifact Index
 4. Orchestrator clears the gap flag, restores `active_story`, and resumes story-spec
 
 ### P1 — Spec Gap
@@ -331,7 +331,7 @@ project:
   active_story: null         # set while a subagent is running
   active_phase: null         # ideation | story-spec | development | investigation
 ideation_complete: false
-arch_seeded: false           # true after all arch files + intent.md written
+arch_seeded: false           # true after all architecture artifacts + intent.md written
 pending_arch_gap: null       # P0 gap signal
 pending_spec_gap: null       # P1 gap signal
 stories:

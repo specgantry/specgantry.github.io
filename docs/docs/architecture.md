@@ -61,7 +61,7 @@ project:
   active_phase: null          # ideation | story-spec | development | investigation | null
 
 ideation_complete: false      # true after all Beat 2 topics confirmed
-arch_seeded: false            # true after all 5 arch files + intent.md written (Pass 2)
+arch_seeded: false            # true after all 6 architecture artifacts + intent.md written (Pass 2)
 pending_arch_gap: null        # set by story-spec or orchestrator when arch section missing
 pending_spec_gap: null        # set by development when a reads: reference doesn't resolve
 
@@ -99,7 +99,7 @@ pending_spec_gap:
 
 ## The Artifact Index Format {#artifact-index}
 
-The `## Artifact Index` is always the last section of `specs/architecture/architecture.md`. It is a fenced YAML block — agents parse it to resolve arch file paths without scanning the directory.
+The `## Artifact Index` is always the last section of `specs/architecture/architecture.md`. It is a fenced YAML block — agents parse it to resolve architecture artifact paths without scanning the directory.
 
 ```markdown
 ## Artifact Index
@@ -300,12 +300,12 @@ Use the language's native comment syntax (`//`, `#`, `--`, etc.).
 
 **One writer per file type.** Every file has exactly one agent that writes it. No other agent modifies it. Clean audit trail, no race conditions between agents.
 
-**State flags confirm files exist.** `arch_seeded:true` is only written after all arch files are on disk. `intent_done:true` only after `intent.md` is on disk. State is never optimistic — a flag being true guarantees the artifact exists.
+**State flags confirm files exist.** `arch_seeded:true` is only written after all architecture artifacts are on disk. `intent_done:true` only after `intent.md` is on disk. State is never optimistic — a flag being true guarantees the artifact exists.
 
 **Targeted reads over broad context.** Agents load only the sections they need via the `reads:` block. ~130 lines of targeted context per story instead of the full architecture. The gap flow handles the cases where a needed section doesn't exist yet.
 
 **Self-healing over user intervention.** Gap flows (P0/P1/P2) resolve broken references automatically. The user should never need to manually edit state files or tell SpecGantry to "retry" a failed phase.
 
-**Architecture is authoritative.** The `architecture/` files are the source of truth for entities, actors, contracts, patterns, and UX. Story specs reference them — never duplicate them. If a story spec needs something that isn't in the arch files, a P0 gap adds it.
+**Architecture is authoritative.** The `architecture/` files are the source of truth for entities, actors, contracts, patterns, and UX. Story specs reference them — never duplicate them. If a story spec needs something that isn't in the architecture artifacts, a P0 gap adds it.
 
 **Plain text, git-native.** All artifacts are YAML and Markdown. Diffs are meaningful. History is preserved. No proprietary format, no external database.

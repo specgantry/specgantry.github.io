@@ -175,7 +175,7 @@ reads:
 - Permissions: always reference `actor:*` — never re-describe permissions already in actors.md
 - State: always reference `data:*` state machine — never duplicate it
 - Data: net-new fields only; if none, say so explicitly
-- Max 60 lines total. If exceeded: something is duplicating an arch artifact — move it to the arch file and reference it.
+- Max 60 lines total. If exceeded: something is duplicating an arch artifact — move it to the architecture artifact and reference it.
 
 ---
 
@@ -201,7 +201,7 @@ Self-review checklist:
 **Line count is a hard stop.** Count the lines in the written story-spec.md (excluding the YAML frontmatter block delimiters `---`). If the count exceeds 60:
 1. Identify which section is causing the overrun
 2. Find the content that duplicates or re-describes something already in an arch artifact
-3. Replace it with a reference (`contract:*`, `actor:*`, `data:*`) and move any genuinely new content to the appropriate arch file via `pending_arch_gap`
+3. Replace it with a reference (`contract:*`, `actor:*`, `data:*`) and move any genuinely new content to the appropriate architecture artifact via `pending_arch_gap`
 4. Recount — do not proceed until ≤ 60 lines
 
 A spec that cannot fit in 60 lines without loss of essential information contains something that belongs in the shared arch layer, not the story layer. Move it, don't shrink it by cutting corners.
@@ -261,7 +261,7 @@ Invoked by the orchestrator via P1 when `pending_spec_gap` is non-null.
 3. Identify what needs updating based on `reason` (typically the `reads:` block, `## Interfaces`, or `## Data`)
 4. Update the relevant section only. Keep all other sections unchanged.
 5. If the gap requires an architecture update (e.g. a contract is genuinely missing from contracts.md):
-   - Write `pending_arch_gap` to `project-state.yaml` — do not update arch files directly
+   - Write `pending_arch_gap` to `project-state.yaml` — do not update architecture artifacts directly
    - Return: `spec gap escalated to arch gap — [reason]`
 6. Otherwise: return `spec gap resolved — [what was updated]`
 7. Do NOT touch `spec_done`, `built`, or `deployed` flags.
@@ -289,9 +289,9 @@ When invoked with `merge_gaps: true` and `gap_files: [gap.md]`:
 4. Classify every item in `## Recommended spec update` and `## Changes` by its target before writing anything:
    - **Story-spec target**: changes to criteria, acceptance conditions, interfaces (API shapes, inputs/outputs), permissions, state transitions, or data fields that are story-specific — these go into `story-spec.md`
    - **Arch target**: changes to a shared architecture artifact referenced by its anchor (`ux:*`, `entity:*`, `contract:*`, `actor:*`, `pattern:*`) — these go into the relevant `specs/architecture/*.md` file at the anchor, not into the story spec
-   - A single gap item may touch both: write the story-spec change to `story-spec.md` AND the arch change to the arch file. Never write arch-level content into `story-spec.md`.
+   - A single gap item may touch both: write the story-spec change to `story-spec.md` AND the arch change to the architecture artifact. Never write arch-level content into `story-spec.md`.
 5. Apply story-spec changes: edit the relevant section(s) of `story-spec.md` in place. Do not append amendment blocks.
-6. Apply arch changes: for each arch target identified in step 4, read the relevant arch file, find the `## [type]:[name]` anchor, and edit that section in place to reflect what was actually built. Do NOT append a new section. If the anchor does not exist, create it as a new section in the correct arch file.
+6. Apply arch changes: for each arch target identified in step 4, read the relevant architecture artifact, find the `## [type]:[name]` anchor, and edit that section in place to reflect what was actually built. Do NOT append a new section. If the anchor does not exist, create it as a new section in the correct architecture artifact.
 7. If `## Side-effects on other stories` is non-empty, note it in a warning but do not modify other story specs — the orchestrator handles cross-story coordination.
 8. If the gap changes the story's fundamental purpose or outcome: also update `specs/stories/[story_id]/intent.md` to reflect what was actually built.
 9. Append one row to the `## Change history` table summarising all changes in the gap:

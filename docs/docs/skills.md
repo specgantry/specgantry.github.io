@@ -205,7 +205,7 @@ After Beat 2: seeds all 6 architecture artifacts + Artifact Index + `intent.md` 
 Produces a slim, precise `story-spec.md` (max 60 lines) and finalizes `intent.md`.
 
 **Steps:**
-1. Load `architecture.md` + all 5 arch files + `intent.md` + project-state
+1. Load `architecture.md` + all 6 architecture artifacts + `intent.md` + project-state
 2. Detect RE stub (`⚠ Stub spec` marker) — if stub, skips validation; treats `reads:` as a context hint
 3. Finalize `intent.md` (skip if `intent_done:true`)
 4. Validate arch references — signal P0 if any required section is missing
@@ -231,7 +231,7 @@ Implements one story end-to-end: data layer → backend → AI integration → f
 1. `intent.md` — functional grounding
 2. `story-spec.md` — extract `reads:` block
 3. `architecture.md` — Artifact Index + Guardrails + Configuration
-4. For each `reads:` entry: load only that specific `##` section from the arch file
+4. For each `reads:` entry: load only that specific `##` section from the architecture artifact
 
 Total context: ~130 lines.
 
@@ -311,7 +311,7 @@ Analyzes an existing codebase and synthesizes the complete v4 project structure.
 2. Writes `specs/project-state.yaml` Pass 1 — with `arch_seeded:false`, `intent_done:false` per story
 3. Writes `specs/architecture/architecture.md` — narrative + UX Model
 4. Analyzes frontend code for UX patterns
-5. Writes all 5 arch detail files + Artifact Index
+5. Writes all 6 architecture artifacts + Artifact Index
 6. Writes `intent.md` and stub `story-spec.md` per story
 7. Writes `build-report.yaml` stubs for built stories
 8. Updates project-state Pass 2 — sets `arch_seeded:true`, `intent_done:true`
@@ -323,9 +323,9 @@ Analyzes an existing codebase and synthesizes the complete v4 project structure.
 
 The ideation agent runs in a special mode when invoked via P0 or P2. It does not start a conversational session — it targets a specific missing artifact section and fills it.
 
-**P0 (story-level gap):** reads the Artifact Index, reads the relevant arch file, adds the missing section (entity/actor/contract/pattern/ux), updates the index list.
+**P0 (story-level gap):** reads the Artifact Index, reads the relevant architecture artifact, adds the missing section (entity/actor/contract/pattern/ux), updates the index list.
 
-**P2 (project-level gap, `story_id: null`):** checks all arch files for existence, writes any missing ones, writes `intent.md` for any story where `intent_done:false` and file is absent.
+**P2 (project-level gap, `story_id: null`):** checks all architecture artifacts for existence, writes any missing ones, writes `intent.md` for any story where `intent_done:false` and file is absent.
 
 Returns `arch gap resolved — [what was added/changed]`. The orchestrator clears the gap flag and resumes the interrupted phase.
 

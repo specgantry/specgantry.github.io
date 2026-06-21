@@ -135,7 +135,7 @@ The token counts are exact (from the API response). The pricing is fetched live 
 
 For a typical 4-story project:
 - Ideation: $0.50–$1.50 (one Sonnet session with artifact synthesis)
-- Per story spec: $0.20–$0.60 (Sonnet, arch files + intent + spec write)
+- Per story spec: $0.20–$0.60 (Sonnet, architecture artifacts + intent + spec write)
 - Per story build: $0.30–$1.00 (Sonnet, ~130-line targeted context)
 - Deployment: $0.20–$0.50 (Sonnet, build-reports + arch tech stack)
 
@@ -175,7 +175,7 @@ This shouldn't happen in normal flow, but if it does: run `/spec-gantry` and typ
 
 ### The P2 recovery loop keeps firing
 
-This means `arch_seeded` keeps being reset to `false`. Check that the ideation agent completed its self-review and Pass 2 write. If the arch files exist but the flag is wrong, manually set `arch_seeded: true` in `project-state.yaml`.
+This means `arch_seeded` keeps being reset to `false`. Check that the ideation agent completed its self-review and Pass 2 write. If the architecture artifacts exist but the flag is wrong, manually set `arch_seeded: true` in `project-state.yaml`.
 
 ### How do I reset a story to re-spec it?
 

@@ -164,7 +164,7 @@ Status mapping:
 
 ---
 
-**Step 3a — UX analysis** (before writing arch detail files):
+**Step 3a — UX analysis** (before writing architecture artifacts):
 
 Analyze the existing frontend code and dependencies to determine:
 - Frontend framework: from package.json dependencies (react, @angular/core, vue, etc.)

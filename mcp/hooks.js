@@ -130,9 +130,13 @@ async function hookSubagentStop() {
     process.exit(0);
   }
 
-  const { agent_id, session_id, transcript_path, cwd } = payload;
+  const { agent_id, session_id, cwd } = payload;
+  // Claude Code 2.0.42+ provides agent_transcript_path; older versions used transcript_path
+  const transcript_path = payload.agent_transcript_path || payload.transcript_path;
   const agentType = payload.agent_type || payload.agentType || '';
   const mapping   = AGENT_MAP[agentType];
+
+  logDebug('SubagentStop: payload fields:', JSON.stringify({ agent_id, session_id, cwd, agentType, has_agent_transcript_path: !!payload.agent_transcript_path, has_transcript_path: !!payload.transcript_path }));
 
   if (!mapping) {
     logDebug(`SubagentStop: skipping non-SpecGantry agent "${agentType}"`);
@@ -145,14 +149,31 @@ async function hookSubagentStop() {
   const projectDir = cwd || PROJECT_DIR;
   logDebug(`SubagentStop: projectDir="${projectDir}" (cwd="${cwd}" PROJECT_DIR="${PROJECT_DIR}")`);
 
+  // Resolve transcript: prefer the explicit path from the payload; fall back to
+  // constructing it from agent_id/session_id if the field is absent (pre-2.0.42).
   const resolvedTranscript = transcript_path || (() => {
     const slug = projectSlug(projectDir);
-    return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);
+    // session_id may be absent in newer CC versions — scan sessions by mtime as last resort
+    if (session_id) {
+      return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);
+    }
+    const projBase = path.join(CLAUDE_HOME, 'projects', slug);
+    try {
+      const sessions = fs.readdirSync(projBase)
+        .filter(e => /^[0-9a-f-]{36}$/.test(e))
+        .map(e => { try { const s = fs.statSync(path.join(projBase, e)); return s.isDirectory() ? { id: e, mtime: s.mtimeMs } : null; } catch { return null; } })
+        .filter(Boolean).sort((a, b) => b.mtime - a.mtime);
+      for (const sess of sessions) {
+        const p = path.join(projBase, sess.id, 'subagents', `agent-${agent_id}.jsonl`);
+        if (fs.existsSync(p)) return p;
+      }
+    } catch { /* ignore */ }
+    return null;
   })();
 
   logDebug('SubagentStop: transcript path:', resolvedTranscript);
 
-  if (!fs.existsSync(resolvedTranscript)) {
+  if (!resolvedTranscript || !fs.existsSync(resolvedTranscript)) {
     logError('SubagentStop: transcript not found:', resolvedTranscript, '— skipping cost entry');
     process.stdout.write(JSON.stringify({ continue: true }) + '\n');
     process.exit(0);

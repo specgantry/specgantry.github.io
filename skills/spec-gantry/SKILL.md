@@ -211,6 +211,14 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 
 **Important:** `Deploy release [version]` ONLY appears when ALL stories have `built:true`. If even one story is `built:false`, this action is invisible — it cannot be triggered prematurely.
 
+**`[version]` computation:** read `project.release` (e.g. `"1.0.0"`) and `project.next_release_type` from project-state. Split release into `[major, minor, patch]` integers. Apply:
+- `next_release_type: null` → version = `project.release` unchanged (first deploy)
+- `next_release_type: patch` → increment patch: `1.0.0 → 1.0.1`
+- `next_release_type: minor` → increment minor, reset patch: `1.0.0 → 1.1.0`
+- `next_release_type: major` → increment major, reset minor+patch: `1.0.0 → 2.0.0`
+
+Use this computed version everywhere `[version]` appears.
+
 `[N] New work` always appears as the last item in the action bar whenever `ideation_complete:true`.
 
 **Note on stub spec action:** this action appears alongside (not instead of) the pipeline actions above. A user can be speccing a `built:false` story AND have stub specs pending — both actions are shown. The stub spec action routes to the story-spec subagent for the lowest-numbered `built:true · spec_done:false` story. Typing a story ID directly also reaches a stub spec.
@@ -480,6 +488,8 @@ Set `project.active_phase: deployment` in `specs/project-state.yaml` — this ma
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`, `arch_ref`, `deployment_ref: specs/architecture/deployment.md`
 
 **After:** if any story still `deployed:false` → clear `project.active_phase: null` · halt with error; else:
+- Set `project.release: [version]` in project-state (the computed version from `[version]` computation rule above)
+- Set `project.next_release_type: null` in project-state
 - Set `project.active_story: null` in project-state
 - Set `project.active_phase: null` in project-state
 - Re-render · ⏸

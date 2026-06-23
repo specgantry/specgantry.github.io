@@ -1,102 +1,41 @@
 #!/usr/bin/env node
 // SpecGantry Cost Tracking MCP Server
-// Long-running stdio JSON-RPC server — serves record_agent_cost and refresh_pricing tools.
+// Exposes refresh_pricing — returns current rates cache info.
+// record_agent_cost has been removed: cost tracking is handled automatically
+// by the SubagentStart/SubagentStop hooks in hooks.js.
 // stdlib-only — no npm dependencies required
-// Cross-platform: Mac, Linux, Windows
 
 'use strict';
 
 const fs   = require('fs');
-const path = require('path');
 const {
   initLogger, logError, logInfo, logDebug,
-  PLUGIN_DIR, PROJECT_DIR,
-  AGENT_MAP,
-  getRatesForModel, refreshPricing, atomicWriteJson, RATES_CACHE,
-  appendCostLog, readProjectRelease,
-  resolveAgentFromToolUseId, detectCurrentSession,
-  buildCostEntry,
+  loadCachedRates, atomicWriteJson, RATES_CACHE, FALLBACK_RATES,
+  readStdin,
 } = require('./shared');
 
-// ─── Tool: record_agent_cost ──────────────────────────────────────────────────
-async function toolRecordAgentCost(args) {
-  const { toolUseId, phase, model, story = null, projectDir: reqProjectDir } = args;
-  const projectDir = reqProjectDir || PROJECT_DIR;
-  logDebug('record_agent_cost called:', JSON.stringify({ toolUseId, phase, model, story }));
-
-  if (!toolUseId || !phase || !model) {
-    logError('record_agent_cost: missing required fields');
-    return { ok: false, error: 'Missing required fields: toolUseId, phase, model' };
-  }
-
-  // Retry once after 500ms — Claude Code may not have flushed the .meta.json yet
-  let resolved = resolveAgentFromToolUseId(toolUseId);
-  if (!resolved) {
-    logDebug('toolUseId not found on first attempt, retrying after 500ms');
-    await new Promise(r => setTimeout(r, 500));
-    resolved = resolveAgentFromToolUseId(toolUseId);
-  }
-  if (!resolved) {
-    logError('record_agent_cost: could not resolve toolUseId', toolUseId);
-    return { ok: false, error: `Could not find subagent for toolUseId: ${toolUseId}` };
-  }
-
-  const { agentId, subagentDir } = resolved;
-  const transcriptPath = path.join(subagentDir, `agent-${agentId}.jsonl`);
-  logDebug('Reading transcript:', transcriptPath);
-
-  const agentType = Object.keys(AGENT_MAP).find(k => AGENT_MAP[k].phase === phase) || `agent-${agentId}`;
-
-  // Sum tokens directly — record_agent_cost is called by the orchestrator which already
-  // knows phase/model, so we don't need inferComponentFromTranscript here.
-  const lines = fs.readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
-  let input_tokens = 0, output_tokens = 0, cache_creation_tokens = 0, cache_read_tokens = 0;
-  for (const line of lines) {
-    try {
-      const r = JSON.parse(line);
-      if (r.type !== 'assistant') continue;
-      const usage = r.message && r.message.usage;
-      if (!usage) continue;
-      input_tokens          += (usage.input_tokens || 0);
-      output_tokens         += (usage.output_tokens || 0);
-      cache_creation_tokens += (usage.cache_creation_input_tokens || 0);
-      cache_read_tokens     += (usage.cache_read_input_tokens || 0);
-    } catch { /* malformed line */ }
-  }
-
-  const tokens = { input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens };
-  const entry  = buildCostEntry({ phase, agentType, model, component: story, projectDir, tokens });
-
-  appendCostLog(entry, projectDir);
-  logInfo(`Cost recorded: ${phase}${story ? ' / ' + story : ''} — ${input_tokens + output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
-
-  return { ok: true, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, total_cost_usd: entry.total_cost_usd };
-}
-
 // ─── Tool: refresh_pricing ────────────────────────────────────────────────────
+// Returns the current rates cache info. Does not attempt a live fetch —
+// the pricing page is a React SPA that cannot be scraped with a plain HTTP GET.
+// To update rates, edit rates-cache.json in the plugin repo.
 async function toolRefreshPricing(_args) {
-  return refreshPricing();
+  const { rates, source } = loadCachedRates();
+  const cacheData = (() => {
+    try { return JSON.parse(fs.readFileSync(RATES_CACHE, 'utf8')); } catch { return null; }
+  })();
+  return {
+    ok: true,
+    source,
+    fetched_at: cacheData && cacheData.fetched_at || null,
+    model_count: Object.keys(rates).length,
+    rates,
+  };
 }
 
 // ─── MCP stdio JSON-RPC ───────────────────────────────────────────────────────
 const TOOLS = {
-  record_agent_cost: {
-    description: 'Resolve a subagent by its toolUseId, read real token counts from its JSONL transcript, and append a cost entry to specs/cost-log.ndjson.',
-    inputSchema: {
-      type: 'object',
-      required: ['toolUseId', 'phase', 'model'],
-      properties: {
-        toolUseId: { type: 'string', description: 'The id field of the Agent tool_use call — looks like toolu_bdrk_...' },
-        phase:     { type: 'string', description: 'SpecGantry phase name, e.g. ideation, story_spec, development, deployment' },
-        model:     { type: 'string', description: 'Exact model ID from the agent frontmatter, e.g. claude-sonnet-4-6' },
-        story:     { type: 'string', description: 'Story ID (STORY-001) or null for project-level phases', nullable: true },
-        projectDir: { type: 'string', description: 'Absolute path to the project directory. Defaults to server cwd if omitted.' },
-      },
-    },
-    handler: toolRecordAgentCost,
-  },
   refresh_pricing: {
-    description: 'Fetch current Anthropic model pricing and update the local rates cache.',
+    description: 'Return current rates cache info. To update rates, edit rates-cache.json in the plugin repo.',
     inputSchema: { type: 'object', properties: {} },
     handler: toolRefreshPricing,
   },
@@ -153,12 +92,10 @@ async function handleRequest(req) {
 // ─── Startup ──────────────────────────────────────────────────────────────────
 (async function main() {
   initLogger('spec-gantry-costs.log');
-  logInfo(`Starting spec-gantry-costs MCP server (log level: ${process.env.SPEC_GANTRY_LOG_LEVEL || 'info'})`);
-  logDebug('PROJECT_DIR:', PROJECT_DIR);
-  logDebug('PLUGIN_DIR:', PLUGIN_DIR);
+  logInfo('Starting spec-gantry-costs MCP server');
 
-  detectCurrentSession();
-  refreshPricing().catch(() => { /* already logged */ });
+  const { source, rates } = loadCachedRates();
+  logInfo(`Rates loaded — source: ${source}, models: ${Object.keys(rates).length}`);
 
   let buffer = '';
   process.stdin.setEncoding('utf8');

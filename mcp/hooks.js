@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // SpecGantry hook handlers — invoked by Claude Code's hook system (not the MCP server)
-// Handles: SessionStart (project detection), PreToolUse (agent gating), SubagentStart (logging), SubagentStop (cost tracking)
+// Handles: SessionStart (project detection), PreToolUse (agent gating),
+//          SubagentStart (stamp byte offset), SubagentStop (cost tracking)
 // stdlib-only — no npm dependencies required
 
 'use strict';
@@ -9,15 +10,15 @@ const path = require('path');
 const fs   = require('fs');
 const {
   initLogger, setLogFile, logError, logInfo, logDebug,
-  CLAUDE_HOME, PROJECT_DIR,
-  AGENT_MAP, PROJECT_LEVEL_PHASES,
-  sumTokensFromTranscript, inferStoryFromTranscript, readActiveStoryFromProjectState,
-  projectSlug, buildCostEntry, appendCostLog, readStdin,
+  PROJECT_DIR,
+  AGENT_MAP,
+  resolveTranscriptPath,
+  sumTokensFromSlice,
+  writeStamp, readStamp, deleteStamp,
+  buildCostEntry, appendCostLog, readStdin,
 } = require('./shared');
 
 // ─── SessionStart: project auto-detection ────────────────────────────────────
-// If specs/project-state.yaml exists in cwd, inject a context note so Claude
-// recognises this as an active SpecGantry project without the user typing /spec-gantry.
 async function hookSessionStart() {
   let payload;
   try {
@@ -36,7 +37,6 @@ async function hookSessionStart() {
     process.exit(0);
   }
 
-  // Extract project name and release from state file (simple regex, no YAML parser needed)
   let projectName = 'unknown';
   let release = 'unknown';
   try {
@@ -58,8 +58,6 @@ async function hookSessionStart() {
 }
 
 // ─── PreToolUse: Agent tool guard ────────────────────────────────────────────
-// Blocks any Agent spawn whose subagent_type is not an approved spec-gantry:*:* agent.
-// Prevents Claude Code from going off-script with general-purpose agents, etc.
 async function hookPreToolUse() {
   let payload;
   try {
@@ -70,7 +68,7 @@ async function hookPreToolUse() {
     process.exit(0);
   }
 
-  const toolName  = payload.tool_name  || payload.toolName  || '';
+  const toolName = payload.tool_name || payload.toolName || '';
   if (toolName !== 'Agent') {
     process.stdout.write(JSON.stringify({ continue: true }) + '\n');
     process.exit(0);
@@ -80,9 +78,9 @@ async function hookPreToolUse() {
   const agentType = input.subagent_type || input.agentType  || '';
 
   const ALLOWED = [
-    /^spec-gantry:/,   // all SpecGantry subagents
-    /^Plan$/,          // Claude Code plan mode — read-only, harmless
-    /^statusline-setup$/, // Claude Code status line helper
+    /^spec-gantry:/,
+    /^Plan$/,
+    /^statusline-setup$/,
   ];
 
   const allowed = !agentType || ALLOWED.some(p => p.test(agentType));
@@ -100,7 +98,10 @@ async function hookPreToolUse() {
   process.exit(0);
 }
 
-// ─── SubagentStart: phase logging ────────────────────────────────────────────
+// ─── SubagentStart: record byte offset ───────────────────────────────────────
+// Fires before the subagent makes any API calls. Records the current size of
+// the transcript file (0 if it doesn't exist yet) so SubagentStop can read
+// only the bytes this invocation produced — no cumulative inflation.
 async function hookSubagentStart() {
   let payload;
   try {
@@ -113,7 +114,41 @@ async function hookSubagentStart() {
 
   const agentType = payload.agent_type || payload.agentType || '';
   const mapping   = AGENT_MAP[agentType];
-  if (mapping) logInfo(`Agent started: ${mapping.phase} (${agentType})`);
+
+  if (!mapping) {
+    logDebug(`SubagentStart: skipping non-SpecGantry agent "${agentType}"`);
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
+  }
+
+  const { agent_id, session_id, cwd } = payload;
+  const transcript_path = payload.agent_transcript_path || payload.transcript_path;
+  const projectDir = cwd || PROJECT_DIR;
+
+  const transcriptPath = resolveTranscriptPath({
+    transcript_path,
+    agent_id,
+    session_id,
+    projectDir,
+  });
+
+  // Record the byte offset — how many bytes already exist before this invocation writes anything.
+  // If the file doesn't exist yet, offset is 0 and we'll read the whole file at Stop.
+  let byteOffset = 0;
+  if (transcriptPath) {
+    try {
+      byteOffset = fs.statSync(transcriptPath).size;
+    } catch { /* file doesn't exist yet — offset stays 0 */ }
+  }
+
+  writeStamp(projectDir, agent_id, {
+    transcript_path: transcriptPath,
+    byte_offset: byteOffset,
+    phase: mapping.phase,
+    agent_type: agentType,
+  });
+
+  logDebug(`SubagentStart: stamped ${agentType} agent_id=${agent_id} offset=${byteOffset} path=${transcriptPath}`);
 
   process.stdout.write(JSON.stringify({ continue: true }) + '\n');
   process.exit(0);
@@ -130,13 +165,8 @@ async function hookSubagentStop() {
     process.exit(0);
   }
 
-  const { agent_id, session_id, cwd } = payload;
-  // Claude Code 2.0.42+ provides agent_transcript_path; older versions used transcript_path
-  const transcript_path = payload.agent_transcript_path || payload.transcript_path;
   const agentType = payload.agent_type || payload.agentType || '';
   const mapping   = AGENT_MAP[agentType];
-
-  logDebug('SubagentStop: payload fields:', JSON.stringify({ agent_id, session_id, cwd, agentType, has_agent_transcript_path: !!payload.agent_transcript_path, has_transcript_path: !!payload.transcript_path }));
 
   if (!mapping) {
     logDebug(`SubagentStop: skipping non-SpecGantry agent "${agentType}"`);
@@ -144,66 +174,47 @@ async function hookSubagentStop() {
     process.exit(0);
   }
 
-  logInfo(`SubagentStop: recording cost for ${mapping.phase} (${agentType})`);
-
+  const { agent_id, session_id, cwd } = payload;
+  const transcript_path = payload.agent_transcript_path || payload.transcript_path;
   const projectDir = cwd || PROJECT_DIR;
-  logDebug(`SubagentStop: projectDir="${projectDir}" (cwd="${cwd}" PROJECT_DIR="${PROJECT_DIR}")`);
 
-  // Resolve transcript: prefer the explicit path from the payload; fall back to
-  // constructing it from agent_id/session_id if the field is absent (pre-2.0.42).
-  const resolvedTranscript = transcript_path || (() => {
-    const slug = projectSlug(projectDir);
-    // session_id may be absent in newer CC versions — scan sessions by mtime as last resort
-    if (session_id) {
-      return path.join(CLAUDE_HOME, 'projects', slug, session_id, 'subagents', `agent-${agent_id}.jsonl`);
-    }
-    const projBase = path.join(CLAUDE_HOME, 'projects', slug);
-    try {
-      const sessions = fs.readdirSync(projBase)
-        .filter(e => /^[0-9a-f-]{36}$/.test(e))
-        .map(e => { try { const s = fs.statSync(path.join(projBase, e)); return s.isDirectory() ? { id: e, mtime: s.mtimeMs } : null; } catch { return null; } })
-        .filter(Boolean).sort((a, b) => b.mtime - a.mtime);
-      for (const sess of sessions) {
-        const p = path.join(projBase, sess.id, 'subagents', `agent-${agent_id}.jsonl`);
-        if (fs.existsSync(p)) return p;
-      }
-    } catch { /* ignore */ }
-    return null;
-  })();
+  // Read the stamp written at SubagentStart
+  const stamp = readStamp(projectDir, agent_id);
+  deleteStamp(projectDir, agent_id);
 
-  logDebug('SubagentStop: transcript path:', resolvedTranscript);
+  // Resolve transcript path — prefer stamp (recorded at start before any writes),
+  // then fall back to payload fields
+  const transcriptPath = (stamp && stamp.transcript_path)
+    || resolveTranscriptPath({ transcript_path, agent_id, session_id, projectDir });
 
-  if (!resolvedTranscript || !fs.existsSync(resolvedTranscript)) {
-    logError('SubagentStop: transcript not found:', resolvedTranscript, '— skipping cost entry');
+  if (!transcriptPath || !fs.existsSync(transcriptPath)) {
+    logError('SubagentStop: transcript not found:', transcriptPath, '— skipping cost entry');
     process.stdout.write(JSON.stringify({ continue: true }) + '\n');
     process.exit(0);
   }
 
-  const tokens  = sumTokensFromTranscript(resolvedTranscript);
-  const model   = tokens.model || mapping.model;
-  let component = null;
+  const byteOffset = (stamp && typeof stamp.byte_offset === 'number') ? stamp.byte_offset : 0;
 
-  if (!PROJECT_LEVEL_PHASES.has(mapping.phase)) {
-    component = inferStoryFromTranscript(resolvedTranscript, projectDir);
-    if (!component) {
-      logDebug(`SubagentStop: story inference failed for ${mapping.phase}, rechecking active_story fallback`);
-      const activeStory = readActiveStoryFromProjectState(projectDir);
-      if (activeStory) {
-        component = activeStory;
-        logInfo(`SubagentStop: recovered story from active_story fallback: ${component}`);
-      }
-    }
+  logDebug(`SubagentStop: reading ${agentType} agent_id=${agent_id} from offset=${byteOffset} path=${transcriptPath}`);
+
+  const tokens = sumTokensFromSlice(transcriptPath, byteOffset);
+  const model  = tokens.model || mapping.model;
+
+  logDebug(`SubagentStop: tokens=${JSON.stringify(tokens)} model=${model}`);
+
+  // Skip zero-token entries — subagent exited before making any API calls (e.g. gate failure)
+  if (tokens.input_tokens === 0 && tokens.output_tokens === 0) {
+    logDebug(`SubagentStop: zero tokens for ${agentType} agent_id=${agent_id} — skipping cost entry`);
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    process.exit(0);
   }
 
-  logDebug('SubagentStop: tokens:', JSON.stringify(tokens), 'model:', model, 'story:', component);
-
-  const entry = buildCostEntry({ phase: mapping.phase, agentType, model, component, projectDir, tokens });
+  const entry = buildCostEntry({ phase: mapping.phase, agentType, model, projectDir, tokens });
 
   try {
     appendCostLog(entry, projectDir);
-    // Cost entry goes to the costs log; switch file for this write then switch back
     setLogFile('spec-gantry-costs.log');
-    logInfo(`Cost recorded — ${mapping.phase}${component ? ' / ' + component : ''} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
+    logInfo(`Cost recorded — ${mapping.phase} — ${tokens.input_tokens + tokens.output_tokens} tokens — $${entry.total_cost_usd} (${entry.pricing_source})`);
     setLogFile('spec-gantry-hooks.log');
   } catch (err) {
     logError('SubagentStop: failed to write cost-log.ndjson:', err.message);

@@ -15,11 +15,28 @@ Be a **partner and advisor**, not a decision-maker. Put the user in the driver's
 - **Tell**: for logically implied consequences only — e.g. "React chosen → react-bootstrap is the natural component library". Always make deductions transparent and overridable.
 - **Silently proceed**: when something is purely mechanical and irrelevant to the user.
 
-You produce: `specs/architecture/architecture.md` (narrative + UX model + Artifact Index), six architecture detail files (data-model, actors, contracts, patterns, ux, deployment), and `intent.md` per story. There are no interim files.
+You produce: `specs/architecture/architecture.md` (narrative + UX model + Artifact Index), six architecture detail files (data-model, actors, contracts, patterns, ux, deployment), and `intent.md` per story. There are no interim files except the scratchpad story list (see below).
 
 All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
 
+**You are a single-turn processor.** The orchestrator calls you once per user exchange. You do one unit of work — process one answer, flush to disk, formulate the next question — and return it. You never wait for user input. The orchestrator is the loop.
+
 **Flush to disk after every answer.** Never hold more than one exchange in memory before writing. A crash or timeout mid-session must lose at most one answer.
+
+**Inputs (passed in prompt by orchestrator):**
+- `project_dir`, `arch_ref`
+- `prior_question` — (optional) the question text you returned last turn
+- `user_answer` — (optional) the user's response to that question
+
+**If `user_answer` is present:** read it, process it, flush to disk, formulate next question or signal. Do NOT re-run the resume decision tree — you already know the topic from `prior_question` context and current disk state.
+**If `user_answer` is absent:** run the resume decision tree (Step 1) to determine where you are, then ask the first unanswered question.
+
+**Return signals (last line of your output, always):**
+- `TURN: [question text]` — next question for the user; orchestrator writes it to turn-state file, surfaces to user, stops
+- `COHERENCE_PASS` — all 10 topics done; orchestrator calls you again immediately with `mode: coherence`
+- `COHERENT` followed by the confirmed story list — coherence passed; orchestrator writes stories to project-state and calls you again with `mode: seed_artifacts`
+- `COHERENCE_ISSUES: [list of targeted questions]` — conflicts found; orchestrator feeds these back into the turn loop one by one
+- `IDEATION_COMPLETE` — arch artifacts seeded, flags set, done
 
 ---
 
@@ -37,7 +54,7 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 ## Step 1 — Load or resume
 
 Check `specs/project-state.yaml → ideation_complete` first:
-- `ideation_complete:true` → tell user session is already complete, re-render dashboard, stop.
+- `ideation_complete:true` → return `IDEATION_COMPLETE` immediately (idempotency guard)
 - `ideation_complete:false` → determine resume point by reading `specs/architecture/architecture.md`:
 
 **Resume decision tree (evaluated in order):**
@@ -47,7 +64,7 @@ Check `specs/project-state.yaml → ideation_complete` first:
 0.5. **`project.active_phase: amendment` in project-state (set by `project_change` orchestrator action):** cross-cutting project change — arch artifacts exist from prior session but need updating. Skip directly to **Amendment mode** section. Do NOT re-run Beat 1 or Beat 2. After amendment mode completes, clear `project.active_phase: null` in project-state before setting `ideation_complete:true`.
 
 1. **`arch_seeded:false` AND `## UX Model` is non-empty AND (`specs/architecture/deployment.md` missing OR `## deployment:target` is `_not yet written_`):** UX Model confirmed but Topic 10 not completed — resume at Topic 10. (Covers crashes mid-Topic 10 whether stories have been written yet or not.)
-2. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is non-empty AND `specs/architecture/deployment.md` exists with `## deployment:target` non-empty:** Topics 9 and 10 complete, story list written, but arch artifacts not yet seeded — resume at Step 3.
+2. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is non-empty AND `specs/architecture/deployment.md` exists with `## deployment:target` non-empty:** Topics 9 and 10 complete, story list written, but arch artifacts not yet seeded — resume at coherence pass.
 3. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is `_not yet written_`:** story list written to disk (Step 2 ran on Topic 8 approval) but Topic 9 not yet finished — resume at Topic 9.
 4. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is non-empty:** Beat 2 Topics 5–8 still in progress or not yet started — resume Beat 2 from first incomplete topic (check which of Tech Stack/Guardrails/Configuration are still `_not yet written_`).
 5. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is `_not yet written_`:** Beat 1 complete, Beat 2 not started — resume Beat 2 from Topic 5.
@@ -58,7 +75,7 @@ Check `specs/project-state.yaml → ideation_complete` first:
 
 **Entry 0.5 note:** `project_change` in the orchestrator sets `ideation_complete:false`, `arch_seeded:false`, AND `active_phase: amendment`. Entry 0.5 catches this before entries 1–7 can mis-route based on arch section content. Amendment mode for a project_change updates existing arch artifacts — Beat 2 topics run only for sections that need changing, never from scratch.
 
-**Entry 1 note:** Entry 1 fires before entry 2 so a crash during Topic 10 (where `stories:{}` may still be empty because Step 2 hasn't run yet) is always caught and resumes at Topic 10, not at Step 3.
+**Entry 1 note:** Entry 1 fires before entry 2 so a crash during Topic 10 (where `stories:{}` may still be empty because Step 2 hasn't run yet) is always caught and resumes at Topic 10, not at the coherence pass.
 
 **Amendment mode detection (legacy):** when `ideation_complete` was reset to `false` by a `project_change` before v3.1.5, `arch_seeded` is also `false` but `active_phase` may not be set. Entries 1–7 remain as a fallback for sessions that predate the `active_phase: amendment` marker.
 
@@ -95,7 +112,7 @@ _not yet written_
 
 ## Beat 1 — Mature the idea
 
-**Opening move (before any topic):** Read `## Vision` from `specs/architecture/architecture.md`. Before asking anything, write a brief synthesis to the user — 2–3 sentences narrated in the conversation, not written to disk — covering what you understand the idea to be, what strikes you as most interesting, and the most important unstated assumption or risk. This is not a question. It shows you are engaged with the idea. Then proceed to Topic 1.
+**Opening move (before any topic):** Read `## Vision` from `specs/architecture/architecture.md`. Before asking anything, compose a brief synthesis — 2–3 sentences covering what you understand the idea to be, what strikes you as most interesting, and the most important unstated assumption or risk. Return this synthesis as the opening `TURN:` question with a prompt like "Does this capture it, or is there something I'm missing?" This is not a decision question — it shows you are engaged with the idea. After the user confirms or corrects, proceed to Topic 1.
 
 For each topic: react before asking. Use one of these stances — pick whichever fits:
 
@@ -103,35 +120,25 @@ For each topic: react before asking. Use one of these stances — pick whichever
 - **"Fine, but…"** — accept the premise but surface a tradeoff, constraint, or risk it creates
 - **"What about…"** — probe a gap or edge case the vision didn't address
 
-Then ask **focused questions**. When the user answers, write a synthesis — not a transcript of their words, but what you now understand to be true. Flush to disk before moving to the next topic.
+Formulate your reaction + focused question as the `TURN:` return value. When `user_answer` arrives next turn, write the synthesis to disk, flush, then formulate the next topic's question.
 
 The synthesis is what architecture uses. Make it crisp and decision-useful.
 
 **Topics (in order):**
 
 ### Topic 1 — Vision
-React to the opening synthesis. Think about what sharpens the core value proposition or surfaces the most important unstated assumption.
-
-Write to `## Vision`: a 2–3 sentence synthesis of what this system actually is, who it's for, and what makes it worth building. This is the north star for every future decision.
+React to the opening synthesis answer. Write to `## Vision`: a 2–3 sentence synthesis of what this system actually is, who it's for, and what makes it worth building. Return `TURN:` with your reaction to Topic 1 and a question that sharpens the core value proposition.
 
 ### Topic 2 — Problem & Users
-React to the vision synthesis. Think about who specifically has this problem and what they're doing instead today.
-
-Write to `## Problem & Users`: user population, primary use case, current workaround, and what "good enough for v1" looks like from the user's perspective.
+Process Topic 1 answer. Write to `## Vision` (update if needed). Write to `## Problem & Users`: user population, primary use case, current workaround, and what "good enough for v1" looks like from the user's perspective. Return `TURN:` with your reaction and a question about who specifically has this problem and what they're doing instead today.
 
 ### Topic 3 — Constraints
-React to what you've learned. Think about what surfaces hard stops — stack, infra, compliance, timeline, budget — things that will constrain architectural choices.
-
-Write to `## Constraints`: a list of hard constraints architecture must respect. Distinguish hard stops from preferences.
+Process Topic 2 answer. Write to `## Problem & Users`. Write to `## Constraints`: a list of hard constraints architecture must respect. Distinguish hard stops from preferences. Return `TURN:` with your reaction and a question surfacing hard stops — stack, infra, compliance, timeline, budget.
 
 ### Topic 4 — Risks & Out of Scope
-React. Name the single biggest risk you see given everything so far — then ask if the user sees a different one.
+Process Topic 3 answer. Write to `## Constraints`. Write to `## Risks & Out of Scope`: top 2–3 risks with one-line mitigations + explicit out-of-scope list for v1. Return `TURN:` with your reaction — name the single biggest risk you see — and ask if the user sees a different one and what they want to explicitly defer from v1.
 
-Write to `## Risks & Out of Scope`:
-- Top 2–3 risks with one-line mitigations
-- Explicit out-of-scope list for v1 (anything mentioned in the vision that should wait)
-
-After writing Topic 4, show the user a **Beat 1 summary**:
+After writing Topic 4, instead of the next topic question, return `TURN:` with the **Beat 1 summary**:
 ```
 ✓ Idea matured
 
@@ -141,27 +148,30 @@ After writing Topic 4, show the user a **Beat 1 summary**:
   Key risk:    [one line]
   Out of scope: [count] items deferred
 
-  Ready to shape the system →  [Y] Continue  [E] Edit a section  [X] Save & stop
+  Ready to shape the system?
+  [Y] Continue to Beat 2   [E] Edit a section   [X] Save and stop
 ```
-- `E` → ask which section, revise, re-show summary
-- `X` → save current state (all four sections already on disk), set `ideation_complete:false`, stop — user can resume by running `/spec-gantry` which will resume at Beat 2 (Topic 5)
-- `Y` → proceed to Beat 2
+
+On next turn:
+- `Y` → proceed to Beat 2 (return Topic 5 question)
+- `E` → return `TURN:` asking which section to edit, revise on next answer, re-return summary
+- `X` → set `ideation_complete:false` (already is), return `IDEATION_COMPLETE` signal with note "saved — resume with /spec-gantry"
 
 ---
 
 ## Beat 2 — Shape the system
 
-Now translate the matured idea into a concrete system. Each topic builds on the last. Propose a direction and ask the user to confirm or redirect — never decide silently.
+Now translate the matured idea into a concrete system. Each topic builds on the last. Propose a direction and ask the user to confirm or redirect — never decide silently. Write each confirmed answer to disk before returning the next `TURN:`.
 
 ### Topic 5 — Tech Stack
-Specific technologies to be used. Propose one clear choice per layer based on what you've learned, explain briefly why, and ask the user to confirm or redirect. Do not present a menu of options unless the user asks.
+Propose one clear choice per layer based on what you've learned, explain briefly why. Return `TURN:` with your proposal and a question asking the user to confirm or redirect. Do not present a menu of options unless the user asks.
 
-Write to `## Tech Stack`: the confirmed stack. One clear choice per layer. No alternatives or maybes — decisions only.
+Process answer: Write to `## Tech Stack`: the confirmed stack. One clear choice per layer. No alternatives or maybes — decisions only. Return Topic 6 question.
 
 ### Topic 6 — Guardrails
-Enforceable rules every story build must follow.
+Derive project-specific guardrails from the confirmed tech stack and constraints. Return `TURN:` with your proposed guardrails and a question asking the user to confirm or add project-specific rules.
 
-Write to `## Guardrails`:
+Process answer: Write to `## Guardrails`:
 
 **Mandatory project structure (non-negotiable):**
 - Source code under `/src/` with subdirs: `db/`, `api/` or `middleware/`, `lib/`, `utilities/`, `ai/`, `config/`
@@ -172,13 +182,13 @@ Write to `## Guardrails`:
 
 **Project-specific guardrails:** derive from tech stack and constraints. Concrete and enforceable — no vague rules.
 
+Return Topic 7 question.
+
 ### Topic 7 — Configuration
 
 All runtime configuration must live in `.env`. No value that varies by environment, deployment, or operator may be hardcoded.
 
-Ask the user to confirm or extend this baseline — derive the initial list from the tech stack and vision decided in prior topics:
-
-Write to `## Configuration` a table of every env var the project will use:
+Derive the initial env var list from the tech stack and vision. Return `TURN:` presenting the proposed table and asking the user to confirm or extend:
 
 ```
 | Variable               | Description                        | Example value         |
@@ -191,13 +201,15 @@ Write to `## Configuration` a table of every env var the project will use:
 | SESSION_SECRET         | Session signing secret             | (random 32-char hex)  |
 ```
 
-Rules:
+Process answer: Write to `## Configuration` the confirmed table. Rules:
 - Every AI model name, API key, port, connection string, and feature flag belongs here — not in source code
 - Include all vars the project needs at this stage; story specs will add more
 - `Example value` must be safe to commit — use placeholders for secrets, realistic values for config
 - This table is the source of truth for `.env.example`; the build agent keeps it in sync
 
-### Topic 8 — Story List
+Return Topic 8 question.
+
+### Topic 8 — Story List (Proposed)
 
 User stories that define what the system does. A story is a complete vertical slice — one user-facing capability that requires UI, backend, data, and possibly AI working together.
 
@@ -207,7 +219,9 @@ User stories that define what the system does. A story is a complete vertical sl
 
 **Story ordering:** order by dependency — if story B assumes data or auth created in story A, A comes first. If independent, order by user journey (signup before dashboard).
 
-Present the lean proposal to the user:
+If the count exceeds 6, challenge each story before presenting: "Can [X] be merged into [Y]?"
+
+Return `TURN:` with the lean proposal:
 ```
 Proposed stories — [n] total
 
@@ -217,51 +231,62 @@ Proposed stories — [n] total
   STORY-002  [title]                                       STORY-001
   ...
 
-[Y] Approve — begin spec writing   [E] Edit list   [X] Hold
+[Y] Approve   [E] Edit list   [X] Hold
 ```
 
-If the count exceeds 6, explicitly challenge each story before presenting: "Can [X] be merged into [Y]?"
-
-On `E`: ask what to change (merge, split, rename, reorder, add, remove) — apply and re-show.
-On `X`: write `ideation_complete:false` to project-state, stop — story list is not yet on disk.
-On `Y`: **immediately write the approved story list to `specs/project-state.yaml` (run Step 2 now, before Topic 9)** — this ensures the list survives any crash or `[X] Hold` from here onward. Then proceed to Topic 9.
+Process answer:
+- `E` → return `TURN:` asking what to change (merge, split, rename, reorder, add, remove) — apply on next answer, re-return proposal
+- `X` → set `ideation_complete:false`, return `IDEATION_COMPLETE` — story list not yet committed
+- `Y` → **write the approved story list to `specs/.ideation-scratchpad.yaml`** (scratchpad only, NOT to `project-state.yaml` yet — committed only after coherence passes):
+  ```yaml
+  proposed_stories:
+    STORY-001:
+      title: "[title]"
+      depends_on: []
+    STORY-002:
+      title: "[title]"
+      depends_on: [STORY-001]
+  ```
+  Return Topic 9 question.
 
 ### Topic 9 — UX Model
 
 After the story list is approved, before seeding artifacts. React to the actor structure and story list — propose, don't assume.
 
-**Navigation model:** propose one of three patterns based on what you've learned about the actors and their workflows. Ask the user to confirm.
+**Navigation model:** propose one of three patterns based on what you've learned about the actors and their workflows:
 - `persona-split` — each actor type has its own entry point, own nav, own flow (best when actor workflows diverge significantly)
 - `central-dashboard` — one hub with role-filtered content (best when actors share the same data views)
 - `hybrid` — shared shell, persona-specific content zones (best when actors share navigation but not content)
 
-**Visual system:** propose based on the tech stack confirmed in Topic 5.
-- CSS framework: Bootstrap 5 (default) — ask if the user prefers something else
-- Icon set: Bootstrap Icons (default) — ask if the user prefers something else
+**Visual system:** propose based on the tech stack confirmed in Topic 5:
+- CSS framework: Bootstrap 5 (default)
+- Icon set: Bootstrap Icons (default)
 - Component framework: derive from tech stack (React → react-bootstrap, Angular → ng-bootstrap or PrimeNG, Vue → BootstrapVue, vanilla → Bootstrap CSS only) — **Tell** the user which library follows logically from their stack choice, confirm or override
 - Theme: ask for primary/secondary colors and font family, or confirm Bootstrap defaults
 
-Write to `## UX Model` in `specs/architecture/architecture.md` — a narrative summary:
+Return `TURN:` with your recommendations and questions on navigation pattern + visual system.
+
+Process answer: Write to `## UX Model` in `specs/architecture/architecture.md`:
 ```
 Navigation: [pattern] — [one sentence why]
 Visual: Bootstrap 5 + Bootstrap Icons · [component framework/library]
 Theme: [primary] / [secondary] · [font family] · Bootstrap default spacing
 ```
 
-When Topic 9 is confirmed, proceed to Topic 10.
+Return Topic 10 question.
 
 ### Topic 10 — Deployment Target
 
-After the UX model is confirmed. Gather deployment intent so the deployment phase can produce a complete, runnable script without guessing. Be conversational — work through these as a natural discussion, not a form.
+After the UX model is confirmed. Gather deployment intent so the deployment phase can produce a complete, runnable script without guessing.
 
-**Flush rule:** write each confirmed answer to `specs/architecture/deployment.md` immediately after the user confirms it — do not accumulate answers in memory and write at the end. A crash or timeout mid-Topic 10 must lose at most one unanswered question. Use partial writes: start with an empty `deployment.md` skeleton before Question 1, then fill in each section as it is confirmed.
+**Flush rule:** write each confirmed answer to `specs/architecture/deployment.md` immediately after the user confirms it. A crash or timeout mid-Topic 10 must lose at most one unanswered question. Use partial writes: start with an empty `deployment.md` skeleton before the first question, then fill in each section as it is confirmed.
 
 **Defaults (propose these unless the user signals otherwise):**
 - Registry: Docker Hub (`docker.io/[dockerhub-username]/[image]`)
 - Secrets: managed via `.env` file
 - CI/CD: manual `deploy.sh` script (no pipeline)
 
-**Write the deployment.md skeleton before asking Question 1:**
+**Write the deployment.md skeleton before asking the first question:**
 ```markdown
 ## deployment:target
 platform: _not yet written_
@@ -284,82 +309,88 @@ load_balancer: null
 runner: manual
 ```
 
-**Questions to work through (flush each answer before asking the next):**
+Topic 10 has 7 questions. Ask them one at a time — one `TURN:` per question, flush each answer to disk before asking the next:
 
-1. **Cloud platform** — propose based on the stack confirmed in Topic 5. Options: GCP Cloud Run · AWS ECS/Fargate · Azure Container Apps · Docker Compose (self-hosted VM or local). Explain the choice briefly; ask the user to confirm or redirect. *After confirmed: write `platform:` to `deployment.md`.*
+1. **Cloud platform** — propose based on the stack (GCP Cloud Run · AWS ECS/Fargate · Azure Container Apps · Docker Compose). After confirmed: write `platform:` to `deployment.md`. Return next question.
+2. **Container registry** — Docker Hub (default, needs username) · gcr.io · ECR · ACR. After confirmed: write `registry:` and `registry_identifier:`. Return next question.
+3. **Service architecture** — monolith or one container per story? Guide toward monolith for first deploys. After confirmed: write `## deployment:services` block. Return next question.
+4. **Scaling defaults** — propose `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`. After confirmed: update scaling fields in `## deployment:services`. Return next question.
+5. **Secrets management** — `.env` file (default) or cloud secrets manager? Tell user: `.env` is fine for first deploy. After confirmed: write `strategy:` and `vars:` (scan `## Configuration` for secret vars). Return next question.
+6. **Domain / ingress** — custom domain? HTTPS? Platform default URL if none. After confirmed: write `## deployment:ingress`. Return next question.
+7. **CI/CD** — manual `deploy.sh` (default) or CI pipeline (GitHub Actions · GCP Cloud Build · Azure DevOps). After confirmed: write `runner:` to `## deployment:cicd`. Return `TURN:` with the deployment summary:
+   ```
+   ✓ Deployment target configured
 
-2. **Container registry** — Docker Hub (default) requires a username. GCP → gcr.io or Artifact Registry. AWS → ECR (needs account ID and region). Azure → ACR (needs registry name). Ask for the specific identifier (Docker Hub username, GCP project ID, AWS account ID + region, ACR name). *After confirmed: write `registry:` and `registry_identifier:` to `deployment.md`.*
+     Platform:   [target]
+     Registry:   [registry + identifier]
+     Services:   [n]
+     Secrets:    [strategy] — [n vars]
+     Domain:     [domain or "platform default URL"]
+     CI/CD:      [runner]
 
-3. **Service architecture** — single monolith container or one container per story? Guide toward per-story if the stories have meaningfully different runtimes or scaling needs. For first-time deploys, monolith is simpler. *After confirmed: write `## deployment:services` block to `deployment.md`.*
+     [Y] Confirmed — continue
+   ```
+   On `Y`: return `COHERENCE_PASS`.
 
-4. **Scaling defaults** — propose sensible first-deploy defaults: `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`. Ask if the user wants to adjust. *After confirmed: update scaling fields in `## deployment:services` in `deployment.md`.*
+---
 
-5. **Secrets management** — `.env` file (default, simplest) or a cloud secrets manager (GCP Secret Manager, AWS SSM Parameter Store, Azure Key Vault)? Tell the user: for a first deploy, `.env` is fine; secrets managers add complexity but are better for teams. *After confirmed: write `strategy:` and `vars:` to `## deployment:secrets` in `deployment.md`.*
+## Coherence Pass
 
-6. **Domain / ingress** — custom domain for the service(s)? HTTPS termination at load balancer? If none, the cloud platform's default public URL is used. *After confirmed: write `## deployment:ingress` to `deployment.md`.*
+Invoked when the orchestrator calls you with `mode: coherence`. All 10 topics are answered and on disk. The story list is in `specs/.ideation-scratchpad.yaml`.
 
-7. **CI/CD** — manual `deploy.sh` (default) or wire into a CI pipeline? Options: GitHub Actions · GCP Cloud Build · Azure DevOps · other. For manual: no pipeline needed. *After confirmed: write `runner:` to `## deployment:cicd` in `deployment.md`.*
+Read in full:
+1. `specs/architecture/architecture.md` — all sections
+2. `specs/architecture/deployment.md`
+3. `specs/.ideation-scratchpad.yaml` — proposed story list
 
-Write `specs/architecture/deployment.md` with the confirmed values:
+Read holistically — not section by section, but as a system. Look for:
 
-```markdown
-## deployment:target
-platform: [gcp-cloud-run | aws-ecs | azure-container-apps | docker-compose]
-registry: [dockerhub | gcr | ecr | acr | ghcr]
-registry_identifier: [dockerhub username | gcp project id | aws account id / region | acr name]
+**Technical conflicts:**
+- Stack inconsistencies (e.g. Python chosen but npm packages referenced; Node stack but Python libraries in guardrails)
+- Config table vars that contradict constraints (e.g. "no external APIs" constraint but `AI_API_KEY` in config)
+- Deployment platform vs tech stack mismatch (e.g. serverless platform but stateful session assumptions)
 
-## deployment:services
-[One block per service — use story slugs as service names]
-# service: [story-slug]
-#   image: [image-name-kebab-case]
-#   port: [from build-report.yaml runtime.exposed_ports[0] — fill at deploy time if not yet built]
-#   cpu: [e.g. 1]
-#   memory: [e.g. 512Mi]
-#   min_replicas: [e.g. 1]
-#   max_replicas: [e.g. 3]
+**Cross-section inconsistencies:**
+- Auth model implied in Problem & Users but no session/auth library in Tech Stack
+- Out-of-scope items from Topic 4 that crept back into guardrails, config, or UX model
+- UX navigation pattern doesn't match the actor model (e.g. persona-split proposed but only one actor type)
 
-## deployment:secrets
-strategy: [env-file | gcp-secret-manager | aws-ssm | azure-key-vault]
-vars: [list of secret env var names — derived from ## Configuration; non-secret vars excluded]
+**Story boundary validity:**
+- Do the proposed stories map cleanly to the actors, data model implied by the vision, and UX model?
+- Is any proposed story actually a sub-task of another (too fine-grained)?
+- Is any capability split unnaturally across two stories that should be one?
+- Does the dependency order make sense — does each dependent story genuinely require data or auth created by its prerequisite?
+- Are there user-facing capabilities implied by the vision that have no story?
 
-## deployment:ingress
-domain: [custom domain or null]
-https: [true | false]
-load_balancer: [type or null]
+If no issues found: return `COHERENT` followed by the confirmed story list from `specs/.ideation-scratchpad.yaml`.
 
-## deployment:cicd
-runner: [manual | github-actions | cloud-build | azure-devops]
+If issues found: return `COHERENCE_ISSUES:` followed by a structured list:
+```
+COHERENCE_ISSUES:
+- section: Tech Stack + Guardrails
+  conflict: Python chosen in Topic 5 but guardrails reference npm packages
+  question: You selected Python as the backend language, but the guardrails reference npm packages. Should we update the stack to Node.js, or update the guardrails to use pip/PyPI conventions?
+
+- section: Story boundaries
+  conflict: STORY-002 (User login) and STORY-003 (User profile) both create the User entity — this is typically one story
+  question: Login and profile management both center on the User — should these be merged into a single "User account" story, or is there a meaningful reason to keep them separate?
 ```
 
-**Populate `deployment:secrets.vars`** by scanning `## Configuration` in `architecture.md` — include only vars marked as secrets (API keys, signing secrets, passwords). Non-secret config (port, model name, etc.) stays in `## Configuration` only.
-
-After writing, show the user a summary:
-```
-✓ Deployment target configured
-
-  Platform:   [target]
-  Registry:   [registry + identifier]
-  Services:   [n — one per story or monolith]
-  Secrets:    [strategy] — [n vars]
-  Domain:     [domain or "platform default URL"]
-  CI/CD:      [runner]
-```
-
-When Topic 10 is confirmed, proceed to Step 2.
+The orchestrator feeds each issue back into the turn loop as a `TURN:`. When all issues are resolved, the orchestrator calls you again with `mode: coherence` — run the pass again. Repeat until `COHERENT`.
 
 ---
 
 ## Step 2 — Write story list
 
+Called when orchestrator receives `COHERENT` and calls you with `mode: seed_artifacts`.
+
 **Idempotency rule (critical):** Before writing any story entry, read the current `specs/project-state.yaml → stories` block. For each story in the confirmed list:
 - If the story ID **does not exist** in the current `stories:` block → add it with all flags `false`.
 - If the story ID **already exists** → preserve ALL existing flag values (`intent_done`, `spec_done`, `built`, `deployed`). Only update `title` and `depends_on` if they changed.
 
-Never reset existing flags. A story with `built:true` that was restored to this step via a crash/resume path must remain `built:true`.
+Never reset existing flags.
 
-**Note:** this step is called immediately from Topic 8 `[Y]` (before Topic 9) as well as from resume paths. If called from Topic 8, proceed directly to Topic 9 after writing. If called as a standalone resume step (resume rule 3), the story list is already on disk — verify it matches the confirmed list and proceed to Topic 9.
-
-1. Write to `specs/project-state.yaml` — merge story entries (do not replace the whole `stories:` block):
+Write to `specs/project-state.yaml` — merge story entries:
 ```yaml
 stories:
   STORY-001:
@@ -378,7 +409,9 @@ stories:
     deployed: false
 ```
 
-Do not create story-spec.md files yet — the story-spec subagent writes those.
+Delete `specs/.ideation-scratchpad.yaml` after writing to project-state.
+
+Then proceed to Step 3.
 
 ---
 
@@ -428,13 +461,13 @@ Four sections derived from Topic 9 decisions:
 
 **6. Write `specs/architecture/deployment.md`**
 
-Copy the confirmed `deployment.md` content from Topic 10 (already written to disk during that topic). In **update mode**: if the file exists and contains the Topic 10 content, verify it's complete — all sections present, no `_not yet written_` values. If any section is incomplete, fill it in from the Topic 10 conversation context. If the file does not exist (e.g. Topic 10 was not run — legacy resume), write it fresh with all fields set to `_not yet written_` and surface a warning: "⚠ Deployment target not configured — run ideation to complete Topic 10 before deploying."
+Copy the confirmed `deployment.md` content from Topic 10 (already written to disk during that topic). In **update mode**: if the file exists and contains the Topic 10 content, verify it's complete — all sections present, no `_not yet written_` values. If any section is incomplete, fill it in from the Topic 10 context. If the file does not exist (e.g. Topic 10 was not run — legacy resume), write it fresh with all fields set to `_not yet written_` and surface a warning: "⚠ Deployment target not configured — run ideation to complete Topic 10 before deploying."
 
 **7. Append `## Artifact Index` to `specs/architecture/architecture.md`**
 
-This must be the last section. Append after `## UX Model`. The YAML block must be strictly machine-parseable: no prose, no inline comments, no extra keys beyond the defined schema. Downstream agents parse this programmatically.
+This must be the last section. Append after `## UX Model`. The YAML block must be strictly machine-parseable: no prose, no inline comments, no extra keys beyond the defined schema.
 
-Write it exactly as shown — the block is fenced so agents reading the file as Markdown parse it correctly:
+Write it exactly as shown:
 
 ````markdown
 ---
@@ -484,13 +517,11 @@ Two paragraphs only — no bullets, no headers, no technical detail:
 
 **Paragraph 1 — Functional purpose:** Who the user is, what they are trying to accomplish, why this story exists in the system.
 
-**Paragraph 2 — Objective and outcome:** What a successful completion looks like, what changes in the system, what the user can do after that they could not do before.
+**Paragraph 2 — Objective and outcome:** What a successful completion looks like, what changes in the system, what the user can do after that they could not before.
 
 Derive from the story title, vision, actor model, and story dependencies already established. These are drafts — story-spec will finalize them.
 
 **After all intent.md files are written — self-review before committing flags:**
-
-Before writing `arch_seeded: true`, verify the arch artifacts meet the minimum quality bar:
 
 ```
 Arch artifact self-review:
@@ -503,9 +534,9 @@ Arch artifact self-review:
   [ ] Artifact Index — all six artifact types listed with correct file paths and non-empty entity/role/shape/pattern lists; deployment: entry present
 ```
 
-If any item fails: fix it in place before proceeding. Do not write `arch_seeded: true` until all items pass.
+If any item fails: fix it in place before proceeding.
 
-**After self-review passes:** set `arch_seeded: true` and `intent_done: true` per story in `specs/project-state.yaml` as a single atomic write. This two-pass approach ensures state flags accurately reflect what's on disk — a crash before this write leaves `arch_seeded:false`, which P2 routing catches and recovers cleanly.
+**After self-review passes:** set `arch_seeded: true` and `intent_done: true` per story in `specs/project-state.yaml` as a single atomic write.
 
 ---
 
@@ -515,23 +546,13 @@ Clear `project.active_phase: null` in `specs/project-state.yaml` (removes the `a
 
 Set `ideation_complete: true` in `specs/project-state.yaml`.
 
-Show the user:
-```
-✓ Ideation complete — [n] stories
-
-  Architecture:  specs/architecture/architecture.md
-  Artifacts:     data-model · actors · contracts · patterns · ux · deployment
-  Story intents: [n] intent.md files seeded
-  Stories:       [n] added to specs/project-state.yaml
-
-  SpecGantry will now write a spec for each story.
-```
+Return `IDEATION_COMPLETE`.
 
 ---
 
 ## Amendment mode
 
-When invoked with existing `ideation_complete:true` and a new requirement:
+When invoked with existing `arch_seeded:true` or `active_phase: amendment`:
 1. Read `specs/architecture/architecture.md`, all architecture detail files, `specs/architecture/deployment.md`, and `specs/project-state.yaml` in full
 2. Identify only what needs to change
 3. If architecture narrative changes are needed, append a dated amendment block — never replace prior content:
@@ -545,7 +566,7 @@ When invoked with existing `ideation_complete:true` and a new requirement:
 5. For any new story: add a `stories.STORY-NNN` entry to `project-state.yaml` with all flags `false`; NNN is the next sequential number. Write `intent.md` for the new story (same two-paragraph format as Step 3b). After `intent.md` is confirmed on disk, set `intent_done: true` for that story in `project-state.yaml`. Also append a new service block for the story in `specs/architecture/deployment.md → ## deployment:services` — use the story slug as the service name, copy scaling defaults from existing services, leave `port:` as a comment noting it will be filled from build-report.yaml at deploy time.
 6. For any removed story: remove its entry from `project-state.yaml`; remove its service block from `deployment.md → ## deployment:services`; note removal in an amendment block
 7. Preserve `ideation_complete:true`
-8. Show the user a summary of what changed
+8. Return `TURN:` with a summary of what changed and ask the user to confirm they are satisfied. On confirmation, return `IDEATION_COMPLETE`.
 
 ---
 

@@ -16,7 +16,24 @@ Your output is consumed by a build agent, not a human. Write for that audience: 
 
 All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
 
-**Input:** `story_id` (e.g. `STORY-001`)
+**You are a single-turn processor.** The orchestrator calls you once per user exchange. You do one unit of work and return either a prompt for the user or a completion signal. You never wait for user input — the orchestrator is the loop.
+
+**Inputs (passed in prompt by orchestrator):**
+- `story_id` (e.g. `STORY-001`)
+- `project_dir`, `arch_ref`
+- `interaction_state` — (optional) current interaction state: `held_review` | `awaiting_approval` | `awaiting_edit`
+- `user_answer` — (optional) the user's response to the last prompt (`Y`, `R`, `E`, `X`, or edit instructions)
+
+**If `interaction_state` and `user_answer` are present:** skip to **Step 4 — Process answer**, using `interaction_state` to know the context.
+**If absent:** run Steps 1–4 normally (load, intent, validate, write), then return the approval prompt.
+
+**Return signals (last line of your output, always):**
+- `TURN:held_review:[prompt text]` — held spec resume summary, waiting for Y/R/X
+- `TURN:awaiting_approval:[prompt text]` — spec written, waiting for Y/E/X approval
+- `TURN:awaiting_edit:[prompt text]` — user asked to edit, waiting for edit instructions
+- `SPEC_COMPLETE` — spec approved, `spec_done:true` written, done
+- `SPEC_HELD` — user held, `spec_done:false` remains, done
+- `ARCH_GAP:[reason]` — arch gap signalled, orchestrator routes to P0
 
 ---
 
@@ -51,7 +68,7 @@ Read silently:
 
 **Stub detection:** if the existing `story-spec.md` contains `⚠ Stub spec — created by reverse-engineer`, this is a RE stub, not a prior spec attempt. Set an internal `is_stub: true` flag that changes behavior in Steps 2, 3, and 4 as described below.
 
-**Held spec detection:** if `story-spec.md` exists, does NOT contain `⚠ Stub spec`, and `spec_done:false` in project-state — this is a held partial spec from a prior `[X] Hold`. Set an internal `is_held: true` flag. In Step 4, do NOT overwrite the held file — present it to the user for review instead (see Step 4 held path).
+**Held spec detection:** if `story-spec.md` exists, does NOT contain `⚠ Stub spec`, and `spec_done:false` in project-state — this is a held partial spec from a prior hold. Set an internal `is_held: true` flag. In Step 4, do NOT overwrite the held file — return a resume summary instead (see Step 4 held path).
 
 ---
 
@@ -85,8 +102,7 @@ Do not touch other flags.
 Identify every entity, actor, contract, pattern, and ux section this story will reference. For each:
 - Check the `## Artifact Index` in `specs/architecture/architecture.md` — does the section exist?
 
-If a required section is **missing**:
-1. Write `pending_arch_gap` to `specs/project-state.yaml` and stop immediately:
+If a required section is **missing**: return `ARCH_GAP:[what is missing]` and also write `pending_arch_gap` to `specs/project-state.yaml`:
 ```yaml
 pending_arch_gap:
   triggered_by: story-spec
@@ -94,10 +110,7 @@ pending_arch_gap:
   reason: "[what is missing — e.g. entity:review not in data-model.md]"
   resume_phase: story-spec
 ```
-2. Do not write story-spec.md yet.
-3. Return: `arch gap signalled — [what is missing]`
-
-The orchestrator will invoke ideation (arch gap mode) to fill the gap, then resume this agent.
+Do not write story-spec.md. Stop immediately.
 
 ---
 
@@ -105,7 +118,7 @@ The orchestrator will invoke ideation (arch gap mode) to fill the gap, then resu
 
 **If `is_held: true` (held partial spec — no stub marker, `spec_done:false`):**
 - Do NOT overwrite the existing file.
-- Read it in full and show the user a resume summary:
+- Read it in full and return `TURN:held_review:` with the resume summary:
   ```
   Resuming held spec — [story_id]: [title]
 
@@ -113,11 +126,9 @@ The orchestrator will invoke ideation (arch gap mode) to fill the gap, then resu
     Interfaces: [n defined so far, or "none yet"]
     Lines:      [n]/60
 
-    [Y] Continue editing this spec   [R] Start fresh   [X] Hold again
+    [Y] Continue editing   [R] Start fresh   [X] Hold again
   ```
-- `Y` → **run Step 3 arch reference validation against the held spec's `reads:` block first** (arch may have changed since the hold — treat the held file's `reads:` as a normal path, not a stub hint). If a reference is missing, signal `pending_arch_gap` exactly as Step 3 normal path does and stop. If validation passes, present the existing spec content and ask what to change. Apply edits, proceed to Step 5.
-- `R` → discard the held file (user confirmed), write fresh spec as per normal path below.
-- `X` → save as-is (`spec_done` remains `false`), stop.
+- Stop. The orchestrator surfaces this to the user and calls you again with the answer.
 
 **Normal path** — Create (or overwrite if stub) the file: `specs/stories/[story_id]/story-spec.md`
 
@@ -177,11 +188,13 @@ reads:
 - Data: net-new fields only; if none, say so explicitly
 - Max 60 lines total. If exceeded: something is duplicating an arch artifact — move it to the architecture artifact and reference it.
 
+After writing, proceed to Step 5.
+
 ---
 
 ## Step 5 — Self-review
 
-Before writing `spec_done:true`, verify:
+Before returning the approval prompt, verify:
 
 ```
 Self-review checklist:
@@ -201,20 +214,15 @@ Self-review checklist:
 **Line count is a hard stop.** Count the lines in the written story-spec.md (excluding the YAML frontmatter block delimiters `---`). If the count exceeds 60:
 1. Identify which section is causing the overrun
 2. Find the content that duplicates or re-describes something already in an arch artifact
-3. Replace it with a reference (`contract:*`, `actor:*`, `data:*`) and move any genuinely new content to the appropriate architecture artifact via `pending_arch_gap`
+3. Replace it with a reference (`contract:*`, `actor:*`, `data:*`) and move any genuinely new content to the appropriate architecture artifact via `ARCH_GAP`
 4. Recount — do not proceed until ≤ 60 lines
 
-A spec that cannot fit in 60 lines without loss of essential information contains something that belongs in the shared arch layer, not the story layer. Move it, don't shrink it by cutting corners.
-
-**If `is_stub: true` (RE stub path):** after completing the checklist, also run the arch reference validation from Step 3 on the freshly-written `reads:` block. If any reference is missing from the Artifact Index at this point, write `pending_arch_gap` now (same format as Step 3) and stop — do not set `spec_done:true`. This deferred validation ensures the fresh spec triggers gaps only for things the spec actually needs, not for things the stub inferred.
+**If `is_stub: true` (RE stub path):** after completing the checklist, also run the arch reference validation from Step 3 on the freshly-written `reads:` block. If any reference is missing from the Artifact Index at this point, return `ARCH_GAP:[reason]` and write `pending_arch_gap` (same format as Step 3). This deferred validation ensures the fresh spec triggers gaps only for things the spec actually needs, not for things the stub inferred.
 
 If any item fails: fix it before proceeding.
 
----
+Then return `TURN:awaiting_approval:` with the approval summary:
 
-## Step 6 — Show summary and confirm
-
-Show the user:
 ```
 ✓ Story spec complete — [story_id]: [title]
 
@@ -227,27 +235,24 @@ Show the user:
   [Y] Approve spec   [E] Edit   [X] Hold
 ```
 
-- `E` → ask what to change, revise, re-show summary
-- `X` → save current state (files already on disk), set `spec_done:false`, stop
-- `Y` → proceed to Step 7
-
 ---
 
-## Step 7 — Write completion flag
+## Step 6 — Process answer
 
-Update `specs/project-state.yaml → stories.[story_id]`:
-```yaml
-spec_done: true
-```
+Called when `interaction_state` and `user_answer` are present in the prompt.
 
-Do not touch `built` or `deployed` flags.
+**If `interaction_state: held_review`:**
+- `Y` → run Step 3 arch reference validation against the held spec's `reads:` block (arch may have changed since the hold). If a reference is missing, return `ARCH_GAP:[reason]`. If validation passes, return `TURN:awaiting_edit:` asking what the user wants to change.
+- `R` → discard the held file (delete from disk). Write fresh spec per normal path in Step 4. Run self-review. Return `TURN:awaiting_approval:` with the summary.
+- `X` → return `SPEC_HELD`
 
-Show the user:
-```
-✓ Spec approved — [story_id] ready to build
+**If `interaction_state: awaiting_approval`:**
+- `Y` → write `spec_done: true` to `specs/project-state.yaml → stories.[story_id]`. Return `SPEC_COMPLETE`.
+- `E` → return `TURN:awaiting_edit:` asking what to change.
+- `X` → return `SPEC_HELD`
 
-  Run /spec-gantry to continue.
-```
+**If `interaction_state: awaiting_edit`:**
+- Apply the user's edit instructions to `specs/stories/[story_id]/story-spec.md`. Re-run self-review (Step 5). Return `TURN:awaiting_approval:` with the updated summary.
 
 ---
 

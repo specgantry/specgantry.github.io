@@ -4,7 +4,7 @@ description: >
   Invoke this skill when the user wants to see AI development costs for a SpecGantry project.
   Triggers include: asking about cost, spend, or token usage ("how much have we spent?", "what's this costing?",
   "show me the cost breakdown", "how many tokens have we used?");
-  asking for a breakdown by phase, component, release, or model.
+  asking for a breakdown by phase or release.
   Do NOT invoke for general cost questions unrelated to a SpecGantry project.
 allowed-tools: Read
 ---
@@ -20,129 +20,65 @@ Spec [███░░] [n]/[total]  ·  Build [██░░░] [n]/[total]
 
 Read `specs/project-state.yaml` to compute: Spec = count of `spec_done:true` stories, Build = count of `built:true` stories, total = total stories.
 
-Read `specs/cost-log.ndjson`. If absent or empty: show `No cost data recorded yet.` then show the menu bar and prompt.
+Read `specs/cost-log.ndjson`. If absent or empty: show `No cost data recorded yet.` then show the action bar and return.
 
-Parse each line as a JSON object. The active view is determined by the user's last input — default is Cost Matrix.
+Parse each line as a JSON object.
 
----
-
-## Menu bar
-
-Always rendered at the bottom of every view, after the table:
-
-```
-──────────────────────────────────────────────────────────
-  [1] Matrix        [2] By release    [3] By model
-                                      [X] Return
-──────────────────────────────────────────────────────────
-Enter option:  >
-```
-
-`[X]` returns to the main SpecGantry dashboard. Any other input re-renders the current view with a one-line error above it.
-
-No additional instruction text should appear below this prompt. The menu is self-documenting.
+**Total tokens** for any entry = `input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens` (all four fields — cache tokens cost real money and must not be omitted from totals).
 
 ---
 
-## View: Cost Matrix (default) — input `1`
+## Cost view
 
-Stories as rows, phases as columns. Two tables: cost in dollars (first), then tokens (second).
-
-Project-level phases (ideation, reverse_engineer, investigation, deployment) with `story: null` appear in the "PROJECT" row.
-
-Table 1: Cost by Story × Phase (USD)
+Group entries by `release`, then within each release group by `phase`. Render one section per release, phases as rows within each section, subtotal per release, grand total at the bottom.
 
 ```
-Cost Matrix  |  release 1.0.0
+Cost by Release & Phase
 
-Story        ideation  rev-engg  investigate  story-spec     dev      deploy     Total
-──────────────────────────────────────────────────────────────────────────────────────
-PROJECT        $0.52      —         $0.12          —           —       $0.18      $0.82
-STORY-001        —        —           —           $1.34      $0.64      —         $1.98
-STORY-002        —        —           —           $0.98      $0.51      —         $1.49
-STORY-003        —        —           —           $0.76      $0.38      —         $1.14
-STORY-004        —        —           —           $0.68      $0.54      —         $1.22
-──────────────────────────────────────────────────────────────────────────────────────
-Total          $0.52      —         $0.12         $3.76      $2.07    $0.18       $6.65
-```
+Release 1.0.0                Tokens        Cost
+────────────────────────────────────────────────
+  ideation                   42,340       $0.52
+  investigation               8,420       $0.12
+  story_spec                 90,160       $3.76
+  development                69,760       $2.07
+  deployment                  1,560       $0.18
+  reverse_engineer               —           —
+────────────────────────────────────────────────
+  Subtotal                  212,240       $6.65
 
-Table 2: Tokens by Story × Phase
+Release 1.1.0                Tokens        Cost
+────────────────────────────────────────────────
+  ideation                       —           —
+  investigation               3,210       $0.05
+  story_spec                 18,440       $0.55
+  development                21,270       $0.64
+  deployment                     —           —
+  reverse_engineer               —           —
+────────────────────────────────────────────────
+  Subtotal                   42,920       $1.24
 
-```
-Story        ideation  rev-engg  investigate  story-spec     dev      deploy     Total
-──────────────────────────────────────────────────────────────────────────────────────
-PROJECT       42,340      —        8,420           —           —       1,560     52,320
-STORY-001        —        —          —           31,080     20,840      —        51,920
-STORY-002        —        —          —           23,540     17,120      —        40,660
-STORY-003        —        —          —           18,720     13,260      —        31,980
-STORY-004        —        —          —           16,820     18,540      —        35,360
-──────────────────────────────────────────────────────────────────────────────────────
-Total         42,340      —        8,420         90,160     69,760    1,560     212,240
+════════════════════════════════════════════════
+  Total                     255,160       $7.89
 ```
 
 Rules:
-- Rows: Stories sorted by ID ascending, PROJECT row first (only if non-zero cost), then Total row
-- Columns: Phases in pipeline order, then Total column
-- Cell format: numbers only, or `—` if no entries for that cell
-- Total row uses plain text — no markdown bold
-
-After both tables, render a story legend:
-
-```
-Stories:
-  STORY-001  User registers and logs in
-  STORY-002  User manages their profile
-  STORY-003  User submits application
-  STORY-004  Admin reviews submissions
-```
-
-Read story titles from `specs/project-state.yaml → stories.[STORY-ID].title`.
+- Releases sorted ascending; entries with `release: null` or `release: "unknown"` grouped under `unknown`, sorted last
+- All six phases shown in every release section in pipeline order (ideation, investigation, story_spec, development, deployment, reverse_engineer) — show `—` in both columns if no entries for that phase in that release
+- Multiple entries for the same release+phase are summed before display
+- Subtotal row per release section, grand Total row at bottom with `════` separator
+- No menu bar, no navigation — render and stop
 
 ---
 
-## View: By Release — input `2`
+## Pricing warning
 
-One row per release. Aggregate all entries for that release across all phases and stories.
-
+If any entry has `pricing_source: fallback` or `pricing_source: stale`, append after the table:
 ```
-Cost by Release
-
-Release       Tokens        Cost
-─────────────────────────────────
-1.0.0         80,601       $7.79
-1.1.0         42,340       $4.12
-─────────────────────────────────
-Total        122,941      $11.91
+  Pricing note: some entries used outdated or fallback rates — figures may be approximate.
+  Update rates-cache.json in the SpecGantry plugin repo to refresh pricing.
 ```
 
-Sort by release ascending. Shows full project history — no current-release filter.
-
----
-
-## View: By Model — input `3`
-
-One row per model. Aggregate all entries for that model across all phases and stories.
-Strip the `claude-` prefix from model names for display.
-
+After rendering, output:
 ```
-Cost by Model  |  release [current release]
-
-Model            Tokens        Cost
-────────────────────────────────────
-sonnet-4-6       62,301       $6.23
-haiku-4-5        18,300       $0.92
-────────────────────────────────────
-Total            80,601       $7.79
-```
-
-Sort by cost descending (most expensive first).
-
----
-
-## Fallback pricing warning
-
-If any entry has `pricing_source: fallback`, append after the table in any view:
-```
-  Pricing note: some entries used fallback rates — figures may be approximate.
-  Restart Claude Code to refresh pricing from Anthropic.
+  Run /spec-gantry to return to the dashboard.
 ```

@@ -26,7 +26,7 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 | `spec-gantry:story-spec:story-spec-subagent` | story spec | sonnet-4-6 |
 | `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
-| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse engineer | sonnet-4-6 |
+| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | sonnet-4-6 |
 
 Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/architecture.md` to every subagent invocation. Agents extract the `## Artifact Index` from `arch_ref` to resolve architecture artifact paths.
 
@@ -49,8 +49,13 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 | `specs/stories/[STORY-ID]/intent.md` | 2 paragraphs: functional purpose + objective and outcome. Seeded by ideation, finalized by story-spec. |
 | `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on, reads: block. Five sections: criteria, interfaces, permissions, state, data. Max 60 lines. |
 | `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` · `source` (omitted unless reverse-engineered) |
+| `specs/.ideation-turn.md` | Active ideation turn — `topic`, `question` (last question returned to user), `mode` (normal \| coherence) |
+| `specs/.story-spec-turn.md` | Active story-spec turn — `story_id`, `interaction_state` (held_review \| awaiting_approval \| awaiting_edit), `question` |
+| `specs/.investigate-turn.md` | Active investigation turn — `description`, `interaction_state` (awaiting_confirmation \| awaiting_clarification), `findings` (last findings text) |
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
+
+Turn-state files (`specs/.ideation-turn.md`, `specs/.story-spec-turn.md`, `specs/.investigate-turn.md`) are session scratchpad — add all three to `.gitignore` alongside `specs/.current-session`.
 
 ---
 
@@ -203,8 +208,8 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 |-----------|-------------|
 | No project exists | `Start new project` · `Analyse existing codebase` (only if source files present) |
 | Ideation in progress | `Continue ideation` |
-| `ideation_complete:true` · any `spec_done:false · built:false` | `Spec next story — [STORY-ID]: [title]` |
-| All `spec_done:true` · any `built:false` | `Build next story — [STORY-ID]: [title]` |
+| `ideation_complete:true` · next unblocked story has `spec_done:false · built:false` | `Spec next story — [STORY-ID]: [title]` |
+| `ideation_complete:true` · next unblocked story has `spec_done:true · built:false` | `Build next story — [STORY-ID]: [title]` |
 | All `built:true` · any `deployed:false` | `Deploy release [version]` |
 | `ideation_complete:true` · any `built:true · spec_done:false` | `Complete stub spec — [STORY-ID]: [title]` (lowest-numbered stub first) |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
@@ -241,22 +246,23 @@ Use this computed version everywhere `[version]` appears.
 
 Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
 
-**P0/P1 rows are checked BEFORE rows 1–7:**
+**P0/P1 rows are checked BEFORE rows 1–7. T0 is checked before everything:**
 
 | # | Condition | Action |
 |---|-----------|--------|
+| T0 | any turn-state file exists (`specs/.ideation-turn.md` \| `specs/.story-spec-turn.md` \| `specs/.investigate-turn.md`) | the user's raw input is an answer to the pending question in that file — route it directly to the corresponding action (`start_ideation` \| `spec_next_story` \| `classify_and_route`) passing the answer; do NOT parse as a dashboard command |
 | P0 | `pending_arch_gap` non-null | invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) · **progress note:** if re-routing to P0 again (another gap was signalled), emit one line above the dashboard: `✓ Arch gap resolved ([n] of [total] gaps) · resuming` where n is the count of gaps cleared this session |
 | P1 | `pending_spec_gap` non-null | invoke story-spec (spec gap mode) with gap reason · after complete: (1) check `pending_arch_gap` — if non-null (spec gap escalated to arch gap), do NOT clear `pending_spec_gap` yet; re-route to P0 to resolve the arch gap first, then return to P1 on the next invocation · (2) if `pending_arch_gap` is null: clear `pending_spec_gap: null` in project-state · (3) restore `project.active_story: [pending_spec_gap.story_id]` · (4) restore `project.active_phase: development` · (5) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
 | P2 | `ideation_complete:true` · `arch_seeded:false` | RE or ideation crashed mid-artifact-write · set `pending_arch_gap: {triggered_by: orchestrator, story_id: null, reason: "arch artifacts incomplete — arch_seeded:false after ideation_complete:true", resume_phase: null}` · re-route to P0 to trigger ideation arch gap mode |
 | 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
 | 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
 | 3 | `ideation_complete:false` | **start_ideation** |
-| 4 | `ideation_complete:true` · any `spec_done:false` · any `built:false` | **spec_next_story** (only for stories where `built:false`) |
-| 5 | All `spec_done:true` · any `built:false` | **build_next_story** |
+| 4 | `ideation_complete:true` · next unblocked story has `spec_done:false · built:false` | **spec_next_story** for that story |
+| 5 | `ideation_complete:true` · next unblocked story has `spec_done:true · built:false` | **build_next_story** for that story |
 | 6 | All `built:true` · any `deployed:false` | **confirm_and_deploy** |
 | 7 | All `deployed:true` | **classify_and_route** |
 
-**Row 4 note:** only routes to spec for stories that are not yet built. Stories with `built:true · spec_done:false` (reverse-engineered stubs) are skipped in automatic pipeline order — their specs can be written via the `Complete stub spec` action bar entry, `[N] New work`, or by typing the story ID directly. This means a fully reverse-engineered app with all stories `built:true · deployed:true` routes directly to row 7 → `classify_and_route`, which is the right entry point for modifications.
+**Rows 4 and 5 — interleaved pipeline:** evaluate the next unblocked story in topological order (lowest-numbered first within a dependency tier). Check its state: if `spec_done:false · built:false` → spec it (row 4). If `spec_done:true · built:false` → build it (row 5). This means spec and build alternate per story — a story is built before the next story is specced. RE stories with `built:true · spec_done:false` are skipped in automatic pipeline order (see stub spec action in action bar).
 
 **P2 note:** P2 fires when `arch_seeded:false` but `ideation_complete:true` — this means ideation or RE completed story creation but crashed before finishing the arch artifact writes. P2 synthesises a `pending_arch_gap` with `story_id: null` to trigger ideation arch gap mode, which will inspect what's missing and fill in the gaps. The `story_id: null` tells ideation this is a project-level gap, not a story-level one.
 
@@ -326,16 +332,51 @@ pending_spec_gap: null
 stories: {}
 ```
 Create `specs/stories/` directory.
-Append to `.gitignore` if absent: `specs/.current-session`
+Append to `.gitignore` if absent:
+```
+specs/.current-session
+specs/.ideation-turn.md
+specs/.story-spec-turn.md
+specs/.investigate-turn.md
+specs/.ideation-scratchpad.yaml
+specs/.agent-stamp-*.json
+```
 → **start_ideation**
 
 ---
 
 ### start_ideation
 **Gate:** `specs/project-state.yaml` exists · `specs/architecture/architecture.md` exists
-**Idempotency:** `ideation_complete:true` → re-render dashboard · stop
-**Invoke:** `spec-gantry:ideation:ideation-subagent` · description: `"Ideation for [project.name]"` · pass `project_dir`, `arch_ref`
-**After:** verify all of the following. If any check fails, set `pending_arch_gap` with reason "arch artifacts incomplete after ideation" and re-route to P0:
+**Idempotency:** `ideation_complete:true` AND no turn-state file → re-render dashboard · stop
+
+**Turn-state branch:**
+
+**If `specs/.ideation-turn.md` exists** (user just answered a question):
+- Read `prior_question` and `mode` from the turn-state file
+- Invoke `spec-gantry:ideation:ideation-subagent` · pass `project_dir`, `arch_ref`, `prior_question`, `user_answer: [user's raw input]`, `mode` (if set)
+- Process return signal (see below)
+
+**If `specs/.ideation-turn.md` does not exist** (fresh start or disk-resume):
+- Invoke `spec-gantry:ideation:ideation-subagent` · pass `project_dir`, `arch_ref` only (no prior question or answer)
+- Process return signal (see below)
+
+**Processing return signals:**
+
+`TURN: [question text]` → write `specs/.ideation-turn.md`:
+```
+topic: [derived from question context or current Beat]
+question: [question text]
+mode: normal
+```
+Surface the question text to the user · re-render dashboard with STATE 1 phase indicator showing current Beat/topic · ⏸ pause
+
+`COHERENCE_PASS` → write `specs/.ideation-turn.md` with `mode: coherence` · invoke subagent immediately with `mode: coherence`, `project_dir`, `arch_ref` · process the coherence return signal:
+- `COHERENT` + story list → delete `specs/.ideation-turn.md` · invoke subagent with `mode: seed_artifacts`, `project_dir`, `arch_ref` · wait for `IDEATION_COMPLETE`
+- `COHERENCE_ISSUES: [list]` → write first issue's question to `specs/.ideation-turn.md` · surface it to the user · ⏸ pause (remaining issues are queued — after each answer, the next issue is surfaced until the list is exhausted, then another coherence pass runs)
+
+`COHERENT` (returned from seed_artifacts call, should not happen — coherence always followed by seed_artifacts invocation above) → treat as `IDEATION_COMPLETE`
+
+`IDEATION_COMPLETE` → delete `specs/.ideation-turn.md` if it exists · verify all of the following. If any check fails, set `pending_arch_gap` with reason "arch artifacts incomplete after ideation" and re-route to P0:
 - `ideation_complete: true`
 - `arch_seeded: true`
 - `specs/architecture/architecture.md` contains `## Artifact Index`
@@ -344,12 +385,21 @@ Append to `.gitignore` if absent: `specs/.current-session`
 - `specs/architecture/ux.md` exists
 - `specs/architecture/deployment.md` exists (if missing: set `pending_arch_gap` with reason "deployment.md missing — Topic 10 not completed")
 - Every story in `project-state.yaml` with `intent_done:true` has a corresponding `specs/stories/[story_id]/intent.md` on disk — if any are missing, set `pending_arch_gap` with `story_id: null` and reason "one or more intent.md files missing after ideation"
+- `specs/.ideation-scratchpad.yaml` does not exist (should have been deleted in Step 2)
 
 Re-render dashboard showing full story list · emit compact hint below the transition note:
 ```
 💡 Good moment to /compact — ideation context is large, all decisions are on disk.
 ```
 ⏸ pause
+
+Also ensure `.gitignore` contains entries for all three turn-state files — append if absent:
+```
+specs/.ideation-turn.md
+specs/.story-spec-turn.md
+specs/.investigate-turn.md
+specs/.ideation-scratchpad.yaml
+```
 
 ---
 
@@ -363,26 +413,35 @@ Find the next story to spec: lowest-numbered story in topological order where `s
 
 Set `project.active_story: [story_id]` and `project.active_phase: story-spec` in `specs/project-state.yaml`.
 
-**Invoke:** `spec-gantry:story-spec:story-spec-subagent` · description: `"Writing spec for [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
+**Turn-state branch:**
 
-**After:** verify all of the following:
-- `spec_done: true` in project-state
-- `intent_done: true` in project-state for this story
-- `specs/stories/[story_id]/intent.md` exists
-- `specs/stories/[story_id]/story-spec.md` exists
-- `pending_arch_gap` is null
+**If `specs/.story-spec-turn.md` exists** (user just answered a prompt):
+- Read `story_id`, `interaction_state`, and `question` from the turn-state file
+- Invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Spec turn for [story_id]"` · pass `story_id`, `project_dir`, `arch_ref`, `interaction_state`, `user_answer: [user's raw input]`
+- Process return signal (see below)
 
-If `pending_arch_gap` is non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P0 immediately.
+**If `specs/.story-spec-turn.md` does not exist** (fresh invocation):
+- Invoke `spec-gantry:story-spec:story-spec-subagent` · description: `"Writing spec for [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
+- Process return signal (see below)
+
+**Processing return signals:**
+
+`TURN:held_review:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: held_review`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+
+`TURN:awaiting_approval:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_approval`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+
+`TURN:awaiting_edit:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_edit`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+
+`SPEC_COMPLETE` → delete `specs/.story-spec-turn.md` · verify `spec_done: true` in project-state · verify `intent_done: true` · verify `specs/stories/[story_id]/intent.md` and `story-spec.md` exist · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
+
+`SPEC_HELD` → delete `specs/.story-spec-turn.md` · clear `active_story` · clear `active_phase` · re-render dashboard · ⏸ pause
+
+`ARCH_GAP:[reason]` → delete `specs/.story-spec-turn.md` · clear `project.active_story` · clear `project.active_phase` · re-route to P0 immediately.
+
 If any other verification check fails: clear `active_story` · clear `active_phase` · halt with the subagent's error message · ⏸
 
-Clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard.
-
-When all stories have `spec_done:true`:
-- Re-render full dashboard with transition note `✓ All specs complete · ready to build`
-- Emit compact hint:
-  ```
-  💡 Good moment to /compact — spec context is large, all specs are on disk.
-  ```
+When all stories have `spec_done:true AND built:true`:
+- Re-render full dashboard (action bar shows `[1] Deploy release [version]`)
 - ⏸ pause
 
 ---
@@ -401,7 +460,7 @@ Set `project.active_story: [story_id]` and `project.active_phase: development` i
 - If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
 - If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · halt "Build report missing for [STORY-ID] — agent crashed before completing. Run /spec-gantry to rebuild." · ⏸
 - Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · halt "Build failed — run /spec-gantry to resume" · ⏸
-- Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard.
+- Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
 
 When all stories have `built:true`:
 - Re-render full dashboard (action bar shows `[1] Deploy release [version]`)
@@ -503,13 +562,28 @@ Prompt: `Describe the next work (bug fix / improvement / new feature / architect
 
 **Step 1 — Investigate (bug_fix and enhancement only).**
 
-For any report that sounds like a bug or enhancement, invoke the investigative agent before doing anything else:
+For any report that sounds like a bug or enhancement, invoke the investigative agent before doing anything else.
 
-**Invoke:** `spec-gantry:investigate:investigate-subagent` · description: `"Investigating: [user's description]"` · pass `description`, `project_dir`, `arch_ref`
+**Turn-state branch:**
 
-- If the agent returns `status: cancelled` → re-render dashboard · ⏸
-- If the agent returns `status: confirmed` → proceed to Step 2 with findings in hand
-- If the description is clearly `new_story` or `project_change` (net-new capability, no existing code to investigate) → skip Step 1, go directly to Step 2
+**If `specs/.investigate-turn.md` exists** (user just answered a confirmation prompt):
+- Read `description`, `interaction_state`, and `findings` from the turn-state file
+- Invoke `spec-gantry:investigate:investigate-subagent` · pass `description`, `project_dir`, `arch_ref`, `prior_output: [findings]`, `user_answer: [user's raw input]`
+- Process return signal (see below)
+
+**If `specs/.investigate-turn.md` does not exist** (fresh investigation):
+- Invoke `spec-gantry:investigate:investigate-subagent` · description: `"Investigating: [user's description]"` · pass `description`, `project_dir`, `arch_ref`
+- Process return signal (see below)
+
+**Processing return signals:**
+
+`TURN: [findings text]` → write `specs/.investigate-turn.md` with `description`, `interaction_state: awaiting_confirmation`, `findings: [findings text]` · surface the findings to the user · re-render dashboard · ⏸ pause
+
+`INVESTIGATION_CONFIRMED` + findings block → delete `specs/.investigate-turn.md` · proceed to Step 2 with findings in hand
+
+`INVESTIGATION_CANCELLED` → delete `specs/.investigate-turn.md` · re-render dashboard · ⏸
+
+If the description is clearly `new_story` or `project_change` (net-new capability, no existing code to investigate) → skip Step 1, go directly to Step 2.
 
 **Step 2 — Classify using findings.**
 
@@ -610,7 +684,7 @@ Re-render dashboard · ⏸
 
 [A] — Display `specs/architecture/architecture.md` in full, then re-render dashboard. Visible when file exists.
 
-[$] — Invoke `/track-cost` — show full cost breakdown by phase and story.
+[$] — Invoke `/track-cost` — show cost breakdown grouped by release and phase.
 
 [N] — New work → classify_and_route. Always visible when `ideation_complete:true`.
 

@@ -82,26 +82,43 @@
           <a href="/docs/how-it-works" class="sidebar-link ">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link ">
             FAQ
           </a>
@@ -177,7 +194,7 @@
 <ol>
   <li><strong>What problem is this solving, exactly?</strong> (Ideation)</li>
   <li><strong>Does this fit the system we’ve agreed to build?</strong> (Architecture)</li>
-  <li><strong>What does “done” look like, specifically enough that you could verify it?</strong> (Component Spec)</li>
+  <li><strong>What does “done” look like, specifically enough that you could verify it?</strong> (Story Spec)</li>
 </ol>
 
 <p>If you can’t answer these three questions before writing code, writing the code is premature — regardless of how fast the AI can produce it.</p>
@@ -198,7 +215,7 @@
 
 <p>The catch is that “architecture guardrails” are only useful if they’re actually enforced. A document in Confluence that everyone knows exists and nobody reads in practice is not a guardrail. It’s decorative.</p>
 
-<p>This is why SpecGantry’s architecture guardrails are checked automatically against every component spec — not by the developer remembering to check, but by the system refusing to let the spec pass if there’s a violation.</p>
+<p>This is why SpecGantry’s architecture guardrails are checked automatically against every story spec — not by the developer remembering to check, but by the system refusing to let the spec pass if there’s a violation.</p>
 
 <hr />
 
@@ -232,7 +249,7 @@
     <p><strong>Formalizes architecture decisions as rules.</strong> The system design is a living contract between the architect and the development team. It needs to be inspectable, version-controlled, and actively enforced — not a slide deck from the kickoff meeting.</p>
   </li>
   <li>
-    <p><strong>Requires a written spec before code.</strong> Not a novel — a spec. Five sections, 30 minutes to write, covering scope, interfaces, data, feature list, and test cases. This is the minimum that gives an AI coding assistant the context to implement something correctly.</p>
+    <p><strong>Requires a written spec before code.</strong> Not a novel — a spec. Six sections, 30 minutes to write, covering what the user can do, screens and states, data and backend, AI integration, enterprise checks, and acceptance criteria. This is the minimum that gives an AI coding assistant the context to implement something correctly.</p>
   </li>
   <li>
     <p><strong>Tracks cost and progress transparently.</strong> AI-assisted development has real financial costs that vary significantly by how you use it. Visibility into token usage by phase, feature, and developer turns AI cost from a mystery into a managed resource.</p>
@@ -249,9 +266,9 @@
 
 <p>The ideation agent generates targeted questions from your project description — not a fixed script, but questions tailored to the domain, scale, and constraints of what you’ve described. By the end of ideation, the feasibility assessment either clears you to proceed, asks you to clarify specific questions, or flags that there’s a risk that needs stakeholder input before design begins.</p>
 
-<p>The architecture agent translates the validated project vision into a concrete system design — tech stack, service boundaries, API contracts, data model — and then derives <strong>project domains</strong> from the natural divisions of the system. These domains become the bounded contexts that component specs must stay within. Every architecture decision is written as a guardrail.</p>
+<p>The architecture agent translates the validated project vision into a concrete system design — tech stack, service boundaries, API contracts, data model — and formalizes guardrails that every story spec must respect. Every architecture decision is written as an enforceable rule.</p>
 
-<p>The component-spec agent loads the architecture spec before writing a single word. Every answer is checked against the guardrails in real time. Violations are flagged immediately, not at the end. The spec cannot be marked complete with any unresolved violation.</p>
+<p>The story-spec agent loads the architecture before writing a single word. Every answer is checked against the guardrails in real time. Violations are flagged immediately, not at the end. The spec cannot be marked complete with any unresolved violation.</p>
 
 <p>And the pipeline is session-safe: every question, every section, every answer is written to disk immediately. Network drops, context resets, end of day — the next session picks up at the next unanswered question.</p>
 
@@ -267,7 +284,7 @@
 
 <p>AI makes good problems faster to solve. It also makes bad problems faster to discover you’ve been solving. The difference, in both cases, is whether you defined the problem clearly before you started.</p>
 
-<p>Guardrails aren’t about limiting what AI can do. They’re about giving AI the context it needs to do the right thing. A component spec isn’t a leash on the model — it’s the information the model needs to implement correctly.</p>
+<p>Guardrails aren’t about limiting what AI can do. They’re about giving AI the context it needs to do the right thing. A story spec isn’t a leash on the model — it’s the information the model needs to implement correctly.</p>
 
 <p>More tokens won’t solve a missing spec. Better guardrails will.</p>
 

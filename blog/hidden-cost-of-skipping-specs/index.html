@@ -82,26 +82,43 @@
           <a href="/docs/how-it-works" class="sidebar-link ">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link ">
             FAQ
           </a>
@@ -145,17 +162,17 @@
 
 <p>Let’s work through the math.</p>
 
-<p>A component spec for a medium-complexity component — scope, API contract, data model, feature list, test cases, non-functional considerations — takes an experienced developer 15–30 minutes to write, guided by the component-spec agent. Call it 30 minutes with review.</p>
+<p>A story spec for a medium-complexity story — what the user can do, screens and states, data and backend, AI integration, enterprise checks, acceptance criteria — takes an experienced developer 15–30 minutes to write, guided by the story-spec agent. Call it 30 minutes with review.</p>
 
 <p>A medium-complexity feature implementation takes roughly a day to build. Call it 8 hours.</p>
 
 <p>If the implementation is correct — spec-aligned, architecture-compliant, reviewable without major changes — the 30 minutes was overhead. The team shipped a feature and the spec was a cost of $0.30 in tokens and 30 minutes of a developer’s time.</p>
 
-<p>If the implementation is wrong — misunderstood requirements, architecture violation, conflicting API contract with another component — what happens?</p>
+<p>If the implementation is wrong — misunderstood requirements, architecture violation, conflicting API contract with another story — what happens?</p>
 
 <p><strong>Discovery at code review (best case):</strong> 2 hours of review discussion, 3–5 hours of rework, 1 hour of re-review. Call it 8 hours total. The feature cost 8 hours to build and 8 more hours to fix. 2× the original cost.</p>
 
-<p><strong>Discovery after integration:</strong> The misaligned component has been built against. Another component made assumptions about this one’s behavior. Now you’re fixing both. 16+ hours total. 2–3× the original cost.</p>
+<p><strong>Discovery after integration:</strong> The misaligned story has been built against. Another story made assumptions about this one’s behavior. Now you’re fixing both. 16+ hours total. 2–3× the original cost.</p>
 
 <p><strong>Discovery after deploy:</strong> User reports unexpected behavior. Incident triage, root cause, hotfix, deploy, verify. 24+ hours across multiple people. 3–5× the original cost.</p>
 
@@ -163,7 +180,7 @@
 
 <p>The rework cost: 8–24+ hours.</p>
 
-<p>The break-even point is if your implementation is wrong about 5% of the time. In practice, without a spec, misalignment rates are 20–30% — especially when multiple developers are building components in parallel against a system design that’s never been formally documented.</p>
+<p>The break-even point is if your implementation is wrong about 5% of the time. In practice, without a spec, misalignment rates are 20–30% — especially when stories depend on each other and assumptions about interfaces never get formally documented.</p>
 
 <hr />
 
@@ -215,7 +232,7 @@
 
 <p>You’re spending integration effort untangling misaligned features on roughly three out of every four development cycles. Most of this cost is invisible — it shows up as “slow code review,” “complex integration work,” or “the sprint felt hard but hard to say why.”</p>
 
-<p><strong>Specs reduce the per-component misalignment rate.</strong> They don’t eliminate it — you can still spec the wrong thing — but they make the interpretation explicit and reviewable before implementation. The misalignment rate drops from 20–30% to roughly 5%.</p>
+<p><strong>Specs reduce the per-story misalignment rate.</strong> They don’t eliminate it — you can still spec the wrong thing — but they make the interpretation explicit and reviewable before implementation. The misalignment rate drops from 20–30% to roughly 5%.</p>
 
 <p>At 5% per developer:</p>
 <ul>
@@ -236,19 +253,19 @@
 <p>Consider:</p>
 <ul>
   <li>Architecture session: $0.60</li>
-  <li>Component spec session (one component): $0.25</li>
-  <li>Component development (one component): $0.45</li>
-  <li>Total per component (correct): $0.70</li>
+  <li>Story spec session (one story): $0.25</li>
+  <li>Story development (one story): $0.45</li>
+  <li>Total per story (correct): $0.70</li>
 </ul>
 
 <p>With a 25% misalignment rate and a full rework:</p>
 <ul>
-  <li>Expected extra cost per component: 0.25 × $0.45 = ~$0.11</li>
+  <li>Expected extra cost per story: 0.25 × $0.45 = ~$0.11</li>
 </ul>
 
-<p>With 20 components in a typical project: $2.20 in wasted token spend from misaligned implementations. Not a lot by itself. But multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.</p>
+<p>With 20 stories in a typical project: $2.20 in wasted token spend from misaligned implementations. Not a lot by itself. But multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.</p>
 
-<p>The more important point is visibility. Most teams don’t know what their AI-assisted development actually costs, let alone where the spend goes. Tracking token usage by phase and component makes the rework cost visible — and visible costs get managed.</p>
+<p>The more important point is visibility. Most developers don’t know what their AI-assisted development actually costs, let alone where the spend goes. Tracking token usage by phase and story makes the rework cost visible — and visible costs get managed.</p>
 
 <hr />
 
@@ -264,17 +281,17 @@
 
 <h2 id="what-changes-with-enforced-specs">What Changes With Enforced Specs</h2>
 
-<p>The phrase “enforced specs” sounds heavyweight. The reality is lightweight but hard: before any code is written, there’s a document that answers five questions about the component. Thirty minutes. Five sections. Verified against architecture.</p>
+<p>The phrase “enforced specs” sounds heavyweight. The reality is lightweight but hard: before any code is written, there’s a document that answers six questions about the story. Thirty minutes. Six sections. Verified against architecture.</p>
 
 <p>What changes:</p>
 
-<p><strong>Interpretations become reviewable.</strong> The component-spec agent surfaces the developer’s interpretation before implementation. The interpretation can be caught, corrected, and clarified before it’s written in code.</p>
+<p><strong>Interpretations become reviewable.</strong> The story-spec agent surfaces the developer’s interpretation before implementation. The interpretation can be caught, corrected, and clarified before it’s written in code.</p>
 
-<p><strong>Architecture compliance is verified automatically.</strong> The spec agent reads the architecture spec and checks every API contract, data model reference, and service boundary. Violations are flagged in the spec, not in code review.</p>
+<p><strong>Architecture compliance is verified automatically.</strong> The spec agent reads the architecture and checks every API contract, data model reference, and guardrail. Violations are flagged in the spec, not in code review.</p>
 
-<p><strong>Context persists across sessions.</strong> The spec is the authoritative source of intent. New sessions can load it as context. Other developers can read it. The AI assistant has clear, specific guidance.</p>
+<p><strong>Context persists across sessions.</strong> The spec is the authoritative source of intent. New sessions can load it as context. The AI assistant has clear, specific guidance.</p>
 
-<p><strong>Cost becomes visible.</strong> Token usage is tracked per phase and per component. The cost of rework (if any) is visible as extra token spend on the same component.</p>
+<p><strong>Cost becomes visible.</strong> Token usage is tracked per phase and per story. The cost of rework (if any) is visible as extra token spend on the same story.</p>
 
 <p>None of this guarantees you’ll ship the right feature. Requirements can be misunderstood at spec time, not just at implementation time. But it moves the failure point earlier — to a moment when the cost of correction is low — and makes the interpretation explicit, which is the prerequisite for catching it.</p>
 
@@ -284,7 +301,7 @@
 
 <p>The argument for specs is ultimately simple, and the math is straightforward.</p>
 
-<p>A component spec takes 30 minutes and costs ~$0.25 in tokens. It makes the developer’s interpretation explicit, verifies it against architecture, and creates a reviewable artifact.</p>
+<p>A story spec takes 30 minutes and costs ~$0.25 in tokens. It makes the developer’s interpretation explicit, verifies it against architecture, and creates a reviewable artifact.</p>
 
 <p>A misaligned implementation costs 8–24 hours and $0.50–$1.50 in tokens to rework — more if discovered late.</p>
 

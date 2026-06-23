@@ -82,26 +82,43 @@
           <a href="/docs/how-it-works" class="sidebar-link ">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link ">
             FAQ
           </a>
@@ -151,7 +168,7 @@
 claude plugin <span class="nb">install </span>spec-gantry
 </code></pre></div></div>
 
-<p>Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v2.2.4</code></p>
+<p>Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v3.1.9</code></p>
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -193,43 +210,17 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>To uninstall the plugin and remove the marketplace entry, run both commands in order:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
-claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry@spec-gantry
+claude plugin marketplace remove spec-gantry
 </code></pre></div></div>
 
-<p>Your project’s <code class="language-plaintext highlighter-rouge">specs/</code> files are not touched — they stay in your repository.</p>
+<p>Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project’s <code class="language-plaintext highlighter-rouge">specs/</code> files are not touched — they stay in your repository.</p>
 
 <hr />
 
-<h2 id="step-2--open-your-project">Step 2 — Open Your Project</h2>
+<h2 id="step-2--start-claude-code">Step 2 — Start Claude Code</h2>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>File → Open Folder
-</code></pre></div></div>
-
-<p>Choose based on your situation:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Situation</th>
-      <th>What to open</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>New project</td>
-      <td>Empty folder</td>
-    </tr>
-    <tr>
-      <td>Existing codebase</td>
-      <td>Your project root</td>
-    </tr>
-    <tr>
-      <td>Joining a team</td>
-      <td>The cloned team repository</td>
-    </tr>
-  </tbody>
-</table>
+<p>Open Claude Code in your project directory. If you’re starting a new project, open an empty folder. If you have an existing codebase, open your project root.</p>
 
 <hr />
 
@@ -275,7 +266,7 @@ claude plugin marketplace remove https://github.com/specgantry/specgantry.github
       <div class="dg-entry-arrow"></div>
       <div class="dg-entry-step">Beat 2 — Shape the system<br /><span style="font-size:.68rem;color:var(--slate-400)">tech stack · boundaries · backlog</span></div>
       <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step"><strong>Approve backlog → commit specs/</strong></div>
+      <div class="dg-entry-step"><strong>Commit specs/ to git</strong></div>
     </div>
 
     <div class="dg-fork-branch">
@@ -283,7 +274,7 @@ claude plugin marketplace remove https://github.com/specgantry/specgantry.github
       <div class="dg-flow-node dg-spec" style="width:100%">
         <div class="dg-flow-node-body">
           <div class="dg-flow-node-title">Existing Codebase</div>
-          <div class="dg-flow-node-desc">Reverse-engineer: scan → propose arch spec + backlog</div>
+          <div class="dg-flow-node-desc">Offer: init fresh or reverse-engineer</div>
         </div>
       </div>
       <div class="dg-entry-arrow"></div>
@@ -291,23 +282,21 @@ claude plugin marketplace remove https://github.com/specgantry/specgantry.github
       <div class="dg-entry-arrow"></div>
       <div class="dg-entry-step">Review proposed architecture<br /><span style="font-size:.68rem;color:var(--slate-400)">confirm or redirect</span></div>
       <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step"><strong>Approve backlog → commit specs/</strong></div>
+      <div class="dg-entry-step"><strong>Commit specs/ to git</strong></div>
     </div>
 
     <div class="dg-fork-branch">
-      <div class="dg-fork-label" style="text-align:center"><i class="bi bi-people"></i> specs/ found</div>
+      <div class="dg-fork-label" style="text-align:center"><i class="bi bi-files"></i> specs/ found</div>
       <div class="dg-flow-node dg-deploy" style="width:100%">
         <div class="dg-flow-node-body">
-          <div class="dg-flow-node-title">Joining a Team</div>
-          <div class="dg-flow-node-desc">Ask role → show dashboard</div>
+          <div class="dg-flow-node-title">Resuming</div>
+          <div class="dg-flow-node-desc">Read state → show dashboard</div>
         </div>
       </div>
       <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step">Select role<br /><span style="font-size:.68rem;color:var(--slate-400)">Team Lead or Developer</span></div>
+      <div class="dg-entry-step">Pipeline dashboard shown<br /><span style="font-size:.68rem;color:var(--slate-400)">pick up a story or continue</span></div>
       <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step">Pipeline dashboard shown<br /><span style="font-size:.68rem;color:var(--slate-400)">pick up a component or continue</span></div>
-      <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step"><strong>Type component ID to claim it</strong></div>
+      <div class="dg-entry-step"><strong>Type story ID to continue</strong></div>
     </div>
 
   </div>
@@ -319,96 +308,35 @@ claude plugin marketplace remove https://github.com/specgantry/specgantry.github
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.2.4  |  New Project
-[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v3.1.9  |  New Project
+[░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
 ──────────────────────────────────────────────────────────
-  [1] Start new project               [P] Project
-                                      [$] Cost
+  [1] Start new project               [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 </code></pre></div>  </div>
 </div>
 
-<p>Select <code class="language-plaintext highlighter-rouge">[1]</code>. You’ll answer two questions — project name and vision. No version number needed; every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code>. SpecGantry moves straight into ideation.</p>
+<p>Select <code class="language-plaintext highlighter-rouge">[1]</code>. You’ll answer two questions — project name and vision. SpecGantry moves straight into ideation.</p>
 
 <h3 id="existing-codebase">Existing Codebase</h3>
 
-<p>Select <code class="language-plaintext highlighter-rouge">[2]</code> to have SpecGantry scan your files and propose an architecture spec, domain breakdown, and component backlog. You review and confirm before anything is written. Takes 10–15 minutes.</p>
-
-<h3 id="joining-a-team">Joining a Team</h3>
-
-<p>If your Team Lead has already committed <code class="language-plaintext highlighter-rouge">specs/</code> to the repository, SpecGantry detects it on first run and asks whether you are the Team Lead or a Developer. After you identify yourself, the pipeline dashboard is shown immediately:</p>
-
-<div class="docs-terminal">
-  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
-
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry project found: Acme Platform (release 1.0.0)
-
-Are you the Team Lead or a Developer?
-  [1] Team Lead / Architect
-  [2] Developer
-</code></pre></div>  </div>
-</div>
-
-<p>After selecting <code class="language-plaintext highlighter-rouge">[2]</code> and entering your name, the dashboard appears:</p>
-
-<div class="docs-terminal">
-  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
-
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.2.4  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 3/5  ·  Dev [█░░░░] 1/5  ·  You [░░░░░] 0/0 assigned
-──────────────────────────────────────────────────────────
-                              Spec  Dev  Assignee
-  [001]  Auth Module           ✅    ✅    alice
-  [002]  Payment Gateway       ✅    🔄    bob
-  [003]  Notifications         🔄    ○     carol
-  [004]  Search                ⏳    ○     unassigned
-  [005]  Reporting             🔴    ○     —          depends on 003,004
-──────────────────────────────────────────────────────────
-  Type a component ID to manage it    [$] Cost
-  [1] Claim a component               [?] Help
-                                      [X] Exit
-──────────────────────────────────────────────────────────
-Enter component ID or action:  `&gt;`
-</code></pre></div>  </div>
-</div>
-
-<p>Type a component number (e.g. <code class="language-plaintext highlighter-rouge">004</code>) to claim it and begin the component spec phase.</p>
+<p>Select <code class="language-plaintext highlighter-rouge">[2]</code> to have SpecGantry scan your files and propose an architecture, story backlog, and guardrails. You review and confirm before anything is written. Takes 10–15 minutes.</p>
 
 <hr />
 
-<h2 id="your-first-actions-by-role">Your First Actions by Role</h2>
-
-<h3 id="if-youre-the-team-lead--architect">If You’re the Team Lead / Architect</h3>
+<h2 id="your-first-actions">Your First Actions</h2>
 
 <ol>
   <li><strong>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code></strong> — select Start New Project</li>
-  <li><strong>Complete Ideation</strong> (15–30 min) — Beat 1 matures the idea; Beat 2 shapes the system (tech stack, boundaries, guardrails, component backlog). Both happen in one conversation.</li>
-  <li><strong>Approve the component backlog</strong> — review the proposed components and select <code class="language-plaintext highlighter-rouge">[Y] Approve</code>; spec work cannot begin until you do</li>
-  <li><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git</strong> — developers can now pull and join</li>
-</ol>
-
-<h3 id="if-youre-a-developer">If You’re a Developer</h3>
-
-<ol>
-  <li><strong>Pull the repository</strong> after the Team Lead commits <code class="language-plaintext highlighter-rouge">specs/</code></li>
-  <li><strong>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code></strong> — it detects the project and asks if you are the Team Lead or a Developer; select Developer and enter your name</li>
-  <li><strong>Type a component ID</strong> to claim it from the pipeline dashboard</li>
-  <li><strong>Write the component spec</strong> (5–15 min) — guided by the component-spec agent</li>
-  <li><strong>Build and test</strong> — implement against your approved spec using TDD</li>
-</ol>
-
-<h3 id="if-youre-solo">If You’re Solo</h3>
-
-<ol>
-  <li><strong>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code></strong> and start as Team Lead</li>
-  <li><strong>Complete Ideation</strong> yourself — both idea maturation and system shaping happen in one session</li>
-  <li><strong>Approve the backlog</strong> — then switch to Developer role</li>
-  <li><strong>Work components from the dashboard</strong> using TDD</li>
-  <li><strong>Confirm integration</strong> once all components pass — run tests or skip straight to deploy</li>
+  <li><strong>Complete Ideation</strong> (15–30 min) — Beat 1 matures the idea; Beat 2 shapes the system (tech stack, boundaries, guardrails, story backlog). Both happen in one conversation.</li>
+  <li><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git</strong></li>
+  <li><strong>Type a story ID</strong> from the dashboard to begin the story spec phase</li>
+  <li><strong>Write the story spec</strong> (5–15 min) — guided by the story-spec agent</li>
+  <li><strong>Build</strong> — implement against your approved spec</li>
 </ol>
 
 <hr />
@@ -419,20 +347,18 @@ Enter component ID or action:  `&gt;`
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-root/
 ├── specs/
-│   ├── project-state.yaml          # Project metadata and component backlog
-│   ├── architecture-spec.md        # Vision, tech stack, system design, guardrails, domain sections
-│   ├── integration-scenarios.md    # Living document — cross-component scenarios and run history
+│   ├── project-state.yaml          # Project metadata and story backlog
+│   ├── architecture.md             # Vision, tech stack, system design, guardrails
 │   ├── cost-log.ndjson             # Token usage and cost per agent run
 │   ├── deploy.sh                   # Generated deployment script (whole system)
 │   ├── deploy.sh.old               # Previous deployment script (backup)
 │   ├── deploy-artifact.md          # Deployment validation summary
-│   └── components/
-│       ├── COMP-001/
-│       │   ├── component-spec.md   # Component specification + Change History
-│       │   ├── state.yaml          # Phase progress flags
-│       │   ├── dev-artifact.yaml   # Build notes and test results
-│       │   └── gap-YYYY-MM-DD.md  # Gap spec (if written during build; deleted after merge)
-│       └── COMP-002/
+│   └── stories/
+│       ├── STORY-001/
+│       │   ├── story-spec.md       # Story specification
+│       │   ├── build-report.yaml   # Build notes and results
+│       │   └── gap.md              # Gap file (if written during build or post-release; deleted after deploy merge)
+│       └── STORY-002/
 │           └── ...
 ├── src/                            # Your application source code
 │   ├── config/                     # App configuration and env templates
@@ -446,7 +372,7 @@ Enter component ID or action:  `&gt;`
 </code></pre></div></div>
 
 <div class="info">
-  <strong>Commit <code>specs/</code> to git.</strong> This is how your team shares project decisions, tracks component progress, and maintains a history of architecture choices and costs. Each developer's local role settings stay on their own machine and are not committed.
+  <strong>Commit <code>specs/</code> to git.</strong> This is how you maintain a history of architecture choices, story progress, and costs.
 </div>
 
 <div class="info">
@@ -459,52 +385,49 @@ Enter component ID or action:  `&gt;`
 
 <p>Every <code class="language-plaintext highlighter-rouge">/spec-gantry</code> invocation re-reads all state and renders the full dashboard. There are two states:</p>
 
-<h3 id="state-1--no-components-yet">State 1 — No components yet</h3>
+<h3 id="state-1--no-stories-yet">State 1 — No stories yet</h3>
 
 <p>Shown during ideation, or when no project exists. The middle section shows the current phase status:</p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.2.4  |  My App
-[░░░░░░░░░░]  0/0 components deployed  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v3.1.9  |  My App
+[░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
 ──────────────────────────────────────────────────────────
-  [1] Continue ideation               [P] Project
-                                      [$] Cost
+  [1] Continue ideation               [$] Cost
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 </code></pre></div>  </div>
 </div>
 
-<h3 id="state-2--component-pipeline-active">State 2 — Component pipeline active</h3>
+<h3 id="state-2--story-pipeline-active">State 2 — Story pipeline active</h3>
 
-<p>Shown once the backlog is approved. The pipeline table and component picker are unified — every component is visible and directly actionable from the same screen:</p>
+<p>Shown once ideation is complete. The pipeline table and story picker are unified — every story is visible and directly actionable from the same screen:</p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v2.2.4  |  My App
-[██░░░░░░░░]  2/8 components deployed  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v3.1.9  |  Acme Platform  |  release 1.0.0
+Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
-                              Spec  Dev  Assignee
-  [001]  User Auth             ✅    ✅    alice
-  [002]  Profile API           ✅    🔄    bob
-  [003]  Notifications         🔄    ○     carol
-  [004]  Search                ⏳    ○     unassigned
-  [005]  Reporting             🔴    ○     —          depends on 003,004
+  ID      Story                          Spec   Build
+  ──────────────────────────────────────────────────
+  [001]  User registers and logs in       ✅    ✅
+  [002]  User manages their profile       ✅    🔄
+  [003]  User submits application         🔄    ○
+  [004]  Admin reviews submissions        ⏳    ○
+  ──────────────────────────────────────────────────
+  Release 1.0.0                                ○ not deployed
 ──────────────────────────────────────────────────────────
-  Type a component ID to pick it up   [A] Architecture
-  [1] Continue spec – COMP-003        [I] Integration scenarios
-                                      [P] Project
-                                      [$] Cost
-                                      [+] New work
-                                      [?] Help
-                                      [X] Exit
+  Type a story ID to pick it up       [$] Cost
+  [1] Continue spec – STORY-003       [?] Help
+  [N] New work                        [X] Exit
 ──────────────────────────────────────────────────────────
-Enter component ID or action:  `&gt;`
+Enter story ID or action:  `&gt;`
 </code></pre></div>  </div>
 </div>
 
@@ -527,10 +450,6 @@ Enter component ID or action:  `&gt;`
       <td>Active / in progress</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">👤</code></td>
-      <td>Waiting for your action</td>
-    </tr>
-    <tr>
       <td><code class="language-plaintext highlighter-rouge">🔴</code></td>
       <td>Blocked by a dependency</td>
     </tr>
@@ -539,36 +458,36 @@ Enter component ID or action:  `&gt;`
       <td>Not started, ready to pick up</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">↷</code></td>
-      <td>Skipped by TL decision (integration tests)</td>
-    </tr>
-    <tr>
       <td><code class="language-plaintext highlighter-rouge">○</code></td>
       <td>Not yet reached</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">~</code></td>
+      <td>Built but no spec written (reverse-engineered story)</td>
     </tr>
   </tbody>
 </table>
 
-<p>Type a component number directly (e.g. <code class="language-plaintext highlighter-rouge">004</code>) to pick it up. Blocked components show their dependency inline — no separate screen needed.</p>
+<p>Type a story number directly (e.g. <code class="language-plaintext highlighter-rouge">004</code>) to pick it up. Blocked stories show their dependency inline — no separate screen needed.</p>
 
 <hr />
 
 <h2 id="common-first-run-questions">Common First-Run Questions</h2>
 
 <p><strong>“Can I skip ideation?”</strong>
-No. Ideation produces <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and the component backlog — the pipeline cannot start without them. There is no separate architecture phase; ideation does both in one conversation.</p>
+No. Ideation produces <code class="language-plaintext highlighter-rouge">architecture.md</code> and the story backlog — the pipeline cannot start without them. There is no separate architecture phase; ideation does both in one conversation.</p>
 
 <p><strong>“Can I use SpecGantry with an existing project?”</strong>
-Yes. Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture spec and component backlog.</p>
+Yes. Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> — if source files are found without a SpecGantry project, it offers to scan your codebase and generate a full architecture and story backlog.</p>
 
 <p><strong>“What if I’m working solo?”</strong>
-SpecGantry works great for solo developers. Complete both the Team Lead and Developer phases yourself. The ideation questions alone often clarify thinking significantly.</p>
+SpecGantry is designed for solo developers. Complete ideation, then work through stories one by one — spec then build each one.</p>
 
 <p><strong>“How much does it cost to run SpecGantry?”</strong>
-It depends on project size and complexity. A complete ideation session typically runs $0.50–$2.00. Run <code class="language-plaintext highlighter-rouge">[$] Cost</code> at any point — or <code class="language-plaintext highlighter-rouge">/track-cost</code> — for a full live breakdown by phase, component, release, and model.</p>
+It depends on project size and complexity. A complete ideation session typically runs $0.50–$2.00. Run <code class="language-plaintext highlighter-rouge">[$] Cost</code> at any point — or <code class="language-plaintext highlighter-rouge">/track-cost</code> — for a full live breakdown by phase, story, release, and model.</p>
 
 <p><strong>“When can I deploy?”</strong>
-Once all components pass their unit tests. The TL is then prompted at a single confirmation point: any gap specs are reviewed and merged first, then the TL chooses <code class="language-plaintext highlighter-rouge">[Y] Run integration tests</code>, <code class="language-plaintext highlighter-rouge">[S] Skip — deploy directly</code>, or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. Both paths are recorded as audit flags and either one opens the deploy gate.</p>
+Once all stories are built. You are then prompted at a single confirmation point: any gap specs are reviewed and merged first, then you choose <code class="language-plaintext highlighter-rouge">[1] Deploy release</code> or <code class="language-plaintext highlighter-rouge">[X] Hold</code>.</p>
 
 <hr />
 
@@ -579,7 +498,7 @@ Once all components pass their unit tests. The TL is then prompted at a single c
     <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How It Works</strong>
-      <span>Understand all phases, phase gates, gap specs, release versioning, and roles in detail.</span>
+      <span>Understand all phases, gap specs, release versioning, and routing in detail.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">

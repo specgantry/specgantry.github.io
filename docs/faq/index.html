@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FAQ — SpecGantry Docs</title>
-  <meta name="description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <meta name="description" content="Frequently asked questions about SpecGantry — installation, pipeline, costs, and troubleshooting.">
   <meta property="og:title" content="FAQ">
-  <meta property="og:description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <meta property="og:description" content="Frequently asked questions about SpecGantry — installation, pipeline, costs, and troubleshooting.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/faq/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="FAQ">
-  <meta name="twitter:description" content="Frequently asked questions about SpecGantry — installation, roles, pipeline, costs, and troubleshooting.">
+  <meta name="twitter:description" content="Frequently asked questions about SpecGantry — installation, pipeline, costs, and troubleshooting.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -82,26 +82,43 @@
           <a href="/docs/how-it-works" class="sidebar-link ">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link sidebar-link-active">
             FAQ
           </a>
@@ -158,7 +175,6 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>Not required. SpecGantry saves state as plain text files in <code class="language-plaintext highlighter-rouge">specs/</code> — git is not involved in any state operation. That said, git is <strong>strongly recommended</strong> for:</p>
 <ul>
-  <li>Sharing <code class="language-plaintext highlighter-rouge">specs/</code> with your team</li>
   <li>Version history of your architecture and specs</li>
   <li>Recovery from accidental file deletion</li>
 </ul>
@@ -191,8 +207,8 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>To remove the plugin and the marketplace entry completely:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
-claude plugin marketplace remove https://github.com/specgantry/specgantry.github.io
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry@spec-gantry
+claude plugin marketplace remove spec-gantry
 </code></pre></div></div>
 
 <p>Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project’s <code class="language-plaintext highlighter-rouge">specs/</code> files are not affected.</p>
@@ -211,37 +227,11 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version <code class="language-plaintext highlighter-rouge">1.0.0</code> automatically. Takes 5–10 minutes.</p>
 
-<h3 id="im-joining-a-team-what-do-i-do">I’m joining a team. What do I do?</h3>
-
-<p>Get the project repository from your Team Lead (it should include the <code class="language-plaintext highlighter-rouge">specs/</code> folder), then open it in Claude Code and run <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. It detects the project, sets your role as Developer, and shows you the component backlog.</p>
-
 <h3 id="i-have-an-existing-codebase-should-i-reverse-engineer-it">I have an existing codebase. Should I reverse-engineer it?</h3>
 
-<p>Yes, if you want SpecGantry’s structure — architecture documentation, a component backlog, and guardrails. Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the reverse-engineer option. The agent proposes an architecture and backlog; you review and decide before anything is written.</p>
+<p>Yes, if you want SpecGantry’s structure — architecture documentation, a story backlog, and guardrails. Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the reverse-engineer option. The agent analyses your codebase and proposes a story list where each story is marked <code class="language-plaintext highlighter-rouge">built</code>, <code class="language-plaintext highlighter-rouge">partial</code>, or <code class="language-plaintext highlighter-rouge">missing</code>. You review, adjust statuses if needed, and confirm before anything is written.</p>
 
-<hr />
-
-<h2 id="roles">Roles</h2>
-
-<h3 id="can-a-developer-see-the-architecture-spec">Can a Developer see the architecture spec?</h3>
-
-<p>Yes, read-only. Developers need the architecture context to write component specs that fit the system. Select <code class="language-plaintext highlighter-rouge">[A]</code> Architecture from the action bar to view it.</p>
-
-<h3 id="can-a-team-lead-build-components">Can a Team Lead build components?</h3>
-
-<p>SpecGantry is designed for clear role separation — Team Leads own project-level phases and deployment, developers own component-level work. A Team Lead can switch their local role to work as a developer, but mixing roles reduces many of the process guarantees the pipeline provides.</p>
-
-<h3 id="can-a-developer-deploy">Can a Developer deploy?</h3>
-
-<p>No. Deployment is a Team Lead responsibility. The TL triggers the release once all components pass tests and integration testing is complete — this deploys the entire system as a single release.</p>
-
-<h3 id="what-if-the-team-lead-leaves">What if the Team Lead leaves?</h3>
-
-<p>Another person can take over as Team Lead by updating their local role setting and running <code class="language-plaintext highlighter-rouge">/spec-gantry</code>. They’ll see the full project dashboard with all pending items and can continue managing the project.</p>
-
-<h3 id="can-multiple-developers-work-in-parallel">Can multiple developers work in parallel?</h3>
-
-<p>Yes. Each developer works on different components — components are isolated from each other in separate directories. Each developer has their own local role settings that stay on their machine. Spec files are committed per-component, so parallel work doesn’t conflict.</p>
+<p>Built stories enter the modification pipeline immediately — use <code class="language-plaintext highlighter-rouge">[N] New work</code> for bug fixes and enhancements. Partial and missing stories follow the normal spec → build → deploy flow. Stories that are built but not yet specced show <code class="language-plaintext highlighter-rouge">~</code> in the dashboard — type their ID to write a spec at any time.</p>
 
 <hr />
 
@@ -249,41 +239,33 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="can-i-skip-ideation">Can I skip ideation?</h3>
 
-<p>No. Ideation produces <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and the component backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation.</p>
+<p>No. Ideation produces <code class="language-plaintext highlighter-rouge">architecture.md</code> and the story backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation.</p>
 
 <h3 id="is-there-a-separate-architecture-phase">Is there a separate architecture phase?</h3>
 
-<p>No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a component backlog. There is no separate step to complete before components can be picked up.</p>
+<p>No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a story backlog. There is no separate step to complete before stories can be picked up.</p>
 
-<h3 id="does-the-team-lead-need-to-approve-the-backlog">Does the Team Lead need to approve the backlog?</h3>
+<h3 id="can-i-skip-the-story-spec">Can I skip the story spec?</h3>
 
-<p>Yes. After ideation, SpecGantry presents the proposed component list for the TL’s review. No component spec work can begin until the TL explicitly approves with <code class="language-plaintext highlighter-rouge">[Y] Approve</code>. This is a hard gate — <code class="language-plaintext highlighter-rouge">backlog_approved:true</code> must be set in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>.</p>
-
-<h3 id="can-i-skip-the-component-spec">Can I skip the component spec?</h3>
-
-<p>No. The component spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.</p>
+<p>No. The story spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.</p>
 
 <h3 id="when-can-i-deploy">When can I deploy?</h3>
 
-<p>Once all components pass their unit tests and either integration tests pass or you explicitly skip them. The TL is presented with a single confirmation point after all builds complete: any gap specs are shown and confirmed first, then the TL chooses <code class="language-plaintext highlighter-rouge">[Y] Run integration tests</code>, <code class="language-plaintext highlighter-rouge">[S] Skip — deploy directly</code>, or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. Both outcomes are recorded as audit flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> — <code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code> or <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> — and either one opens the deploy gate.</p>
+<p>Once all stories are built. You are then presented with a single confirmation point: any gap specs are shown and confirmed first, then you choose <code class="language-plaintext highlighter-rouge">[1] Deploy release</code> or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. The outcome is recorded in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>.</p>
 
-<h3 id="can-i-deploy-individual-components">Can I deploy individual components?</h3>
+<h3 id="can-i-deploy-individual-stories">Can I deploy individual stories?</h3>
 
-<p>No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all components in dependency order.</p>
+<p>No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all stories in dependency order.</p>
 
 <h3 id="what-are-gap-specs-and-when-are-they-written">What are gap specs and when are they written?</h3>
 
-<p>Gap specs are delta documents written during development when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects on another component’s interface. Rather than editing the main spec while other developers may still be building against it, the developer writes a <code class="language-plaintext highlighter-rouge">gap-YYYY-MM-DD.md</code> file recording what changed, files affected, side-effects, and a recommended spec update.</p>
+<p>Gap specs are delta documents written to <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/gap.md</code> — one file per story. The build agent writes to this file when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects. Post-release enhancements are also recorded here by the orchestrator before building. Multiple discoveries accumulate as bullets in a single file — no new dated files are created.</p>
 
-<p>Gap specs are reviewed and merged by the TL at the confirm-integration step, before choosing to run integration tests or deploy directly.</p>
+<p>Gap files are reviewed and merged at the confirm-deploy step, before deployment.</p>
 
 <h3 id="what-happens-during-gap-merge">What happens during gap merge?</h3>
 
-<p>When all components pass their unit tests, SpecGantry checks for unmerged gap specs and presents any it finds to the TL — showing which components have gaps and which files they are. The TL confirms before any merge runs. If confirmed, gaps are merged in chronological order: component spec edits are applied in place, architecture changes are appended as amendment blocks (never overwriting prior content), side-effects on other components are checked and minimal corrections applied. Each gap file is deleted after it is merged. A summary of what changed is shown before the TL is prompted to run integration tests or skip to deploy.</p>
-
-<h3 id="can-i-skip-integration-tests">Can I skip integration tests?</h3>
-
-<p>Yes. At the confirm-integration step, after any gap specs are merged, the TL is offered <code class="language-plaintext highlighter-rouge">[Y] Run integration tests</code>, <code class="language-plaintext highlighter-rouge">[S] Skip — deploy directly</code>, or <code class="language-plaintext highlighter-rouge">[X] Hold</code>. Choosing <code class="language-plaintext highlighter-rouge">[S]</code> sets <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> — committed to git as a permanent audit record — and opens the deploy gate directly.</p>
+<p>When all stories are built, SpecGantry checks for unmerged gap specs and presents any it finds. After confirmation, the gap is merged into the story spec in place — sections are edited directly to reflect what was actually built. <code class="language-plaintext highlighter-rouge">gap.md</code> is deleted after it is merged. A summary of what changed is shown before the deploy prompt.</p>
 
 <h3 id="how-long-does-each-phase-take">How long does each phase take?</h3>
 
@@ -300,24 +282,16 @@ claude plugin <span class="nb">install </span>spec-gantry
       <td>15–30 minutes</td>
     </tr>
     <tr>
-      <td>Backlog approval</td>
-      <td>2–5 minutes</td>
+      <td>Story Spec</td>
+      <td>5–15 min per story</td>
     </tr>
     <tr>
-      <td>Component Spec</td>
-      <td>5–15 min per component (+5 min domain elaboration on first of each domain)</td>
-    </tr>
-    <tr>
-      <td>Development (TDD + full test gate)</td>
+      <td>Build (implementation)</td>
       <td>Depends on complexity</td>
     </tr>
     <tr>
       <td>Gap merge (if gaps exist)</td>
       <td>2–5 minutes</td>
-    </tr>
-    <tr>
-      <td>Integration Test</td>
-      <td>Minutes to tens of minutes (depends on scenario count)</td>
     </tr>
     <tr>
       <td>Deploy release</td>
@@ -326,86 +300,73 @@ claude plugin <span class="nb">install </span>spec-gantry
   </tbody>
 </table>
 
-<h3 id="can-multiple-phases-overlap">Can multiple phases overlap?</h3>
-
-<p>Yes — components run their Spec → Development lifecycle in parallel. You can have one component in development while another is still in spec. Within a single component, phases are sequential. Ideation and backlog approval must complete before any component work begins.</p>
-
 <h3 id="why-does-architecture-feel-lighter-than-expected">Why does architecture feel lighter than expected?</h3>
 
-<p>By design. The initial system shaping (Beat 2 of ideation) only covers what must exist before any component work begins: tech stack, system boundaries, guardrails, and a dependency-ordered backlog. Detailed domain elaboration — data model, interface contracts, domain NFRs — happens just-in-time when the first component of each domain is picked up. You only elaborate what you actually build.</p>
+<p>By design. The initial system shaping (Beat 2 of ideation) only covers what must exist before any story work begins: tech stack, system boundaries, guardrails, and a dependency-ordered backlog. You only elaborate what you actually build.</p>
 
-<h3 id="what-is-domain-elaboration">What is domain elaboration?</h3>
+<h3 id="how-should-stories-be-sized">How should stories be sized?</h3>
 
-<p>When you pick up the first component of a domain, three quick architecture questions elaborate that domain before the spec begins: data model, interface contracts, and domain-specific constraints. The answers are appended to <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and used as context for the spec. Subsequent components in the same domain skip this step.</p>
+<p>Stories are building blocks, not micro-tasks. A story should represent a meaningful vertical slice of the system — something completable in 1–3 sessions and demonstrable independently. Related capabilities belong in one story.</p>
 
-<h3 id="how-should-components-be-sized">How should components be sized?</h3>
+<p>When in doubt, err toward fewer, larger stories. You can always add scope via <code class="language-plaintext highlighter-rouge">[N] New work</code> after deployment.</p>
 
-<p>Components are building blocks, not micro-tasks. A component should represent a meaningful vertical slice of the system — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but it ships as a unit with one spec.</p>
+<h3 id="what-happens-after-all-stories-are-deployed">What happens after all stories are deployed?</h3>
 
-<p>When in doubt, err toward fewer, larger components. You can always add scope via <code class="language-plaintext highlighter-rouge">[+] New work</code> after deployment.</p>
+<p>SpecGantry enters post-deployment mode and asks what you want to work on next. Use <code class="language-plaintext highlighter-rouge">[N] New work</code> or describe a change when prompted. For bugs and enhancements, SpecGantry first runs an investigation agent that searches the actual codebase to locate the affected files and root cause — then confirms findings with you before acting. New stories and architectural changes go straight to ideation amendment mode. See <a href="/docs/how-it-works#post-deployment">How It Works → Handling Changes After Deployment</a> for details.</p>
 
-<h3 id="what-happens-after-all-components-are-deployed">What happens after all components are deployed?</h3>
+<h3 id="how-do-stories-stay-versioned-over-time">How do stories stay versioned over time?</h3>
 
-<p>SpecGantry enters post-deployment mode and asks what you want to work on next. Use <code class="language-plaintext highlighter-rouge">[+] New work</code> or describe a change when prompted. SpecGantry classifies the work, reads the backlog and component specs to identify what’s affected, confirms with you, and re-enters the pipeline. You can also use <code class="language-plaintext highlighter-rouge">[+] New work</code> at any point mid-pipeline. See <a href="/docs/how-it-works#post-deployment">How It Works → Handling Changes After Deployment</a> for details.</p>
-
-<h3 id="how-do-components-stay-versioned-over-time">How do components stay versioned over time?</h3>
-
-<p>Components keep the same <code class="language-plaintext highlighter-rouge">COMP-NNN</code> identity forever. When a bug fix or enhancement changes a component, the spec is updated inline — changed lines are annotated with the release version (e.g. <code class="language-plaintext highlighter-rouge">`__1.1.0__`</code>), old text is struck through, and a row is appended to the spec’s Change History table. This keeps the full audit trail inside the spec itself.</p>
+<p>Stories keep the same <code class="language-plaintext highlighter-rouge">STORY-NNN</code> identity forever. When a bug fix or enhancement changes a story, the spec is updated inline — changed lines are annotated with the release version (e.g. <code class="language-plaintext highlighter-rouge">`__1.1.0__`</code>), old text is struck through, and a row is appended to the spec’s Change History table. This keeps the full audit trail inside the spec itself.</p>
 
 <h3 id="how-does-release-versioning-work">How does release versioning work?</h3>
 
-<p>Every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code>. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all components in the release — <code class="language-plaintext highlighter-rouge">project_change</code> bumps major, <code class="language-plaintext highlighter-rouge">enhancement</code> or <code class="language-plaintext highlighter-rouge">new_component</code> bumps minor, <code class="language-plaintext highlighter-rouge">bug_fix</code> bumps patch. The initial release always deploys as <code class="language-plaintext highlighter-rouge">1.0.0</code>.</p>
+<p>Every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code>. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all stories in the release — <code class="language-plaintext highlighter-rouge">project_change</code> bumps major, <code class="language-plaintext highlighter-rouge">enhancement</code> or <code class="language-plaintext highlighter-rouge">new_story</code> bumps minor, <code class="language-plaintext highlighter-rouge">bug_fix</code> bumps patch. The initial release always deploys as <code class="language-plaintext highlighter-rouge">1.0.0</code>.</p>
 
-<h3 id="who-decides-which-components-are-affected-by-a-bug-fix">Who decides which components are affected by a bug fix?</h3>
+<h3 id="who-decides-which-stories-are-affected-by-a-bug-fix">Who decides which stories are affected by a bug fix?</h3>
 
-<p>SpecGantry does. When you describe new work via <code class="language-plaintext highlighter-rouge">[+] New work</code>, SpecGantry reads the backlog and all component specs to determine which components own the described behaviour. It presents the mapping for your confirmation before touching any state — you don’t need to identify the target components yourself.</p>
+<p>SpecGantry does — via a two-step process. First, a read-only investigation agent searches the actual codebase using anchor tags (<code class="language-plaintext highlighter-rouge">@story</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, <code class="language-plaintext highlighter-rouge">@contract</code>) written by the build agent to locate the exact files, entry points, and root cause. Then it presents its findings and confirms with you before touching any state. This means the mapping is grounded in real code, not just spec inference.</p>
 
 <h3 id="whats-a-guardrail-violation">What’s a “guardrail violation”?</h3>
 
-<p>A guardrail is a rule from the architecture that applies to all components. Examples:</p>
+<p>A guardrail is a rule from the architecture that applies to all stories. Examples:</p>
 <ul>
   <li>“All API endpoints must use JWT authentication”</li>
   <li>“No direct database access from the UI layer”</li>
   <li>“All external API calls must have a timeout of 5 seconds or less”</li>
 </ul>
 
-<p>During the Component Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one — for example, defining a public endpoint with no auth — the violation is written to the spec file and the gate fails until it’s resolved.</p>
+<p>During the Story Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one, the violation is written to the spec file and the gate fails until it’s resolved.</p>
 
 <p>Options to resolve a violation:</p>
 <ol>
   <li>Revise the spec to comply with the guardrail</li>
-  <li>Ask the Team Lead to update the guardrail in the architecture spec (which affects all future components)</li>
+  <li>Update the guardrail in <code class="language-plaintext highlighter-rouge">architecture.md</code> (which affects all future stories)</li>
 </ol>
 
 <hr />
 
 <h2 id="specs-and-approval">Specs and Approval</h2>
 
-<h3 id="what-makes-a-good-component-spec">What makes a good component spec?</h3>
+<h3 id="what-makes-a-good-story-spec">What makes a good story spec?</h3>
 
-<p>A spec clear enough that any developer could pick it up and build the same thing. SpecGantry guides you through five sections:</p>
+<p>A spec clear enough that you (or anyone) could pick it up and build the same thing. SpecGantry guides you through six sections:</p>
 
 <ol>
-  <li><strong>Scope</strong> — What it does and explicitly what it doesn’t do</li>
-  <li><strong>Interface Contract</strong> — What it exposes or consumes (delta from the domain section in architecture-spec.md)</li>
-  <li><strong>Data</strong> — What data it owns or accesses (delta from the domain data model)</li>
-  <li><strong>Features</strong> — Ordered internal tasks grouped into parallel tiers</li>
-  <li><strong>Test Plan</strong> — Unit tests, integration hooks, edge cases</li>
+  <li><strong>What the user can do</strong> — user-facing capabilities, including the full lifecycle of every entity the story manages: list, view, edit, delete. Any omitted operation must be explicitly declared out of scope.</li>
+  <li><strong>Screens and states</strong> — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions</li>
+  <li><strong>Data and backend</strong> — data owned, APIs, persistence. Every field named with its type and validation rule.</li>
+  <li><strong>AI integration</strong> — if AI is used: model ID, full literal prompt template, exact output schema, and a fallback path. The prompt must include an explicit instruction against adding commentary or filler. If no AI: N/A.</li>
+  <li><strong>Enterprise checks</strong> — auth, validation rules, error handling, data safety, rate limiting, and any new env vars this story needs</li>
+  <li><strong>Acceptance criteria</strong> — minimum 4, at least one must cover an error state</li>
 </ol>
-
-<p>The spec also notes which integration scenarios in <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> this component participates in.</p>
-
-<h3 id="does-the-team-lead-have-to-review-every-component-spec">Does the Team Lead have to review every component spec?</h3>
-
-<p>No. The developer self-reviews at the end of the spec phase — after completing all five sections and passing the guardrail check, the developer confirms the spec is ready to build. That’s the final gate before development begins. There is no separate TL review step.</p>
 
 <h3 id="can-i-edit-a-spec-after-starting-to-build">Can I edit a spec after starting to build?</h3>
 
-<p>Yes. Return to <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, select the component, and choose to edit the spec. Editing resets <code class="language-plaintext highlighter-rouge">spec_complete</code> — you must re-confirm the spec before building can resume. The spec and the implementation should always agree.</p>
+<p>Yes. Return to <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, select the story, and choose to edit the spec. Editing resets <code class="language-plaintext highlighter-rouge">spec_done</code> — you must re-confirm the spec before building can resume.</p>
 
-<h3 id="can-i-edit-a-spec-while-another-developer-is-building-against-it">Can I edit a spec while another developer is building against it?</h3>
+<h3 id="can-i-edit-a-spec-mid-build-if-something-comes-up">Can I edit a spec mid-build if something comes up?</h3>
 
-<p>The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — this keeps the main spec stable for anyone else building in parallel. Gap specs are merged before integration testing begins.</p>
+<p>The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — the main spec stays stable. Gap specs are merged before deployment.</p>
 
 <hr />
 
@@ -415,17 +376,17 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>All progress is saved after every question. Closing Claude Code at any point loses nothing. The next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered question.</p>
 
-<h3 id="can-i-have-multiple-components-in-progress">Can I have multiple components in progress?</h3>
+<h3 id="can-i-have-multiple-stories-in-progress">Can I have multiple stories in progress?</h3>
 
-<p>Yes. You can switch between components from the dashboard. You might have one component in development while starting the spec on another.</p>
+<p>You can switch between stories from the dashboard. You might have one story in development while starting the spec on another.</p>
 
 <h3 id="how-do-i-restart-a-phase">How do I restart a phase?</h3>
 
-<p>Use <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the component to revisit a completed phase. Phase state can be reset through the project menu when appropriate. Contact your Team Lead for resets that affect project-level gates.</p>
+<p>Use <code class="language-plaintext highlighter-rouge">/spec-gantry</code> and select the story to revisit a completed phase. Phase state can be reset through the project menu when appropriate.</p>
 
-<h3 id="can-i-move-a-component-back-to-pending">Can I move a component back to pending?</h3>
+<h3 id="can-i-move-a-story-back-to-pending">Can I move a story back to pending?</h3>
 
-<p>Yes — during the spec phase, select Abandon to return the component to the backlog unassigned. From later phases, the Team Lead can reassign or defer components through <code class="language-plaintext highlighter-rouge">[P] Project</code>.</p>
+<p>Type the story ID from the dashboard to manage it. From the story’s current phase you can reset it — this clears the spec or build state and returns the story to its previous step.</p>
 
 <hr />
 
@@ -435,7 +396,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>SpecGantry tracks token usage automatically at the end of every agent run — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> alongside your other project files and committed to git.</p>
 
-<p>Run <code class="language-plaintext highlighter-rouge">/track-cost</code> for a navigable cost dashboard with four views: summary by phase, by component, by release, and by model. Switch between views by typing <code class="language-plaintext highlighter-rouge">1</code>, <code class="language-plaintext highlighter-rouge">2</code>, or <code class="language-plaintext highlighter-rouge">3</code> — the menu persists across views so you don’t need to navigate back.</p>
+<p>Run <code class="language-plaintext highlighter-rouge">/track-cost</code> for a navigable cost dashboard with four views: summary by phase, by story, by release, and by model. Switch between views by typing <code class="language-plaintext highlighter-rouge">1</code>, <code class="language-plaintext highlighter-rouge">2</code>, or <code class="language-plaintext highlighter-rouge">3</code> — the menu persists across views so you don’t need to navigate back.</p>
 
 <h3 id="why-are-my-costs-higher-than-expected">Why are my costs higher than expected?</h3>
 
@@ -444,7 +405,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 <p>Common reasons totals are higher than expected:</p>
 <ul>
   <li><strong>Large codebase</strong> — reverse-engineering or building against a large existing project means more context per turn</li>
-  <li><strong>Long conversations</strong> — agents working through complex components accumulate context over many turns</li>
+  <li><strong>Long conversations</strong> — agents working through complex stories accumulate context over many turns</li>
   <li><strong>Cache writes</strong> — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper</li>
   <li><strong>Iterative spec revisions</strong> — multiple rounds of spec editing each consume tokens</li>
 </ul>
@@ -475,7 +436,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 </code></pre></div>    </div>
   </li>
   <li><strong>Reinstall if needed:</strong>
-    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry@spec-gantry
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin <span class="nb">install </span>spec-gantry
 </code></pre></div>    </div>
@@ -486,13 +447,13 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>Re-run it. The dashboard re-reads all state from disk on every invocation — most inconsistencies self-correct. If the problem persists, check whether the <code class="language-plaintext highlighter-rouge">specs/</code> files are as expected and try again.</p>
 
-<h3 id="component-is-stuck--cant-advance">Component is stuck — can’t advance</h3>
+<h3 id="story-is-stuck--cant-advance">Story is stuck — can’t advance</h3>
 
 <p>Read the gate failure message in the dashboard. It will list exactly which conditions are unmet and what action to take to resolve each one. Address each item and run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> again.</p>
 
 <h3 id="spec-wont-pass-guardrail-check">Spec won’t pass guardrail check</h3>
 
-<p>The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or ask your Team Lead to update the architecture guardrail.</p>
+<p>The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or update the architecture guardrail in <code class="language-plaintext highlighter-rouge">architecture.md</code>.</p>
 
 <h3 id="mcp-log-level">How do I control the MCP server log level?</h3>
 
@@ -554,7 +515,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <p>Reinstall:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin uninstall spec-gantry@spec-gantry
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin <span class="nb">install </span>spec-gantry
 </code></pre></div></div>

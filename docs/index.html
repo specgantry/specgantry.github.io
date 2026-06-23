@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpecGantry Documentation — SpecGantry Docs</title>
-  <meta name="description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <meta name="description" content="Complete documentation for SpecGantry v4 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
   <meta property="og:title" content="SpecGantry Documentation">
-  <meta property="og:description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <meta property="og:description" content="Complete documentation for SpecGantry v4 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="SpecGantry Documentation">
-  <meta name="twitter:description" content="Complete documentation for SpecGantry — AI-assisted SDLC pipeline for Claude Code.">
+  <meta name="twitter:description" content="Complete documentation for SpecGantry v4 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -79,26 +79,43 @@
           <a href="/docs/how-it-works" class="sidebar-link ">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link ">
             FAQ
           </a>
@@ -124,7 +141,7 @@
       <article class="docs-article">
         <h1 id="specgantry-documentation">SpecGantry Documentation</h1>
 
-<p><strong>AI-assisted SDLC pipeline for Claude Code.</strong> Bring structure to your AI development workflow — from first idea through deployment — with specs before code, architectural guardrails, role-based ownership, and real cost visibility.</p>
+<p><strong>Reference-driven SDLC for Claude Code.</strong> Architecture artifacts written once. Story specs that reference them. Agents that read only what they need. Enforced phase gates from first idea through deployment.</p>
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -134,55 +151,42 @@
 
 <h2 id="what-is-specgantry">What Is SpecGantry?</h2>
 
-<p>SpecGantry is a Claude Code plugin that guides your team through a structured development process. Instead of jumping straight into code, it ensures every component is grounded in a validated idea, a thoughtful architecture, and a precise spec — before a single line is written.</p>
+<p>SpecGantry is a Claude Code plugin that enforces a structured development process. The core v4 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.</p>
 
-<p>The result: less rework, fewer surprises, and a codebase that reflects deliberate decisions rather than accumulated shortcuts.</p>
+<p>The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.</p>
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The SpecGantry Pipeline</div>
+<div class="dg-diagram-title">The SpecGantry v4 Pipeline</div>
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">
     <div class="dg-node-num">01</div>
-    <div class="dg-node-name">Ideation</div>
-    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-    <div class="dg-node-output">architecture-spec.md</div>
+    <div class="dg-node-name">Ideation + Architecture</div>
+    <div class="dg-node-output">architecture/ · 6 artifacts · intent.md</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + architecture_complete"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-spec">
     <div class="dg-node-num">02</div>
-    <div class="dg-node-name">Component Spec</div>
-    <div class="dg-node-role"><i class="bi bi-code-slash"></i> Developers</div>
-    <div class="dg-node-output">component-spec.md</div>
+    <div class="dg-node-name">Story Spec</div>
+    <div class="dg-node-output">story-spec.md (≤60 lines) + reads: block</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_complete per component"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_done + intent_done per story"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-build">
     <div class="dg-node-num">03</div>
-    <div class="dg-node-name">Build + Test</div>
-    <div class="dg-node-role"><i class="bi bi-code-slash"></i> Developers</div>
-    <div class="dg-node-output">state.yaml × N</div>
+    <div class="dg-node-name">Build</div>
+    <div class="dg-node-output">@story @intent @entry @contract · build-report.yaml</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all components tests_passing"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
-
-  <div class="dg-node dg-integration">
-    <div class="dg-node-num">04</div>
-    <div class="dg-node-name">Integration Test</div>
-    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-    <div class="dg-node-output">integration-scenarios.md</div>
-  </div>
-
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: integration_tests_passing OR integration_skipped"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built:true"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-deploy">
-    <div class="dg-node-num">05</div>
+    <div class="dg-node-num">04</div>
     <div class="dg-node-name">Deploy Release</div>
-    <div class="dg-node-role"><i class="bi bi-shield-check"></i> Team Lead</div>
-    <div class="dg-node-output">deploy.sh</div>
+    <div class="dg-node-output">deploy.sh · gap specs merged</div>
   </div>
 
 </div>
@@ -204,28 +208,28 @@
     <div class="doc-nav-icon"><i class="bi bi-gear"></i></div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">A complete walkthrough of all phases, roles, gap specs, and how SpecGantry keeps your team aligned.</div>
+      <div class="doc-nav-desc">Complete walkthrough — the architecture layer, all pipeline phases, gap flows, reverse engineering, and release management.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
-      <div class="doc-nav-title">Skills Guide</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — the two commands you need and everything they do.</div>
+      <div class="doc-nav-title">Skills &amp; Agents</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 7 agents, the dashboard, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <div class="doc-nav-title">Reference</div>
-      <div class="doc-nav-desc">Design principles, file structure, security model, and how to extend SpecGantry.</div>
+      <div class="doc-nav-desc">File structure, state flags, agent ownership, the Artifact Index format, and how to extend SpecGantry.</div>
     </div>
   </a>
   <a href="/docs/faq" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, roles, pipeline phases, costs, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, pipeline phases, costs, v3→v4 differences, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -233,8 +237,6 @@
 <hr />
 
 <h2 id="quick-install">Quick Install</h2>
-
-<p>Run both commands in order — the marketplace must be registered before installing:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin <span class="nb">install </span>spec-gantry
@@ -245,11 +247,9 @@ claude plugin <span class="nb">install </span>spec-gantry
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
 </code></pre></div></div>
 
-<p>The dashboard guides you from there.</p>
+<p>The dashboard reads your project state and routes you to the right next action automatically.</p>
 
 <h3 id="keep-specgantry-updated">Keep SpecGantry Updated</h3>
-
-<p>Update to the latest version anytime:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
 </code></pre></div></div>
@@ -259,37 +259,83 @@ claude plugin <span class="nb">install </span>spec-gantry
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/plugin marketplace update spec-gantry
 </code></pre></div></div>
 
-<p>See <a href="/docs/getting-started#step-1--install-the-plugin">Getting Started → Install, Update &amp; Remove</a> for all options including uninstall.</p>
-
 <hr />
 
 <h2 id="key-concepts">Key Concepts</h2>
 
-<h3 id="phase-gates">Phase Gates</h3>
+<h3 id="the-architecture-layer-new-in-v4">The Architecture Layer (new in v4)</h3>
 
-<p>Every phase transition requires the previous phase to be fully complete — both the decisions you made and the documents they produced. SpecGantry verifies completeness automatically before moving forward. Partial work doesn’t advance the pipeline.</p>
+<p>SpecGantry v4 introduces a dedicated <code class="language-plaintext highlighter-rouge">specs/architecture/</code> directory containing six structured files:</p>
 
-<p>This isn’t bureaucracy — it’s the thing that prevents half-finished specs from becoming hard-to-change code.</p>
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Contains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">data-model.md</code></td>
+      <td>All entities, fields, types, relationships, state machines</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">actors.md</code></td>
+      <td>All roles, permissions, what each role can and cannot do</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">contracts.md</code></td>
+      <td>Shared API response shapes, error envelopes</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">patterns.md</code></td>
+      <td>Dominant backend interaction patterns</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ux.md</code></td>
+      <td>Navigation model, visual system, component conventions, screen template</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">deployment.md</code></td>
+      <td>Cloud platform, registry, service architecture, secrets, CI/CD config</td>
+    </tr>
+  </tbody>
+</table>
 
-<h3 id="backlog-approval">Backlog Approval</h3>
+<p>These are written once during ideation and referenced by every story spec via a <code class="language-plaintext highlighter-rouge">reads:</code> block. An agent building a story loads only the specific sections that story uses — not the full architecture.</p>
 
-<p>Before any component spec work begins, the Team Lead must review and approve the component backlog produced by ideation. This single gate ensures developers are always building from a plan the TL has signed off on.</p>
+<h3 id="the-reads-block">The reads: Block</h3>
 
-<h3 id="architecture-as-guardrails">Architecture as Guardrails</h3>
+<p>Every story spec declares exactly what it needs:</p>
 
-<p>When the Team Lead defines the architecture, every decision becomes a rule the whole team builds to. During the Component Spec phase, SpecGantry checks every spec against those rules before development can begin. If a spec contradicts the architecture — wrong auth pattern, wrong data ownership, wrong layer access — it fails with a specific explanation before any code is written.</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">reads</span><span class="pi">:</span>
+  <span class="na">actors</span><span class="pi">:</span>    <span class="pi">[</span><span class="nv">applicant</span><span class="pi">,</span> <span class="nv">admin</span><span class="pi">]</span>
+  <span class="na">data</span><span class="pi">:</span>      <span class="pi">[</span><span class="nv">application</span><span class="pi">,</span> <span class="nv">user</span><span class="pi">]</span>
+  <span class="na">contracts</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">submission-response</span><span class="pi">,</span> <span class="nv">error-envelope</span><span class="pi">]</span>
+  <span class="na">ux</span><span class="pi">:</span>        <span class="pi">[</span><span class="nv">component-conventions</span><span class="pi">,</span> <span class="nv">screen-template</span><span class="pi">]</span>
+</code></pre></div></div>
 
-<h3 id="gap-specs">Gap Specs</h3>
+<p>The development agent resolves each entry through the Artifact Index and loads only those sections — approximately 130 lines of targeted context rather than the entire architecture.</p>
 
-<p>When a developer discovers mid-build that the spec needs adjustment — an incomplete contract, a side-effect on another component — they write a gap spec file rather than editing the main spec. This keeps the main spec stable for other developers building in parallel. Before integration testing, SpecGantry automatically merges all gap specs back into the relevant component and architecture specs.</p>
+<h3 id="slim-story-specs-60-lines">Slim Story Specs (≤60 lines)</h3>
 
-<h3 id="state-that-survives-interruption">State That Survives Interruption</h3>
+<p>Story specs are navigation maps, not knowledge dumps. They contain five sections: criteria, interfaces, permissions, state, and data — all as references to shared artifacts. The 60-line limit is enforced before <code class="language-plaintext highlighter-rouge">spec_done:true</code> can be set.</p>
 
-<p>All progress is saved after every question and every section. If your session is interrupted for any reason — context reset, network drop, end of day — the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up exactly where you left off. Nothing is lost.</p>
+<h3 id="self-healing-gap-flows">Self-Healing Gap Flows</h3>
+
+<p>When story-spec finds a missing arch section (P0 gap) or development finds a wrong contract (P1 gap), SpecGantry automatically fills the gap via the ideation agent and resumes — no user intervention required.</p>
+
+<h3 id="the-intentmd">The intent.md</h3>
+
+<p>Every story has a 2-paragraph <code class="language-plaintext highlighter-rouge">intent.md</code> that states the functional purpose and outcome in plain English. It grounds the development agent’s judgment calls and propagates as a one-line <code class="language-plaintext highlighter-rouge">@intent</code> anchor in every source file — so investigation never needs to load full specs to understand what a file does.</p>
+
+<h3 id="state-that-survives-anything">State That Survives Anything</h3>
+
+<p>All progress is written after every answer and every phase transition. State flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tell the orchestrator exactly where to resume. A crash between any two writes triggers P2 routing on next run, which detects incomplete state and recovers automatically.</p>
 
 <h3 id="specs-in-git">Specs in Git</h3>
 
-<p>All project state — ideation, architecture, component specs, and cost data — lives in plain-text files under <code class="language-plaintext highlighter-rouge">specs/</code> in your project. Commit them to git and your whole team shares a single source of truth, complete history, and meaningful diffs.</p>
+<p>Everything under <code class="language-plaintext highlighter-rouge">specs/</code> is plain-text YAML and Markdown. Commit it for complete history, meaningful diffs, and a single source of truth across sessions.</p>
 
 <hr />
 
@@ -298,26 +344,26 @@ claude plugin <span class="nb">install </span>spec-gantry
 <table>
   <thead>
     <tr>
-      <th>Role</th>
       <th>Use Case</th>
+      <th>Why</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Team Lead / Architect</strong></td>
-      <td>Establish a consistent process the whole team follows without needing to police every PR</td>
+      <td>New project from scratch</td>
+      <td>Ideation shapes your system as a partner conversation. Architecture seeded once. Stories built against a shared contract.</td>
     </tr>
     <tr>
-      <td><strong>Developer</strong></td>
-      <td>Always start from a clear, approved spec — no ambiguity, no scope creep mid-build</td>
+      <td>Existing codebase</td>
+      <td>Reverse engineering synthesizes the full architecture layer from your code. Stub specs and anchor tags generated automatically.</td>
     </tr>
     <tr>
-      <td><strong>Solo Developer</strong></td>
-      <td>Bring discipline to your own AI workflow; avoid building fast in the wrong direction</td>
+      <td>Solo developer</td>
+      <td>Forces you to answer the hard questions before building. Prevents fast progress in the wrong direction.</td>
     </tr>
     <tr>
-      <td><strong>Engineering Manager</strong></td>
-      <td>Get cost visibility and an audit trail for every AI-assisted component</td>
+      <td>Any project using Claude Code</td>
+      <td>Token cost visibility by phase, story, and release. Know exactly what each feature cost.</td>
     </tr>
   </tbody>
 </table>

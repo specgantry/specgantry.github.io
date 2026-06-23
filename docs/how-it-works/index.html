@@ -82,26 +82,43 @@
           <a href="/docs/how-it-works" class="sidebar-link sidebar-link-active">
             How It Works
           </a>
-          <a href="/docs/how-it-works#phases" class="sidebar-link sidebar-sublink">Five Phases</a>
-          <a href="/docs/how-it-works#roles" class="sidebar-link sidebar-sublink">Roles</a>
-          <a href="/docs/how-it-works#spec-gate" class="sidebar-link sidebar-sublink">The Spec Gate</a>
+          <a href="/docs/how-it-works#architecture-layer" class="sidebar-link sidebar-sublink">Architecture Layer</a>
+          <a href="/docs/how-it-works#ideation" class="sidebar-link sidebar-sublink">Phase 1 — Ideation</a>
+          <a href="/docs/how-it-works#story-spec" class="sidebar-link sidebar-sublink">Phase 2 — Story Spec</a>
+          <a href="/docs/how-it-works#build" class="sidebar-link sidebar-sublink">Phase 3 — Build</a>
+          <a href="/docs/how-it-works#deploy" class="sidebar-link sidebar-sublink">Phase 4 — Deploy</a>
+          <a href="/docs/how-it-works#gap-flows" class="sidebar-link sidebar-sublink">Gap Flows (P0/P1/P2)</a>
+          <a href="/docs/how-it-works#reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineering</a>
+          <a href="/docs/how-it-works#post-release" class="sidebar-link sidebar-sublink">Post-Release Work</a>
           <a href="/docs/how-it-works#cost-tracking" class="sidebar-link sidebar-sublink">Cost Tracking</a>
         </div>
 
         <div class="sidebar-section">
-          <div class="sidebar-section-title">Skills</div>
+          <div class="sidebar-section-title">Skills & Agents</div>
           <a href="/docs/skills" class="sidebar-link ">
-            Skills Guide
+            Skills & Agents Guide
           </a>
           <a href="/docs/skills#spec-gantry" class="sidebar-link sidebar-sublink">/spec-gantry</a>
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
+          <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
+          <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
+          <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
+          <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
+          <a href="/docs/skills#agent-reverse-engineer" class="sidebar-link sidebar-sublink">Reverse Engineer agent</a>
         </div>
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Reference</div>
           <a href="/docs/architecture" class="sidebar-link ">
-            Architecture
+            Reference
           </a>
+          <a href="/docs/architecture#file-structure" class="sidebar-link sidebar-sublink">File structure</a>
+          <a href="/docs/architecture#state-flags" class="sidebar-link sidebar-sublink">State flags</a>
+          <a href="/docs/architecture#artifact-index" class="sidebar-link sidebar-sublink">Artifact Index format</a>
+          <a href="/docs/architecture#artifact-formats" class="sidebar-link sidebar-sublink">Artifact formats</a>
+          <a href="/docs/architecture#agent-ownership" class="sidebar-link sidebar-sublink">Agent ownership</a>
+          <a href="/docs/architecture#anchors" class="sidebar-link sidebar-sublink">Code anchors</a>
           <a href="/docs/faq" class="sidebar-link ">
             FAQ
           </a>
@@ -127,7 +144,7 @@
       <article class="docs-article">
         <h1 id="how-specgantry-works">How SpecGantry Works</h1>
 
-<p>A complete walkthrough of the pipeline, roles, and what happens at each phase.</p>
+<p>A complete walkthrough of the pipeline and what happens at each phase.</p>
 
 <hr />
 
@@ -141,88 +158,45 @@
     <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Ideation</div>
-      <div class="dg-flow-node-desc">Mature the idea · shape the system · propose component backlog</div>
-      <div class="dg-flow-node-meta">architecture-spec.md · project-state.yaml · integration-scenarios.md (seeded)</div>
+      <div class="dg-flow-node-desc">Mature the idea · shape the system · propose story backlog</div>
+      <div class="dg-flow-node-meta">architecture.md · project-state.yaml</div>
     </div>
-    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> Backlog Approval</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Component Spec <span style="font-weight:400;color:var(--slate-400)">(parallel, dependency-ordered)</span></div>
-      <div class="dg-flow-node-desc">Component spec + domain elaboration on first of each domain</div>
-      <div class="dg-flow-node-meta">component-spec.md per component</div>
+      <div class="dg-flow-node-title">Story Spec</div>
+      <div class="dg-flow-node-desc">Spec each story before any code is written</div>
+      <div class="dg-flow-node-meta">story-spec.md per story</div>
     </div>
-    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-code-slash"></i> Developers</div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_complete per component</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_done per story</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Build + Unit Test <span style="font-weight:400;color:var(--slate-400)">(parallel, dependency-ordered)</span></div>
-      <div class="dg-flow-node-desc">TDD implementation · full test suite gate · gap specs written if needed</div>
-      <div class="dg-flow-node-meta">dev-artifact.yaml · gap-YYYY-MM-DD.md (if any)</div>
+      <div class="dg-flow-node-title">Build</div>
+      <div class="dg-flow-node-desc">Implementation · gap specs written if needed</div>
+      <div class="dg-flow-node-meta">build-report.yaml · gap.md (if any)</div>
     </div>
-    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-code-slash"></i> Developers</div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all components tests_passing</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built</div>
   </div>
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-decision">
-    <div class="dg-flow-node-icon"><i class="bi bi-signpost-split"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">TL Confirmation Point</div>
-      <div class="dg-flow-node-desc">Gap specs reviewed and merged (if any) · TL chooses next step</div>
-    </div>
-    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-fork" style="max-width:520px;margin:0 auto">
-    <div class="dg-fork-branch">
-      <div class="dg-fork-label"><i class="bi bi-check-lg"></i> [Y] Run tests</div>
-      <div class="dg-flow-node dg-integration" style="width:100%">
-        <div class="dg-flow-node-icon"><i class="bi bi-diagram-3"></i></div>
-        <div class="dg-flow-node-body">
-          <div class="dg-flow-node-title">Integration Test</div>
-          <div class="dg-flow-node-desc">Real system, no mocks · results per scenario</div>
-          <div class="dg-flow-node-meta">integration_tests_passing:true</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;padding-top:28px;color:var(--slate-300);font-size:.8rem">│</div>
-    <div class="dg-fork-branch">
-      <div class="dg-fork-label"><i class="bi bi-skip-forward"></i> [S] Skip</div>
-      <div class="dg-flow-node dg-neutral" style="width:100%">
-        <div class="dg-flow-node-icon"><i class="bi bi-clipboard-check"></i></div>
-        <div class="dg-flow-node-body">
-          <div class="dg-flow-node-title">Skip to Deploy</div>
-          <div class="dg-flow-node-desc">TL decision audited in project-state.yaml</div>
-          <div class="dg-flow-node-meta">integration_skipped:true</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="dg-fork-join-line"></div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-deploy">
@@ -232,13 +206,25 @@
       <div class="dg-flow-node-desc">Deployment script · whole system · release version bumped</div>
       <div class="dg-flow-node-meta">deploy.sh · deploy-artifact.md</div>
     </div>
-    <div style="font-size:.7rem;color:var(--slate-400);white-space:nowrap;margin-left:auto;padding-left:8px"><i class="bi bi-shield-check"></i> Team Lead</div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-neutral">
+    <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">[N] New work — post-release modifications</div>
+      <div class="dg-flow-node-desc">Bug fix or enhancement: <strong>Investigate</strong> reads codebase · confirms with you · build agent fixes or writes gap.md · re-deploy</div>
+      <div class="dg-flow-node-meta">investigate-subagent (read-only) · then development-subagent</div>
+    </div>
   </div>
 
 </div>
 </div>
 
-<p>Components run in parallel and in dependency order — data-layer components first, consumers after. Once all components pass their unit tests, the TL is prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then the TL chooses to run integration tests or skip directly to deployment — both paths are fully audited in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>. Deployment is gated on either integration tests passing (<code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code>) or the TL explicitly skipping them (<code class="language-plaintext highlighter-rouge">integration_skipped:true</code>).</p>
+<p>Stories run in dependency order. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.</p>
+
+<p>After deployment, use <code class="language-plaintext highlighter-rouge">[N] New work</code> for any changes. Bug fixes and enhancements always start with the investigation agent — it reads the actual codebase to locate the exact files and root cause before any code is touched.</p>
 
 <hr />
 
@@ -260,9 +246,8 @@
 
 <h3 id="ideation">Phase 1 — Ideation</h3>
 
-<p><strong>Who:</strong> Team Lead / Architect
-<strong>Time:</strong> 15–30 minutes
-<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/architecture-spec.md</code> · component backlog in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> · <code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> (seeded)</p>
+<p><strong>Time:</strong> 15–30 minutes
+<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/architecture/</code> (6 artifacts) · story backlog in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></p>
 
 <p>Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.</p>
 
@@ -276,237 +261,147 @@
   <li><strong>“What about…”</strong> — probes a gap or edge case the vision didn’t address</li>
 </ul>
 
-<p>Four topics, one question each: vision, problem &amp; users, constraints, risks &amp; out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on.</p>
+<p>Four topics, one question each: vision, problem &amp; users, constraints, risks &amp; out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on. You can save and stop at the Beat 1 summary — ideation will resume at Beat 2 on the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code>.</p>
 
 <p><strong>Beat 2 — Shape the system</strong></p>
 
-<p>Directly from the matured idea, SpecGantry proposes the system shape — tech stack, component boundaries, guardrails, and a dependency-ordered component backlog. Each topic is a proposal for you to confirm or redirect, not an open-ended question. Four more topics: tech stack, system boundaries, guardrails, component backlog.</p>
+<p>Directly from the matured idea, SpecGantry proposes the system shape across six topics — each a proposal for you to confirm or redirect, not an open-ended question:</p>
 
-<p>Everything is written to <code class="language-plaintext highlighter-rouge">specs/architecture-spec.md</code> after every answer. A crash mid-session loses at most one exchange.</p>
-
-<p><code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> is seeded during Beat 2 with the obvious end-to-end flows visible from the system boundaries. It grows as component specs are written.</p>
-
-<p><strong>Component granularity — Goldilocks rule:</strong>
-Components are building blocks, not micro-tasks. A component is a vertical slice — something a developer can complete in 1–3 sessions and demonstrate independently. Related capabilities within a domain belong in one component. A component can have internally separated code (models, services, controllers) but ships as a unit with one spec. When in doubt, merge — a component can always be extended later via <code class="language-plaintext highlighter-rouge">[+] New work</code>.</p>
-
-<hr />
-
-<h3 id="backlog-approval">Backlog Approval Gate</h3>
-
-<p><strong>Who:</strong> Team Lead / Architect
-<strong>Time:</strong> 2–5 minutes
-<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">backlog_approved: true</code> in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></p>
-
-<p>After Beat 2, SpecGantry presents the component list — IDs, titles, domains, sizes, and dependencies — for the Team Lead’s review. No spec writing begins until the TL explicitly approves the backlog.</p>
-
-<p>Options at the approval prompt:</p>
 <ul>
-  <li><strong><code class="language-plaintext highlighter-rouge">[Y] Approve</code></strong> — sets <code class="language-plaintext highlighter-rouge">backlog_approved:true</code>; component specs can now be started</li>
-  <li><strong><code class="language-plaintext highlighter-rouge">[E] Edit</code></strong> — re-enters ideation in amendment mode to adjust the component list, then returns to the approval prompt</li>
-  <li><strong><code class="language-plaintext highlighter-rouge">[X] Hold</code></strong> — leaves <code class="language-plaintext highlighter-rouge">backlog_approved:false</code>; returns to the dashboard</li>
+  <li><strong>Tech stack</strong> — one clear choice per layer</li>
+  <li><strong>Guardrails</strong> — enforceable rules every story must follow</li>
+  <li><strong>Configuration</strong> — every env var the project needs, in a table</li>
+  <li><strong>Story list</strong> — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval.</li>
+  <li><strong>UX model</strong> — navigation pattern, visual system, component conventions</li>
+  <li><strong>Deployment target</strong> — cloud platform, container registry, service architecture, secrets strategy, CI/CD. Each answer is flushed to <code class="language-plaintext highlighter-rouge">specs/architecture/deployment.md</code> immediately — a crash mid-topic loses at most one answer.</li>
 </ul>
 
-<p>This gate ensures developers never pick up a component from a backlog the TL hasn’t signed off on.</p>
+<p>Everything is written to <code class="language-plaintext highlighter-rouge">specs/architecture/</code> after every answer. A crash mid-session loses at most one exchange.</p>
+
+<p><strong>Story granularity — Goldilocks rule:</strong>
+Stories are building blocks, not micro-tasks. A story is a vertical slice — something completable in 1–3 sessions and demonstrable independently. Related capabilities belong in one story. When in doubt, merge — a story can always be extended later via <code class="language-plaintext highlighter-rouge">[N] New work</code>.</p>
 
 <hr />
 
-<h3 id="spec-gate">Phase 2 — Component Spec</h3>
+<h3 id="spec-gate">Phase 2 — Story Spec</h3>
 
-<p><strong>Who:</strong> Developer (or Team Lead in batch via <code class="language-plaintext highlighter-rouge">spec_all_components</code>)
-<strong>Time:</strong> 5–15 minutes per component (+5 min domain elaboration on first component of each domain)
-<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/component-spec.md</code></p>
+<p><strong>Time:</strong> 5–15 minutes per story
+<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/story-spec.md</code></p>
 
 <p>No code is written until a complete spec exists.</p>
 
-<p><strong>Domain elaboration (first component of a domain):</strong> if this is the first component picked up in its domain, three quick architecture questions elaborate that domain before the spec begins — data model, interface contract, domain-specific constraints. The answers are appended to <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> as a <code class="language-plaintext highlighter-rouge">## Domain: [name]</code> section and used as context for the spec. Subsequent components in the same domain skip this step.</p>
-
-<p><strong>Cross-reference, don’t duplicate:</strong> the component spec references <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> for anything already defined there — tech stack, guardrails, domain data model, interface contracts. The spec only adds what is specific to this component. This keeps both documents slim.</p>
-
-<p>The spec covers five sections:</p>
+<p>The spec covers six sections:</p>
 
 <ol>
-  <li><strong>Scope</strong> — what this component does and explicitly does not do, within its domain</li>
-  <li><strong>Interface Contract</strong> — what it exposes or consumes beyond what’s in the domain section</li>
-  <li><strong>Data</strong> — what data it owns or accesses beyond what’s in the domain data model</li>
-  <li><strong>Features</strong> — ordered internal tasks (feature list from the backlog), grouped into parallel tiers</li>
-  <li><strong>Test Plan</strong> — unit tests, integration hooks, edge cases; notes which integration scenarios this component participates in</li>
+  <li><strong>What the user can do</strong> — user-facing capabilities. Every entity the story manages must have its full lifecycle accounted for: list, view, edit, delete. Missing operations must be explicitly declared out of scope with a reason.</li>
+  <li><strong>Screens and states</strong> — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions</li>
+  <li><strong>Data and backend</strong> — data owned, APIs, persistence. Every field named with its type and validation rule. Every endpoint documented.</li>
+  <li><strong>AI integration</strong> — if AI is used: model ID, literal prompt template (full text, not a description), exact output schema, output-to-UI field mapping, fallback path. The prompt must include an anti-sycophancy instruction. If no AI: marked N/A.</li>
+  <li><strong>Enterprise checks</strong> — auth, validation, error states, data safety, rate limiting, and a list of any new env vars this story requires</li>
+  <li><strong>Acceptance criteria</strong> — minimum 4, at least one error-state criterion</li>
 </ol>
 
 <p>Each section is written to disk immediately — sessions resume from the next incomplete section.</p>
 
-<p>After all sections, guardrails from <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> are checked. Any violation blocks the spec until resolved. The developer self-reviews and confirms before build begins.</p>
-
-<p>After self-review, the spec agent updates <code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> — appending any new cross-component scenarios this component’s interface reveals.</p>
+<p>After all sections, guardrails from <code class="language-plaintext highlighter-rouge">architecture.md</code> are checked. Any violation blocks the spec until resolved. You self-review and confirm before build begins.</p>
 
 <hr />
 
-<h3 id="build">Phase 3 — Development</h3>
+<h3 id="build">Phase 3 — Build</h3>
 
-<p><strong>Who:</strong> Developer
-<strong>Time:</strong> Depends on component complexity
-<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/dev-artifact.yaml</code></p>
+<p><strong>Time:</strong> Depends on story complexity
+<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></p>
 
-<p>The development phase turns the confirmed spec into working code using TDD — tests are written first, implementation follows. The dev agent works through each feature in the order defined by the spec’s feature tiers.</p>
-
-<p>For each feature within the component:</p>
-<ol>
-  <li><strong>Write unit tests first</strong> — derived from the Test Plan; tests must fail before any implementation code exists</li>
-  <li><strong>Implement</strong> — write the minimum code to make the tests pass</li>
-  <li><strong>Verify</strong> — run the tests and confirm green before moving to the next feature</li>
-</ol>
-
-<p>After all features are implemented, the full test suite runs as the final build gate. Hard failures block the pipeline; flaky tests are recorded but not blocking.</p>
+<p>The build phase turns the confirmed spec into working code. The dev agent works through each acceptance criterion, implementing each one and verifying it works before moving to the next.</p>
 
 <p>Key behaviors:</p>
 <ul>
-  <li>Stays within this component’s domain boundary</li>
-  <li>Respects every guardrail in <code class="language-plaintext highlighter-rouge">architecture-spec.md</code></li>
-  <li>Secrets and credentials come from environment variables — no literal values in source</li>
-  <li>Commits in pairs: <code class="language-plaintext highlighter-rouge">test(COMP-NNN)</code> first, then <code class="language-plaintext highlighter-rouge">feat(COMP-NNN)</code></li>
+  <li>Implements the full vertical slice — UI, backend, data layer, AI integration — exactly as specced</li>
+  <li>Respects every guardrail in <code class="language-plaintext highlighter-rouge">architecture.md</code> and uses env var names exactly as defined in <code class="language-plaintext highlighter-rouge">## Configuration</code></li>
+  <li>Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values</li>
+  <li>Maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root with every env var the project needs — safe to commit, placeholders for secrets</li>
+  <li>Writes machine-readable anchor comments in source files: <code class="language-plaintext highlighter-rouge">@story</code> (file→story mapping), <code class="language-plaintext highlighter-rouge">@entry</code> (route/handler entry points), <code class="language-plaintext highlighter-rouge">@contract</code> (data shapes at layer boundaries), <code class="language-plaintext highlighter-rouge">@gap</code> (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.</li>
 </ul>
 
-<p>A component is <strong>technically solid</strong> once it passes the final test gate. Both <code class="language-plaintext highlighter-rouge">dev_complete</code> and <code class="language-plaintext highlighter-rouge">tests_passing</code> are set together at this point.</p>
+<p>A story is <strong>complete</strong> once all acceptance criteria are met.</p>
+
+<hr />
+
+<h3 id="deploy">Phase 4 — Deploy Release</h3>
+
+<p><strong>Time:</strong> 5–10 minutes
+<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> · <code class="language-plaintext highlighter-rouge">specs/docker-compose.yml</code> · <code class="language-plaintext highlighter-rouge">specs/.env.example</code> · <code class="language-plaintext highlighter-rouge">src/[story]/Dockerfile</code> · <code class="language-plaintext highlighter-rouge">specs/deploy-artifact.md</code></p>
+
+<p>Once all stories are built (and any gap specs are merged), you are prompted to confirm deployment.</p>
+
+<p>The deployment agent:</p>
+<ol>
+  <li>Gathers any missing deployment details interactively (registry identifier, domain, etc.)</li>
+  <li>Runs platform-specific pre-flight checks (CLI installed, auth active, APIs enabled) — shows a pass/fail table before generating anything</li>
+  <li>Computes the next release version from change types in the backlog</li>
+  <li>Resolves deployment order via the dependency graph</li>
+  <li>Generates per-service Dockerfiles and a <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> for local production-parity testing</li>
+  <li>Generates <code class="language-plaintext highlighter-rouge">specs/.env.example</code> with every env var the project needs</li>
+  <li>Generates <code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> covering build, push, migrations, deploy, and health checks per story — with <code class="language-plaintext highlighter-rouge">--dry-run</code> for local Docker testing</li>
+  <li>Validates the script with <code class="language-plaintext highlighter-rouge">bash -n</code> and sets executable permissions</li>
+  <li>Writes <code class="language-plaintext highlighter-rouge">deploy-artifact.md</code> summarising the release</li>
+  <li>Marks all stories deployed and updates <code class="language-plaintext highlighter-rouge">project.release</code></li>
+</ol>
+
+<p>Every release deploys the <strong>entire system</strong> — not individual stories.</p>
 
 <hr />
 
 <h3 id="gap-specs">Gap Specs</h3>
 
-<p>If during development the spec is discovered to be incomplete, incorrect, or causes side-effects on another component’s interface, the developer does <strong>not</strong> edit <code class="language-plaintext highlighter-rouge">component-spec.md</code> or <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> directly. Instead, a gap spec is written:</p>
+<p>If during development the spec is discovered to be incomplete, incorrect, or has side-effects, the build agent writes to the story’s single gap file rather than editing the main spec directly:</p>
 
-<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">specs/components/COMP-NNN/gap-YYYY-MM-DD.md</code></p>
+<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/gap.md</code> — one file per story, persists until deploy-time merge</p>
 
-<p>The gap spec records: what changed, which files were affected, side-effects on other components (if any), and a recommended spec update. The main specs remain frozen while other developers may still be building against them.</p>
+<p>The gap file records: what changed, which files were affected, side-effects on other stories, and a recommended spec update. The main spec stays stable. Multiple discoveries accumulate as additional bullets in the same file — no new files are created.</p>
 
-<p>Multiple gap specs can accumulate across components during parallel build. They are resolved before integration testing begins.</p>
+<h3 id="gap-merge">Gap Merge</h3>
+
+<p><strong>Time:</strong> 2–5 minutes
+<strong>Output:</strong> Updated <code class="language-plaintext highlighter-rouge">story-spec.md</code> · gap.md deleted</p>
+
+<p>When all stories are built, SpecGantry checks for unmerged gap files and presents any it finds. After confirmation, each gap is merged into the story spec in place (sections edited, not appended). Each <code class="language-plaintext highlighter-rouge">gap.md</code> is deleted after successful merge. A summary is shown before the deploy prompt.</p>
+
+<p>If no gaps exist, SpecGantry skips straight to the deploy prompt.</p>
 
 <hr />
 
-<h3 id="gap-merge">Gap Merge (TL-confirmed)</h3>
+<h2 id="reverse-engineering">Reverse Engineering an Existing Codebase</h2>
 
-<p><strong>Who:</strong> Team Lead (confirms, then automated)
-<strong>Time:</strong> 2–5 minutes
-<strong>Output:</strong> Updated <code class="language-plaintext highlighter-rouge">component-spec.md</code> and/or <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> · gap files deleted</p>
+<p>If <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is run in a directory that has source files but no <code class="language-plaintext highlighter-rouge">specs/</code> folder, it detects this and offers a choice: start a new project or analyse the existing codebase. Selecting reverse-engineer runs a dedicated agent that:</p>
 
-<p>When all components pass their unit tests, SpecGantry checks for unmerged gap specs across all components and presents the findings to the TL before anything is run. If gap specs are found, the TL reviews the list and confirms the merge — this is the same decision point where the TL then chooses to run integration tests or skip to deploy.</p>
-
-<p>If the TL confirms the merge:</p>
 <ol>
-  <li>Each gap file is applied in chronological order — component spec edits in place, architecture changes appended as amendment blocks</li>
-  <li>Side-effects listed in the gap are checked against other components; minimal corrections applied only where a contract was broken</li>
-  <li>Each gap file is deleted after successful merge</li>
-  <li>A summary is shown to the TL before the next decision</li>
+  <li><strong>Silently analyses</strong> the codebase — tech stack, structure, user-facing capabilities, auth model, completion level per feature, env vars from <code class="language-plaintext highlighter-rouge">.env.example</code> or config files, and entry points per story</li>
+  <li><strong>Presents a story list</strong> with a <code class="language-plaintext highlighter-rouge">Status</code> column for each story: <code class="language-plaintext highlighter-rouge">built</code> (fully implemented), <code class="language-plaintext highlighter-rouge">partial</code> (exists but incomplete), or <code class="language-plaintext highlighter-rouge">missing</code> (not yet built). You can edit the list — merge, rename, change status — before confirming.</li>
+  <li><strong>Writes spec files</strong> — <code class="language-plaintext highlighter-rouge">specs/architecture.md</code> (including a populated <code class="language-plaintext highlighter-rouge">## Configuration</code> table), <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> with correct <code class="language-plaintext highlighter-rouge">built</code>/<code class="language-plaintext highlighter-rouge">deployed</code> flags per story, and stub <code class="language-plaintext highlighter-rouge">build-report.yaml</code> files for built stories so the deployment agent can read their runtime profiles</li>
+  <li><strong>Tags source files</strong> — adds <code class="language-plaintext highlighter-rouge">@story</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, and <code class="language-plaintext highlighter-rouge">@contract</code> anchor comments to route/handler files so the investigation agent can navigate the codebase immediately</li>
+  <li><strong>Confirms</strong> — shows a summary of stories identified, env vars documented, and files tagged</li>
 </ol>
 
-<p>If no gaps exist, SpecGantry skips straight to the integration/deploy choice.</p>
+<p><strong>Status mapping in the pipeline:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">built</code> stories → <code class="language-plaintext highlighter-rouge">built:true · deployed:true</code> — they enter the pipeline at the modification stage immediately. Use <code class="language-plaintext highlighter-rouge">[N] New work</code> to fix bugs or add enhancements.</li>
+  <li><code class="language-plaintext highlighter-rouge">partial</code> / <code class="language-plaintext highlighter-rouge">missing</code> stories → <code class="language-plaintext highlighter-rouge">built:false · deployed:false</code> — they follow the normal spec → build → deploy pipeline</li>
+  <li><code class="language-plaintext highlighter-rouge">partial</code> stories that you’d prefer to treat as enhancements (rather than a full rebuild) can be changed to <code class="language-plaintext highlighter-rouge">built</code> during the review step</li>
+</ul>
 
-<hr />
-
-<h3 id="integration-test">Phase 4 — Integration Test</h3>
-
-<p><strong>Who:</strong> Team Lead (optional — can be skipped)
-<strong>Time:</strong> Minutes to tens of minutes depending on scenario count
-<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> updated with results</p>
-
-<p>Once all components pass their unit tests (and any gap specs are merged and confirmed), the TL is presented with a choice: run integration tests or skip directly to deployment. Both paths are recorded as audit flags in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> — <code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code> if tests ran and passed, or <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> if the TL chose to bypass them.</p>
-
-<p>If integration tests run, the integration test agent reads <code class="language-plaintext highlighter-rouge">architecture-spec.md</code> and <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code>, enriches any scenarios that need more concrete assertions, and executes each scenario against the real running system — no mocks.</p>
-
-<p><code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> is a <strong>living document</strong>. It was seeded during ideation with the obvious cross-component flows. It grew as each component spec was written, with scenarios contributed by each component’s interface. By the time integration testing runs, it reflects the full system’s understanding of critical paths.</p>
-
-<div class="dg-wrap">
-<div class="dg-diagram-title">integration-scenarios.md lifecycle</div>
-<div class="dg-timeline">
-
-  <div class="dg-timeline-stage">
-    <div class="dg-timeline-dot dg-ideation" style="border-color:rgba(34,197,94,.5);color:rgba(34,197,94,.8)">1</div>
-    <div class="dg-timeline-body">
-      <div class="dg-timeline-title">Seeded</div>
-      <div class="dg-timeline-sub">obvious end-to-end flows</div>
-      <div class="dg-timeline-phase">Ideation</div>
-    </div>
-  </div>
-  <div class="dg-timeline-connector"></div>
-
-  <div class="dg-timeline-stage">
-    <div class="dg-timeline-dot dg-spec" style="border-color:rgba(168,85,247,.5);color:rgba(168,85,247,.8)">2</div>
-    <div class="dg-timeline-body">
-      <div class="dg-timeline-title">Extended</div>
-      <div class="dg-timeline-sub">interface scenarios added</div>
-      <div class="dg-timeline-phase">Component Spec × N</div>
-    </div>
-  </div>
-  <div class="dg-timeline-connector"></div>
-
-  <div class="dg-timeline-stage">
-    <div class="dg-timeline-dot dg-integration" style="border-color:rgba(37,99,235,.5);color:rgba(37,99,235,.8)">3</div>
-    <div class="dg-timeline-body">
-      <div class="dg-timeline-title">Enriched</div>
-      <div class="dg-timeline-sub">concrete assertions added</div>
-      <div class="dg-timeline-phase">Pre-integration test</div>
-    </div>
-  </div>
-  <div class="dg-timeline-connector"></div>
-
-  <div class="dg-timeline-stage">
-    <div class="dg-timeline-dot dg-integration" style="border-color:rgba(37,99,235,.7);color:rgba(37,99,235,.9)">4</div>
-    <div class="dg-timeline-body">
-      <div class="dg-timeline-title">Executed</div>
-      <div class="dg-timeline-sub">real system, no mocks</div>
-      <div class="dg-timeline-phase">Integration Test</div>
-    </div>
-  </div>
-  <div class="dg-timeline-connector"></div>
-
-  <div class="dg-timeline-stage">
-    <div class="dg-timeline-dot dg-deploy" style="border-color:rgba(16,185,129,.5);color:rgba(16,185,129,.8)">5</div>
-    <div class="dg-timeline-body">
-      <div class="dg-timeline-title">History updated</div>
-      <div class="dg-timeline-sub">## Run History appended</div>
-      <div class="dg-timeline-phase">Every run</div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-<p>Results are written back to <code class="language-plaintext highlighter-rouge">integration-scenarios.md</code> per scenario, and a run summary is appended to the <code class="language-plaintext highlighter-rouge">## Run History</code> section. This becomes the audit trail of functional health across releases.</p>
-
-<p>The system is <strong>functionally solid</strong> once all scenarios pass.</p>
-
-<hr />
-
-<h3 id="deploy">Phase 5 — Deploy Release</h3>
-
-<p><strong>Who:</strong> Team Lead
-<strong>Time:</strong> 5–10 minutes
-<strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> + <code class="language-plaintext highlighter-rouge">specs/deploy-artifact.md</code></p>
-
-<p><strong>The deployment gate requires either integration tests passing or an explicit TL skip.</strong> Individual component unit tests are necessary but not sufficient — the TL must either confirm the system is functionally solid end-to-end, or explicitly choose to skip integration testing (recorded as <code class="language-plaintext highlighter-rouge">integration_skipped:true</code> for audit).</p>
-
-<p>The deployment agent:</p>
-<ol>
-  <li>Verifies the deploy gate (<code class="language-plaintext highlighter-rouge">integration_tests_passing:true</code> OR <code class="language-plaintext highlighter-rouge">integration_skipped:true</code>)</li>
-  <li>Computes the next release version from change types in the backlog</li>
-  <li>Resolves deployment order via the dependency graph</li>
-  <li>Backs up the previous <code class="language-plaintext highlighter-rouge">deploy.sh</code> to <code class="language-plaintext highlighter-rouge">deploy.sh.old</code></li>
-  <li>Generates a single <code class="language-plaintext highlighter-rouge">deploy.sh</code> covering all components</li>
-  <li>Validates the script with <code class="language-plaintext highlighter-rouge">bash -n</code> and sets executable permissions</li>
-  <li>Writes <code class="language-plaintext highlighter-rouge">deploy-artifact.md</code> summarising the release</li>
-  <li>Marks all components deployed and updates <code class="language-plaintext highlighter-rouge">project.release</code></li>
-</ol>
-
-<p>Every release deploys the <strong>entire system</strong> — not individual components.</p>
+<p><strong>Routing after reverse-engineering:</strong> the pipeline skips the automatic “Spec next story” action for stories with <code class="language-plaintext highlighter-rouge">built:true · spec_done:false</code> — these already have running code and don’t need a full spec cycle before modifications can begin. Their <code class="language-plaintext highlighter-rouge">~</code> status in the dashboard shows they have no written spec yet. Type a story ID directly to write its spec at any time.</p>
 
 <hr />
 
 <h2 id="versioning">Release Versioning</h2>
 
-<p>SpecGantry uses standard X.Y.Z semver. The version is a project-level concept — not per-component.</p>
+<p>SpecGantry uses standard X.Y.Z semver. The version is a project-level concept — not per-story.</p>
 
 <ul>
   <li>Every project starts at <code class="language-plaintext highlighter-rouge">1.0.0</code></li>
   <li>The version only changes when a release is deployed</li>
-  <li>The bump is computed automatically from the highest-severity change type across all components in the release:</li>
+  <li>The bump is computed automatically from the highest-severity change type across all stories in the release:</li>
 </ul>
 
 <table>
@@ -524,7 +419,7 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
       <td><code class="language-plaintext highlighter-rouge">1.0.0</code> → <code class="language-plaintext highlighter-rouge">2.0.0</code></td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">enhancement</code> or <code class="language-plaintext highlighter-rouge">new_component</code></td>
+      <td><code class="language-plaintext highlighter-rouge">enhancement</code> or <code class="language-plaintext highlighter-rouge">new_story</code></td>
       <td>minor</td>
       <td><code class="language-plaintext highlighter-rouge">1.0.0</code> → <code class="language-plaintext highlighter-rouge">1.1.0</code></td>
     </tr>
@@ -540,98 +435,9 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
 
 <hr />
 
-<h2 id="roles">Roles</h2>
-
-<h3 id="team-lead--architect">Team Lead / Architect</h3>
-
-<ul>
-  <li>Runs ideation — the only person who shapes the system</li>
-  <li>Approves the component backlog before spec work begins</li>
-  <li>Manages the backlog via <code class="language-plaintext highlighter-rouge">[P] Project</code></li>
-  <li>Triggers integration tests once all components pass their unit tests</li>
-  <li>Triggers deployments</li>
-  <li>Classifies and routes new work after deployment</li>
-</ul>
-
-<h3 id="developer">Developer</h3>
-
-<ul>
-  <li>Claims or is assigned components from the approved backlog</li>
-  <li>Writes component specs (triggers domain elaboration on first component of each domain)</li>
-  <li>Implements using TDD — tests first, then implementation, then full suite gate</li>
-  <li>Writes gap specs for any mid-build discoveries; does not modify main specs directly</li>
-  <li>A passing component signals readiness — integration testing and deployment are TL territory</li>
-</ul>
-
-<div class="dg-wrap">
-<div class="dg-diagram-title">Phase ownership by role</div>
-<table class="dg-matrix">
-  <thead>
-    <tr>
-      <th>Phase</th>
-      <th class="dg-matrix-role"><i class="bi bi-shield-check"></i> Team Lead</th>
-      <th class="dg-matrix-role"><i class="bi bi-code-slash"></i> Developer</th>
-      <th class="dg-matrix-role"><i class="bi bi-person-workspace"></i> Solo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-ideation"></span>Ideation</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-      <td class="dg-matrix-cell">—</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-ideation"></span>Backlog Approval</td>
-      <td class="dg-matrix-cell">✅ approves</td>
-      <td class="dg-matrix-cell">👁 view</td>
-      <td class="dg-matrix-cell">✅ approves</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-spec"></span>Component Spec</td>
-      <td class="dg-matrix-cell">✅ can run</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-build"></span>Build + Test</td>
-      <td class="dg-matrix-cell">✅ can run</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-build"></span>Gap Specs</td>
-      <td class="dg-matrix-cell">✅ reviews &amp; merges</td>
-      <td class="dg-matrix-cell">✅ writes</td>
-      <td class="dg-matrix-cell">✅ both</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-integration"></span>Integration Test</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-      <td class="dg-matrix-cell">—</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-deploy"></span>Deploy Release</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-      <td class="dg-matrix-cell">—</td>
-      <td class="dg-matrix-cell">✅ owns</td>
-    </tr>
-    <tr>
-      <td><span class="dg-matrix-phase-dot dot-deploy"></span>New Work / Routing</td>
-      <td class="dg-matrix-cell">✅ classifies</td>
-      <td class="dg-matrix-cell">—</td>
-      <td class="dg-matrix-cell">✅ classifies</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<hr />
-
 <h2 id="architecture-artifact">The Architecture Artifact</h2>
 
-<p><code class="language-plaintext highlighter-rouge">specs/architecture-spec.md</code> is the single source of truth for the system. It contains:</p>
+<p><code class="language-plaintext highlighter-rouge">specs/architecture.md</code> is the single source of truth for the system. It contains:</p>
 
 <ul>
   <li><strong>Vision</strong> — what the system is, who it’s for, why it’s worth building</li>
@@ -639,36 +445,18 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
   <li><strong>Constraints</strong> — hard stops that architecture must respect</li>
   <li><strong>Risks &amp; Out of Scope</strong> — top risks with mitigations, explicit v1 deferral list</li>
   <li><strong>Tech Stack</strong> — confirmed choices per layer</li>
-  <li><strong>System Boundaries</strong> — top-level components and communication patterns</li>
-  <li><strong>Guardrails</strong> — enforceable rules every component must respect</li>
-  <li><strong>Component Backlog</strong> — human-readable summary (machine-readable form in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>)</li>
-  <li><strong>Domain sections</strong> — <code class="language-plaintext highlighter-rouge">## Domain: [name]</code> sections added just-in-time as each domain’s first component is picked up</li>
-  <li><strong>Amendment blocks</strong> — appended by gap merge; never overwrite prior content</li>
+  <li><strong>Guardrails</strong> — enforceable rules every story must respect</li>
+  <li><strong>Configuration</strong> — env var table: every variable the project uses, its description, and a safe example value</li>
+  <li><strong>Change history</strong> — gap merges append a row to each story spec’s change history table; architecture is never overwritten</li>
 </ul>
 
-<p>Component specs <strong>reference</strong> this document rather than duplicating it. This keeps both the architecture and component specs slim.</p>
-
-<hr />
-
-<h2 id="integration-scenarios">The Integration Scenarios Document</h2>
-
-<p><code class="language-plaintext highlighter-rouge">specs/integration-scenarios.md</code> is a living document that grows through the pipeline:</p>
-
-<ol>
-  <li><strong>Seeded during ideation</strong> — obvious end-to-end flows visible from the system boundaries</li>
-  <li><strong>Extended during component specs</strong> — each component spec contributes scenarios involving its interface</li>
-  <li><strong>Enriched before integration testing</strong> — the integration test agent adds concrete assertions where needed</li>
-  <li><strong>Executed during integration testing</strong> — real system, no mocks; results written per scenario</li>
-  <li><strong>Updated on every run</strong> — <code class="language-plaintext highlighter-rouge">## Run History</code> section appended, never overwritten</li>
-</ol>
-
-<p>By the time a release deploys, the document is a complete picture of what critical paths the system handles and their test history.</p>
+<p>Story specs <strong>reference</strong> this document rather than duplicating it. This keeps both the architecture and story specs slim.</p>
 
 <hr />
 
 <h2 id="post-deployment">Handling Changes After Deployment</h2>
 
-<p>Use <code class="language-plaintext highlighter-rouge">[+] New work</code> at any point to describe new work — bug fix, enhancement, new component, or architectural change. SpecGantry classifies the work, reads the backlog and component specs to determine what’s affected, confirms with you, and re-enters the pipeline.</p>
+<p>Use <code class="language-plaintext highlighter-rouge">[N] New work</code> at any point to describe new work — bug fix, enhancement, new story, or architectural change. SpecGantry classifies the work, reads the backlog and story specs to determine what’s affected, confirms with you, and re-enters the pipeline.</p>
 
 <table>
   <thead>
@@ -680,19 +468,19 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">bug_fix</code></td>
-      <td>Affected component identified from specs. All phase flags reset — full spec → dev cycle. Integration gate re-runs before next deploy.</td>
+      <td>Investigation agent reads the codebase to locate the exact files and root cause — confirms findings with you. Build agent uses the findings as a targeted brief. Spec is not touched. Patch release on next deploy.</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">enhancement</code></td>
-      <td>Same as bug_fix — spec updated with change annotations. Integration gate re-runs before next deploy.</td>
+      <td>Investigation agent locates where the change slots in. Orchestrator writes/appends to <code class="language-plaintext highlighter-rouge">gap.md</code> for the affected story. Build agent implements against spec + gap. Spec merges at deploy time. Minor release on next deploy.</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">new_component</code></td>
-      <td>Ideation agent runs in amendment mode to assign ID, update backlog and architecture spec. Then normal pipeline.</td>
+      <td><code class="language-plaintext highlighter-rouge">new_story</code></td>
+      <td>Ideation agent runs in amendment mode to assign ID, update backlog and architecture. Then normal pipeline.</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">project_change</code></td>
-      <td>Ideation agent runs in amendment mode first. Impacted component specs reset for re-spec. Integration tests reset.</td>
+      <td>Ideation agent runs in amendment mode first. Impacted story specs reset for re-spec.</td>
     </tr>
   </tbody>
 </table>
@@ -701,16 +489,16 @@ Components are building blocks, not micro-tasks. A component is a vertical slice
 
 <h2 id="session-safety--resumption">Session Safety &amp; Resumption</h2>
 
-<p>SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered item. This applies to all phases — ideation, component spec, development, and integration test.</p>
+<p>SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered item. This applies to all phases — ideation, story spec, and build.</p>
 
 <hr />
 
 <h2 id="cost-tracking">Cost Visibility</h2>
 
-<p>SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> and committed to git. Run <code class="language-plaintext highlighter-rouge">[$] Cost</code> or <code class="language-plaintext highlighter-rouge">/track-cost</code> for a breakdown by phase, component, release, and model.</p>
+<p>SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> and committed to git. Run <code class="language-plaintext highlighter-rouge">[$] Cost</code> or <code class="language-plaintext highlighter-rouge">/track-cost</code> for a breakdown by phase, story, release, and model.</p>
 
 <div class="info">
-  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs, giving your whole team shared visibility into AI development costs over the full project lifetime.
+  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs — full history of AI development costs over the project lifetime.
 </div>
 
 <hr />

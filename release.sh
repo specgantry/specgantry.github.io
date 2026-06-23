@@ -185,10 +185,22 @@ build_site() {
 
 deploy_to_gh_pages() {
   local version=$1
+  # Fixed path inside .git — never cleaned by the OS, fully owned by git.
+  # Using a stable path means any leftover from a previous interrupted run
+  # is always found and cleaned up reliably.
   local worktree_path
-  worktree_path="$(mktemp -d)/gh-pages-deploy"
+  worktree_path="$(git rev-parse --git-dir)/gh-pages-deploy"
 
   print_step "Deploying to gh-pages branch"
+
+  # Always clean up any prior worktree at this path before starting —
+  # handles both interrupted runs (directory still exists) and stale
+  # registrations (directory already gone). Never fails even if absent.
+  if git worktree list --porcelain | grep -q "^worktree $worktree_path$"; then
+    git worktree remove --force "$worktree_path" 2>/dev/null || true
+  fi
+  rm -rf "$worktree_path"
+  git worktree prune
 
   # Check if gh-pages branch exists on remote
   if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
@@ -207,13 +219,13 @@ deploy_to_gh_pages() {
       log_warning "No changes in built site — skipping gh-pages commit"
     else
       git commit -m "Deploy v$version"
-      git push origin gh-pages
+      git push --force origin gh-pages
       log_success "Deployed to gh-pages"
     fi
   )
 
-  git worktree remove "$worktree_path" --force
-  rm -rf "$(dirname "$worktree_path")"
+  git worktree remove --force "$worktree_path"
+  rm -rf "$worktree_path"
 }
 
 verify_version_sync() {

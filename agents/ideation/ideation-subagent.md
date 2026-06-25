@@ -63,10 +63,10 @@ Check `specs/project-state.yaml → ideation_complete` first:
 
 0.5. **`project.active_phase: amendment` in project-state (set by `project_change` orchestrator action):** cross-cutting project change — arch artifacts exist from prior session but need updating. Skip directly to **Amendment mode** section. Do NOT re-run Beat 1 or Beat 2. After amendment mode completes, clear `project.active_phase: null` in project-state before setting `ideation_complete:true`.
 
-1. **`arch_seeded:false` AND `## UX Model` is non-empty AND (`specs/architecture/deployment.md` missing OR `## deployment:target` is `_not yet written_`):** UX Model confirmed but Topic 10 not completed — resume at Topic 10. (Covers crashes mid-Topic 10 whether stories have been written yet or not.)
-2. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is non-empty AND `specs/architecture/deployment.md` exists with `## deployment:target` non-empty:** Topics 9 and 10 complete, story list written, but arch artifacts not yet seeded — resume at coherence pass.
-3. **`arch_seeded:false` AND stories exist in project-state AND `## UX Model` is `_not yet written_`:** story list written to disk (Step 2 ran on Topic 8 approval) but Topic 9 not yet finished — resume at Topic 9.
-4. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is non-empty:** Beat 2 Topics 5–8 still in progress or not yet started — resume Beat 2 from first incomplete topic (check which of Tech Stack/Guardrails/Configuration are still `_not yet written_`).
+1. **`arch_seeded:false` AND stories exist in project-state AND `specs/architecture/deployment.md` missing OR `## deployment:target` is `_not yet written_`:** Story list written but Topic 9 (Deployment) not completed — resume at Topic 9. (Covers crashes mid-Topic 9 whether deployment.md was partially written or not.)
+2. **`arch_seeded:false` AND stories exist in project-state AND `specs/architecture/deployment.md` exists with `## deployment:target` non-empty:** Topics 8–9 complete, story list written, but arch artifacts not yet seeded — resume at coherence pass.
+3. **`arch_seeded:false` AND `stories:{}` is empty AND `## UX Model` is non-empty AND (`specs/architecture/deployment.md` missing OR `## deployment:target` is `_not yet written_`):** UX Model confirmed but Topic 9 (Deployment) not completed — resume at Topic 9.
+4. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is non-empty:** Beat 2 Topics 5–9 still in progress or not yet started — resume Beat 2 from first incomplete topic (check which of Tech Stack/Guardrails/Configuration/UX Model are still `_not yet written_`).
 5. **`arch_seeded:false` AND `stories:{}` is empty AND `## Tech Stack` is `_not yet written_`:** Beat 1 complete, Beat 2 not started — resume Beat 2 from Topic 5.
 6. **`arch_seeded:false` AND `stories:{}` is empty AND `## Vision` is non-empty:** somewhere mid-Beat 1 — resume from first section still `_not yet written_`.
 7. **`## Vision` is `_not yet written_`:** start Beat 1 from the beginning.
@@ -75,7 +75,7 @@ Check `specs/project-state.yaml → ideation_complete` first:
 
 **Entry 0.5 note:** `project_change` in the orchestrator sets `ideation_complete:false`, `arch_seeded:false`, AND `active_phase: amendment`. Entry 0.5 catches this before entries 1–7 can mis-route based on arch section content. Amendment mode for a project_change updates existing arch artifacts — Beat 2 topics run only for sections that need changing, never from scratch.
 
-**Entry 1 note:** Entry 1 fires before entry 2 so a crash during Topic 10 (where `stories:{}` may still be empty because Step 2 hasn't run yet) is always caught and resumes at Topic 10, not at the coherence pass.
+**Entry 1 note:** Entry 1 fires before entry 2 so a crash during Topic 9 (Deployment) or Topic 10 (Story List) — where `stories:{}` may still be empty because Step 2 hasn't run yet — is always caught and resumes at the right topic, not at the coherence pass.
 
 **Amendment mode detection (legacy):** when `ideation_complete` was reset to `false` by a `project_change` before v3.1.5, `arch_seeded` is also `false` but `active_phase` may not be set. Entries 1–7 remain as a fallback for sessions that predate the `active_phase: amendment` marker.
 
@@ -209,9 +209,81 @@ Process answer: Write to `## Configuration` the confirmed table. Rules:
 
 Return Topic 8 question.
 
-### Topic 8 — Story List (Proposed)
+### Topic 8 — UX Model
+
+After the configuration is confirmed, before proposing stories. React to the actor structure and system shape — propose, don't assume.
+
+**Navigation model:** propose one of three patterns based on what you've learned about the actors and their workflows:
+- `persona-split` — each actor type has its own entry point, own nav, own flow (best when actor workflows diverge significantly)
+- `central-dashboard` — one hub with role-filtered content (best when actors share the same data views)
+- `hybrid` — shared shell, persona-specific content zones (best when actors share navigation but not content)
+
+**Visual system:** propose based on the tech stack confirmed in Topic 5:
+- CSS framework: Bootstrap 5 (default)
+- Icon set: Bootstrap Icons (default)
+- Component framework: derive from tech stack (React → react-bootstrap, Angular → ng-bootstrap or PrimeNG, Vue → BootstrapVue, vanilla → Bootstrap CSS only) — **Tell** the user which library follows logically from their stack choice, confirm or override
+- Theme: ask for primary/secondary colors and font family, or confirm Bootstrap defaults
+
+Return `TURN:` with your recommendations and questions on navigation pattern + visual system.
+
+Process answer: Write to `## UX Model` in `specs/architecture/architecture.md`:
+```
+Navigation: [pattern] — [one sentence why]
+Visual: Bootstrap 5 + Bootstrap Icons · [component framework/library]
+Theme: [primary] / [secondary] · [font family] · Bootstrap default spacing
+```
+
+Return Topic 9 question.
+
+### Topic 9 — Deployment Target
+
+After the UX model is confirmed. Gather deployment intent so the deployment phase can produce a complete, runnable script without guessing.
+
+**Flush rule:** write each confirmed answer to `specs/architecture/deployment.md` immediately after the user confirms it. A crash or timeout mid-Topic 9 must lose at most one unanswered question. Use partial writes: start with an empty `deployment.md` skeleton before the first question, then fill in each section as it is confirmed.
+
+**Defaults (propose these unless the user signals otherwise):**
+- Registry: Docker Hub (`docker.io/[dockerhub-username]/[image]`)
+- Secrets: managed via `.env` file
+- CI/CD: manual `deploy.sh` script (no pipeline)
+
+**Write the deployment.md skeleton before asking the first question:**
+```markdown
+## deployment:target
+platform: _not yet written_
+registry: _not yet written_
+registry_identifier: _not yet written_
+
+## deployment:services
+_not yet written_
+
+## deployment:secrets
+strategy: _not yet written_
+vars: []
+
+## deployment:ingress
+domain: null
+https: false
+load_balancer: null
+
+## deployment:cicd
+runner: manual
+```
+
+Topic 9 has 7 questions. Ask them one at a time — one `TURN:` per question, flush each answer to disk before asking the next:
+
+1. **Cloud platform** — propose based on the stack (GCP Cloud Run · AWS ECS/Fargate · Azure Container Apps · Docker Compose). After confirmed: write `platform:` to `deployment.md`. Return next question.
+2. **Container registry** — Docker Hub (default, needs username) · gcr.io · ECR · ACR. After confirmed: write `registry:` and `registry_identifier:`. Return next question.
+3. **Service architecture** — monolith or one container per story? Guide toward monolith for first deploys. After confirmed: write `## deployment:services` block. Return next question.
+4. **Scaling defaults** — propose `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`. After confirmed: update scaling fields in `## deployment:services`. Return next question.
+5. **Secrets management** — `.env` file (default) or cloud secrets manager? Tell user: `.env` is fine for first deploy. After confirmed: write `strategy:` and `vars:` (scan `## Configuration` for secret vars). Return next question.
+6. **Domain / ingress** — custom domain? HTTPS? Platform default URL if none. After confirmed: write `## deployment:ingress`. Return next question.
+7. **CI/CD** — manual `deploy.sh` (default) or CI pipeline (GitHub Actions · GCP Cloud Build · Azure DevOps). After confirmed: write `runner:` to `## deployment:cicd`. Return Topic 10 question.
+
+### Topic 10 — Story List (Proposed)
 
 User stories that define what the system does. A story is a complete vertical slice — one user-facing capability that requires UI, backend, data, and possibly AI working together.
+
+Now that the full system shape is known (stack, guardrails, config, UX model, deployment target), propose stories that cleanly map to the confirmed architecture.
 
 **Lean story rule (primary constraint):** target 3–5 stories. Each story is something a real user can do from start to finish. Before adding a story, ask: is this a separate user capability, or a detail of an existing one? If it's a detail, it belongs inside an existing story's spec.
 
@@ -247,90 +319,7 @@ Process answer:
       title: "[title]"
       depends_on: [STORY-001]
   ```
-  Return Topic 9 question.
-
-### Topic 9 — UX Model
-
-After the story list is approved, before seeding artifacts. React to the actor structure and story list — propose, don't assume.
-
-**Navigation model:** propose one of three patterns based on what you've learned about the actors and their workflows:
-- `persona-split` — each actor type has its own entry point, own nav, own flow (best when actor workflows diverge significantly)
-- `central-dashboard` — one hub with role-filtered content (best when actors share the same data views)
-- `hybrid` — shared shell, persona-specific content zones (best when actors share navigation but not content)
-
-**Visual system:** propose based on the tech stack confirmed in Topic 5:
-- CSS framework: Bootstrap 5 (default)
-- Icon set: Bootstrap Icons (default)
-- Component framework: derive from tech stack (React → react-bootstrap, Angular → ng-bootstrap or PrimeNG, Vue → BootstrapVue, vanilla → Bootstrap CSS only) — **Tell** the user which library follows logically from their stack choice, confirm or override
-- Theme: ask for primary/secondary colors and font family, or confirm Bootstrap defaults
-
-Return `TURN:` with your recommendations and questions on navigation pattern + visual system.
-
-Process answer: Write to `## UX Model` in `specs/architecture/architecture.md`:
-```
-Navigation: [pattern] — [one sentence why]
-Visual: Bootstrap 5 + Bootstrap Icons · [component framework/library]
-Theme: [primary] / [secondary] · [font family] · Bootstrap default spacing
-```
-
-Return Topic 10 question.
-
-### Topic 10 — Deployment Target
-
-After the UX model is confirmed. Gather deployment intent so the deployment phase can produce a complete, runnable script without guessing.
-
-**Flush rule:** write each confirmed answer to `specs/architecture/deployment.md` immediately after the user confirms it. A crash or timeout mid-Topic 10 must lose at most one unanswered question. Use partial writes: start with an empty `deployment.md` skeleton before the first question, then fill in each section as it is confirmed.
-
-**Defaults (propose these unless the user signals otherwise):**
-- Registry: Docker Hub (`docker.io/[dockerhub-username]/[image]`)
-- Secrets: managed via `.env` file
-- CI/CD: manual `deploy.sh` script (no pipeline)
-
-**Write the deployment.md skeleton before asking the first question:**
-```markdown
-## deployment:target
-platform: _not yet written_
-registry: _not yet written_
-registry_identifier: _not yet written_
-
-## deployment:services
-_not yet written_
-
-## deployment:secrets
-strategy: _not yet written_
-vars: []
-
-## deployment:ingress
-domain: null
-https: false
-load_balancer: null
-
-## deployment:cicd
-runner: manual
-```
-
-Topic 10 has 7 questions. Ask them one at a time — one `TURN:` per question, flush each answer to disk before asking the next:
-
-1. **Cloud platform** — propose based on the stack (GCP Cloud Run · AWS ECS/Fargate · Azure Container Apps · Docker Compose). After confirmed: write `platform:` to `deployment.md`. Return next question.
-2. **Container registry** — Docker Hub (default, needs username) · gcr.io · ECR · ACR. After confirmed: write `registry:` and `registry_identifier:`. Return next question.
-3. **Service architecture** — monolith or one container per story? Guide toward monolith for first deploys. After confirmed: write `## deployment:services` block. Return next question.
-4. **Scaling defaults** — propose `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`. After confirmed: update scaling fields in `## deployment:services`. Return next question.
-5. **Secrets management** — `.env` file (default) or cloud secrets manager? Tell user: `.env` is fine for first deploy. After confirmed: write `strategy:` and `vars:` (scan `## Configuration` for secret vars). Return next question.
-6. **Domain / ingress** — custom domain? HTTPS? Platform default URL if none. After confirmed: write `## deployment:ingress`. Return next question.
-7. **CI/CD** — manual `deploy.sh` (default) or CI pipeline (GitHub Actions · GCP Cloud Build · Azure DevOps). After confirmed: write `runner:` to `## deployment:cicd`. Return `TURN:` with the deployment summary:
-   ```
-   ✓ Deployment target configured
-
-     Platform:   [target]
-     Registry:   [registry + identifier]
-     Services:   [n]
-     Secrets:    [strategy] — [n vars]
-     Domain:     [domain or "platform default URL"]
-     CI/CD:      [runner]
-
-     [Y] Confirmed — continue
-   ```
-   On `Y`: return `COHERENCE_PASS`.
+  Return `COHERENCE_PASS`.
 
 ---
 
@@ -453,7 +442,7 @@ One `## pattern:[name]` section per dominant backend interaction pattern derived
 
 **5. Write `specs/architecture/ux.md`**
 
-Four sections derived from Topic 9 decisions:
+Four sections derived from Topic 8 decisions:
 - `## ux:navigation-model` — confirmed pattern, entry points per actor, shared shell y/n
 - `## ux:visual-system` — CSS framework, icon set, component framework, theme tokens
 - `## ux:component-conventions` — Bootstrap form controls, button classes, table style, modal usage, toast rules, nav rules
@@ -461,7 +450,7 @@ Four sections derived from Topic 9 decisions:
 
 **6. Write `specs/architecture/deployment.md`**
 
-Copy the confirmed `deployment.md` content from Topic 10 (already written to disk during that topic). In **update mode**: if the file exists and contains the Topic 10 content, verify it's complete — all sections present, no `_not yet written_` values. If any section is incomplete, fill it in from the Topic 10 context. If the file does not exist (e.g. Topic 10 was not run — legacy resume), write it fresh with all fields set to `_not yet written_` and surface a warning: "⚠ Deployment target not configured — run ideation to complete Topic 10 before deploying."
+Copy the confirmed `deployment.md` content from Topic 9 (already written to disk during that topic). In **update mode**: if the file exists and contains the Topic 9 content, verify it's complete — all sections present, no `_not yet written_` values. If any section is incomplete, fill it in from the Topic 9 context. If the file does not exist (e.g. Topic 9 was not run — legacy resume), write it fresh with all fields set to `_not yet written_` and surface a warning: "⚠ Deployment target not configured — run ideation to complete Topic 9 before deploying."
 
 **7. Append `## Artifact Index` to `specs/architecture/architecture.md`**
 

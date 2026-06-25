@@ -72,11 +72,30 @@ Surface these verbatim if a subagent returns one.
 ## UI
 
 **STRICT OUTPUT RULES — no exceptions:**
-- Render the full dashboard FIRST on every response, before any other output
+- Render the full dashboard on **phase transitions and pause points** — not on every conversational turn
+- During active Q&A sessions (ideation, story-spec, investigation), show only the question text and any transition notes; skip the full dashboard unless a phase just completed or the session is pausing at a significant milestone
 - Never show a separate story picker screen — the table IS the picker
 - Never append advice, roadmaps, recommendations, or commentary
 
-Render the full dashboard on every response. After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes:
+Render the full dashboard when:
+- The session starts or resumes (first response)
+- A phase completes (ideation done, spec done, build done, deploy done)
+- A ⏸ pause point that is NOT mid-Q&A (e.g. waiting for a Y/N on a plan, not waiting for the next topic answer)
+- The user types a command rather than answering a question
+
+After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes:
+
+**Q&A surface format** — used whenever surfacing a question during ideation, story-spec, or investigation turns (no dashboard, no header):
+
+```
+──────────────────────────────────────────────────────────
+  [Beat N · Topic M — Label]   (ideation only; omit for story-spec/investigation)
+──────────────────────────────────────────────────────────
+
+[question text, rendered as-is from the subagent]
+```
+
+The separator and label give orientation without the full dashboard weight. Omit the label line for story-spec and investigation turns — use only the separator above and below the question block.
 
 ```
 ✓ [phase] complete  ·  [story or project level]
@@ -368,11 +387,11 @@ topic: [derived from question context or current Beat]
 question: [question text]
 mode: normal
 ```
-Surface the question text to the user · re-render dashboard with STATE 1 phase indicator showing current Beat/topic · ⏸ pause
+Surface using Q&A format (Beat N · Topic M label derived from current topic number) · ⏸ pause
 
 `COHERENCE_PASS` → write `specs/.ideation-turn.md` with `mode: coherence` · invoke subagent immediately with `mode: coherence`, `project_dir`, `arch_ref` · process the coherence return signal:
 - `COHERENT` + story list → delete `specs/.ideation-turn.md` · invoke subagent with `mode: seed_artifacts`, `project_dir`, `arch_ref` · wait for `IDEATION_COMPLETE`
-- `COHERENCE_ISSUES: [list]` → write first issue's question to `specs/.ideation-turn.md` · surface it to the user · ⏸ pause (remaining issues are queued — after each answer, the next issue is surfaced until the list is exhausted, then another coherence pass runs)
+- `COHERENCE_ISSUES: [list]` → write first issue's question to `specs/.ideation-turn.md` · surface it using Q&A format (label: "Coherence check") · ⏸ pause (remaining issues are queued — after each answer, the next issue is surfaced until the list is exhausted, then another coherence pass runs)
 
 `COHERENT` (returned from seed_artifacts call, should not happen — coherence always followed by seed_artifacts invocation above) → treat as `IDEATION_COMPLETE`
 
@@ -426,11 +445,11 @@ Set `project.active_story: [story_id]` and `project.active_phase: story-spec` in
 
 **Processing return signals:**
 
-`TURN:held_review:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: held_review`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+`TURN:held_review:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: held_review`, `question: [prompt]` · surface using Q&A format · ⏸ pause
 
-`TURN:awaiting_approval:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_approval`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+`TURN:awaiting_approval:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_approval`, `question: [prompt]` · surface using Q&A format · ⏸ pause
 
-`TURN:awaiting_edit:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_edit`, `question: [prompt]` · surface the prompt to the user · re-render dashboard · ⏸ pause
+`TURN:awaiting_edit:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_edit`, `question: [prompt]` · surface using Q&A format · ⏸ pause
 
 `SPEC_COMPLETE` → delete `specs/.story-spec-turn.md` · verify `spec_done: true` in project-state · verify `intent_done: true` · verify `specs/stories/[story_id]/intent.md` and `story-spec.md` exist · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
 
@@ -577,7 +596,7 @@ For any report that sounds like a bug or enhancement, invoke the investigative a
 
 **Processing return signals:**
 
-`TURN: [findings text]` → write `specs/.investigate-turn.md` with `description`, `interaction_state: awaiting_confirmation`, `findings: [findings text]` · surface the findings to the user · re-render dashboard · ⏸ pause
+`TURN: [findings text]` → write `specs/.investigate-turn.md` with `description`, `interaction_state: awaiting_confirmation`, `findings: [findings text]` · surface using Q&A format (no label line) · ⏸ pause
 
 `INVESTIGATION_CONFIRMED` + findings block → delete `specs/.investigate-turn.md` · proceed to Step 2 with findings in hand
 

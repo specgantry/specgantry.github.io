@@ -34,7 +34,7 @@ claude plugin install spec-gantry
 You should see:
 
 ```
-✓ Plugin installed: SpecGantry v4.0
+✓ Plugin installed: SpecGantry v5.1.0
 ✓ 2 skills loaded · 7 agents registered
 ```
 
@@ -138,7 +138,7 @@ Review the list, edit if needed, then accept. SpecGantry writes:
 After ideation or reverse engineering completes, the dashboard shows your project state:
 
 ```
-SpecGantry v4  |  MyProject  |  release 1.0.0
+SpecGantry v5  |  MyProject  |  release 1.0.0
 ──────────────────────────────────────────────────────────────────
 Spec [░░░░░] 0/4  ·  Build [░░░░░] 0/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────────────

@@ -42,11 +42,12 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Step 1 — Load context
 
-Read silently:
-1. `specs/architecture/architecture.md` — extract `## Artifact Index` and `## Guardrails` (one read, both sections). The Artifact Index is a fenced ` ```yaml ``` ` block under the `## Artifact Index` heading at the bottom of the file — parse the fenced block to get the navigation map of artifact type → file path. Also extract the rules from `## Guardrails`.
-2. `specs/architecture/actors.md` — full read. Always relevant for permission bugs and access control issues.
-3. `specs/project-state.yaml → stories` — all story IDs and titles.
-4. For the most likely involved story: `specs/stories/[STORY-ID]/story-spec.md` only — read the `reads:` block and `## Criteria` to understand what was specced. Do not load intent.md or other stories unless cross-story scope is confirmed.
+Read silently, in this order (stable-first for prompt cache):
+1. `agents/_shared/preamble.md` — read **once per session** as your first read. Contains path handling, Artifact Index parsing, and anchor schema.
+2. `specs/architecture/architecture.md` — extract `## Artifact Index` and `## Guardrails` (one read, both sections). Parse the Artifact Index per preamble § 3.
+3. `specs/architecture/actors.md` — full read. Always relevant for permission bugs and access control issues.
+4. `specs/project-state.yaml → stories` — all story IDs and titles.
+5. For the most likely involved story: `specs/stories/[STORY-ID]/story-spec.md` only — read the `reads:` block and `## Criteria` to understand what was specced. Do not load intent.md or other stories unless cross-story scope is confirmed.
 
    **Stub detection:** if the loaded `story-spec.md` contains `⚠ Stub spec — created by reverse-engineer`, the spec has not yet been written. In this case: note "no acceptance criteria — spec not yet written" in your investigation context. Use the stub's `reads:` block to identify which entities, actors, and contracts the code touches. Rely on `@entry`, `@intent`, and `@contract` anchor search plus the arch artifacts (`actors.md`, `data-model.md`) for spec alignment — the findings report's `spec_alignment` field should say "criteria not yet specced — alignment based on code structure and arch artifacts."
 

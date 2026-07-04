@@ -46,7 +46,7 @@ This is non-blocking — gap specs are informational at deploy time.
 
 ## Step 1 — Load deployment context
 
-Read:
+Read `agents/_shared/preamble.md` **once per session** as your first read. Then read (stable-first for prompt cache):
 1. `specs/architecture/deployment.md` — full file
 2. `specs/architecture/architecture.md → ## Configuration` — all env vars
 3. `specs/architecture/architecture.md → ## Guardrails` — project structure rules

@@ -15,7 +15,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 blocked-tools: Explore
 ---
 
-# SpecGantry v4
+# SpecGantry v5
 
 You are the **orchestrator** — the only session-level entity that can spawn subagents. Read state, enforce gates, invoke the right subagent, update state. Never do a subagent's work yourself.
 
@@ -25,12 +25,37 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 |------|-------|-------|
 | `spec-gantry:ideation:ideation-subagent` | ideation + architecture | sonnet-4-6 |
 | `spec-gantry:investigate:investigate-subagent` | investigation | haiku-4-5 |
-| `spec-gantry:story-spec:story-spec-subagent` | story spec | sonnet-4-6 |
+| `spec-gantry:story-spec:story-spec-subagent` | story spec | haiku-4-5 (v5 — was sonnet) |
 | `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
-| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | sonnet-4-6 |
+| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | haiku-4-5 (v5 — was sonnet) |
 
 Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/architecture.md` to every subagent invocation. Agents extract the `## Artifact Index` from `arch_ref` to resolve architecture artifact paths.
+
+**Cache-first context ordering (v5).** Every subagent invocation prompt must instruct the subagent to `Read: agents/_shared/preamble.md` **once per session, first**, before any other read. The preamble contains the stable rules (path handling, Artifact Index parsing, anchor schema, concern-raising protocol). Then reads follow the order: preamble → `architecture.md` → named arch sections → per-story files → `project-state.yaml`. Stable-first ordering maximizes prompt-cache reuse across invocations in the same session.
+
+**Auto-continue mode (v5.1).** `project-state.yaml → auto_continue: true|false` (default `false`). When true, the orchestrator does **not** pause on story-spec approval prompts — a spec that passes self-review with no concern is auto-approved (`spec_done:true` written, next action routed) without user input. The flag is user-controlled via the `[>] Run to next pause` dashboard action.
+
+Auto-continue clears back to `false` (and the pipeline stops) on any of:
+- Concern raised (`TURN:awaiting_concern:` from story-spec or `CONCERN_RAISED:` from development) — user must decide
+- Any pending gap flag set (`pending_arch_gap` or `pending_spec_gap`) — automatic recovery routing still runs, but the pipeline halts after
+- All unblocked stories built and ready for deploy — pipeline halts at `confirm_and_deploy` for explicit user go-ahead (deploy is never auto-run)
+- Any subagent error, build-report failure, or `SPEC_HELD` signal
+- User types any input while a pause point is imminent (interrupts the auto-run — treat as a manual command)
+
+When auto-continue clears due to any of the above, set `auto_continue: false` in project-state.yaml before re-rendering. The `[>]` action re-appears in the dashboard so the user can resume the auto-run after resolving whatever paused it.
+
+**Concern surfacing (v5).** When a subagent returns `TURN:awaiting_concern:[text]` (story-spec) or `CONCERN_RAISED:[summary]` (development), the orchestrator:
+1. Reads the concern content (from the return signal for story-spec; from `specs/stories/[story_id]/gap.md → ## Concern` for development).
+2. Renders the concern using Q&A format with action-bar entry `[!] Concern: <one-line>` plus the standard `[Y] [N] [E]` triad.
+3. On user response, appends one line to `specs/concerns-log.ndjson`:
+   ```
+   {"ts": "[YYYY-MM-DDTHH:MM:SSZ]", "phase": "story-spec|development", "story_id": "[STORY-ID]", "concern": "[text]", "response": "Y|N|E"}
+   ```
+   (Timestamps come from the shell via `date -u +%Y-%m-%dT%H:%M:%SZ`.)
+4. Re-invokes the subagent with the response (`user_answer: Y|N|E`) to complete the turn. On `E`, routes to `awaiting_edit` state (story-spec) or holds development pending a spec edit.
+
+Concerns are a scarce interruption budget — subagents raise at most one per invocation. See `agents/_shared/preamble.md § 6`.
 
 ## System Wiring
 
@@ -54,6 +79,7 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 | `specs/.ideation-turn.md` | Active ideation turn — `topic`, `question` (last question returned to user), `mode` (normal \| coherence) |
 | `specs/.story-spec-turn.md` | Active story-spec turn — `story_id`, `interaction_state` (held_review \| awaiting_approval \| awaiting_edit), `question` |
 | `specs/.investigate-turn.md` | Active investigation turn — `description`, `interaction_state` (awaiting_confirmation \| awaiting_clarification), `findings` (last findings text) |
+| `specs/concerns-log.ndjson` | Append-only record of every push-back concern (v5). One JSON line per resolved concern: `{ts, phase, story_id, concern, response}`. Written by the orchestrator, not the subagent that raised it. Tracked in git — this is a decision record, not a scratchpad. |
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
 
@@ -121,7 +147,7 @@ Examples:
 Always rendered first, same in all states:
 
 ```
-SpecGantry v4  |  [project.name or "New Project"]  |  release [project.release]
+SpecGantry v5  |  [project.name or "New Project"]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 ```
 
@@ -233,6 +259,7 @@ Evaluate state flags in pipeline order. Each condition that is true and actionab
 | `ideation_complete:true` · next unblocked story has `spec_done:true · built:false` | `Build next story — [STORY-ID]: [title]` |
 | All `built:true` · any `deployed:false` | `Deploy release [version]` |
 | `ideation_complete:true` · any `built:true · spec_done:false` | `Complete stub spec — [STORY-ID]: [title]` (lowest-numbered stub first) |
+| `ideation_complete:true` · `auto_continue:false` · at least one story pending spec or build | `> Run to next pause` (v5.1 — auto-approve specs until a concern, gap, or deploy point) |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 
 **Important:** `Deploy release [version]` ONLY appears when ALL stories have `built:true`. If even one story is `built:false`, this action is invisible — it cannot be triggered prematurely.
@@ -258,6 +285,7 @@ Use this computed version everywhere `[version]` appears.
 - Bare number (`001`, `1`) or full ID (`STORY-001`) → route to story's current phase
 - Blocked story typed → show one-line blocker, re-render
 - Typed story ID with `built:true · spec_done:false` → invoke **spec_next_story** targeting that story directly (stub spec path)
+- `>` (v5.1) → set `auto_continue: true` in project-state.yaml · re-enter the routing loop immediately (spec_next_story or build_next_story per rows 4/5); do NOT ⏸ pause at spec approval prompts. Auto-continue clears back to `false` on the conditions in the "Auto-continue mode" block above.
 - Lettered command → execute that action
 - Invalid input → re-render with one-line error above header
 
@@ -350,6 +378,7 @@ ideation_complete: false
 arch_seeded: false
 pending_arch_gap: null
 pending_spec_gap: null
+auto_continue: false
 stories: {}
 ```
 Create `specs/stories/` directory.
@@ -449,9 +478,11 @@ Set `project.active_story: [story_id]` and `project.active_phase: story-spec` in
 
 `TURN:held_review:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: held_review`, `question: [prompt]` · surface using Q&A format · ⏸ pause
 
-`TURN:awaiting_approval:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_approval`, `question: [prompt]` · surface using Q&A format · ⏸ pause
+`TURN:awaiting_approval:[prompt]` → **auto-continue check (v5.1):** if `auto_continue:true` in project-state, do NOT surface — instead, treat as implicit `Y`: re-invoke story-spec with `interaction_state: awaiting_approval, user_answer: Y` to write `spec_done:true` and return `SPEC_COMPLETE`. Otherwise: write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_approval`, `question: [prompt]` · surface using Q&A format · ⏸ pause
 
 `TURN:awaiting_edit:[prompt]` → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_edit`, `question: [prompt]` · surface using Q&A format · ⏸ pause
+
+`TURN:awaiting_concern:[prompt]` (v5) → write `specs/.story-spec-turn.md` with `story_id`, `interaction_state: awaiting_concern`, `question: [prompt]` · surface using Q&A format with action bar `[!] Concern` · on user response, append one line to `specs/concerns-log.ndjson` (see Concern surfacing block above) · ⏸ pause
 
 `SPEC_COMPLETE` → delete `specs/.story-spec-turn.md` · verify `spec_done: true` in project-state · verify `intent_done: true` · verify `specs/stories/[story_id]/intent.md` and `story-spec.md` exist · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
 
@@ -481,6 +512,10 @@ Set `project.active_story: [story_id]` and `project.active_phase: development` i
 **Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
 
 **After:** 
+- If the subagent's last line is `CONCERN_RAISED:[summary]` (v5): read `specs/stories/[story_id]/gap.md → ## Concern` · surface using Q&A format with action bar `[!] Concern: <one-line summary>` and options `[Y] Proceed with suggestion   [N] Ignore, build as-spec   [E] Edit spec first` · ⏸ pause. On user response:
+  - `Y` — append one line to `specs/concerns-log.ndjson` (phase: development, response: Y) · re-invoke development with `concern_resolution: apply`
+  - `N` — append one line to `specs/concerns-log.ndjson` (phase: development, response: N) · re-invoke development with `concern_resolution: ignore`
+  - `E` — append one line to `specs/concerns-log.ndjson` (phase: development, response: E) · clear `project.active_story` · clear `project.active_phase` · set `pending_spec_gap: {triggered_by: development-concern, story_id: [story_id], reason: "user chose to edit spec after concern", resume_phase: development}` · re-route to P1
 - If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
 - If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · halt "Build report missing for [STORY-ID] — agent crashed before completing. Run /spec-gantry to rebuild." · ⏸
 - Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · halt "Build failed — run /spec-gantry to resume" · ⏸
@@ -623,7 +658,27 @@ Show the confirmation using investigation findings:
   [Y] Confirm  [E] Edit  [X] Cancel
 ```
 
-On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸. On `Y` (or if classification is unambiguous and no user correction is pending) → proceed automatically to Step 4.
+On `E` → ask what to change, revise, re-show. On `X` → re-render · ⏸. On `Y` (or if classification is unambiguous and no user correction is pending) → proceed to Step 3.5.
+
+**Step 3.5 — Cross-story impact revalidation (v5.2).**
+
+Runs for `enhancement` and `project_change` only. `bug_fix` skips this step — a bug fix reconciles code with spec; it does not alter the spec contract that dependents rely on. `new_story` also skips (no prior dependents).
+
+For enhancement classification, before execute:
+
+1. Compute the transitive dependency closure: read `project-state.yaml → stories`, walk `depends_on` in reverse to find every story where `depends_on` includes the affected story (direct or transitive). Call this set `dependents`.
+2. If `dependents` is empty, skip to Step 4.
+3. For each story in `dependents`, in topological order (deepest dependent last), invoke `spec-gantry:story-spec:story-spec-subagent` with `dependency_recheck: true`, `changed_story: [affected_story_id]`, `project_dir`, `arch_ref`. Description: `"Revalidating [story_id] after change to [affected_story_id]"`.
+4. Story-spec (in `dependency_recheck` mode) re-runs its Step 3 arch reference validation and returns one of:
+   - `RECHECK_OK` — every `reads:` ref still resolves; no criteria touch the changed spec's contracts.
+   - `RECHECK_DRIFT:[list]` — one or more `reads:` refs no longer resolve, or one or more criteria reference a contract/entity that the enhancement is likely to alter. Include the story's own affected fields.
+5. Collect all `RECHECK_DRIFT` results. If any:
+   - Surface a batched form (single `TURN:`) listing every dependent with drift, one per line: `STORY-XXX: [what drifted] · [suggested action]`.
+   - Options: `[Y] Continue enhancement, accept drift risk` · `[E] Update dependent specs first` · `[X] Cancel enhancement`.
+   - On `Y`: proceed to Step 4. Log the accepted drift to `specs/concerns-log.ndjson` with `phase: "cross-story-drift"`, one line per drifted story.
+   - On `E`: set `pending_spec_gap: {triggered_by: cross-story-recheck, story_id: [first drifted], reason: "cross-story drift from [changed_story]", resume_phase: development}` and re-route to P1. After P1 resolves, re-enter Step 3.5.
+   - On `X`: clear `active_story`, re-render, `⏸ pause`. The enhancement is abandoned; `gap.md` is not written.
+6. If no drift found: emit a one-line transition note above the dashboard `✓ Cross-story recheck OK · [n] dependents validated · proceeding` and continue to Step 4.
 
 **Step 4 — Execute inline.**
 
@@ -700,11 +755,14 @@ Re-render dashboard · immediately route to next pipeline action
 
 [$] — Invoke `/track-cost` — show cost breakdown grouped by release and phase.
 
+[!] — (v5.1) Show concern history — read `specs/concerns-log.ndjson` and render a compact table: date · phase · story · concern one-liner · response (Y/N/E). Also show a count of `Y` (applied) vs `N` (ignored) so the user can see whether the push-back channel is earning its keep. Visible when the file exists.
+
 [N] — New work → classify_and_route. Always visible when `ideation_complete:true`.
 
 [?] — Expand inline — show secondary commands, then re-render dashboard on exit:
 ```
   [A] Architecture     (visible when architecture.md exists)
+  [!] Concerns          (visible when specs/concerns-log.ndjson exists)
   [D] Docs — specgantry.github.io
   [X] Back
 ```

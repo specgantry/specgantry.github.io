@@ -13,7 +13,7 @@ allowed-tools: Read
 
 Render the SpecGantry header (same as main dashboard):
 ```
-SpecGantry v4  |  [project.name or "New Project"]
+SpecGantry v5  |  [project.name or "New Project"]
 Spec [███░░] [n]/[total]  ·  Build [██░░░] [n]/[total]
 ──────────────────────────────────────────────────────────
 ```

@@ -32,21 +32,20 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Read sequence
 
-Before writing any code, load context in this exact order:
+Before writing any code, load context in this exact order (stable-first for prompt cache):
 
-1. `specs/stories/[story_id]/intent.md` — read first. This grounds your judgment calls. When you face an ambiguity not covered by the spec, the intent tells you what the user is trying to accomplish.
+1. `agents/_shared/preamble.md` — read **once per session** as your first read. Contains path handling, Artifact Index parsing, anchor schema, concern-raising protocol.
 
-2. `specs/stories/[story_id]/story-spec.md` — extract the `reads:` block from the YAML frontmatter. This is your fetch list for step 3.
+2. `specs/stories/[story_id]/intent.md` — grounds your judgment calls. When you face an ambiguity not covered by the spec, the intent tells you what the user is trying to accomplish.
 
-3. `specs/architecture/architecture.md` — extract three things only:
-   - `## Artifact Index` — file paths for resolving `reads:` entries
+3. `specs/stories/[story_id]/story-spec.md` — extract the `reads:` block from the YAML frontmatter. This is your fetch list for step 5.
 
-   **Parsing the Artifact Index:** locate the `## Artifact Index` heading near the bottom of the file. Read the fenced ` ```yaml ``` ` block below it as a map of artifact type → `{file, entities/roles/shapes/patterns/sections}`. Use the `file` value to resolve the path for each artifact type named in the story-spec `reads:` block.
-
+4. `specs/architecture/architecture.md` — extract three things only:
+   - `## Artifact Index` — parse once per preamble § 3
    - `## Guardrails` — rules that apply to every story
    - `## Configuration` — authoritative env var list
 
-4. For each entry in `reads:`:
+5. For each entry in `reads:`:
    - Resolve the file path from `## Artifact Index`
    - Read **only** the specific section: `## actor:[name]`, `## entity:[name]`, `## contract:[name]`, `## ux:[name]`, etc.
    - Stop reading at the next `##` heading — do not load the entire file
@@ -66,6 +65,46 @@ pending_spec_gap:
 - Return: `spec gap signalled — [what is missing]`
 
 The orchestrator will invoke story-spec (spec gap mode) to resolve the reference, then resume development.
+
+## Bounded raise-a-concern (v5)
+
+**Before writing any code**, after loading context in the Read sequence above, scan the spec + your understanding of the existing codebase for **one** high-impact concern to surface to the user. See `agents/_shared/preamble.md § 6` for the full protocol.
+
+**Rules:**
+- Raise **at most one concern per invocation**. If you spot several, pick the highest-impact one and stay silent on the rest.
+- Every concern must include a **proposed alternative**. Do not surface complaints without a fix.
+- If nothing rises to concern-worthy, proceed silently to Implementation. Concerns are a scarce interruption budget.
+
+**Concern shapes to check for (in priority order):**
+
+1. **Spec / code drift** — spec says X but existing code in `[file]` already does Y (partially or differently).
+   - Example: spec's `## Interfaces` says `POST /api/submissions returns 201`, existing `src/api/submissions.js` returns `200`. Propose reconciling — either align spec or align code.
+2. **Missing dependency in `reads:`** — implementing a criterion requires an entity/actor/contract that isn't in the story-spec's `reads:` block.
+   - Example: criterion 4 requires `data:audit-event` but `reads: data:` lists only `[application, submission]`. Propose adding `audit-event`.
+3. **Reuse opportunity** — a helper or endpoint you'd write already exists nearby.
+   - Example: about to write `src/lib/submission-status.js` but `src/lib/status-machine.js` already implements the same state transitions. Propose reusing.
+
+**How to raise the concern:**
+
+1. Ensure `specs/stories/[story_id]/gap.md` exists (create the header if not — see "Gap specs" below for full skeleton).
+2. Prepend a `## Concern` section at the top of the gap file (above `## Changes`):
+   ```markdown
+   ## Concern
+   Raised: [YYYY-MM-DD]
+   Kind: [drift | missing-dep | reuse]
+
+   **Observation:** [one line — what you see]
+   **Proposed:** [one line — the alternative]
+   ```
+3. Return `CONCERN_RAISED:[one-line summary]` as your last output line. Do not write any source code on this invocation — the orchestrator will re-invoke you after the user responds.
+
+The orchestrator surfaces the `## Concern` section using Q&A format with action bar `[Y] Proceed with suggestion   [N] Ignore, build as-spec   [E] Edit spec first`. When the user answers:
+
+- `Y` → the orchestrator re-invokes you with `concern_resolution: apply` — remove the `## Concern` block from `gap.md`, treat the proposed alternative as authoritative for this build, then proceed to Implementation.
+- `N` → the orchestrator re-invokes you with `concern_resolution: ignore` — remove the `## Concern` block from `gap.md`, build as-spec.
+- `E` → the orchestrator routes to story-spec (spec gap mode) to edit the spec. Development is not re-invoked until story-spec returns.
+
+If a concern was already raised on a prior invocation for this story (i.e. `concern_resolution` is set in the invocation prompt), do NOT raise another concern this invocation. Proceed directly to Implementation.
 
 ## Implementation
 

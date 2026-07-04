@@ -1,7 +1,7 @@
 ---
 name: story-spec-subagent
 description: Finalizes intent.md, validates arch references, and writes a slim story-spec.md with a reads: block. Sets spec_done:true and intent_done:true when complete. Signals pending_arch_gap if an arch section is missing.
-model: claude-sonnet-4-6
+model: claude-haiku-4-5-20251001
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -31,9 +31,12 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 - `TURN:held_review:[prompt text]` — held spec resume summary, waiting for Y/R/X
 - `TURN:awaiting_approval:[prompt text]` — spec written, waiting for Y/E/X approval
 - `TURN:awaiting_edit:[prompt text]` — user asked to edit, waiting for edit instructions
+- `TURN:awaiting_concern:[concern text with proposed alternative]` — one concern raised, waiting for Y/N/E (see § 6 in `_shared/preamble.md`; also Step 5A below)
 - `SPEC_COMPLETE` — spec approved, `spec_done:true` written, done
 - `SPEC_HELD` — user held, `spec_done:false` remains, done
 - `ARCH_GAP:[reason]` — arch gap signalled, orchestrator routes to P0
+- `RECHECK_OK` — (v5.2, `dependency_recheck` mode only) every `reads:` ref still resolves and no criteria depend on drifted contracts
+- `RECHECK_DRIFT:[yaml list]` — (v5.2, `dependency_recheck` mode only) one or more refs no longer resolve or one or more criteria reference contracts/entities that the changed story is likely to alter
 
 ---
 
@@ -56,15 +59,17 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Step 1 — Load context
 
-Read silently:
-1. `specs/architecture/architecture.md` — full file (narrative + `## Artifact Index` in one read). Extract: tech stack, guardrails, auth model, and the artifact index YAML block.
+Read silently, in this order (stable-first for prompt cache):
 
-   **Parsing the Artifact Index:** the `## Artifact Index` section is at the bottom of the file. It contains a fenced ` ```yaml ``` ` block. Locate the `## Artifact Index` heading, then read the fenced YAML block below it. The result is a map of artifact type → `{file, entities/roles/shapes/patterns/sections}`. Use the `file` field to resolve the path for each artifact type, and the list fields to check which named sections exist.
+1. `agents/_shared/preamble.md` — read **once per session** as your first read. Contains path handling, Artifact Index parsing, anchor schema, concern-raising protocol.
+2. `specs/architecture/architecture.md` — full file (narrative + `## Artifact Index` in one read). Extract: tech stack, guardrails, auth model, and the artifact index YAML block.
 
-2. All files listed in `## Artifact Index` — read each in full. They are small. These are the shared sources of truth.
+   **Parsing the Artifact Index:** see preamble § 3. Locate `## Artifact Index`, parse the fenced YAML block below it once, keep the map in mind for the rest of the turn.
+
+3. Files listed in `## Artifact Index` — but only the **named sections** referenced by this story. See preamble § 4. If the story's `reads:` block names `data: [application]`, read only `## entity:application` in `data-model.md` up to the next `##` heading. Do not read the whole file. The stub-detection step below still needs the story-spec.md file itself in full.
 3. `specs/stories/[story_id]/intent.md` — seeded draft from ideation or RE.
 4. `specs/project-state.yaml → stories` — all story titles for cross-story context, and `intent_done` flag for this story.
-5. `specs/stories/[story_id]/story-spec.md` — read if it exists. Check for the `⚠ Stub spec` marker in the first few lines.
+5. `specs/stories/[story_id]/story-spec.md` — read if it exists (in full — this file is your own output). Check for the `⚠ Stub spec` marker in the first few lines.
 
 **Stub detection:** if the existing `story-spec.md` contains `⚠ Stub spec — created by reverse-engineer`, this is a RE stub, not a prior spec attempt. Set an internal `is_stub: true` flag that changes behavior in Steps 2, 3, and 4 as described below.
 
@@ -202,6 +207,7 @@ Self-review checklist:
   [ ] reads: ux — included for stories with screens, omitted for API-only
   [ ] Criteria — minimum 4, observable + testable, at least one error-state criterion
   [ ] Interfaces — every endpoint: auth, guard (if stateful), contract ref, error codes
+  [ ] Interfaces — every referenced contract:[name] has a fenced ```yaml``` block in contracts.md (v5.2 — if missing, signal ARCH_GAP)
   [ ] Permissions — all actor: references resolve in specs/architecture/actors.md
   [ ] State — references data: state machine, does not duplicate it
   [ ] Data — net-new fields only; owned vs read clear; "new fields: none" if none
@@ -221,7 +227,49 @@ Self-review checklist:
 
 If any item fails: fix it before proceeding.
 
-Then return `TURN:awaiting_approval:` with the approval summary:
+Then proceed to **Step 5A — Bounded raise-a-concern** before the approval prompt.
+
+---
+
+## Step 5A — Bounded raise-a-concern (v5)
+
+Before returning the approval prompt in Step 5, scan the freshly-written spec for **one** high-impact concern to surface to the user. See `agents/_shared/preamble.md § 6` for the full protocol.
+
+**Rules:**
+- Raise **at most one concern per invocation**. If you spot several, pick the highest-impact one and stay silent on the rest — the user can catch them in review.
+- Every concern must include a **proposed alternative**. Do not surface complaints without a fix.
+- If nothing rises to concern-worthy, proceed silently to Step 5's approval prompt. Concerns are a scarce interruption budget.
+
+**Concern shapes to check for (in priority order):**
+
+1. **Untestable criterion** — a criterion in `## Criteria` is subjective, unmeasurable, or lacks an observable trigger.
+   - Example: "system feels fast" → propose "p95 response < 500 ms for GET /api/submissions".
+2. **Missing owner** — an entity referenced in `## Data` or `## State` has no owner in `actors.md`.
+   - Example: `data:audit-event` has no `owned-by:` in `## entity:audit-event` → propose adding `actor:admin` as owner.
+3. **Contract overlap** — a new inline shape looks like an existing `contract:*`.
+   - Example: `## Interfaces` response shape mirrors `contract:submission-response` → propose replacing inline shape with `contract:submission-response` reference.
+4. **Permission gap** — an interface requires an action not listed under any `actor:*.can` in `actors.md`.
+   - Example: `POST /api/reviews` requires `admin` to `review` submissions but `actor:admin.can` doesn't include `review` → propose adding it.
+
+**How to raise the concern:**
+
+Return `TURN:awaiting_concern:` with the concern text and proposed alternative in this format:
+
+```
+⚠ Concern — [story_id]
+
+  [one-line concern]
+
+  Proposed: [one-line alternative]
+
+  [Y] Apply suggestion   [N] Keep as-is   [E] Edit spec first
+```
+
+The orchestrator surfaces this using Q&A format and calls you back with `interaction_state: awaiting_concern` + `user_answer` in {`Y`, `N`, `E`}. Handling is in Step 6.
+
+**If no concern rises:** proceed silently to the approval prompt below.
+
+**Approval prompt (Step 5, second half):** after Step 5A (whether it surfaced a concern that was resolved, or was silent), return `TURN:awaiting_approval:` with the approval summary:
 
 ```
 ✓ Story spec complete — [story_id]: [title]
@@ -246,6 +294,11 @@ Called when `interaction_state` and `user_answer` are present in the prompt.
 - `R` → discard the held file (delete from disk). Write fresh spec per normal path in Step 4. Run self-review. Return `TURN:awaiting_approval:` with the summary.
 - `X` → return `SPEC_HELD`
 
+**If `interaction_state: awaiting_concern` (v5):**
+- `Y` → apply the proposed alternative to `specs/stories/[story_id]/story-spec.md`. If the change requires an architecture update (e.g. adding a permission to `actor:*.can`), write `pending_arch_gap` and return `ARCH_GAP:[reason]` instead of applying to the spec. Re-run Step 5 self-review after applying. Return `TURN:awaiting_approval:` with the updated summary.
+- `N` → the user chose to keep the spec as-is. Return `TURN:awaiting_approval:` with the original summary. Do not raise another concern on this invocation.
+- `E` → return `TURN:awaiting_edit:` asking what the user wants to change (they may want to edit the concern-targeted section themselves, or something else).
+
 **If `interaction_state: awaiting_approval`:**
 - `Y` → write `spec_done: true` to `specs/project-state.yaml → stories.[story_id]`. Return `SPEC_COMPLETE`.
 - `E` → return `TURN:awaiting_edit:` asking what to change.
@@ -253,6 +306,52 @@ Called when `interaction_state` and `user_answer` are present in the prompt.
 
 **If `interaction_state: awaiting_edit`:**
 - Apply the user's edit instructions to `specs/stories/[story_id]/story-spec.md`. Re-run self-review (Step 5). Return `TURN:awaiting_approval:` with the updated summary.
+
+---
+
+---
+
+## Dependency recheck mode (v5.2)
+
+Invoked by the orchestrator's `classify_and_route` Step 3.5 when an enhancement targets a story that has downstream dependents. For each dependent story, this mode runs a bounded revalidation — it does NOT rewrite the spec.
+
+**Inputs (in the invocation prompt):**
+- `story_id` — the dependent story being rechecked
+- `changed_story` — the story ID whose enhancement triggered this recheck
+- `dependency_recheck: true`
+- `project_dir`, `arch_ref`
+
+**Gate exception:** skip the `spec_done:false` check — dependents typically have `spec_done:true`. If the dependent has `spec_done:false`, return `RECHECK_OK` immediately (nothing to validate).
+
+**Read (in cache-first order):**
+1. `agents/_shared/preamble.md` — first, once per session
+2. `specs/architecture/architecture.md → ## Artifact Index`
+3. `specs/stories/[story_id]/story-spec.md` — read in full (the spec being rechecked)
+4. `specs/stories/[changed_story]/story-spec.md` if it exists — read the `reads:` block and `## Interfaces` to identify what contracts/entities the enhancement is likely to touch
+5. `specs/stories/[changed_story]/gap.md` if it exists — read `## Recommended spec update` to identify what will change
+
+**Checks (in order):**
+
+1. **Reference resolution.** For each entry in the dependent's `reads:` block, verify the section still exists in the Artifact Index. Any missing ref is drift.
+2. **Contract overlap.** For each contract named in the dependent's `## Interfaces` responses or errors, check whether the changed story's `## Interfaces` or `gap.md → ## Recommended spec update` mentions the same contract. If yes, contract is at shape-drift risk.
+3. **Entity overlap.** For each entity in the dependent's `reads: data:` block, check whether the changed story owns that entity (via `## Data` `owns:` line). If yes, and the enhancement changes fields on that entity, that is drift.
+4. **State-machine overlap.** For each entity in the dependent's `## State` references, check whether the changed story's `## Recommended spec update` mentions state transitions on the same entity. If yes, drift.
+
+**Return:**
+
+- If all checks pass: return `RECHECK_OK` on the last line. Do NOT modify any files.
+- If any check finds drift: return `RECHECK_DRIFT:` followed by a YAML block, one entry per drift item:
+  ```
+  RECHECK_DRIFT:
+  - kind: contract_overlap
+    detail: "contract:submission-response used in ## Interfaces; changed_story's gap.md recommends updating its shape"
+    suggested_action: "Review dependent's ## Interfaces response contract after enhancement lands"
+  - kind: entity_field_drift
+    detail: "data:submission field `status` — dependent's ## Criteria references specific enum values"
+    suggested_action: "Confirm status enum values remain compatible after enhancement"
+  ```
+
+This mode is **pure read-only**. Do NOT write `pending_spec_gap`, do NOT modify the spec, do NOT change any flags. The orchestrator batches drift across all dependents and asks the user what to do.
 
 ---
 

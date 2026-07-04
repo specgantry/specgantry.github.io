@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: SpecGantry Documentation
-description: Complete documentation for SpecGantry v4 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.
+description: Complete documentation for SpecGantry v5 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.
 permalink: /docs/
 next_page: "Getting Started"
 next_page_url: "/docs/getting-started"
@@ -24,7 +24,7 @@ SpecGantry is a Claude Code plugin that enforces a structured development proces
 The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The SpecGantry v4 Pipeline</div>
+<div class="dg-diagram-title">The SpecGantry v5 Pipeline</div>
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">

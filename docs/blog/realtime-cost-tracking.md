@@ -96,7 +96,7 @@ The consequence of that premise is that cost data is:
 Running `/track-cost` from anywhere in Claude Code opens a dedicated cost dashboard. The default view is the Cost Matrix — stories as rows, phases as columns — giving you cost and token counts for every story and phase combination in one view:
 
 ```
-SpecGantry v4  |  MyProject  |  release 1.1.0
+SpecGantry v5  |  MyProject  |  release 1.1.0
 Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
 ──────────────────────────────────────────────────────────
 

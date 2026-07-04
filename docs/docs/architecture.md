@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Reference
-description: SpecGantry v4 reference — file structure, state flags, agent ownership, Artifact Index format, and design principles.
+description: SpecGantry v5 reference — file structure, state flags, agent ownership, Artifact Index format, and design principles.
 permalink: /docs/architecture/
 prev_page: "Skills & Agents"
 prev_page_url: "/docs/skills"
@@ -11,7 +11,7 @@ next_page_url: "/docs/faq"
 
 # Reference
 
-Complete reference for SpecGantry v4 internals — file structure, state flags, agent ownership, and design principles.
+Complete reference for SpecGantry v5 internals — file structure, state flags, agent ownership, and design principles.
 
 ---
 

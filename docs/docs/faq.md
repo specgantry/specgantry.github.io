@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: FAQ
-description: Frequently asked questions about SpecGantry v4 — installation, pipeline phases, v3 to v4 differences, costs, and troubleshooting.
+description: Frequently asked questions about SpecGantry v5 — installation, pipeline phases, v3 to v4 differences, costs, and troubleshooting.
 permalink: /docs/faq/
 prev_page: "Reference"
 prev_page_url: "/docs/architecture"

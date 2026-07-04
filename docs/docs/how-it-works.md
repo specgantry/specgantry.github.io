@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: How It Works
-description: A complete walkthrough of SpecGantry v4 — the architecture layer, all pipeline phases, self-healing gap flows, reverse engineering, and release management.
+description: A complete walkthrough of SpecGantry v5 — batched-by-topic ideation, bounded push-back, cache-first context ordering, and the architecture layer that every phase references.
 permalink: /docs/how-it-works/
 prev_page: "Getting Started"
 prev_page_url: "/docs/getting-started"
@@ -11,7 +11,16 @@ next_page_url: "/docs/skills"
 
 # How It Works
 
-SpecGantry enforces a structured development process through a series of phases with hard gates between them. v4 adds a shared architecture layer that every phase references — written once during ideation, never duplicated per story.
+SpecGantry enforces a structured development process through a series of phases with hard gates between them. v4 introduced the shared architecture layer — written once during ideation, never duplicated per story. **v5** builds on that foundation with these developer-experience and rigor changes:
+
+- **Batched-by-topic ideation** — each topic asks its full set of related sub-questions in one form. New-project ideation lands in ~9 turns (was ~20); amendment mode targets ≤ 3 turns.
+- **Bounded raise-a-concern** — story-spec and development subagents may flag one high-impact concern per invocation (untestable criterion, missing owner, spec/code drift, reuse opportunity) with a proposed alternative. You decide: apply, keep, or edit spec first. Every resolved concern is recorded in `specs/concerns-log.ndjson`.
+- **Cache-first context ordering** — every subagent reads a shared preamble first, then `architecture.md`, then per-story files. Stable-first ordering maximizes prompt-cache reuse across the session.
+- **Auto-continue mode (v5.1)** — the `[>] Run to next pause` action queues the pipeline to auto-approve specs (that raise no concern) and roll straight into build. Auto-continue clears back to manual on any concern, gap, deploy point, or error, so you're only interrupted when something needs your eyes.
+- **Cross-story impact revalidation (v5.2)** — every enhancement auto-invokes story-spec in a read-only recheck mode for each dependent story. If any dependent's `reads:` refs no longer resolve or its contracts/entities are at drift risk, you get a batched summary before build starts.
+- **Machine-readable contracts (v5.2)** — every `## contract:[name]` section now carries an OpenAPI 3.1 or JSON Schema fenced block alongside the prose. Enables mock servers, client generation, and contract testing later without rewriting specs.
+
+Story-spec and reverse-engineer moved to Haiku in v5.1 — cost tracking is updated automatically.
 
 ---
 

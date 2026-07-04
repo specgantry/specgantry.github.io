@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills & Agents
-description: Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce.
+description: Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble.
 permalink: /docs/skills/
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
@@ -37,7 +37,7 @@ SpecGantry reads `specs/project-state.yaml`, determines where you are in the pip
 **The dashboard:**
 
 ```
-SpecGantry v4  |  MyProject  |  release 1.0.0
+SpecGantry v5  |  MyProject  |  release 1.0.0
 ──────────────────────────────────────────────────────────────────
 Spec [███░░] 3/5  ·  Build [██░░░] 2/5  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ Reads `specs/cost-log.ndjson` and renders the Cost Matrix as the default view, w
 Two tables — cost in USD first, then token counts. Stories as rows, phases as columns.
 
 ```
-SpecGantry v4  |  MyProject
+SpecGantry v5  |  MyProject
 Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
 ──────────────────────────────────────────────────────────
 
@@ -199,7 +199,7 @@ After Beat 2: seeds all 6 architecture artifacts + Artifact Index + `intent.md` 
 
 ### Story Spec {#agent-story-spec}
 
-**Model:** claude-sonnet-4-6  
+**Model:** claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)  
 **Invoked:** for each story in pipeline order (Phase 2), for stub spec completion (RE projects), in spec gap mode (P1), and at deploy time for gap merges
 
 Produces a slim, precise `story-spec.md` (max 60 lines) and finalizes `intent.md`.
@@ -299,10 +299,10 @@ User confirms before findings are passed to the build agent.
 
 ### Reverse Engineer {#agent-reverse-engineer}
 
-**Model:** claude-sonnet-4-6  
+**Model:** claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)  
 **Invoked:** when source files exist but no SpecGantry artifacts are found
 
-Analyzes an existing codebase and synthesizes the complete v4 project structure.
+Analyzes an existing codebase and synthesizes the complete v5 project structure.
 
 **Analysis (silent, no output):** tech stack, project structure, user-facing capabilities (grouped into 3–6 candidate stories), auth model, completion level per story, guardrail candidates, configuration, entry points, dependencies, runtime profile.
 

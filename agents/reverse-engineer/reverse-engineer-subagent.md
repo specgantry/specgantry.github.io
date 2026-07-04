@@ -1,7 +1,7 @@
 ---
 name: reverse-engineer-subagent
-description: Analyses an existing codebase and synthesises a complete SpecGantry v4 project structure — architecture/ artifacts, story list, intent.md and stub story-spec.md per story. Tags source files with @story/@intent/@entry/@contract anchors so the investigative agent can navigate the codebase immediately. Invoked by /spec-gantry when an existing codebase is detected without SpecGantry artifacts.
-model: claude-sonnet-4-6
+description: Analyses an existing codebase and synthesises a complete SpecGantry v5 project structure — architecture/ artifacts, story list, intent.md and stub story-spec.md per story. Tags source files with @story/@intent/@entry/@contract anchors so the investigative agent can navigate the codebase immediately. Invoked by /spec-gantry when an existing codebase is detected without SpecGantry artifacts.
+model: claude-haiku-4-5-20251001
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -31,7 +31,9 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 
 ## Step 1 — Silent analysis
 
-Read silently (do not print file contents). Collect:
+Read `agents/_shared/preamble.md` **once per session** as your first read. Contains path handling, Artifact Index parsing, and anchor schema — you will be writing those anchors in Step 4.
+
+Then read silently (do not print file contents). Collect:
 1. **Tech stack** — check package.json, go.mod, Cargo.toml, pyproject.toml, Makefile, Dockerfile
 2. **Project name** — from package.json→name, go.mod→module last segment, directory name, or input
 3. **Structure** — list top-level directories; infer role of each (API, UI, data, infra)
@@ -193,6 +195,7 @@ One `## actor:[name]` section per role. For each:
 **`specs/architecture/contracts.md`** — from route handler response shapes and API types:
 - Always include `## contract:error-envelope` — derive from existing error response pattern
 - One section per inferred response shape — mark uncertain with `# inferred`
+- **Every section must include a fenced ```yaml``` block (v5.2)** — OpenAPI 3.1 fragment for HTTP endpoints, JSON Schema for event/message shapes. Derive field names and types from the actual response types in code (TypeScript interfaces, Pydantic models, Go structs, response classes). If types can't be inferred with confidence, mark the section `# inferred` and give best-guess types — story-spec will surface an arch gap and the user can refine during Spec.
 
 **`specs/architecture/patterns.md`** — from dominant structural pattern in code:
 - REST vs server actions, ORM vs raw SQL, state machine location, etc.

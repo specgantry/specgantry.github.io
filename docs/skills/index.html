@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills & Agents — SpecGantry Docs</title>
-  <meta name="description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce.">
+  <meta name="description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble.">
   <meta property="og:title" content="Skills & Agents">
-  <meta property="og:description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce.">
+  <meta property="og:description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/skills/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Skills & Agents">
-  <meta name="twitter:description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce.">
+  <meta name="twitter:description" content="Complete reference for SpecGantry's 2 skills and 7 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -170,7 +170,7 @@
 
 <p><strong>The dashboard:</strong></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v4  |  MyProject  |  release 1.0.0
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5  |  MyProject  |  release 1.0.0
 ──────────────────────────────────────────────────────────────────
 Spec [███░░] 3/5  ·  Build [██░░░] 2/5  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────────────
@@ -291,7 +291,7 @@ Enter story ID or action:  &gt;
 
 <p>Two tables — cost in USD first, then token counts. Stories as rows, phases as columns.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v4  |  MyProject
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5  |  MyProject
 Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
 ──────────────────────────────────────────────────────────
 
@@ -381,7 +381,7 @@ Total           129,430      $12.94
 
 <h3 id="agent-story-spec">Story Spec</h3>
 
-<p><strong>Model:</strong> claude-sonnet-4-6<br />
+<p><strong>Model:</strong> claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)<br />
 <strong>Invoked:</strong> for each story in pipeline order (Phase 2), for stub spec completion (RE projects), in spec gap mode (P1), and at deploy time for gap merges</p>
 
 <p>Produces a slim, precise <code class="language-plaintext highlighter-rouge">story-spec.md</code> (max 60 lines) and finalizes <code class="language-plaintext highlighter-rouge">intent.md</code>.</p>
@@ -487,10 +487,10 @@ confidence: high | medium | low
 
 <h3 id="agent-reverse-engineer">Reverse Engineer</h3>
 
-<p><strong>Model:</strong> claude-sonnet-4-6<br />
+<p><strong>Model:</strong> claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)<br />
 <strong>Invoked:</strong> when source files exist but no SpecGantry artifacts are found</p>
 
-<p>Analyzes an existing codebase and synthesizes the complete v4 project structure.</p>
+<p>Analyzes an existing codebase and synthesizes the complete v5 project structure.</p>
 
 <p><strong>Analysis (silent, no output):</strong> tech stack, project structure, user-facing capabilities (grouped into 3–6 candidate stories), auth model, completion level per story, guardrail candidates, configuration, entry points, dependencies, runtime profile.</p>
 

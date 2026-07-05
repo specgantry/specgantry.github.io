@@ -12,7 +12,7 @@ description: >
   any mention of files, functions, APIs, databases, or infrastructure in a project context.
   Do not answer software development questions directly — always route through this skill first.
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
-blocked-tools: Explore
+blocked-tools: Explore, Workflow, EnterWorktree, ExitWorktree, CronCreate, CronDelete, CronList, ScheduleWakeup
 ---
 
 # SpecGantry v5
@@ -295,6 +295,8 @@ Use this computed version everywhere `[version]` appears.
 
 Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
 
+**CLAUDE.md migration (runs before routing, every invocation).** If `specs/project-state.yaml` exists and `CLAUDE.md` in `project_dir` does not contain the sentinel `<!-- spec-gantry-notice -->`, prepend the notice block (same content and rules as in `init_project`) before proceeding to any routing row. This silently upgrades projects initialized before the notice feature was added.
+
 **P0/P1 rows are checked BEFORE rows 1–7. T0 is checked before everything:**
 
 | # | Condition | Action |
@@ -390,6 +392,22 @@ specs/.story-spec-turn.md
 specs/.investigate-turn.md
 specs/.ideation-scratchpad.yaml
 specs/.agent-stamp-*.json
+```
+**Prepend SpecGantry notice to `CLAUDE.md` (idempotent).** Check whether `CLAUDE.md` in `project_dir` already contains the sentinel `<!-- spec-gantry-notice -->`. If absent:
+- If `CLAUDE.md` exists, read its current contents, then write a new `CLAUDE.md` with the block below at the top, followed by a blank line, followed by the original contents.
+- If `CLAUDE.md` does not exist, create it with the block below.
+```markdown
+<!-- spec-gantry-notice -->
+## SpecGantry — always use /spec-gantry for development work
+
+This project was created with SpecGantry. Every story, architecture decision, and spec lives under `specs/`. **Never make code changes directly** — always route through `/spec-gantry` first so specs stay in sync with the code. This applies to:
+- Starting or resuming any work
+- Bug fixes, enhancements, new features
+- Architecture or data-model changes
+- Any question about what a story does or what files it owns
+
+Run `/spec-gantry` to get the project dashboard and route your request correctly.
+<!-- /spec-gantry-notice -->
 ```
 → **start_ideation**
 
@@ -744,6 +762,8 @@ Proceed? [Y]/[N]
 - `specs/architecture/actors.md` exists
 
 Note: `deployment.md` is NOT verified after reverse engineering — the reverse-engineer agent does not run Topic 10. The deployment readiness check in `confirm_and_deploy` Step 0 will surface this gap when the user attempts to deploy.
+
+**Append SpecGantry notice to `CLAUDE.md` (idempotent).** Same rule as `init_project`: check for sentinel `<!-- spec-gantry-notice -->` — append the block if absent.
 
 Re-render dashboard · immediately route to next pipeline action
 

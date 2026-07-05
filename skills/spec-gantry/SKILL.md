@@ -295,7 +295,7 @@ Use this computed version everywhere `[version]` appears.
 
 Re-read all state files before routing. Every action ends by updating state, re-rendering the dashboard, and stopping.
 
-**CLAUDE.md migration (runs before routing, every invocation).** If `specs/project-state.yaml` exists and `CLAUDE.md` in `project_dir` does not contain the sentinel `<!-- spec-gantry-notice -->`, prepend the notice block (same content and rules as in `init_project`) before proceeding to any routing row. This silently upgrades projects initialized before the notice feature was added.
+**CLAUDE.md + hooks migration (runs before routing, every invocation).** If `specs/project-state.yaml` exists and `CLAUDE.md` in `project_dir` does not contain the sentinel `<!-- spec-gantry-notice -->`, run the full engagement hook setup from `init_project` (CLAUDE.md notice + `.claude/settings.json` + hook script + CONTRACT.md). This silently upgrades projects initialized before this feature was added.
 
 **P0/P1 rows are checked BEFORE rows 1–7. T0 is checked before everything:**
 
@@ -409,6 +409,133 @@ This project was created with SpecGantry. Every story, architecture decision, an
 Run `/spec-gantry` to get the project dashboard and route your request correctly.
 <!-- /spec-gantry-notice -->
 ```
+
+**Install SpecGantry engagement hooks (idempotent).** Write the installer script below to a temp file and execute it with `bash <tempfile> <project_dir>`. The script is self-contained and idempotent — safe to run on new and existing projects.
+
+```bash
+#!/usr/bin/env bash
+# SpecGantry hook installer — writes .claude/settings.json, hook script, and CONTRACT.md
+set -euo pipefail
+
+PROJECT_DIR="${1:-.}"
+CLAUDE_DIR="$PROJECT_DIR/.claude"
+HOOKS_DIR="$CLAUDE_DIR/hooks"
+SETTINGS="$CLAUDE_DIR/settings.json"
+HOOK_SCRIPT="$HOOKS_DIR/spec-gantry-contract.sh"
+CONTRACT="$CLAUDE_DIR/CONTRACT.md"
+SENTINEL="spec-gantry-contract"
+
+mkdir -p "$HOOKS_DIR"
+
+# 1. Merge hooks into .claude/settings.json using Python for safe JSON handling
+python3 - "$SETTINGS" "$SENTINEL" <<'PYEOF'
+import json, sys, os
+
+settings_path = sys.argv[1]
+sentinel = sys.argv[2]
+
+existing = {}
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        existing = json.load(f)
+
+# Skip if already installed
+hooks = existing.get("hooks", {})
+for event_hooks in hooks.values():
+    for group in event_hooks:
+        for h in group.get("hooks", []):
+            if sentinel in h.get("command", ""):
+                print(f"  hooks already installed in {settings_path} — skipping")
+                sys.exit(0)
+
+# Merge SessionStart
+ss = existing.setdefault("hooks", {}).setdefault("SessionStart", [])
+ss.append({"hooks": [{"type": "command", "command": f"bash .claude/hooks/{sentinel}.sh", "statusMessage": "Loading SpecGantry engagement contract..."}]})
+
+# Merge PostCompact
+pc = existing["hooks"].setdefault("PostCompact", [])
+pc.append({"hooks": [{"type": "command", "command": f"bash .claude/hooks/{sentinel}.sh", "statusMessage": "Reloading SpecGantry engagement contract after compaction..."}]})
+
+with open(settings_path, "w") as f:
+    json.dump(existing, f, indent=2)
+
+print(f"  wrote {settings_path}")
+PYEOF
+
+# 2. Write the contract hook script
+if [[ ! -f "$HOOK_SCRIPT" ]]; then
+cat > "$HOOK_SCRIPT" <<'HOOKEOF'
+#!/usr/bin/env bash
+# SpecGantry engagement contract — injected at SessionStart and PostCompact
+set -euo pipefail
+
+CONTRACT_PATH="${CLAUDE_PROJECT_DIR:-.}/.claude/CONTRACT.md"
+
+if [[ ! -f "$CONTRACT_PATH" ]]; then
+  python3 -c "
+import json, sys
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': sys.argv[1]}}))" \
+    "SpecGantry: CONTRACT.md not found — engagement contract not enforced."
+  exit 0
+fi
+
+CONTENT=$(< "$CONTRACT_PATH")
+
+HOOK_EVENT=$(python3 -c "
+import json, sys
+raw = sys.stdin.read().strip()
+print(json.loads(raw).get('hook_event_name', 'SessionStart') if raw else 'SessionStart')
+" 2>/dev/null || echo "SessionStart")
+
+python3 -c "
+import json, sys
+print(json.dumps({'hookSpecificOutput': {'hookEventName': sys.argv[1], 'additionalContext': sys.argv[2]}}))" \
+  "$HOOK_EVENT" "$CONTENT"
+HOOKEOF
+  chmod +x "$HOOK_SCRIPT"
+  echo "  wrote $HOOK_SCRIPT"
+else
+  echo "  $HOOK_SCRIPT already exists — skipping"
+fi
+
+# 3. Write CONTRACT.md
+if [[ ! -f "$CONTRACT" ]]; then
+cat > "$CONTRACT" <<'CONTRACTEOF'
+---
+name: spec-gantry-contract
+description: Engagement contract — enforces SpecGantry routing for all development work
+---
+
+# SpecGantry Engagement Contract
+
+> **BINDING DIRECTIVE — read before responding to any message in this session.**
+> This project is managed by SpecGantry. All development work — bugs, enhancements,
+> new features, architecture changes — MUST be routed through `/spec-gantry`. Never
+> modify code directly without first invoking `/spec-gantry` to get the correct phase
+> and subagent. Specs live under `specs/` and must stay in sync with the code at all times.
+
+## Rules
+
+1. **Never write or modify code directly.** Always invoke `/spec-gantry` first — it will route to the correct subagent for the current phase.
+2. **Never answer "what does this story do?" from memory.** Read `specs/stories/[STORY-ID]/story-spec.md` and `intent.md`.
+3. **After `/compact`, re-read `specs/project-state.yaml`** to restore project context before acting.
+4. **If the user asks for a quick fix, still route through `/spec-gantry`.** A bypass means specs drift from code — that is a critical failure for this project.
+CONTRACTEOF
+  echo "  wrote $CONTRACT"
+else
+  echo "  $CONTRACT already exists — skipping"
+fi
+
+# 4. Add CONTRACT.md to .gitignore if absent
+GITIGNORE="$PROJECT_DIR/.gitignore"
+if [[ ! -f "$GITIGNORE" ]] || ! grep -qF ".claude/CONTRACT.md" "$GITIGNORE"; then
+  echo ".claude/CONTRACT.md" >> "$GITIGNORE"
+  echo "  appended .claude/CONTRACT.md to .gitignore"
+fi
+
+echo "  SpecGantry engagement hooks installed."
+```
+
 → **start_ideation**
 
 ---
@@ -763,7 +890,7 @@ Proceed? [Y]/[N]
 
 Note: `deployment.md` is NOT verified after reverse engineering — the reverse-engineer agent does not run Topic 10. The deployment readiness check in `confirm_and_deploy` Step 0 will surface this gap when the user attempts to deploy.
 
-**Append SpecGantry notice to `CLAUDE.md` (idempotent).** Same rule as `init_project`: check for sentinel `<!-- spec-gantry-notice -->` — append the block if absent.
+**Install SpecGantry engagement hooks (idempotent).** Same rule as `init_project`: prepend the CLAUDE.md notice if absent, then write the installer script to a temp file and execute it with `bash <tempfile> <project_dir>`.
 
 Re-render dashboard · immediately route to next pipeline action
 

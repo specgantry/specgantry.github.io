@@ -491,6 +491,8 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 
 <p>SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered item. This applies to all phases — ideation, story spec, and build.</p>
 
+<p><strong>Engagement hooks keep Claude on-process across sessions and compactions.</strong> When a project is initialised, SpecGantry writes <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> hooks into <code class="language-plaintext highlighter-rouge">.claude/settings.json</code>. The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook injects the engagement contract at the start of every Claude Code session. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects it after every <code class="language-plaintext highlighter-rouge">/compact</code> — so Claude never drifts away from routing through <code class="language-plaintext highlighter-rouge">/spec-gantry</code> even after context is cleared. Existing projects without hooks get them written automatically on the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> invocation.</p>
+
 <hr />
 
 <h2 id="cost-tracking">Cost Visibility</h2>

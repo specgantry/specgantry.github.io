@@ -522,6 +522,44 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <hr />
 
+<h2 id="engagement-hooks">Engagement Hooks</h2>
+
+<h3 id="what-are-the-engagement-hooks">What are the engagement hooks?</h3>
+
+<p>When SpecGantry initialises a project (new or reverse-engineered), it writes three files into your project’s <code class="language-plaintext highlighter-rouge">.claude/</code> directory:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">.claude/settings.json</code> — registers <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> hooks with Claude Code</li>
+  <li><code class="language-plaintext highlighter-rouge">.claude/hooks/spec-gantry-contract.sh</code> — reads <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> and emits it as <code class="language-plaintext highlighter-rouge">additionalContext</code> to the Claude Code session</li>
+  <li><code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code> — a binding directive that tells Claude to always route development work through <code class="language-plaintext highlighter-rouge">/spec-gantry</code></li>
+</ul>
+
+<p>The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook fires when you open Claude Code in the project. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-fires after every <code class="language-plaintext highlighter-rouge">/compact</code> — which is the main scenario where Claude forgets SpecGantry is running. Together they ensure Claude never drifts away from the pipeline mid-session.</p>
+
+<h3 id="i-updated-specgantry-but-my-existing-project-doesnt-have-the-hooks-yet">I updated SpecGantry but my existing project doesn’t have the hooks yet</h3>
+
+<p>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> once in the project. The migration check fires automatically at the start of every invocation — if the engagement hooks are missing, it writes them before rendering the dashboard. No manual setup needed.</p>
+
+<h3 id="how-do-i-verify-the-hooks-are-installed">How do I verify the hooks are installed?</h3>
+
+<p>Check that all three files exist:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ls</span> .claude/settings.json .claude/CONTRACT.md .claude/hooks/spec-gantry-contract.sh
+</code></pre></div></div>
+
+<p>And verify <code class="language-plaintext highlighter-rouge">settings.json</code> contains the hook entries:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> .claude/settings.json
+</code></pre></div></div>
+
+<p>You should see <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> entries pointing to <code class="language-plaintext highlighter-rouge">bash .claude/hooks/spec-gantry-contract.sh</code>.</p>
+
+<h3 id="should-i-commit-claudecontractmd-to-git">Should I commit <code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code> to git?</h3>
+
+<p>No — it is gitignored by default. SpecGantry regenerates it on every project setup, so committing it would add noise without benefit. The hook script and <code class="language-plaintext highlighter-rouge">settings.json</code> are safe to commit if you want them version-controlled.</p>
+
+<hr />
+
 <h2 id="advanced">Advanced</h2>
 
 <h3 id="can-i-version-my-specs">Can I version my specs?</h3>

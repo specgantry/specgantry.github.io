@@ -168,9 +168,15 @@
 
 <h2 id="project-file-structure">Project File Structure</h2>
 
-<p>After SpecGantry runs, your project contains a <code class="language-plaintext highlighter-rouge">specs/</code> directory committed to git:</p>
+<p>After SpecGantry runs, your project contains a <code class="language-plaintext highlighter-rouge">specs/</code> directory committed to git, and a <code class="language-plaintext highlighter-rouge">.claude/</code> directory for Claude Code session management:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>specs/
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-root/
+├── .claude/
+│   ├── settings.json               # SessionStart + PostCompact hooks wired to spec-gantry-contract.sh
+│   ├── CONTRACT.md                 # Engagement contract injected into every session (gitignored — regenerated on setup)
+│   └── hooks/
+│       └── spec-gantry-contract.sh # Reads CONTRACT.md and emits it as additionalContext to Claude Code
+├── specs/
 ├── project-state.yaml              # Project metadata, story backlog, ideation_complete flag, active_story
 ├── architecture.md                 # Single source of truth — vision, constraints, tech stack, guardrails
 ├── cost-log.ndjson                 # Token usage and cost per agent session
@@ -188,6 +194,8 @@
 </code></pre></div></div>
 
 <p><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git.</strong> This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.</p>
+
+<p><strong>Do not commit <code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code>.</strong> It is gitignored by default — SpecGantry regenerates it on setup. The hook scripts and <code class="language-plaintext highlighter-rouge">settings.json</code> in <code class="language-plaintext highlighter-rouge">.claude/</code> are safe to commit if you want them version-controlled.</p>
 
 <hr />
 

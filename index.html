@@ -7,7 +7,7 @@
   <title>SpecGantry — AI-Assisted SDLC Pipeline for Claude Code</title>
   <meta name="google-site-verification" content="0rLKkEIQvHRi4lPU6COp8BOn_GnyYbFJIV-d0n3NhhQ" />
   <meta name="description"
-    content="SpecGantry v4 enforces a reference-driven SDLC for Claude Code — shared architecture artifacts, slim story specs, targeted model reads, and full token cost visibility from ideation to deployment.">
+    content="SpecGantry v5 enforces a reference-driven SDLC for Claude Code — shared architecture artifacts, slim story specs, targeted model reads, session-level engagement hooks, and full token cost visibility from ideation to deployment.">
   <meta property="og:title" content="SpecGantry — AI-Assisted SDLC Pipeline for Claude Code">
   <meta property="og:description"
     content="Reference-driven SDLC for Claude Code. Shared architecture artifacts. Slim story specs. Targeted model reads. Enforced phase gates from ideation to deployment.">
@@ -136,7 +136,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.2.3 · Production Ready
+          Claude Code Plugin · v5.2.5 · Production Ready
         </div>
         <h1 class="hero-headline">
           Architecture First.<br>
@@ -168,7 +168,7 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.3</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.5</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
@@ -320,7 +320,7 @@
 
         <!-- Architecture layer callout -->
         <div class="pipeline-note" style="margin-top:0.75rem;">
-          <strong>Architecture layer is the key v4 change:</strong> <code>data-model.md</code> · <code>actors.md</code> · <code>contracts.md</code> · <code>patterns.md</code> · <code>ux.md</code> · <code>deployment.md</code> — written once during ideation, referenced by every story spec via a <code>reads:</code> block. Development agents load only the sections they need (~130 lines total), not the full spec context.
+          <strong>Architecture layer is the key v5 change:</strong> <code>data-model.md</code> · <code>actors.md</code> · <code>contracts.md</code> · <code>patterns.md</code> · <code>ux.md</code> · <code>deployment.md</code> — written once during ideation, referenced by every story spec via a <code>reads:</code> block. Development agents load only the sections they need (~130 lines total), not the full spec context.
         </div>
       </div>
     </section>
@@ -339,7 +339,7 @@
           <div class="feat-card feat-card-large">
             <div class="feat-icon"><i class="bi bi-diagram-3-fill"></i></div>
             <h3>Shared Architecture Layer — Written Once, Referenced Everywhere</h3>
-            <p>v4 introduces a dedicated <code>specs/architecture/</code> layer: entities, actors, contracts, patterns,
+            <p>v5 introduces a dedicated <code>specs/architecture/</code> layer: entities, actors, contracts, patterns,
               UX conventions, and deployment configuration live in six structured files. Every story spec references them via a
               <code>reads:</code> block — never duplicates them. Architecture drift across stories is structurally
               impossible.</p>
@@ -374,7 +374,7 @@
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-graph-up-arrow"></i></div>
             <h3>Full Token Cost Visibility</h3>
-            <p>Every agent invocation logs tokens used, model, and cost. Dashboard shows spend by phase, story, and release. v4's targeted reads cut development-phase token usage by 40–60% vs v3.</p>
+            <p>Every agent invocation logs tokens used, model, and cost. Dashboard shows spend by phase, story, and release. Targeted reads cut development-phase token usage by 40–60% vs earlier versions.</p>
             <a href="/docs/how-it-works#cost-tracking" class="feat-link">See cost tracking →</a>
           </div>
           <div class="feat-card">
@@ -509,7 +509,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> Reverse Engineer</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Analyzes an existing codebase and synthesizes the full v4 project structure — architecture layer (all 6 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
+            <div class="agent-desc">Analyzes an existing codebase and synthesizes the full SpecGantry project structure — architecture layer (all 6 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-puzzle-fill"></i> Ideation (gap mode)</div>

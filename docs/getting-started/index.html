@@ -168,7 +168,7 @@
 claude plugin <span class="nb">install </span>spec-gantry
 </code></pre></div></div>
 
-<p>Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v5.2.3</code></p>
+<p>Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v5.2.5</code></p>
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -308,7 +308,7 @@ claude plugin marketplace remove spec-gantry
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.3  |  New Project
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.5  |  New Project
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -376,9 +376,9 @@ claude plugin marketplace remove spec-gantry
     └── cache/                      # Generated caches
 </code></pre></div></div>
 
-<div class="info">
-  <strong>Engagement hooks are written automatically.</strong> When SpecGantry initialises a project (new or reverse-engineered), it writes <code>.claude/settings.json</code> with <code>SessionStart</code> and <code>PostCompact</code> hooks. Claude Code injects the engagement contract at the start of every session and after every <code>/compact</code> — keeping Claude on-process even after context resets.
-</div>
+<blockquote>
+  <p><strong>Engagement hooks are installed automatically.</strong> SpecGantry’s <code class="language-plaintext highlighter-rouge">SessionStart</code> hook detects any project with <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> and installs <code class="language-plaintext highlighter-rouge">.claude/settings.json</code>, the contract shell script, and <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> on the first session open — before Claude sees any message. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects the contract after every <code class="language-plaintext highlighter-rouge">/compact</code>. No manual setup needed.</p>
+</blockquote>
 
 <div class="info">
   <strong>Commit <code>specs/</code> to git.</strong> This is how you maintain a history of architecture choices, story progress, and costs.
@@ -401,7 +401,7 @@ claude plugin marketplace remove spec-gantry
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.3  |  My App
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.5  |  My App
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -420,7 +420,7 @@ claude plugin marketplace remove spec-gantry
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.3  |  Acme Platform  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5.2.5  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build

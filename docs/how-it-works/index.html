@@ -491,7 +491,53 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 
 <p>SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> picks up at the next unanswered item. This applies to all phases — ideation, story spec, and build.</p>
 
-<p><strong>Engagement hooks keep Claude on-process across sessions and compactions.</strong> When a project is initialised, SpecGantry writes <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> hooks into <code class="language-plaintext highlighter-rouge">.claude/settings.json</code>. The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook injects the engagement contract at the start of every Claude Code session. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects it after every <code class="language-plaintext highlighter-rouge">/compact</code> — so Claude never drifts away from routing through <code class="language-plaintext highlighter-rouge">/spec-gantry</code> even after context is cleared. Existing projects without hooks get them written automatically on the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code> invocation.</p>
+<hr />
+
+<h2 id="engagement-hooks">Engagement Hooks</h2>
+
+<p><strong>The problem:</strong> Claude Code sessions have finite context. As a session grows — or after a <code class="language-plaintext highlighter-rouge">/compact</code> — Claude can lose track of the fact that this project is managed by SpecGantry and start making code changes directly, bypassing the pipeline entirely. Specs drift from code, and the core value of SpecGantry is lost.</p>
+
+<p><strong>The fix:</strong> when SpecGantry detects a project (<code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> exists), it automatically installs three files into the project’s <code class="language-plaintext highlighter-rouge">.claude/</code> directory:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">.claude/settings.json</code></td>
+      <td>Registers <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> hooks with Claude Code</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">.claude/hooks/spec-gantry-contract.sh</code></td>
+      <td>Shell script that reads <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> and emits it as <code class="language-plaintext highlighter-rouge">additionalContext</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code></td>
+      <td>The binding directive injected into every session (gitignored)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>How it works at runtime:</strong></p>
+
+<ol>
+  <li>You open Claude Code in the project directory</li>
+  <li>Claude Code fires the <code class="language-plaintext highlighter-rouge">SessionStart</code> hook — <code class="language-plaintext highlighter-rouge">spec-gantry-contract.sh</code> runs, reads <code class="language-plaintext highlighter-rouge">CONTRACT.md</code>, and injects its contents as system-level context before the first message</li>
+  <li>Claude sees the directive before any user input: route all development through <code class="language-plaintext highlighter-rouge">/spec-gantry</code>, never bypass</li>
+  <li>After <code class="language-plaintext highlighter-rouge">/compact</code> clears the conversation context, the <code class="language-plaintext highlighter-rouge">PostCompact</code> hook fires again — same injection, so Claude is immediately re-oriented</li>
+</ol>
+
+<p><strong>This runs entirely in Node.js via <code class="language-plaintext highlighter-rouge">hooks.js</code></strong> — not by Claude, not by the skill. It is deterministic and cannot be skipped.</p>
+
+<p><strong>Existing projects</strong> get hooks installed automatically on the next session open after updating to v5.2.2+. No manual action needed — <code class="language-plaintext highlighter-rouge">hooks.js</code> checks for <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> on every <code class="language-plaintext highlighter-rouge">SessionStart</code> and installs the hooks silently if they are missing.</p>
+
+<div class="info">
+  <strong>CONTRACT.md is gitignored.</strong> It is regenerated on every project setup — committing it would add noise with no benefit. The hook script and <code>settings.json</code> are safe to commit if you want them version-controlled.
+</div>
 
 <hr />
 

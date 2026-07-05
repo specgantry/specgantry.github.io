@@ -526,19 +526,21 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="what-are-the-engagement-hooks">What are the engagement hooks?</h3>
 
-<p>When SpecGantry initialises a project (new or reverse-engineered), it writes three files into your project’s <code class="language-plaintext highlighter-rouge">.claude/</code> directory:</p>
+<p>When SpecGantry detects a project (<code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> exists), it automatically installs three files into the project’s <code class="language-plaintext highlighter-rouge">.claude/</code> directory:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">.claude/settings.json</code> — registers <code class="language-plaintext highlighter-rouge">SessionStart</code> and <code class="language-plaintext highlighter-rouge">PostCompact</code> hooks with Claude Code</li>
-  <li><code class="language-plaintext highlighter-rouge">.claude/hooks/spec-gantry-contract.sh</code> — reads <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> and emits it as <code class="language-plaintext highlighter-rouge">additionalContext</code> to the Claude Code session</li>
+  <li><code class="language-plaintext highlighter-rouge">.claude/hooks/spec-gantry-contract.sh</code> — reads <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> and emits it as <code class="language-plaintext highlighter-rouge">additionalContext</code> to Claude Code</li>
   <li><code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code> — a binding directive that tells Claude to always route development work through <code class="language-plaintext highlighter-rouge">/spec-gantry</code></li>
 </ul>
 
-<p>The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook fires when you open Claude Code in the project. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-fires after every <code class="language-plaintext highlighter-rouge">/compact</code> — which is the main scenario where Claude forgets SpecGantry is running. Together they ensure Claude never drifts away from the pipeline mid-session.</p>
+<p>The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook fires when you open Claude Code in the project, injecting the contract before any user message. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-fires after every <code class="language-plaintext highlighter-rouge">/compact</code> — which is the main scenario where Claude loses track of the pipeline. Together they ensure Claude never drifts away from <code class="language-plaintext highlighter-rouge">/spec-gantry</code> mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.</p>
+
+<p>See <a href="/docs/how-it-works#engagement-hooks">How It Works → Engagement Hooks</a> for a full walkthrough.</p>
 
 <h3 id="i-updated-specgantry-but-my-existing-project-doesnt-have-the-hooks-yet">I updated SpecGantry but my existing project doesn’t have the hooks yet</h3>
 
-<p>Run <code class="language-plaintext highlighter-rouge">/spec-gantry</code> once in the project. The migration check fires automatically at the start of every invocation — if the engagement hooks are missing, it writes them before rendering the dashboard. No manual setup needed.</p>
+<p>Open Claude Code in the project directory. The <code class="language-plaintext highlighter-rouge">SessionStart</code> hook in <code class="language-plaintext highlighter-rouge">hooks.js</code> checks for <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> on every session start — if the engagement hooks are missing, it installs them automatically before Claude sees the first message. No manual action needed.</p>
 
 <h3 id="how-do-i-verify-the-hooks-are-installed">How do I verify the hooks are installed?</h3>
 

@@ -151,7 +151,7 @@
 
 <h2 id="what-is-specgantry">What Is SpecGantry?</h2>
 
-<p>SpecGantry is a Claude Code plugin that enforces a structured development process. The core v4 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.</p>
+<p>SpecGantry is a Claude Code plugin that enforces a structured development process. The core v5 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.</p>
 
 <p>The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.</p>
 
@@ -229,7 +229,7 @@
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, pipeline phases, costs, v3→v4 differences, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, pipeline, costs, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -263,9 +263,9 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h2 id="key-concepts">Key Concepts</h2>
 
-<h3 id="the-architecture-layer-new-in-v4">The Architecture Layer (new in v4)</h3>
+<h3 id="the-architecture-layer">The Architecture Layer</h3>
 
-<p>SpecGantry v4 introduces a dedicated <code class="language-plaintext highlighter-rouge">specs/architecture/</code> directory containing six structured files:</p>
+<p>SpecGantry introduced a dedicated <code class="language-plaintext highlighter-rouge">specs/architecture/</code> directory containing six structured files:</p>
 
 <table>
   <thead>
@@ -332,6 +332,10 @@ claude plugin <span class="nb">install </span>spec-gantry
 <h3 id="state-that-survives-anything">State That Survives Anything</h3>
 
 <p>All progress is written after every answer and every phase transition. State flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tell the orchestrator exactly where to resume. A crash between any two writes triggers P2 routing on next run, which detects incomplete state and recovers automatically.</p>
+
+<h3 id="engagement-hooks">Engagement Hooks</h3>
+
+<p>On every session start, SpecGantry’s <code class="language-plaintext highlighter-rouge">hooks.js</code> checks whether <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> exists in the current directory. If it does, it automatically installs <code class="language-plaintext highlighter-rouge">.claude/settings.json</code> hooks, a contract shell script, and <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> — a binding directive injected into every Claude Code session. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects the contract after every <code class="language-plaintext highlighter-rouge">/compact</code>, so Claude never loses track of the pipeline mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.</p>
 
 <h3 id="specs-in-git">Specs in Git</h3>
 

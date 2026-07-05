@@ -136,15 +136,16 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.2.2 · Production Ready
+          Claude Code Plugin · v5.2.3 · Production Ready
         </div>
         <h1 class="hero-headline">
           Architecture First.<br>
           <span class="gradient-text">Code That Knows Why It Exists.</span>
         </h1>
         <p class="hero-sub">
-          SpecGantry v4 wraps Claude Code in a reference-driven SDLC — shared architecture artifacts,
-          slim story specs with targeted reads, and enforced phase gates from ideation to deployment.
+          SpecGantry v5 wraps Claude Code in a reference-driven SDLC — shared architecture artifacts,
+          slim story specs with targeted reads, enforced phase gates from ideation to deployment,
+          and session-level engagement hooks that keep Claude on-process every time.
           One command. Every workflow covered.
         </p>
         <div class="hero-actions">
@@ -167,11 +168,11 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.2</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.3</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v4</span>  |  Acme Platform  |  release 1.0.0</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v5</span>  |  Acme Platform  |  release 1.0.0</div>
             <div class="terminal-line output">  Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  ID      Story                         Spec  Build</div>
@@ -236,7 +237,7 @@
       <div class="section-inner">
         <div class="section-label center">The Solution</div>
         <h2 class="center">Architecture once. Stories that reference it. Code that reads only what it needs.</h2>
-        <p class="section-sub center">v4 separates architectural knowledge from story navigation. Shared artifacts are written once during ideation and referenced by every downstream agent — no duplication, no drift, no full-context loads.</p>
+        <p class="section-sub center">v5 separates architectural knowledge from story navigation. Shared artifacts are written once during ideation and referenced by every downstream agent — no duplication, no drift, no full-context loads. Session-level engagement hooks keep Claude on-process across context resets.</p>
 
         <div class="pipeline-diagram">
           <div class="node-graph">
@@ -330,6 +331,11 @@
         <div class="section-label center">Key Features</div>
         <h2 class="center">Everything you need to ship AI-assisted features with confidence</h2>
         <div class="features-grid">
+          <div class="feat-card">
+            <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
+            <h3>Engagement Hooks — Claude Stays On-Process</h3>
+            <p>Project setup writes a <code>SessionStart</code> and <code>PostCompact</code> hook into <code>.claude/settings.json</code>. Claude Code injects the engagement contract automatically on every session start and after every <code>/compact</code> — so Claude never forgets to route through <code>/spec-gantry</code>, even deep into a long conversation.</p>
+          </div>
           <div class="feat-card feat-card-large">
             <div class="feat-icon"><i class="bi bi-diagram-3-fill"></i></div>
             <h3>Shared Architecture Layer — Written Once, Referenced Everywhere</h3>
@@ -566,7 +572,7 @@
         <div class="install-box">
           <div class="install-text">
             <h2>Ready to add structure to your AI workflow?</h2>
-            <p>Install SpecGantry v4 in 90 seconds. Works with any Claude Code project — new or existing.</p>
+            <p>Install SpecGantry v5 in 90 seconds. Works with any Claude Code project — new or existing.</p>
           </div>
           <div class="install-code-block">
             <div class="code-header">
@@ -578,7 +584,7 @@
 claude plugin install spec-gantry</code></pre>
           </div>
           <div class="install-update">
-            <span class="update-label">Already installed? Update to v4:</span>
+            <span class="update-label">Already installed? Update to v5:</span>
             <code
               class="update-cmd">claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry</code>
             <a href="{{ '/docs/faq' | relative_url }}#how-do-i-update-specgantry" class="update-link">More update
@@ -613,7 +619,7 @@ claude plugin install spec-gantry</code></pre>
       <div class="footer-brand">
         <img src="{{ '/assets/logo/logo.png' | relative_url }}" alt="SpecGantry" class="logo-icon">
         <span class="logo-text">SpecGantry</span>
-        <p>Reference-driven SDLC for Claude Code.<br>Architecture once. Stories that reference it. Code that knows why it exists.</p>
+        <p>Reference-driven SDLC for Claude Code.<br>Architecture once. Stories that reference it. Code that knows why it exists. Claude that stays on-process.</p>
       </div>
       <div class="footer-links">
         <div class="footer-col">

@@ -34,10 +34,16 @@ SpecGantry is designed for a single developer who wears every hat. The pipeline 
 
 ## Project File Structure
 
-After SpecGantry runs, your project contains a `specs/` directory committed to git:
+After SpecGantry runs, your project contains a `specs/` directory committed to git, and a `.claude/` directory for Claude Code session management:
 
 ```
-specs/
+project-root/
+├── .claude/
+│   ├── settings.json               # SessionStart + PostCompact hooks wired to spec-gantry-contract.sh
+│   ├── CONTRACT.md                 # Engagement contract injected into every session (gitignored — regenerated on setup)
+│   └── hooks/
+│       └── spec-gantry-contract.sh # Reads CONTRACT.md and emits it as additionalContext to Claude Code
+├── specs/
 ├── project-state.yaml              # Project metadata, story backlog, ideation_complete flag, active_story
 ├── architecture.md                 # Single source of truth — vision, constraints, tech stack, guardrails
 ├── cost-log.ndjson                 # Token usage and cost per agent session
@@ -55,6 +61,8 @@ specs/
 ```
 
 **Commit `specs/` to git.** This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.
+
+**Do not commit `.claude/CONTRACT.md`.** It is gitignored by default — SpecGantry regenerates it on setup. The hook scripts and `settings.json` in `.claude/` are safe to commit if you want them version-controlled.
 
 ---
 

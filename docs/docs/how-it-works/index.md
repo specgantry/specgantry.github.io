@@ -298,6 +298,8 @@ Use `[N] New work` at any point to describe new work — bug fix, enhancement, n
 
 SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, story spec, and build.
 
+**Engagement hooks keep Claude on-process across sessions and compactions.** When a project is initialised, SpecGantry writes `SessionStart` and `PostCompact` hooks into `.claude/settings.json`. The `SessionStart` hook injects the engagement contract at the start of every Claude Code session. The `PostCompact` hook re-injects it after every `/compact` — so Claude never drifts away from routing through `/spec-gantry` even after context is cleared. Existing projects without hooks get them written automatically on the next `/spec-gantry` invocation.
+
 ---
 
 ## Cost Visibility {#cost-tracking}

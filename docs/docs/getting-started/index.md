@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.2.2`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.2.3`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -180,7 +180,7 @@ SpecGantry detects your situation automatically and guides you from there.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.2  |  New Project
+SpecGantry v5.2.3  |  New Project
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -217,6 +217,11 @@ After SpecGantry runs, your project contains a `specs/` directory to commit to g
 
 ```
 project-root/
+├── .claude/
+│   ├── settings.json               # SessionStart + PostCompact engagement hooks (written by SpecGantry)
+│   ├── CONTRACT.md                 # Engagement contract — injected into every session (gitignored)
+│   └── hooks/
+│       └── spec-gantry-contract.sh # Hook script that injects CONTRACT.md as context
 ├── specs/
 │   ├── project-state.yaml          # Project metadata and story backlog
 │   ├── architecture.md             # Vision, tech stack, system design, guardrails
@@ -243,6 +248,10 @@ project-root/
 ```
 
 <div class="info">
+  <strong>Engagement hooks are written automatically.</strong> When SpecGantry initialises a project (new or reverse-engineered), it writes <code>.claude/settings.json</code> with <code>SessionStart</code> and <code>PostCompact</code> hooks. Claude Code injects the engagement contract at the start of every session and after every <code>/compact</code> — keeping Claude on-process even after context resets.
+</div>
+
+<div class="info">
   <strong>Commit <code>specs/</code> to git.</strong> This is how you maintain a history of architecture choices, story progress, and costs.
 </div>
 
@@ -264,7 +273,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.2  |  My App
+SpecGantry v5.2.3  |  My App
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -284,7 +293,7 @@ Shown once ideation is complete. The pipeline table and story picker are unified
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.2  |  Acme Platform  |  release 1.0.0
+SpecGantry v5.2.3  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build

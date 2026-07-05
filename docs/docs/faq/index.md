@@ -327,6 +327,44 @@ claude plugin install spec-gantry
 
 ---
 
+## Engagement Hooks
+
+### What are the engagement hooks?
+
+When SpecGantry initialises a project (new or reverse-engineered), it writes three files into your project's `.claude/` directory:
+
+- `.claude/settings.json` — registers `SessionStart` and `PostCompact` hooks with Claude Code
+- `.claude/hooks/spec-gantry-contract.sh` — reads `CONTRACT.md` and emits it as `additionalContext` to the Claude Code session
+- `.claude/CONTRACT.md` — a binding directive that tells Claude to always route development work through `/spec-gantry`
+
+The `SessionStart` hook fires when you open Claude Code in the project. The `PostCompact` hook re-fires after every `/compact` — which is the main scenario where Claude forgets SpecGantry is running. Together they ensure Claude never drifts away from the pipeline mid-session.
+
+### I updated SpecGantry but my existing project doesn't have the hooks yet
+
+Run `/spec-gantry` once in the project. The migration check fires automatically at the start of every invocation — if the engagement hooks are missing, it writes them before rendering the dashboard. No manual setup needed.
+
+### How do I verify the hooks are installed?
+
+Check that all three files exist:
+
+```bash
+ls .claude/settings.json .claude/CONTRACT.md .claude/hooks/spec-gantry-contract.sh
+```
+
+And verify `settings.json` contains the hook entries:
+
+```bash
+cat .claude/settings.json
+```
+
+You should see `SessionStart` and `PostCompact` entries pointing to `bash .claude/hooks/spec-gantry-contract.sh`.
+
+### Should I commit `.claude/CONTRACT.md` to git?
+
+No — it is gitignored by default. SpecGantry regenerates it on every project setup, so committing it would add noise without benefit. The hook script and `settings.json` are safe to commit if you want them version-controlled.
+
+---
+
 ## Advanced
 
 ### Can I version my specs?

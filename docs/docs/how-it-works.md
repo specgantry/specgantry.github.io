@@ -11,7 +11,7 @@ next_page_url: "/docs/skills"
 
 # How It Works
 
-SpecGantry enforces a structured development process through a series of phases with hard gates between them. v4 introduced the shared architecture layer — written once during ideation, never duplicated per story. **v5** builds on that foundation with these developer-experience and rigor changes:
+SpecGantry enforces a structured development process through a series of phases with hard gates between them. v5 introduced the shared architecture layer — written once during ideation, never duplicated per story. **v5** builds on that foundation with these developer-experience and rigor changes:
 
 - **Batched-by-topic ideation** — each topic asks its full set of related sub-questions in one form. New-project ideation lands in ~9 turns (was ~20); amendment mode targets ≤ 3 turns.
 - **Bounded raise-a-concern** — story-spec and development subagents may flag one high-impact concern per invocation (untestable criterion, missing owner, spec/code drift, reuse opportunity) with a proposed alternative. You decide: apply, keep, or edit spec first. Every resolved concern is recorded in `specs/concerns-log.ndjson`.
@@ -26,7 +26,7 @@ Story-spec and reverse-engineer moved to Haiku in v5.1 — cost tracking is upda
 
 ## The Architecture Layer {#architecture-layer}
 
-The central v4 change is a dedicated `specs/architecture/` directory containing six structured files. These are the shared source of truth for every downstream agent.
+The central v5 change is a dedicated `specs/architecture/` directory containing six structured files. These are the shared source of truth for every downstream agent.
 
 | File | Anchor format | Contains |
 |------|--------------|----------|
@@ -234,7 +234,7 @@ The deployment subagent generates a versioned `deploy.sh` covering build, versio
 
 ## Self-Healing Gap Flows {#gap-flows}
 
-v4 introduces three automatic gap routing rows that run before the main pipeline:
+SpecGantry has three automatic gap routing rows that run before the main pipeline:
 
 ### P0 — Architecture Gap
 
@@ -272,7 +272,7 @@ All three flows are fully automatic. No user intervention required.
 
 ## Reverse Engineering Existing Codebases {#reverse-engineer}
 
-The reverse-engineer subagent analyzes an existing codebase and synthesizes the complete v4 project structure.
+The reverse-engineer subagent analyzes an existing codebase and synthesizes the complete SpecGantry project structure.
 
 **What it produces:**
 
@@ -323,7 +323,23 @@ Every agent invocation is automatically logged to `specs/cost-log.ndjson` via th
 
 Run `/track-cost` for the full cost dashboard. See [Skills & Agents → /track-cost](/docs/skills#track-cost) for the Cost Matrix and all drill-down views.
 
-**v4 token efficiency:** the targeted `reads:` pattern cuts development-phase token usage by 40–60% compared to v3's full-spec loading. Architecture artifacts are written once and referenced — not re-described per story.
+The targeted `reads:` pattern cuts development-phase token usage by 40–60% compared to v3's full-spec loading. Architecture artifacts are written once and referenced — not re-described per story.
+
+---
+
+## Engagement Hooks {#engagement-hooks}
+
+**The problem:** Claude Code sessions have finite context. After a `/compact` or across sessions, Claude can lose track of the fact that this project is managed by SpecGantry and start making code changes directly — bypassing the pipeline and letting specs drift from code.
+
+**The fix:** SpecGantry's `SessionStart` hook in `hooks.js` runs on every Claude Code session open. It checks whether `specs/project-state.yaml` exists and, if it does, automatically installs:
+
+| File | Purpose |
+|------|---------|
+| `.claude/settings.json` | `SessionStart` + `PostCompact` hooks wired to the contract script |
+| `.claude/hooks/spec-gantry-contract.sh` | Reads `CONTRACT.md` and emits it as `additionalContext` |
+| `.claude/CONTRACT.md` | Binding directive injected into every session (gitignored) |
+
+The `PostCompact` hook re-injects the contract after every `/compact` — so Claude is immediately re-oriented. This runs entirely in Node.js, not by Claude, so it cannot be skipped. Existing projects without hooks get them installed automatically on the next session open.
 
 ---
 

@@ -19,7 +19,7 @@ next_page_url: "/docs/getting-started"
 
 ## What Is SpecGantry?
 
-SpecGantry is a Claude Code plugin that enforces a structured development process. The core v4 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.
+SpecGantry is a Claude Code plugin that enforces a structured development process. The core v5 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.
 
 The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.
 
@@ -97,7 +97,7 @@ The result: architecture that stays consistent across stories, story specs that 
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, pipeline phases, costs, v3→v4 differences, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, pipeline, costs, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -135,9 +135,9 @@ Or from within Claude Code:
 
 ## Key Concepts
 
-### The Architecture Layer (new in v4)
+### The Architecture Layer
 
-SpecGantry v4 introduces a dedicated `specs/architecture/` directory containing six structured files:
+SpecGantry introduced a dedicated `specs/architecture/` directory containing six structured files:
 
 | File | Contains |
 |------|----------|
@@ -179,6 +179,10 @@ Every story has a 2-paragraph `intent.md` that states the functional purpose and
 ### State That Survives Anything
 
 All progress is written after every answer and every phase transition. State flags in `project-state.yaml` tell the orchestrator exactly where to resume. A crash between any two writes triggers P2 routing on next run, which detects incomplete state and recovers automatically.
+
+### Engagement Hooks
+
+On every session start, SpecGantry's `hooks.js` checks whether `specs/project-state.yaml` exists in the current directory. If it does, it automatically installs `.claude/settings.json` hooks, a contract shell script, and `CONTRACT.md` — a binding directive injected into every Claude Code session. The `PostCompact` hook re-injects the contract after every `/compact`, so Claude never loses track of the pipeline mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.
 
 ### Specs in Git
 

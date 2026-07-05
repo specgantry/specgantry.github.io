@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: FAQ
-description: Frequently asked questions about SpecGantry v5 — installation, pipeline phases, v3 to v4 differences, costs, and troubleshooting.
+description: Frequently asked questions about SpecGantry v5 — installation, pipeline phases, costs, and troubleshooting.
 permalink: /docs/faq/
 prev_page: "Reference"
 prev_page_url: "/docs/architecture"
@@ -78,19 +78,19 @@ No. The deployment gate requires all stories `built:true`. If you need to releas
 
 ---
 
-## v3 to v4
+## Migration
 
 ### What is the biggest difference between v3 and v4?
 
-The architecture layer. v3 embedded all architectural knowledge (entities, actors, contracts, UX) into every story spec — making specs verbose and causing drift across stories. v4 moves that knowledge to five shared files under `specs/architecture/`. Story specs become slim navigation maps (≤60 lines) that reference the shared layer via a `reads:` block.
+The architecture layer. v3 embedded all architectural knowledge (entities, actors, contracts, UX) into every story spec — making specs verbose and causing drift across stories. v5 moves that knowledge to five shared files under `specs/architecture/`. Story specs become slim navigation maps (≤60 lines) that reference the shared layer via a `reads:` block.
 
 ### Do my v3 specs still work with v4?
 
-v4 is not backward compatible with v3 specs. The story-spec format changed (from 6 verbose sections to 5 slim sections + `reads:` block), and the architecture is now in `specs/architecture/` instead of `specs/architecture.md`. For existing v3 projects, run the reverse-engineering flow: `/spec-gantry` will detect source files and synthesize the v4 structure from your code.
+v5 is not backward compatible with v3 specs. The story-spec format changed (from 6 verbose sections to 5 slim sections + `reads:` block), and the architecture is now in `specs/architecture/` instead of `specs/architecture.md`. For existing v3 projects, run the reverse-engineering flow: `/spec-gantry` will detect source files and synthesize the v5 structure from your code.
 
 ### Why is ideation now Sonnet instead of Haiku?
 
-In v3, ideation was conversational only — short questions and answers. In v4, the ideation agent also synthesizes five architecture artifact files from the conversation context. That synthesis task — deriving entity state machines, actor permission tables, contract shapes, and UX conventions — requires Sonnet-class reasoning. The conversational part runs fast; the artifact synthesis justifies the model tier.
+In v3, ideation was conversational only — short questions and answers. In v5, the ideation agent also synthesizes five architecture artifact files from the conversation context. That synthesis task — deriving entity state machines, actor permission tables, contract shapes, and UX conventions — requires Sonnet-class reasoning. The conversational part runs fast; the artifact synthesis justifies the model tier.
 
 ### What is the `reads:` block in a story spec?
 
@@ -104,7 +104,7 @@ reads:
   ux:        [component-conventions, screen-template]
 ```
 
-The development agent uses this to load ~130 lines of targeted context rather than the full architecture. This is the mechanism that makes v4 token-efficient.
+The development agent uses this to load ~130 lines of targeted context rather than the full architecture. This is the mechanism that makes token-efficient development possible.
 
 ### What are P0, P1, and P2 gaps?
 
@@ -139,7 +139,7 @@ For a typical 4-story project:
 - Per story build: $0.30–$1.00 (Sonnet, ~130-line targeted context)
 - Deployment: $0.20–$0.50 (Sonnet, build-reports + arch tech stack)
 
-A 4-story project typically runs $4–$10 total. v4's targeted reads reduce development-phase cost by 40–60% compared to v3's full-spec loading.
+A 4-story project typically runs $4–$10 total. Targeted reads reduce development-phase cost by 40–60% compared to v3's full-spec loading.
 
 ---
 
@@ -147,7 +147,7 @@ A 4-story project typically runs $4–$10 total. v4's targeted reads reduce deve
 
 ### Can I use SpecGantry with an existing codebase?
 
-Yes. Run `/spec-gantry` in a directory with source files but no `specs/` directory. SpecGantry detects source files and offers to analyze the codebase. The reverse-engineer agent synthesizes the full v4 architecture layer from your code.
+Yes. Run `/spec-gantry` in a directory with source files but no `specs/` directory. SpecGantry detects source files and offers to analyze the codebase. The reverse-engineer agent synthesizes the full SpecGantry project structure from your code.
 
 ### What does "stub spec" mean?
 
@@ -186,3 +186,34 @@ Set `spec_done: false` and `intent_done: false` for the story in `project-state.
 Open an issue on GitHub: [github.com/specgantry/specgantry.github.io/issues](https://github.com/specgantry/specgantry.github.io/issues)
 
 Include: your project-state.yaml (with sensitive values redacted), the agent that failed, and the error message or unexpected behavior.
+
+---
+
+## Engagement Hooks
+
+### What are the engagement hooks?
+
+On every session start, SpecGantry's `hooks.js` detects whether `specs/project-state.yaml` exists in the project directory. If it does, it automatically installs three files into `.claude/`:
+
+- `.claude/settings.json` — registers `SessionStart` and `PostCompact` hooks with Claude Code
+- `.claude/hooks/spec-gantry-contract.sh` — reads `CONTRACT.md` and emits it as `additionalContext`
+- `.claude/CONTRACT.md` — a binding directive telling Claude to always route work through `/spec-gantry`
+
+The `SessionStart` hook fires before any user message. The `PostCompact` hook re-fires after every `/compact`. This runs in Node.js — not by Claude — so it cannot be skipped.
+
+### My existing project doesn't have the hooks
+
+Open Claude Code in the project directory. The `SessionStart` hook checks for missing hooks and installs them automatically — no manual action needed.
+
+### How do I verify the hooks are installed?
+
+```bash
+ls .claude/settings.json .claude/CONTRACT.md .claude/hooks/spec-gantry-contract.sh
+cat .claude/settings.json
+```
+
+You should see `SessionStart` and `PostCompact` entries pointing to `bash .claude/hooks/spec-gantry-contract.sh`.
+
+### Should I commit `.claude/CONTRACT.md`?
+
+No — it is gitignored. SpecGantry regenerates it on every project setup. The hook script and `settings.json` are safe to commit.

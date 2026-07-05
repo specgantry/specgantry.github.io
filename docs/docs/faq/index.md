@@ -331,17 +331,19 @@ claude plugin install spec-gantry
 
 ### What are the engagement hooks?
 
-When SpecGantry initialises a project (new or reverse-engineered), it writes three files into your project's `.claude/` directory:
+When SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs three files into the project's `.claude/` directory:
 
 - `.claude/settings.json` — registers `SessionStart` and `PostCompact` hooks with Claude Code
-- `.claude/hooks/spec-gantry-contract.sh` — reads `CONTRACT.md` and emits it as `additionalContext` to the Claude Code session
+- `.claude/hooks/spec-gantry-contract.sh` — reads `CONTRACT.md` and emits it as `additionalContext` to Claude Code
 - `.claude/CONTRACT.md` — a binding directive that tells Claude to always route development work through `/spec-gantry`
 
-The `SessionStart` hook fires when you open Claude Code in the project. The `PostCompact` hook re-fires after every `/compact` — which is the main scenario where Claude forgets SpecGantry is running. Together they ensure Claude never drifts away from the pipeline mid-session.
+The `SessionStart` hook fires when you open Claude Code in the project, injecting the contract before any user message. The `PostCompact` hook re-fires after every `/compact` — which is the main scenario where Claude loses track of the pipeline. Together they ensure Claude never drifts away from `/spec-gantry` mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.
+
+See [How It Works → Engagement Hooks](/docs/how-it-works#engagement-hooks) for a full walkthrough.
 
 ### I updated SpecGantry but my existing project doesn't have the hooks yet
 
-Run `/spec-gantry` once in the project. The migration check fires automatically at the start of every invocation — if the engagement hooks are missing, it writes them before rendering the dashboard. No manual setup needed.
+Open Claude Code in the project directory. The `SessionStart` hook in `hooks.js` checks for `specs/project-state.yaml` on every session start — if the engagement hooks are missing, it installs them automatically before Claude sees the first message. No manual action needed.
 
 ### How do I verify the hooks are installed?
 

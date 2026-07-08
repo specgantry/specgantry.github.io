@@ -142,6 +142,13 @@ Use this computed version everywhere `[version]` appears.
 - Bare number (`001`, `1`) or full ID (`STORY-001`) → route to story's current phase
 - Blocked story typed → show one-line blocker, re-render
 - Typed story ID with `built:true · spec_done:false` → invoke **spec_next_story** targeting that story directly (stub spec path)
+- Typed story ID with `spec_done:true · built:true` → emit per-story header and inline prompt:
+  ```
+  STORY-[NNN]: [title]  ·  ✅ spec · ✅ built
+  ──────────────────────────────────────────
+  What would you like to change?  >
+  ```
+  Treat the user's response as the description for **classify_and_route**, pre-scoped to this story. Skip Step 2's open-ended classification question — go directly to Step 1 (investigate) using the user's input as `description` with the story ID already in scope.
 - `>` (v5.1) → set `auto_continue: true` in project-state.yaml · re-enter the routing loop immediately (spec_next_story or build_next_story per rows 4/5); do NOT ⏸ pause at spec approval prompts. Auto-continue clears back to `false` on the conditions in the "Auto-continue mode" block above.
 - Lettered command → execute that action
 - Invalid input → re-render with one-line error above header
@@ -213,6 +220,90 @@ specs/.agent-stamp-*.json
 - If `CLAUDE.md` does not exist, create it with the contents of `agents/templates/claude-notice.md`.
 
 **Install SpecGantry engagement hooks (idempotent).** Write `agents/hooks/spec-gantry-hook-installer.sh` to a temp file and execute it with `bash <tempfile> <project_dir>`. The script is self-contained and idempotent — safe to run on new and existing projects.
+
+**Quick-start detection (runs before start_ideation).**
+
+Scan the vision text for simple-project signals. A project is "simple" if ALL of:
+- No admin/reviewer/manager/moderator roles mentioned
+- No login/auth/account/password/permissions/session language
+- No AI/LLM/generate/summarize/classify/chat/GPT language
+- Vision describes a bounded set of ≤3 distinct user-facing capabilities
+
+**If NOT all signals present** (complex project): proceed directly to `→ start_ideation`. No banner.
+
+**If ALL signals present** (simple project): emit the quick-start banner and pause:
+
+```
+This looks like a simple single-user app — I can set smart defaults and ask only 3 questions.
+
+  [>] Quick start  (tech stack · Docker Hub username · story list)
+  [F] Full ideation  (10 topics, shape every decision)
+```
+
+**On `[F]`**: proceed to `→ start_ideation` unchanged.
+
+**On `[>]`**: write the following defaults directly to `specs/architecture/architecture.md` (do not ask the user):
+
+```markdown
+## Problem & Users
+Primary user: the person building and using this app. No existing workaround to replace — this adds new capability.
+
+## Constraints
+No hard constraints identified. Use whatever stack best fits the vision.
+
+## Risks & Out of Scope
+Key risk: scope creep — keep v1 to the proposed story list.
+Out of scope for v1: multi-user roles, authentication, AI/LLM integration, mobile apps.
+
+## Guardrails
+Source code under `/src/` with subdirs: `db/`, `api/`, `lib/`, `config/`.
+Config under `/src/config/`; secrets in `/src/.env` — never hardcoded.
+Build output to `/dist/`. Runtime writable storage under `/data/`.
+
+## Configuration
+| Variable | Description | Example value |
+|----------|-------------|---------------|
+| PORT | HTTP server port | 3000 |
+| DATABASE_URL | Database connection string | sqlite://./data/app.db |
+
+## UX Model
+Navigation: central-dashboard — single entry point, no actor splits.
+Visual: Bootstrap 5 + Bootstrap Icons.
+Theme: Bootstrap defaults.
+```
+
+Then run the 3-question quick-start Q&A, surfacing each as a `TURN:` and pausing:
+
+**QS1 — Tech stack (1 turn):**
+```
+Propose one clear stack based on the vision (default: Node.js + SQLite + vanilla HTML/CSS for data-light apps; adjust if the vision implies a different language or framework).
+
+  I'll use: [proposed stack — one line per layer].
+  Confirm or redirect?  >
+```
+On answer: write `## Tech Stack` to `specs/architecture/architecture.md` with the confirmed stack.
+
+**QS2 — Deployment (1 turn):**
+```
+I'll set up Docker Hub deployment with a manual deploy.sh script (the simplest path for a first deploy).
+
+  What's your Docker Hub username?  >
+```
+On answer: write `specs/architecture/deployment.md` with:
+- `## deployment:target`: `platform: docker-hub-manual`, `registry: docker.io/[username]/[project-slug]`
+- `## deployment:services`: monolith, `min_replicas: 1`, `max_replicas: 3`, `cpu: 1`, `memory: 512Mi`
+- `## deployment:secrets`: `strategy: .env file`, `vars: []`
+- `## deployment:ingress`: `domain: null`, `https: false`, `load_balancer: null`
+- `## deployment:cicd`: `runner: manual`
+
+**QS3 — Story list (1 turn):**
+Propose 2–3 stories derived from the vision using the same Topic 10 format as full ideation. Present the list and ask Y/E/X.
+
+On `Y`: write approved story list to `specs/.ideation-scratchpad.yaml` → return `COHERENCE_PASS` → orchestrator calls ideation subagent with `mode: coherence` then `mode: seed_artifacts` as normal. The ideation subagent's self-review will find all arch sections already populated and pass.
+
+On `E`: ask what to change, revise, re-show.
+
+On `X`: set `ideation_complete: false`, return `IDEATION_COMPLETE` with note "saved — resume with /spec-gantry".
 
 → **start_ideation**
 

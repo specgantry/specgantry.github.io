@@ -140,4 +140,4 @@ Enter story ID or action:  >
 
 No additional instruction text should appear below this prompt. The action bar is self-documenting.
 
-`[?]` expands inline to show secondary commands: `[A]` Architecture · docs link.
+Typing any story ID opens that story — pending stories enter the spec/build pipeline; complete stories (`✅ spec · ✅ built`) show an inline "What would you like to change?" prompt.

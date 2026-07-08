@@ -12,7 +12,6 @@ description: >
   any mention of files, functions, APIs, databases, or infrastructure in a project context.
   Do not answer software development questions directly — always route through this skill first.
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
-blocked-tools: Explore, Workflow, EnterWorktree, ExitWorktree, CronCreate, CronDelete, CronList, ScheduleWakeup
 ---
 
 # SpecGantry v5
@@ -43,7 +42,13 @@ Auto-continue clears back to `false` (and the pipeline stops) on any of:
 - Any subagent error, build-report failure, or `SPEC_HELD` signal
 - User types any input while a pause point is imminent (interrupts the auto-run — treat as a manual command)
 
-When auto-continue clears due to any of the above, set `auto_continue: false` in project-state.yaml before re-rendering. The `[>]` action re-appears in the dashboard so the user can resume the auto-run after resolving whatever paused it.
+When auto-continue clears due to any of the above, set `auto_continue: false` in project-state.yaml before re-rendering. Emit a one-line note above the dashboard matching the clear reason:
+- Gap detected: `⏸ Auto-run paused — [arch|spec] gap detected for [story_id]. Resolving now; use [>] to resume once the gap is cleared.`
+- Concern raised: `⏸ Auto-run paused — a concern needs your decision. Respond [Y/N/E], then use [>] to resume.`
+- All built, deploy needed: `⏸ Auto-run complete — all stories built. Use [1] Deploy release [version] to proceed.`
+- Error/SPEC_HELD: `⏸ Auto-run stopped — an error or held spec needs attention. Use [>] to resume once resolved.`
+
+The `[>]` action re-appears in the dashboard so the user can resume the auto-run after resolving whatever paused it.
 
 **Concern surfacing (v5).** When a subagent returns `TURN:awaiting_concern:[text]` (story-spec) or `CONCERN_RAISED:[summary]` (development), the orchestrator:
 1. Reads the concern content (from the return signal for story-spec; from `specs/stories/[story_id]/gap.md → ## Concern` for development).
@@ -63,41 +68,27 @@ Cost tracking is automatic — SubagentStop hook handles token counting and appe
 
 ## State Files
 
-| File | Key fields |
-|------|------------|
-| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story, active_phase) · `ideation_complete` · `arch_seeded` · `pending_arch_gap` · `pending_spec_gap` · `stories` map (title, depends_on, intent_done, spec_done, built, deployed per STORY-ID) |
-| `specs/architecture/architecture.md` | Narrative sections (Vision, Problem & Users, Constraints, Risks, Tech Stack, Guardrails, Configuration, UX Model) + `## Artifact Index` YAML block (last section). Single entry point for all arch context. |
-| `specs/architecture/data-model.md` | All entities, fields, types, relationships, state machines. `## entity:[name]` anchors. |
-| `specs/architecture/actors.md` | All roles, permissions, ownership rules. `## actor:[name]` anchors. |
-| `specs/architecture/contracts.md` | Shared API shapes, error envelopes. `## contract:[name]` anchors. |
-| `specs/architecture/patterns.md` | Dominant backend interaction patterns. `## pattern:[name]` anchors. |
-| `specs/architecture/ux.md` | Navigation model, visual system, component conventions, screen template. `## ux:[name]` anchors. |
-| `specs/architecture/deployment.md` | Deployment target, services, secrets, ingress, CI/CD config. `## deployment:[name]` anchors. Written by ideation (Topic 10). Read by deployment subagent. |
-| `specs/stories/[STORY-ID]/intent.md` | 2 paragraphs: functional purpose + objective and outcome. Seeded by ideation, finalized by story-spec. |
-| `specs/stories/[STORY-ID]/story-spec.md` | YAML frontmatter: story_id, title, depends_on, reads: block. Five sections: criteria, interfaces, permissions, state, data. Max 60 lines. |
-| `specs/stories/[STORY-ID]/build-report.yaml` | `overall_status` · `gap_specs` · `warnings` · `source` (omitted unless reverse-engineered) |
-| `specs/.ideation-turn.md` | Active ideation turn — `topic`, `question` (last question returned to user), `mode` (normal \| coherence) |
-| `specs/.story-spec-turn.md` | Active story-spec turn — `story_id`, `interaction_state` (held_review \| awaiting_approval \| awaiting_edit), `question` |
-| `specs/.investigate-turn.md` | Active investigation turn — `description`, `interaction_state` (awaiting_confirmation \| awaiting_clarification), `findings` (last findings text) |
-| `specs/concerns-log.ndjson` | Append-only record of every push-back concern (v5). One JSON line per resolved concern: `{ts, phase, story_id, concern, response}`. Written by the orchestrator, not the subagent that raised it. Tracked in git — this is a decision record, not a scratchpad. |
+See `agents/references/state-files.md` for the full schema reference.
+
+Key files: `specs/project-state.yaml` (pipeline state + story flags) · `specs/architecture/architecture.md` (narrative + Artifact Index) · `specs/stories/[STORY-ID]/` (intent.md, story-spec.md, build-report.yaml) · `specs/.ideation-turn.md` / `.story-spec-turn.md` / `.investigate-turn.md` (session scratchpad — gitignored) · `specs/concerns-log.ndjson` (append-only concern record).
 
 Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
-
-Turn-state files (`specs/.ideation-turn.md`, `specs/.story-spec-turn.md`, `specs/.investigate-turn.md`) are session scratchpad — add all three to `.gitignore` alongside `specs/.current-session`.
 
 ---
 
 ## GATE_FORMAT
 
-All subagents emit gate failures in this format:
-```
-✗ [gate name] gate FAILED · [reason] · [action]
-```
-Surface these verbatim if a subagent returns one.
+Gate failures: surface verbatim from subagent output. Format defined in `agents/_shared/preamble.md § 7 GATE_FORMAT`. Wrap with context:
+- Before the gate line: `A gate check failed — [phase] cannot start until this is resolved.`
+- After the gate line: `Recovery: [action from the gate message]. Run /spec-gantry to retry once the issue is addressed.`
+
+After surfacing, re-render full dashboard · ⏸ pause.
 
 ---
 
 ## UI
+
+Rendering templates (Q&A surface format, transition notes, HEADER, STATE 1, STATE 2 story table, ACTION BAR chrome) are in `skills/spec-gantry/ui/dashboard.md`. Use those templates verbatim.
 
 **STRICT OUTPUT RULES — no exceptions:**
 - Render the full dashboard on **phase transitions and pause points** — not on every conversational turn
@@ -111,141 +102,7 @@ Render the full dashboard when:
 - A ⏸ pause point that is NOT mid-Q&A (e.g. waiting for a Y/N on a plan, not waiting for the next topic answer)
 - The user types a command rather than answering a question
 
-After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes:
-
-**Q&A surface format** — used whenever surfacing a question during ideation, story-spec, or investigation turns (no dashboard, no header):
-
-```
-──────────────────────────────────────────────────────────
-  [Beat N · Topic M — Label]   (ideation only; omit for story-spec/investigation)
-──────────────────────────────────────────────────────────
-
-[question text, rendered as-is from the subagent]
-```
-
-The separator and label give orientation without the full dashboard weight. Omit the label line for story-spec and investigation turns — use only the separator above and below the question block.
-
-```
-✓ [phase] complete  ·  [story or project level]
-──────────────────────────────────────────────────────────
-```
-
-Examples:
-```
-✓ Ideation complete  ·  system shaped — 4 stories
-✓ Story spec complete  ·  STORY-002 User authentication
-✓ All specs complete  ·  ready to build
-✓ Build complete  ·  STORY-002 ready
-✓ Gap specs merged  ·  3 stories updated
-✓ Deployed  ·  release 1.0.0
-```
-
----
-
-### HEADER
-
-Always rendered first, same in all states:
-
-```
-SpecGantry v5  |  [project.name or "New Project"]  |  release [project.release]
-──────────────────────────────────────────────────────────
-```
-
-In STATE 2 (pipeline active), append a progress line below the separator:
-
-```
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
-──────────────────────────────────────────────────────────
-```
-
-Progress bars: 5 chars — `█` (U+2588) filled, `░` (U+2591) remaining.
-- **Spec** counts stories where `spec_done:true`
-- **Build** counts stories where `built:true`
-- **Deploy** is project-level and binary (deployment sets all stories at once): show `[█████] deployed` when all stories `deployed:true`, `[░░░░░] not deployed` otherwise. Deployment sets stories `deployed:true` in a per-story loop — if the deployment subagent crashes mid-loop, a partial state (some deployed, some not) is possible; the `[░░░░░]` bar and `○ not deployed` Release row will both show until re-deploy completes.
-
----
-
-### STATE 1 — No stories in pipeline
-
-Used when: no project exists, or ideation still in progress.
-
-Middle section shows current phase status:
-
-```
-  [phase indicator]
-```
-
-Examples:
-```
-  No project found in this directory.
-```
-```
-  Ideation in progress — Beat N: X/Y topics answered.
-```
-
----
-
-### STATE 2 — Pipeline dashboard
-
-Used when: `ideation_complete:true` and `project-state.yaml → stories` has ≥1 entry.
-
-Middle section — story table:
-
-```
-  ID       Story                              Spec   Build
-  ────────────────────────────────────────────────────────────────
-  [001]   Student completes profile             ✅    🔄
-  [002]   Student submits application           ⏳    ○
-  [003]   Admin reviews applications            🔴    ○        depends on 002
-  [004]   Admin manages settings                ✅    ✅
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                       ○ not deployed
-```
-
-- Always render the column header row
-- Always render ALL stories — never omit any
-- Story IDs shown as `[NNN]` — directly typeable
-- Blocked stories show `depends on NNN[,NNN]` inline at end of row
-- Icons (Spec/Build): ✅ complete · 🔄 in progress · 🔴 blocked · ⏳ ready · ○ not reached · `~` stub (built by RE — spec not yet written)
-
-**Story column flags:**
-- Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, stub spec only)
-- Build = `built` (show 🔄 while `project.active_story` matches this ID)
-
-**Release row** — always the last row, separated by a line:
-- `○ not deployed` — any story has `deployed:false`
-- `🔄 deploying` — deployment in progress (`project.active_phase: deployment`)
-- `✅ deployed [YYYY-MM-DD]` — all stories `deployed:true` (date from `specs/deploy-artifact.md` if present, otherwise omit date)
-
----
-
-### ACTION BAR
-
-Always the last element rendered. Two columns — left is contextual actions, right is fixed lettered commands.
-
-State 1 (no pipeline):
-```
-──────────────────────────────────────────────────────────────────────
-  [1] [action one]                    [$] Cost
-  [2] [action two]                    [?] Help
-                                      [X] Exit
-──────────────────────────────────────────────────────────────────────
-```
-
-State 2 (pipeline active):
-```
-──────────────────────────────────────────────────────────────────────
-  Type a story ID to manage it        [$] Cost
-  [1] [contextual action]             [?] Help
-  [2] [contextual action]             [X] Exit
-  [N] New work
-──────────────────────────────────────────────────────────────────────
-Enter story ID or action:  >
-```
-
-No additional instruction text should appear below this prompt. The action bar is self-documenting.
-
-`[?]` expands inline to show secondary commands: `[A]` Architecture · docs link.
+After every subagent returns, re-read all state files before rendering. Add a one-line transition note above the dashboard when a phase completes.
 
 **Left column — derivation rules:**
 
@@ -302,9 +159,9 @@ Re-read all state files before routing. Every action ends by updating state, re-
 | # | Condition | Action |
 |---|-----------|--------|
 | T0 | any turn-state file exists (`specs/.ideation-turn.md` \| `specs/.story-spec-turn.md` \| `specs/.investigate-turn.md`) | the user's raw input is an answer to the pending question in that file — route it directly to the corresponding action (`start_ideation` \| `spec_next_story` \| `classify_and_route`) passing the answer; do NOT parse as a dashboard command |
-| P0 | `pending_arch_gap` non-null | invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) · **progress note:** if re-routing to P0 again (another gap was signalled), emit one line above the dashboard: `✓ Arch gap resolved ([n] of [total] gaps) · resuming` where n is the count of gaps cleared this session |
-| P1 | `pending_spec_gap` non-null | invoke story-spec (spec gap mode) with gap reason · after complete: (1) check `pending_arch_gap` — if non-null (spec gap escalated to arch gap), do NOT clear `pending_spec_gap` yet; re-route to P0 to resolve the arch gap first, then return to P1 on the next invocation · (2) if `pending_arch_gap` is null: clear `pending_spec_gap: null` in project-state · (3) restore `project.active_story: [pending_spec_gap.story_id]` · (4) restore `project.active_phase: development` · (5) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
-| P2 | `ideation_complete:true` · `arch_seeded:false` | RE or ideation crashed mid-artifact-write · set `pending_arch_gap: {triggered_by: orchestrator, story_id: null, reason: "arch artifacts incomplete — arch_seeded:false after ideation_complete:true", resume_phase: null}` · re-route to P0 to trigger ideation arch gap mode |
+| P0 | `pending_arch_gap` non-null | Emit above dashboard: `⚠ Architecture gap detected — [pending_arch_gap.reason]. Recovering now; pipeline will resume at [resume_phase or "next pipeline step"] when complete.` Re-render full dashboard. Then invoke ideation (arch gap mode) with gap reason · after complete: (1) clear `pending_arch_gap: null` in project-state · (2) if `story_id` is non-null: restore `project.active_story: [story_id]` and `project.active_phase: [resume_phase]`, re-route to `resume_phase` action · if `story_id` is null (P2 path): set `arch_seeded: true` and set `intent_done: true` for every story whose `intent.md` now exists on disk, then re-route to normal routing (rows 1–7) · **progress note:** if re-routing to P0 again (another gap was signalled), emit one line above the dashboard: `✓ Arch gap resolved ([n] of [total] gaps) · resuming` where n is the count of gaps cleared this session |
+| P1 | `pending_spec_gap` non-null | Emit above dashboard: `⚠ Spec gap detected for [pending_spec_gap.story_id] — [pending_spec_gap.reason]. Updating the spec now; the build will resume automatically when corrected.` Re-render full dashboard. Then invoke story-spec (spec gap mode) with gap reason · after complete: (1) check `pending_arch_gap` — if non-null (spec gap escalated to arch gap), do NOT clear `pending_spec_gap` yet; re-route to P0 to resolve the arch gap first, then return to P1 on the next invocation · (2) if `pending_arch_gap` is null: clear `pending_spec_gap: null` in project-state · (3) restore `project.active_story: [pending_spec_gap.story_id]` · (4) restore `project.active_phase: development` · (5) re-route to `build_next_story` for `story_id` as if it were freshly invoked |
+| P2 | `ideation_complete:true` · `arch_seeded:false` | Emit one line: `⚠ Crash recovery: a previous session completed story creation but did not finish writing architecture artifacts. Switching to recovery mode — no work is lost.` Then set `pending_arch_gap: {triggered_by: orchestrator, story_id: null, reason: "arch artifacts incomplete — arch_seeded:false after ideation_complete:true", resume_phase: null}` · re-route to P0 (which will show the full banner + dashboard before invoking ideation) |
 | 1 | No `specs/project-state.yaml` · no source files | **init_project** → **start_ideation** |
 | 2 | No `specs/project-state.yaml` · source files exist | View A → **init_project** or **reverse_engineer** |
 | 3 | `ideation_complete:false` | **start_ideation** |
@@ -339,50 +196,8 @@ Project name (max 60 chars):  >
 Project vision (2–4 sentences):  >
 ```
 Create `specs/architecture/` directory.
-Write `specs/architecture/architecture.md` with the vision stub:
-```markdown
-# Architecture
-
-## Vision
-[vision from user input]
-
-## Problem & Users
-_not yet written_
-
-## Constraints
-_not yet written_
-
-## Risks & Out of Scope
-_not yet written_
-
-## Tech Stack
-_not yet written_
-
-## Guardrails
-_not yet written_
-
-## Configuration
-_not yet written_
-
-## UX Model
-_not yet written_
-```
-Write `specs/project-state.yaml`:
-```yaml
-project:
-  name: "[name]"
-  created: [YYYY-MM-DD]
-  release: "1.0.0"
-  next_release_type: null
-  active_story: null
-  active_phase: null
-ideation_complete: false
-arch_seeded: false
-pending_arch_gap: null
-pending_spec_gap: null
-auto_continue: false
-stories: {}
-```
+Write `specs/architecture/architecture.md` from `agents/templates/architecture-skeleton.md`, replacing `[vision from user input]` in the `## Vision` section with the user-provided vision text.
+Write `specs/project-state.yaml` from `agents/templates/project-state-skeleton.yaml`, substituting `[name]` with the project name and `[YYYY-MM-DD]` with today's date.
 Create `specs/stories/` directory.
 Append to `.gitignore` if absent:
 ```
@@ -394,147 +209,10 @@ specs/.ideation-scratchpad.yaml
 specs/.agent-stamp-*.json
 ```
 **Prepend SpecGantry notice to `CLAUDE.md` (idempotent).** Check whether `CLAUDE.md` in `project_dir` already contains the sentinel `<!-- spec-gantry-notice -->`. If absent:
-- If `CLAUDE.md` exists, read its current contents, then write a new `CLAUDE.md` with the block below at the top, followed by a blank line, followed by the original contents.
-- If `CLAUDE.md` does not exist, create it with the block below.
-```markdown
-<!-- spec-gantry-notice -->
-## SpecGantry — always use /spec-gantry for development work
+- If `CLAUDE.md` exists, read its current contents, then write a new `CLAUDE.md` with the contents of `agents/templates/claude-notice.md` at the top, followed by a blank line, followed by the original contents.
+- If `CLAUDE.md` does not exist, create it with the contents of `agents/templates/claude-notice.md`.
 
-This project was created with SpecGantry. Every story, architecture decision, and spec lives under `specs/`. **Never make code changes directly** — always route through `/spec-gantry` first so specs stay in sync with the code. This applies to:
-- Starting or resuming any work
-- Bug fixes, enhancements, new features
-- Architecture or data-model changes
-- Any question about what a story does or what files it owns
-
-Run `/spec-gantry` to get the project dashboard and route your request correctly.
-<!-- /spec-gantry-notice -->
-```
-
-**Install SpecGantry engagement hooks (idempotent).** Write the installer script below to a temp file and execute it with `bash <tempfile> <project_dir>`. The script is self-contained and idempotent — safe to run on new and existing projects.
-
-```bash
-#!/usr/bin/env bash
-# SpecGantry hook installer — writes .claude/settings.json, hook script, and CONTRACT.md
-set -euo pipefail
-
-PROJECT_DIR="${1:-.}"
-CLAUDE_DIR="$PROJECT_DIR/.claude"
-HOOKS_DIR="$CLAUDE_DIR/hooks"
-SETTINGS="$CLAUDE_DIR/settings.json"
-HOOK_SCRIPT="$HOOKS_DIR/spec-gantry-contract.sh"
-CONTRACT="$CLAUDE_DIR/CONTRACT.md"
-SENTINEL="spec-gantry-contract"
-
-mkdir -p "$HOOKS_DIR"
-
-# 1. Merge hooks into .claude/settings.json using Python for safe JSON handling
-python3 - "$SETTINGS" "$SENTINEL" <<'PYEOF'
-import json, sys, os
-
-settings_path = sys.argv[1]
-sentinel = sys.argv[2]
-
-existing = {}
-if os.path.exists(settings_path):
-    with open(settings_path) as f:
-        existing = json.load(f)
-
-# Skip if already installed
-hooks = existing.get("hooks", {})
-for event_hooks in hooks.values():
-    for group in event_hooks:
-        for h in group.get("hooks", []):
-            if sentinel in h.get("command", ""):
-                print(f"  hooks already installed in {settings_path} — skipping")
-                sys.exit(0)
-
-# Merge SessionStart
-ss = existing.setdefault("hooks", {}).setdefault("SessionStart", [])
-ss.append({"hooks": [{"type": "command", "command": f"bash .claude/hooks/{sentinel}.sh", "statusMessage": "Loading SpecGantry engagement contract..."}]})
-
-# Merge PostCompact
-pc = existing["hooks"].setdefault("PostCompact", [])
-pc.append({"hooks": [{"type": "command", "command": f"bash .claude/hooks/{sentinel}.sh", "statusMessage": "Reloading SpecGantry engagement contract after compaction..."}]})
-
-with open(settings_path, "w") as f:
-    json.dump(existing, f, indent=2)
-
-print(f"  wrote {settings_path}")
-PYEOF
-
-# 2. Write the contract hook script
-if [[ ! -f "$HOOK_SCRIPT" ]]; then
-cat > "$HOOK_SCRIPT" <<'HOOKEOF'
-#!/usr/bin/env bash
-# SpecGantry engagement contract — injected at SessionStart and PostCompact
-set -euo pipefail
-
-CONTRACT_PATH="${CLAUDE_PROJECT_DIR:-.}/.claude/CONTRACT.md"
-
-if [[ ! -f "$CONTRACT_PATH" ]]; then
-  python3 -c "
-import json, sys
-print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': sys.argv[1]}}))" \
-    "SpecGantry: CONTRACT.md not found — engagement contract not enforced."
-  exit 0
-fi
-
-CONTENT=$(< "$CONTRACT_PATH")
-
-HOOK_EVENT=$(python3 -c "
-import json, sys
-raw = sys.stdin.read().strip()
-print(json.loads(raw).get('hook_event_name', 'SessionStart') if raw else 'SessionStart')
-" 2>/dev/null || echo "SessionStart")
-
-python3 -c "
-import json, sys
-print(json.dumps({'hookSpecificOutput': {'hookEventName': sys.argv[1], 'additionalContext': sys.argv[2]}}))" \
-  "$HOOK_EVENT" "$CONTENT"
-HOOKEOF
-  chmod +x "$HOOK_SCRIPT"
-  echo "  wrote $HOOK_SCRIPT"
-else
-  echo "  $HOOK_SCRIPT already exists — skipping"
-fi
-
-# 3. Write CONTRACT.md
-if [[ ! -f "$CONTRACT" ]]; then
-cat > "$CONTRACT" <<'CONTRACTEOF'
----
-name: spec-gantry-contract
-description: Engagement contract — enforces SpecGantry routing for all development work
----
-
-# SpecGantry Engagement Contract
-
-> **BINDING DIRECTIVE — read before responding to any message in this session.**
-> This project is managed by SpecGantry. All development work — bugs, enhancements,
-> new features, architecture changes — MUST be routed through `/spec-gantry`. Never
-> modify code directly without first invoking `/spec-gantry` to get the correct phase
-> and subagent. Specs live under `specs/` and must stay in sync with the code at all times.
-
-## Rules
-
-1. **Never write or modify code directly.** Always invoke `/spec-gantry` first — it will route to the correct subagent for the current phase.
-2. **Never answer "what does this story do?" from memory.** Read `specs/stories/[STORY-ID]/story-spec.md` and `intent.md`.
-3. **After `/compact`, re-read `specs/project-state.yaml`** to restore project context before acting.
-4. **If the user asks for a quick fix, still route through `/spec-gantry`.** A bypass means specs drift from code — that is a critical failure for this project.
-CONTRACTEOF
-  echo "  wrote $CONTRACT"
-else
-  echo "  $CONTRACT already exists — skipping"
-fi
-
-# 4. Add CONTRACT.md to .gitignore if absent
-GITIGNORE="$PROJECT_DIR/.gitignore"
-if [[ ! -f "$GITIGNORE" ]] || ! grep -qF ".claude/CONTRACT.md" "$GITIGNORE"; then
-  echo ".claude/CONTRACT.md" >> "$GITIGNORE"
-  echo "  appended .claude/CONTRACT.md to .gitignore"
-fi
-
-echo "  SpecGantry engagement hooks installed."
-```
+**Install SpecGantry engagement hooks (idempotent).** Write `agents/hooks/spec-gantry-hook-installer.sh` to a temp file and execute it with `bash <tempfile> <project_dir>`. The script is self-contained and idempotent — safe to run on new and existing projects.
 
 → **start_ideation**
 
@@ -631,7 +309,7 @@ Set `project.active_story: [story_id]` and `project.active_phase: story-spec` in
 
 `SPEC_COMPLETE` → delete `specs/.story-spec-turn.md` · verify `spec_done: true` in project-state · verify `intent_done: true` · verify `specs/stories/[story_id]/intent.md` and `story-spec.md` exist · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
 
-`SPEC_HELD` → delete `specs/.story-spec-turn.md` · clear `active_story` · clear `active_phase` · re-render dashboard · ⏸ pause
+`SPEC_HELD` → delete `specs/.story-spec-turn.md` · clear `active_story` · clear `active_phase` · emit one line above dashboard: `⏸ Spec held for [story_id] — the spec agent flagged an unresolved issue it cannot proceed past without input. The spec is not marked done. Type the story ID to re-open it, or use [N] for other work.` · re-render dashboard · ⏸ pause
 
 `ARCH_GAP:[reason]` → delete `specs/.story-spec-turn.md` · clear `project.active_story` · clear `project.active_phase` · re-route to P0 immediately.
 
@@ -662,8 +340,22 @@ Set `project.active_story: [story_id]` and `project.active_phase: development` i
   - `N` — append one line to `specs/concerns-log.ndjson` (phase: development, response: N) · re-invoke development with `concern_resolution: ignore`
   - `E` — append one line to `specs/concerns-log.ndjson` (phase: development, response: E) · clear `project.active_story` · clear `project.active_phase` · set `pending_spec_gap: {triggered_by: development-concern, story_id: [story_id], reason: "user chose to edit spec after concern", resume_phase: development}` · re-route to P1
 - If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
-- If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · halt "Build report missing for [STORY-ID] — agent crashed before completing. Run /spec-gantry to rebuild." · ⏸
-- Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · halt "Build failed — run /spec-gantry to resume" · ⏸
+- If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · emit:
+  ```
+  ⚠ Build did not complete — [STORY-ID]: [title]
+  The build agent stopped before writing its completion report — it was likely interrupted mid-run. No code was committed for this story.
+  Technical detail: specs/stories/[STORY-ID]/build-report.yaml is missing.
+  Recovery: run /spec-gantry — it will detect the incomplete build and restart it.
+  ```
+  Re-render full dashboard · ⏸
+- Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · emit:
+  ```
+  ✗ Build failed — [STORY-ID]: [title]
+  The build agent completed but the build report marks this story as failed.
+  Technical detail: check specs/stories/[STORY-ID]/build-report.yaml → gap_specs and warnings for the failure details.
+  Recovery: run /spec-gantry to re-build, edit the spec, or inspect the gap manually.
+  ```
+  Re-render full dashboard · ⏸
 - Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
 
 When all stories have `built:true`:
@@ -742,7 +434,14 @@ Set `project.active_phase: deployment` in `specs/project-state.yaml` — this ma
 
 **Invoke:** `spec-gantry:deployment:deployment-subagent` · description: `"Deploying release [version]"` · pass `project_dir`, `arch_ref`, `deployment_ref: specs/architecture/deployment.md`
 
-**After:** if any story still `deployed:false` → clear `project.active_phase: null` · halt with error; else:
+**After:** if any story still `deployed:false` → clear `project.active_phase: null` · emit:
+```
+✗ Deployment incomplete — one or more stories were not marked as deployed.
+The deployment subagent finished but [n] stories still show deployed:false. This usually means a deploy step failed or the agent exited before writing final state flags.
+Technical detail: stories not yet deployed: [list story IDs where deployed:false]. Check specs/deploy-artifact.md and deployment logs for the failure reason.
+Recovery: run /spec-gantry — the pipeline will offer to re-run deployment for the remaining stories.
+```
+Re-render full dashboard (Release row shows ○ not deployed) · ⏸ pause; else:
 - Set `project.release: [version]` in project-state (the computed version from `[version]` computation rule above)
 - Set `project.next_release_type: null` in project-state
 - Set `project.active_story: null` in project-state

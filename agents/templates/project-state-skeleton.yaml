@@ -1,0 +1,13 @@
+project:
+  name: "[name]"
+  created: [YYYY-MM-DD]
+  release: "1.0.0"
+  next_release_type: null
+  active_story: null
+  active_phase: null
+ideation_complete: false
+arch_seeded: false
+pending_arch_gap: null
+pending_spec_gap: null
+auto_continue: false
+stories: {}

@@ -66,6 +66,39 @@ pending_spec_gap:
 
 The orchestrator will invoke story-spec (spec gap mode) to resolve the reference, then resume development.
 
+## Contract pre-flight
+
+After completing the read sequence and before the concern scan, validate every contract section loaded in step 5.
+
+**For each contract in `reads: contracts:`:**
+
+1. Locate the fenced ` ```yaml ``` ` block in the `## contract:[name]` section.
+   - If absent (prose only): write `pending_spec_gap` and stop:
+     ```yaml
+     pending_spec_gap:
+       triggered_by: development
+       story_id: [story_id]
+       reason: "contract:[name] has no machine-readable yaml block — cannot verify required fields (see preamble §4)"
+       resume_phase: development
+     ```
+     Return: `spec gap signalled — contract:[name] missing yaml block`
+
+2. Parse the `required:` array from the yaml block. Store as: `contract:[name] → required: [field, ...]`
+
+**During backend implementation (step 2 of work order):**
+
+3. Before writing each API endpoint that references a contract as its response: confirm the planned response object will include every field in `required:`. If any field would be absent:
+   ```yaml
+   pending_spec_gap:
+     triggered_by: development
+     story_id: [story_id]
+     reason: "contract:[name] requires [full required list] but planned response omits [missing fields]"
+     resume_phase: development
+   ```
+   Return: `spec gap signalled — contract:[name] required fields missing from implementation`
+
+4. When writing `@contract` anchor comments: derive the `output:` field list directly from the contract's `required:` array. Do not invent field names.
+
 ## Bounded raise-a-concern (v5)
 
 **Before writing any code**, after loading context in the Read sequence above, scan the spec + your understanding of the existing codebase for **one** high-impact concern to surface to the user. See `agents/_shared/preamble.md § 6` for the full protocol.
@@ -147,9 +180,9 @@ One line, present-tense, functional language — the "why this file exists". Der
 // @entry POST /api/submissions | create draft submission
 ```
 
-**`@contract`** — above any function that receives or returns data crossing a layer boundary (API→DB, UI→API, AI call):
+**`@contract`** — above any function that receives or returns data crossing a layer boundary (API→DB, UI→API, AI call). Derive the `output:` field list from the contract's `required:` array (parsed in Contract pre-flight). Do not invent field names.
 ```
-// @contract input: {title: string, body: string, user_id: uuid} → output: {id: uuid, status: draft} | errors: 422 missing fields, 401 unauth
+// @contract input: {[fields from entity in reads: data]} → output: {[required fields from contract yaml]} | errors: [codes]
 ```
 
 **`@gap`** — inline at the exact line where your implementation diverges from the spec (same cases that trigger a gap spec entry):

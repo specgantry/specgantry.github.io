@@ -173,47 +173,6 @@ Run \`/spec-gantry\` to get the project dashboard and route your request correct
   }
 }
 
-// ─── PreToolUse: Agent tool guard ────────────────────────────────────────────
-async function hookPreToolUse() {
-  let payload;
-  try {
-    payload = JSON.parse(await readStdin());
-  } catch (err) {
-    logError('PreToolUse: failed to parse payload:', err.message);
-    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
-    process.exit(0);
-  }
-
-  const toolName = payload.tool_name || payload.toolName || '';
-  if (toolName !== 'Agent') {
-    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
-    process.exit(0);
-  }
-
-  const input     = payload.tool_input || payload.toolInput || {};
-  const agentType = input.subagent_type || input.agentType  || '';
-
-  const ALLOWED = [
-    /^spec-gantry:/,
-    /^Plan$/,
-    /^statusline-setup$/,
-  ];
-
-  const allowed = !agentType || ALLOWED.some(p => p.test(agentType));
-
-  if (!allowed) {
-    logInfo(`PreToolUse: blocking unsanctioned agent type "${agentType}"`);
-    process.stdout.write(JSON.stringify({
-      continue: false,
-      stopReason: `SpecGantry: agent type "${agentType}" is not permitted. Only spec-gantry subagents may be spawned during a SpecGantry session.`,
-    }) + '\n');
-  } else {
-    logDebug(`PreToolUse: allowing agent type "${agentType || '(default)'}"`);
-    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
-  }
-  process.exit(0);
-}
-
 // ─── SubagentStart: record byte offset ───────────────────────────────────────
 // Fires before the subagent makes any API calls. Records the current size of
 // the transcript file (0 if it doesn't exist yet) so SubagentStop can read
@@ -344,9 +303,8 @@ async function hookSubagentStop() {
 (async function main() {
   initLogger('spec-gantry-hooks.log');
   if (process.argv.includes('--session-start'))  { await hookSessionStart();  return; }
-  if (process.argv.includes('--pre-tool-use'))   { await hookPreToolUse();    return; }
   if (process.argv.includes('--subagent-start')) { await hookSubagentStart(); return; }
   if (process.argv.includes('--subagent-stop'))  { await hookSubagentStop();  return; }
-  process.stderr.write('Usage: hooks.js --session-start | --pre-tool-use | --subagent-start | --subagent-stop\n');
+  process.stderr.write('Usage: hooks.js --session-start | --subagent-start | --subagent-stop\n');
   process.exit(1);
 })();

@@ -136,17 +136,17 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.2.8 · Production Ready
+          Claude Code Plugin · v5.2.9 · Production Ready
         </div>
         <h1 class="hero-headline">
           Architecture First.<br>
           <span class="gradient-text">Code That Knows Why It Exists.</span>
         </h1>
         <p class="hero-sub">
-          SpecGantry v5 wraps Claude Code in a reference-driven SDLC — shared architecture artifacts,
-          slim story specs with targeted reads, enforced phase gates from ideation to deployment,
-          and session-level engagement hooks that keep Claude on-process every time.
-          One command. Every workflow covered.
+          SpecGantry enforces a reference-driven SDLC inside Claude Code — shared architecture artifacts,
+          slim story specs, enforced phase gates from ideation to deployment, and session-level engagement
+          hooks that keep Claude on-process every time. Quick-start mode gets simple apps to a story backlog
+          in three questions. One command. Every workflow covered.
         </p>
         <div class="hero-actions">
           <a href="/docs/getting-started" class="btn-primary">
@@ -168,7 +168,7 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.8</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.2.9</div>
             <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
@@ -378,6 +378,16 @@
             <a href="/docs/how-it-works#cost-tracking" class="feat-link">See cost tracking →</a>
           </div>
           <div class="feat-card">
+            <div class="feat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+            <h3>Quick-Start Mode — Simple Apps in 3 Questions</h3>
+            <p>SpecGantry detects simple projects automatically — no auth, no AI, single actor, three or fewer capabilities. For those, it sets smart defaults for all architecture decisions and asks only three focused questions: tech stack, deployment, and story list. Same complete artifacts as full ideation, a fraction of the time.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+            <h3>Test Plan — Verify What Was Built</h3>
+            <p>The build agent writes a test plan to <code>build-report.yaml</code> — one shell command per observable acceptance criterion. After a build completes, SpecGantry offers to run them against your app. The investigation agent runs the same plan first when you report a bug, pinpointing the failing criterion before reading any source code.</p>
+          </div>
+          <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-arrow-left-right"></i></div>
             <h3>Crash-Safe Resumption</h3>
             <p>Every write is gated by a state flag. P0/P1/P2 routing detects incomplete state and recovers automatically on next run — no lost work, no manual cleanup, no corrupted pipeline.</p>
@@ -484,7 +494,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> Ideation</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Two-beat conversational session. Matures your idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, story list, UX model, and deployment target. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
+            <div class="agent-desc">Two-beat conversational session. Auto-detects simple projects and routes them through quick-start mode (3 questions, smart defaults). For complex projects, matures the idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, story list, UX model, and deployment target. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> Story Spec</div>
@@ -494,7 +504,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-code-square"></i> Development</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Builds one story end-to-end from intent.md + story-spec.md. Reads only the targeted arch sections declared in reads: (~130 lines total). Writes @story, @intent, @entry, @contract anchors in every file. Signals spec gaps (P1) when a contract or entity is wrong.</div>
+            <div class="agent-desc">Builds one story end-to-end from intent.md + story-spec.md. Reads only the targeted arch sections declared in reads: (~130 lines total). Implements a /health endpoint as the first backend route. Writes @story, @intent, @entry, @contract anchors in every file. Writes a test_plan to build-report.yaml — one shell command per observable criterion. Signals spec gaps (P1) when a contract or entity is wrong.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-rocket-takeoff-fill"></i> Deployment</div>
@@ -504,7 +514,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-search"></i> Investigation</div>
             <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Read-only. Given a bug report or enhancement request, searches the codebase using @story, @intent, @entry, @contract, @gap anchors. Returns a structured findings report with root cause, spec alignment, and recommended action — confirmed with the user before proceeding.</div>
+            <div class="agent-desc">Read-only. Given a bug report or enhancement request, first checks the app is running (health gate), then runs the test plan to pinpoint the failing criterion before touching source code. Uses @story, @intent, @entry, @contract, @gap anchors for precise navigation. Returns a structured findings report confirmed with you before any changes.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> Reverse Engineer</div>

@@ -246,12 +246,24 @@
 
 <h3 id="ideation">Phase 1 — Ideation</h3>
 
-<p><strong>Time:</strong> 15–30 minutes
+<p><strong>Time:</strong> 5–30 minutes (depends on project complexity)
 <strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/architecture/</code> (6 artifacts) · story backlog in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></p>
 
 <p>Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.</p>
 
-<p><strong>Beat 1 — Mature the idea</strong></p>
+<p><strong>Quick-start mode</strong></p>
+
+<p>After you enter a project name and vision, SpecGantry checks whether the project looks simple — no authentication, no AI integration, single actor type, three or fewer capabilities. If so, it switches to quick-start mode:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>This looks like a simple single-user app — I can set smart defaults and ask only 3 questions.
+
+  [&gt;] Quick start  (tech stack · Docker Hub username · story list)
+  [F] Full ideation  (10 topics, shape every decision)
+</code></pre></div></div>
+
+<p>Quick-start sets sensible defaults for all architecture sections (problem &amp; users, constraints, risks, guardrails, configuration, UX model), asks three focused questions, and produces the same complete architecture artifacts as full ideation — just faster. Full ideation is always available via <code class="language-plaintext highlighter-rouge">[F]</code>.</p>
+
+<p><strong>Beat 1 — Mature the idea</strong> (full ideation only)</p>
 
 <p>SpecGantry acts as a thinking partner, not an interviewer. It reads your vision and reacts to it using one of three stances:</p>
 
@@ -263,7 +275,7 @@
 
 <p>Four topics, one question each: vision, problem &amp; users, constraints, risks &amp; out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on. You can save and stop at the Beat 1 summary — ideation will resume at Beat 2 on the next <code class="language-plaintext highlighter-rouge">/spec-gantry</code>.</p>
 
-<p><strong>Beat 2 — Shape the system</strong></p>
+<p><strong>Beat 2 — Shape the system</strong> (full ideation only)</p>
 
 <p>Directly from the matured idea, SpecGantry proposes the system shape across six topics — each a proposal for you to confirm or redirect, not an open-ended question:</p>
 
@@ -321,9 +333,38 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
   <li>Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values</li>
   <li>Maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root with every env var the project needs — safe to commit, placeholders for secrets</li>
   <li>Writes machine-readable anchor comments in source files: <code class="language-plaintext highlighter-rouge">@story</code> (file→story mapping), <code class="language-plaintext highlighter-rouge">@entry</code> (route/handler entry points), <code class="language-plaintext highlighter-rouge">@contract</code> (data shapes at layer boundaries), <code class="language-plaintext highlighter-rouge">@gap</code> (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.</li>
+  <li>Implements a <code class="language-plaintext highlighter-rouge">GET /health</code> endpoint (returning <code class="language-plaintext highlighter-rouge">{"status":"ok"}</code>) as the first backend route on any story that exposes a port — used by the test runner and investigation agent to confirm the app is running.</li>
 </ul>
 
-<p>A story is <strong>complete</strong> once all acceptance criteria are met.</p>
+<p><strong>Test plan</strong></p>
+
+<p>After building, the build agent writes a <code class="language-plaintext highlighter-rouge">test_plan</code> section to <code class="language-plaintext highlighter-rouge">build-report.yaml</code> — one shell command per observable acceptance criterion, with the health check always first:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">test_plan</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">label</span><span class="pi">:</span> <span class="s2">"</span><span class="s">app</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">healthy"</span>
+    <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">curl</span><span class="nv"> </span><span class="s">-sf</span><span class="nv"> </span><span class="s">http://localhost:3000/health"</span>
+  <span class="pi">-</span> <span class="na">label</span><span class="pi">:</span> <span class="s2">"</span><span class="s">POST</span><span class="nv"> </span><span class="s">/api/bookmarks</span><span class="nv"> </span><span class="s">creates</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">bookmark"</span>
+    <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">curl</span><span class="nv"> </span><span class="s">-sf</span><span class="nv"> </span><span class="s">-X</span><span class="nv"> </span><span class="s">POST</span><span class="nv"> </span><span class="s">http://localhost:3000/api/bookmarks</span><span class="nv"> </span><span class="s">..."</span>
+  <span class="pi">-</span> <span class="na">label</span><span class="pi">:</span> <span class="s2">"</span><span class="s">GET</span><span class="nv"> </span><span class="s">/api/bookmarks/:id</span><span class="nv"> </span><span class="s">returns</span><span class="nv"> </span><span class="s">404</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">unknown</span><span class="nv"> </span><span class="s">id"</span>
+    <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">curl</span><span class="nv"> </span><span class="s">-sf</span><span class="nv"> </span><span class="s">-o</span><span class="nv"> </span><span class="s">/dev/null</span><span class="nv"> </span><span class="s">-w</span><span class="nv"> </span><span class="s">'%{http_code}'</span><span class="nv"> </span><span class="s">http://localhost:3000/api/bookmarks/99999</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">grep</span><span class="nv"> </span><span class="s">-q</span><span class="nv"> </span><span class="s">404"</span>
+</code></pre></div></div>
+
+<p>After the build completes, SpecGantry offers to run these checks against your running app:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete — STORY-001: Bookmark CRUD API
+
+  [R] Run tests (3 criteria)   [S] Skip
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">[R]</code> first checks that the app is responding at <code class="language-plaintext highlighter-rouge">/health</code> — if not, it skips cleanly and marks the story built without running tests. If the app is up, it runs each command and shows pass/fail per criterion. If any fail you can fix and rebuild, or mark the story built anyway.</p>
+
+<p><code class="language-plaintext highlighter-rouge">[S]</code> marks the story built immediately — same as the previous behavior.</p>
+
+<p><strong>Auto-continue mode</strong> always skips test execution and marks stories built immediately — test verification is a manual checkpoint.</p>
+
+<p>The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.</p>
+
+<p>A story is <strong>complete</strong> once all acceptance criteria are met (or you choose to proceed).</p>
 
 <hr />
 
@@ -457,6 +498,15 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 <h2 id="post-deployment">Handling Changes After Deployment</h2>
 
 <p>Use <code class="language-plaintext highlighter-rouge">[N] New work</code> at any point to describe new work — bug fix, enhancement, new story, or architectural change. SpecGantry classifies the work, reads the backlog and story specs to determine what’s affected, confirms with you, and re-enters the pipeline.</p>
+
+<p>You can also act on a specific story directly from the dashboard. Type a story ID for a story that is already built — SpecGantry shows an inline prompt:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>STORY-001: Bookmark CRUD API  ·  ✅ spec · ✅ built
+──────────────────────────────────────────────────────────
+What would you like to change?  &gt;
+</code></pre></div></div>
+
+<p>Describe the change — a bug, an enhancement, or a new feature in that story’s area — and SpecGantry routes it correctly without going through the <code class="language-plaintext highlighter-rouge">[N] New work</code> flow.</p>
 
 <table>
   <thead>

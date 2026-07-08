@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.2.8`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.2.9`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -133,7 +133,9 @@ SpecGantry detects your situation automatically and guides you from there.
         </div>
       </div>
       <div class="dg-entry-arrow"></div>
-      <div class="dg-entry-step">Beat 1 — Mature the idea<br><span style="font-size:.68rem;color:var(--slate-400)">15–30 min</span></div>
+      <div class="dg-entry-step">Quick-start (3 questions) or full ideation<br><span style="font-size:.68rem;color:var(--slate-400)">auto-detected from vision</span></div>
+      <div class="dg-entry-arrow"></div>
+      <div class="dg-entry-step">Beat 1 — Mature the idea<br><span style="font-size:.68rem;color:var(--slate-400)">full ideation only · 15–30 min</span></div>
       <div class="dg-entry-arrow"></div>
       <div class="dg-entry-step">Beat 2 — Shape the system<br><span style="font-size:.68rem;color:var(--slate-400)">tech stack · boundaries · backlog</span></div>
       <div class="dg-entry-arrow"></div>
@@ -180,7 +182,7 @@ SpecGantry detects your situation automatically and guides you from there.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.8  |  New Project
+SpecGantry v5.2.9  |  New Project
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -192,7 +194,7 @@ SpecGantry v5.2.8  |  New Project
 ```
 </div>
 
-Select `[1]`. You'll answer two questions — project name and vision. SpecGantry moves straight into ideation.
+Select `[1]`. You'll answer two questions — project name and vision. SpecGantry then checks whether the project looks simple (no auth, no AI integration, single actor type, three or fewer capabilities). If so, it switches to **quick-start mode**: it sets sensible defaults for stack decisions and deployment, asks only three focused questions, and gets you to a story backlog in a few minutes. For more complex projects it runs the full two-beat ideation conversation.
 
 ### Existing Codebase
 
@@ -203,7 +205,7 @@ Select `[2]` to have SpecGantry scan your files and propose an architecture, sto
 ## Your First Actions
 
 1. **Run `/spec-gantry`** — select Start New Project
-2. **Complete Ideation** (15–30 min) — Beat 1 matures the idea; Beat 2 shapes the system (tech stack, boundaries, guardrails, story backlog). Both happen in one conversation.
+2. **Answer two questions** — project name and vision. SpecGantry auto-detects whether to use quick-start mode (3 focused questions) or full ideation (15–30 min).
 3. **Commit `specs/` to git**
 4. **Type a story ID** from the dashboard to begin the story spec phase
 5. **Write the story spec** (5–15 min) — guided by the story-spec agent
@@ -271,7 +273,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.8  |  My App
+SpecGantry v5.2.9  |  My App
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -291,7 +293,7 @@ Shown once ideation is complete. The pipeline table and story picker are unified
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.2.8  |  Acme Platform  |  release 1.0.0
+SpecGantry v5.2.9  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build
@@ -322,7 +324,7 @@ Enter story ID or action:  `>`
 | `○` | Not yet reached |
 | `~` | Built but no spec written (reverse-engineered story) |
 
-Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline — no separate screen needed.
+Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline — no separate screen needed. For stories that are already built, typing the ID opens an inline prompt: "What would you like to change?" — letting you start a bug fix or enhancement directly without navigating to `[N] New work`.
 
 ---
 
@@ -338,7 +340,7 @@ Yes. Run `/spec-gantry` — if source files are found without a SpecGantry proje
 SpecGantry is designed for solo developers. Complete ideation, then work through stories one by one — spec then build each one.
 
 **"How much does it cost to run SpecGantry?"**
-It depends on project size and complexity. A complete ideation session typically runs $0.50–$2.00. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, story, release, and model.
+It depends on project size and complexity. Run `[$] Cost` at any point — or `/track-cost` — for a full live breakdown by phase, story, release, and model.
 
 **"When can I deploy?"**
 Once all stories are built. You are then prompted at a single confirmation point: any gap specs are reviewed and merged first, then you choose `[1] Deploy release` or `[X] Hold`.

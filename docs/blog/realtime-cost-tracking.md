@@ -15,7 +15,7 @@ There's a pattern playing out in teams that have adopted AI coding assistants se
 
 Month one: everything feels fast. Features ship, prototypes materialize, and the productivity gains are real. Month two: someone checks the Anthropic billing dashboard and the number is larger than expected. Month three: a finance conversation that nobody wanted to have.
 
-The problem isn't that AI development is expensive. For most projects it's remarkably cost-effective — a complete feature that would have taken three days of senior engineering time might cost $3–8 in tokens. That's an extraordinary value proposition.
+The problem isn't that AI development is expensive. For most projects it's remarkably cost-effective — features that would have taken days of senior engineering time can be implemented for a fraction of that cost in tokens. That's an extraordinary value proposition.
 
 The problem is that **cost is invisible until it isn't.** And by the time it is, the habits are set, the team doesn't know which phases drove the spend, and there's no data to inform decisions about where to optimize.
 
@@ -43,13 +43,13 @@ Token costs don't work that way. They're:
 
 Here's the failure mode we see consistently.
 
-A team ships release 1.0.0 of a product. It goes well. The AI-assisted approach worked. They check costs: $180 for the whole initial development cycle. Totally reasonable.
+A team ships release 1.0.0 of a product. It goes well. The AI-assisted approach worked. They check costs at the end: reasonable for the scope. Good.
 
 They start release 1.1.0. More features, more complexity, bigger codebase. The agents are working against more context per session. A few features require multiple spec revisions. The architecture got expanded during the cycle.
 
-Invoice: $340.
+The invoice for release 1.1.0 is nearly double release 1.0.0.
 
-Nobody saw it coming because nobody was watching it as it accumulated. There was no moment where someone could have said "this feature cost $45 to spec — let's look at whether we're writing specs efficiently." Or "we've spent $80 on architecture amendments this sprint — are we adding too much scope mid-cycle?"
+Nobody saw it coming because nobody was watching it as it accumulated. There was no moment where someone could have said "this feature took a lot of tokens to spec — let's look at whether we're writing specs efficiently." Or "we've spent a lot on architecture amendments this sprint — are we adding too much scope mid-cycle?"
 
 The data to have those conversations existed. It just wasn't surfaced in time to act on it.
 
@@ -63,7 +63,7 @@ Concretely, that means:
 
 **Knowing cost by phase.** If your architecture sessions are consistently more expensive than your development sessions, that might be fine — architecture is complex. Or it might mean your architecture sessions are running too long because the design questions aren't resolved before the session starts.
 
-**Knowing cost by story.** A story that cost $50 to develop is a different story than one that cost $8. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can't improve what you can't measure.
+**Knowing cost by story.** A story that cost significantly more to develop than another is a different story. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can't improve what you can't measure.
 
 **Knowing cost by model.** Different SpecGantry agents use different models — investigation uses Haiku (lightweight, read-only search), while ideation, story spec, development, and deployment use Sonnet (capable, more thorough). If your model spend profile looks wrong — too much Sonnet in phases that should be completing quickly — that's actionable information.
 
@@ -157,7 +157,7 @@ Most AI development tools solve one problem. Code generation tools help you writ
 
 SpecGantry is intentionally all three, because they can't actually be separated cleanly in AI-assisted development.
 
-**Cost tracking only makes sense with pipeline structure.** A cost entry that says "you spent $3.14 on development" is marginally useful. A cost entry that says "you spent $3.14 on `development` phase for `STORY-007` in `release 1.1.0` using `claude-sonnet-4-6`" is actionable. That specificity comes directly from the pipeline structure — phases, stories, releases — that SpecGantry enforces.
+**Cost tracking only makes sense with pipeline structure.** A cost entry that says "you spent X tokens on development" is marginally useful. A cost entry that says "you spent X tokens on `development` phase for `STORY-007` in `release 1.1.0` using `claude-sonnet-4-6`" is actionable. That specificity comes directly from the pipeline structure — phases, stories, releases — that SpecGantry enforces.
 
 **Project management only works if the pipeline is real.** Knowing that STORY-007 is "in development" means nothing if "in development" just means someone is editing files. SpecGantry's pipeline gates — spec before build, spec reviewed before development — mean the status is trustworthy.
 

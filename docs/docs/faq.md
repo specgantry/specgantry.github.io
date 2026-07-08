@@ -133,13 +133,7 @@ The token counts are exact (from the API response). The pricing is fetched live 
 
 ### How much does SpecGantry cost to run?
 
-For a typical 4-story project:
-- Ideation: $0.50–$1.50 (one Sonnet session with artifact synthesis)
-- Per story spec: $0.20–$0.60 (Sonnet, architecture artifacts + intent + spec write)
-- Per story build: $0.30–$1.00 (Sonnet, ~130-line targeted context)
-- Deployment: $0.20–$0.50 (Sonnet, build-reports + arch tech stack)
-
-A 4-story project typically runs $4–$10 total. Targeted reads reduce development-phase cost by 40–60% compared to v3's full-spec loading.
+Cost depends on project size and complexity. Run `/track-cost` at any point for a full live breakdown by phase, story, release, and model. Cost data is stored in `specs/cost-log.ndjson` and committed to git alongside your specs.
 
 ---
 

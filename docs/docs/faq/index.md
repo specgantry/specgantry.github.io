@@ -92,7 +92,9 @@ claude plugin install spec-gantry
 
 ### I'm starting a new project. What do I do?
 
-Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version `1.0.0` automatically. Takes 5–10 minutes.
+Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version `1.0.0` automatically.
+
+For simple projects (no auth, no AI, single actor type, three or fewer capabilities), SpecGantry activates quick-start mode automatically — it sets smart defaults for most architecture decisions and asks only three focused questions. For more complex projects it runs the full two-beat ideation conversation.
 
 ### I have an existing codebase. Should I reverse-engineer it?
 
@@ -106,7 +108,7 @@ Built stories enter the modification pipeline immediately — use `[N] New work`
 
 ### Can I skip ideation?
 
-No. Ideation produces `architecture.md` and the story backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation.
+No. Ideation produces `architecture.md` and the story backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation. For simple projects, quick-start mode reduces ideation to three questions without skipping any of the required outputs.
 
 ### Is there a separate architecture phase?
 
@@ -200,11 +202,21 @@ A spec clear enough that you (or anyone) could pick it up and build the same thi
 
 ### Can I edit a spec after starting to build?
 
-Yes. Return to `/spec-gantry`, select the story, and choose to edit the spec. Editing resets `spec_done` — you must re-confirm the spec before building can resume.
+Yes. Type the story ID from the dashboard — if the story is already built, SpecGantry shows an inline "What would you like to change?" prompt and routes through the investigation agent to understand the change before touching any state. If the story is mid-build (spec done, not yet built), return to `/spec-gantry`, select the story, and choose to edit the spec. Editing resets `spec_done` — you must re-confirm the spec before building can resume.
 
 ### Can I edit a spec mid-build if something comes up?
 
 The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — the main spec stays stable. Gap specs are merged before deployment.
+
+### What is the test plan and do I have to use it?
+
+After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: `[S] Skip` marks the story built immediately, same as the previous behavior. `[R] Run tests` runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.
+
+The same checks are used automatically by the investigation agent when you report a bug — it runs them first to pinpoint which criterion is currently failing before reading any source code.
+
+### Why does investigation ask me to start the app?
+
+The investigation agent needs the app to be running in order to confirm which acceptance criterion is currently failing. If it cannot reach the app at the expected port, it tells you the start command and cancels rather than producing findings that may be unreliable.
 
 ---
 

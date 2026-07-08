@@ -144,8 +144,8 @@ specs/
   stories/
     STORY-NNN/
       story-spec.md          ← Six-section spec, written section by section
-      build-report.yaml      ← Build notes and results
-      gap-YYYY-MM-DD.md     ← Gap spec (written mid-build if needed)
+      build-report.yaml      ← Build notes, test plan, and results
+      gap.md                 ← Gap spec (written mid-build if needed; one file per story)
 ```
 
 Every agent reads its input from this structure before doing anything. Every agent writes to its artifact immediately after each unit of progress. No state lives only in the context window.

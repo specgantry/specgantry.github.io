@@ -29,7 +29,7 @@ A story spec for a medium-complexity story — what the user can do, screens and
 
 A medium-complexity feature implementation takes roughly a day to build. Call it 8 hours.
 
-If the implementation is correct — spec-aligned, architecture-compliant, reviewable without major changes — the 30 minutes was overhead. The team shipped a feature and the spec was a cost of $0.30 in tokens and 30 minutes of a developer's time.
+If the implementation is correct — spec-aligned, architecture-compliant, reviewable without major changes — the 30 minutes was overhead. The team shipped a feature and the spec was a small token budget and 30 minutes of a developer's time.
 
 If the implementation is wrong — misunderstood requirements, architecture violation, conflicting API contract with another story — what happens?
 
@@ -107,16 +107,7 @@ In AI-assisted development, there's an additional cost that traditional SDLC ana
 
 When an AI coding assistant implements a feature incorrectly, the tokens consumed by that implementation are wasted — not just the developer's time. In a team running multiple parallel features, this adds up.
 
-Consider:
-- Architecture session: $0.60
-- Story spec session (one story): $0.25
-- Story development (one story): $0.45
-- Total per story (correct): $0.70
-
-With a 25% misalignment rate and a full rework:
-- Expected extra cost per story: 0.25 × $0.45 = ~$0.11
-
-With 20 stories in a typical project: $2.20 in wasted token spend from misaligned implementations. Not a lot by itself. But multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.
+The token cost of a story spec session is a small fraction of the token cost of a story development session. With a 25% misalignment rate and a full rework, the expected extra token spend per story from misaligned implementations is significant across a multi-story project. Not necessarily large in absolute terms — but multiply by the developer time attached to that rework, and the ratio holds: the spec session is cheap; the rework is expensive.
 
 The more important point is visibility. Most developers don't know what their AI-assisted development actually costs, let alone where the spend goes. Tracking token usage by phase and story makes the rework cost visible — and visible costs get managed.
 
@@ -152,13 +143,13 @@ None of this guarantees you'll ship the right feature. Requirements can be misun
 
 ## The 30-Minute Investment
 
-The argument for specs is ultimately simple, and the math is straightforward.
+The argument for specs is ultimately simple.
 
-A story spec takes 30 minutes and costs ~$0.25 in tokens. It makes the developer's interpretation explicit, verifies it against architecture, and creates a reviewable artifact.
+A story spec takes 30 minutes and a small token budget. It makes the developer's interpretation explicit, verifies it against architecture, and creates a reviewable artifact.
 
-A misaligned implementation costs 8–24 hours and $0.50–$1.50 in tokens to rework — more if discovered late.
+A misaligned implementation costs 8–24 hours and significantly more tokens to rework — more if discovered late.
 
-You need to be wrong about your implementation less than 1.5% of the time for skipping the spec to be the economically rational choice. In practice, interpretation misalignments happen 20–30% of the time without a spec, across requirements and architecture both.
+You need to be wrong about your implementation less than a small fraction of the time for skipping the spec to be the economically rational choice. In practice, interpretation misalignments happen 20–30% of the time without a spec, across requirements and architecture both.
 
 The spec is not overhead. It's the cheapest rework prevention available.
 

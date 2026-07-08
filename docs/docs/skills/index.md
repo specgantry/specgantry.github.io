@@ -88,6 +88,16 @@ Enter story ID or action:  `>`
 
 Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline. The left column shows the most useful contextual actions for your current state.
 
+For stories that are already built (✅ spec · ✅ built), typing the story ID opens an inline prompt rather than routing to the normal pipeline:
+
+```
+STORY-001: Bookmark CRUD API  ·  ✅ spec · ✅ built
+──────────────────────────────────────────────────────────
+What would you like to change?  >
+```
+
+Describe the change — a bug, an enhancement, or a new feature — and SpecGantry routes to the investigation agent pre-scoped to that story, then proceeds normally.
+
 **Pipeline stage icons:**
 
 | Icon | Meaning |
@@ -105,7 +115,7 @@ Stories marked `~` are not pushed through the automatic spec pipeline — type t
 
 ### What /spec-gantry Handles
 
-**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves straight into ideation.
+**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves into ideation. For simple projects (no auth, no AI, single actor, ≤3 capabilities), quick-start mode activates automatically — asking only three questions and setting smart defaults for the rest. Full ideation is always available via `[F]`.
 
 **Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture, story backlog, and guardrails. You review and confirm before anything is written.
 
@@ -270,9 +280,9 @@ Useful for understanding whether your spend profile aligns with what you'd expec
 
 | Phase | Model | Relative cost |
 |-------|-------|--------------|
-| Ideation | Haiku 4.5 | Low — conversational, short outputs |
+| Ideation | Sonnet 4.6 | Low–medium — conversational, but architecture reasoning |
 | Investigation | Haiku 4.5 | Very low — read-only codebase search |
-| Story spec | Sonnet 4.6 | Medium — per story |
+| Story spec | Haiku 4.5 | Low — per story, bounded spec format |
 | Development | Sonnet 4.6 | Highest — code generation |
 | Deployment | Sonnet 4.6 | Low — script generation, one-shot |
 
@@ -300,8 +310,7 @@ Cost tracking starts automatically once your first agent session completes. If t
 ```
 /spec-gantry → [1] Start new project
             → Enter name and vision
-            → Beat 1: mature the idea  (~10 min)
-            → Beat 2: shape the system (~15 min)
+            → Quick-start (3 questions) or full ideation (15–30 min)
             → architecture.md + backlog written
             → Commit specs/ to git
             → Type story ID to pick up first story
@@ -320,8 +329,9 @@ Cost tracking starts automatically once your first agent session completes. If t
 ### Handling a Production Bug
 
 ```
-/spec-gantry → [N] New work
+/spec-gantry → type story ID (or [N] New work)
             → Describe the bug
+            → Investigation agent checks if app is running (health gate)
             → Investigation agent reads codebase → confirms findings with you
             → Build agent uses findings as targeted brief — no spec rewrite
             → confirm deploy prompt

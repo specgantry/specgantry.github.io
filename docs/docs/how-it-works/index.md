@@ -112,12 +112,25 @@ After deployment, use `[N] New work` for any changes. Bug fixes and enhancements
 
 ### Phase 1 — Ideation {#ideation}
 
-**Time:** 15–30 minutes
+**Time:** 5–30 minutes (depends on project complexity)
 **Output:** `specs/architecture/` (6 artifacts) · story backlog in `specs/project-state.yaml`
 
 Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.
 
-**Beat 1 — Mature the idea**
+**Quick-start mode**
+
+After you enter a project name and vision, SpecGantry checks whether the project looks simple — no authentication, no AI integration, single actor type, three or fewer capabilities. If so, it switches to quick-start mode:
+
+```
+This looks like a simple single-user app — I can set smart defaults and ask only 3 questions.
+
+  [>] Quick start  (tech stack · Docker Hub username · story list)
+  [F] Full ideation  (10 topics, shape every decision)
+```
+
+Quick-start sets sensible defaults for all architecture sections (problem & users, constraints, risks, guardrails, configuration, UX model), asks three focused questions, and produces the same complete architecture artifacts as full ideation — just faster. Full ideation is always available via `[F]`.
+
+**Beat 1 — Mature the idea** (full ideation only)
 
 SpecGantry acts as a thinking partner, not an interviewer. It reads your vision and reacts to it using one of three stances:
 
@@ -127,7 +140,7 @@ SpecGantry acts as a thinking partner, not an interviewer. It reads your vision 
 
 Four topics, one question each: vision, problem & users, constraints, risks & out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on. You can save and stop at the Beat 1 summary — ideation will resume at Beat 2 on the next `/spec-gantry`.
 
-**Beat 2 — Shape the system**
+**Beat 2 — Shape the system** (full ideation only)
 
 Directly from the matured idea, SpecGantry proposes the system shape across six topics — each a proposal for you to confirm or redirect, not an open-ended question:
 
@@ -180,8 +193,39 @@ Key behaviors:
 - Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values
 - Maintains `.env.example` at the project root with every env var the project needs — safe to commit, placeholders for secrets
 - Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.
+- Implements a `GET /health` endpoint (returning `{"status":"ok"}`) as the first backend route on any story that exposes a port — used by the test runner and investigation agent to confirm the app is running.
 
-A story is **complete** once all acceptance criteria are met.
+**Test plan**
+
+After building, the build agent writes a `test_plan` section to `build-report.yaml` — one shell command per observable acceptance criterion, with the health check always first:
+
+```yaml
+test_plan:
+  - label: "app is healthy"
+    cmd: "curl -sf http://localhost:3000/health"
+  - label: "POST /api/bookmarks creates a bookmark"
+    cmd: "curl -sf -X POST http://localhost:3000/api/bookmarks ..."
+  - label: "GET /api/bookmarks/:id returns 404 for unknown id"
+    cmd: "curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/api/bookmarks/99999 | grep -q 404"
+```
+
+After the build completes, SpecGantry offers to run these checks against your running app:
+
+```
+✓ Build complete — STORY-001: Bookmark CRUD API
+
+  [R] Run tests (3 criteria)   [S] Skip
+```
+
+`[R]` first checks that the app is responding at `/health` — if not, it skips cleanly and marks the story built without running tests. If the app is up, it runs each command and shows pass/fail per criterion. If any fail you can fix and rebuild, or mark the story built anyway.
+
+`[S]` marks the story built immediately — same as the previous behavior.
+
+**Auto-continue mode** always skips test execution and marks stories built immediately — test verification is a manual checkpoint.
+
+The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.
+
+A story is **complete** once all acceptance criteria are met (or you choose to proceed).
 
 ---
 
@@ -284,6 +328,16 @@ Story specs **reference** this document rather than duplicating it. This keeps b
 ## Handling Changes After Deployment {#post-deployment}
 
 Use `[N] New work` at any point to describe new work — bug fix, enhancement, new story, or architectural change. SpecGantry classifies the work, reads the backlog and story specs to determine what's affected, confirms with you, and re-enters the pipeline.
+
+You can also act on a specific story directly from the dashboard. Type a story ID for a story that is already built — SpecGantry shows an inline prompt:
+
+```
+STORY-001: Bookmark CRUD API  ·  ✅ spec · ✅ built
+──────────────────────────────────────────────────────────
+What would you like to change?  >
+```
+
+Describe the change — a bug, an enhancement, or a new feature in that story's area — and SpecGantry routes it correctly without going through the `[N] New work` flow.
 
 | Type | What happens |
 |---|---|

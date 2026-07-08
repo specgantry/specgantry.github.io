@@ -145,7 +145,7 @@ Read the full `story-spec.md`. This is your implementation contract. The `## Cri
 
 Work in this order:
 1. Data layer first — schema, migrations, seed data if needed
-2. Backend — API endpoints or server actions
+2. Backend — **first:** implement `GET /health` returning `200 {"status":"ok"}` (mandatory for any story with `exposed_ports` — see rules below). Then: story-specific API endpoints or server actions.
 3. AI integration (if any) — use the exact prompt template from the arch or spec
 4. Frontend / UI — screens, states, error handling
 
@@ -158,6 +158,7 @@ Rules:
 - Commit in logical units: `feat([STORY-ID]): [description]`
 - **Secrets and config must come from environment variables.** This includes: API keys, model names, ports, connection strings, feature flags, max token limits, timeouts.
 - **`.env.example` is mandatory.** On every build: ensure `.env.example` exists at the project root and contains every variable from `architecture/architecture.md ## Configuration`. If this story introduces new env vars not already in that table (e.g. a new third-party API key or service URL), add them to `.env.example` with a placeholder value and note them in `build-report.yaml → warnings`. Values in `.env.example` must be safe to commit — placeholders for secrets, realistic defaults for config. Never write a `.env` file — only `.env.example`.
+- **`GET /health` is mandatory** for every story that exposes a port. Implement it as the very first backend endpoint — before any story-specific routes. It must return `200 OK` with body `{"status":"ok"}`. No auth, no middleware, no guards. The investigate subagent and orchestrator use this endpoint to confirm the app is running before executing tests.
 - When `investigation_findings` is passed by the orchestrator: the `files` list tells you which files to touch first; the `root_cause` is your implementation brief — start there, not from re-reading the full spec
 
 ## Code comment schema
@@ -245,7 +246,19 @@ commits: [list]
 gap_specs: []        # list of gap spec filenames if any (omit if empty)
 warnings: []         # ambiguities resolved, assumptions made (omit if empty)
 overall_status: pass
+test_plan:           # omit entirely if story has no exposed_ports
+  - label: "app is healthy"
+    cmd: "curl -sf http://localhost:[port]/health"
+  - label: "[criterion N — one-line description]"
+    cmd: "[shell command that exits 0 if the criterion is met]"
 ```
+
+**`test_plan` rules:**
+- Always include the health check as the first entry (label: `"app is healthy"`, cmd: `curl -sf http://localhost:[port]/health`).
+- One entry per `## Criteria` item that has an observable trigger (HTTP response, file created, DB row exists). Skip criteria that are purely subjective or require a browser.
+- Commands run from the project root against `localhost:[exposed_ports[0]]`. Use `curl -sf` for HTTP checks — exit code 0 = pass, non-zero = fail. For non-HTTP criteria use `grep`, `test -f`, or any shell assertion.
+- Derive endpoint paths and expected response fields from `## Interfaces` — use the exact routes, not guesses.
+- If the story has no `exposed_ports`, omit `test_plan` entirely.
 
 **Populating the `runtime:` block:** derive every field from what you actually observed during implementation. `build_command` is the exact command that produces deployable output. `has_dockerfile` is whether a Dockerfile exists. `has_migrations` is whether migration files are present. `exposed_ports` comes from the story spec or inferred from the framework. Omit optional fields rather than writing placeholder values.
 

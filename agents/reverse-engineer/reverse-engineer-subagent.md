@@ -294,9 +294,10 @@ files_modified: []
 commits: []
 overall_status: pass
 source: reverse-engineered
+test_plan: []        # no test plan for reverse-engineered stories — run /spec-gantry to build and generate one
 ```
 
-The `source: reverse-engineered` field marks this as inferred — not written by the build agent. The deployment agent treats it as valid but the user should verify `build_command` before running `deploy.sh`.
+The `source: reverse-engineered` field marks this as inferred — not written by the build agent. The deployment agent treats it as valid but the user should verify `build_command` before running `deploy.sh`. The empty `test_plan` tells the investigate subagent and orchestrator that no test commands are available yet for this story.
 
 ---
 

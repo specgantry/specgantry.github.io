@@ -33,7 +33,7 @@ Always pass `project_dir: [absolute cwd]` and `arch_ref: specs/architecture/arch
 
 **Cache-first context ordering (v5).** Every subagent invocation prompt must instruct the subagent to `Read: agents/_shared/preamble.md` **once per session, first**, before any other read. The preamble contains the stable rules (path handling, Artifact Index parsing, anchor schema, concern-raising protocol). Then reads follow the order: preamble → `architecture.md` → named arch sections → per-story files → `project-state.yaml`. Stable-first ordering maximizes prompt-cache reuse across invocations in the same session.
 
-**Auto-continue mode (v5.1).** `project-state.yaml → auto_continue: true|false` (default `false`). When true, the orchestrator does **not** pause on story-spec approval prompts — a spec that passes self-review with no concern is auto-approved (`spec_done:true` written, next action routed) without user input. The flag is user-controlled via the `[>] Run to next pause` dashboard action.
+**Auto-continue mode (v5.1).** `project-state.yaml → auto_continue: true|false` (default `false`). When true, the orchestrator does **not** pause on story-spec approval prompts — a spec that passes self-review with no concern is auto-approved (`spec_done:true` written, next action routed) without user input. Auto-continue also skips post-build test execution — builds are marked `built:true` immediately without offering `[R] Run tests`. The flag is user-controlled via the `[>] Run to next pause` dashboard action.
 
 Auto-continue clears back to `false` (and the pipeline stops) on any of:
 - Concern raised (`TURN:awaiting_concern:` from story-spec or `CONCERN_RAISED:` from development) — user must decide
@@ -447,7 +447,41 @@ Set `project.active_story: [story_id]` and `project.active_phase: development` i
   Recovery: run /spec-gantry to re-build, edit the spec, or inspect the gap manually.
   ```
   Re-render full dashboard · ⏸
-- Else: update `project-state.yaml → stories.[story_id]: built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard. Then immediately route to the next unblocked story's action (row 4 or 5 — interleaved pipeline) without waiting for user input.
+- Else (overall_status: pass):
+  **If `auto_continue:true`** → set `built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard · route to next unblocked story (row 4 or 5) without waiting for user input.
+
+  **If `auto_continue:false`** → read `build-report.yaml → test_plan` and `runtime.exposed_ports[0]`.
+
+  If `test_plan` absent or `exposed_ports` empty: set `built:true` · clear active_story/active_phase · re-render dashboard · route forward (same as today).
+
+  If `test_plan` present: run health gate first:
+  - `curl -sf http://localhost:[exposed_ports[0]]/health`
+  - If health gate **fails**: emit `⚠ App not running — skipping test verification.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
+  - If health gate **passes**: offer:
+    ```
+    ✓ Build complete — [STORY-ID]: [title]
+
+      [R] Run tests ([n] criteria)   [S] Skip
+    ```
+    On `[S]`: set `built:true` · clear active_story/active_phase · re-render · route forward.
+
+    On `[R]`: run each `test_plan` cmd in order. Show result per label:
+    ```
+    ✓ app is healthy
+    ✓ POST /api/recipes creates a recipe
+    ✗ GET /api/recipes/:id returns 404 for unknown id
+    ```
+    If **all pass**: emit `✓ All [n] tests passed.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
+
+    If **any fail**: emit:
+    ```
+    ✗ [n] test(s) failed — story not marked built.
+
+      [1] Fix and rebuild   [2] Mark built anyway   [X] Cancel
+    ```
+    - `[1]` → re-invoke `spec-gantry:development:development-subagent` for this story · repeat After: block on return.
+    - `[2]` → set `built:true` · append warning to `build-report.yaml → warnings`: "marked built with [n] failing test(s)" · clear active_story/active_phase · re-render · route forward.
+    - `[X]` → leave `built:false` · clear active_story/active_phase · re-render · ⏸ pause.
 
 When all stories have `built:true`:
 - Re-render full dashboard (action bar shows `[1] Deploy release [version]`)

@@ -321,7 +321,7 @@ services:
       [dependent-service]:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:[port][health_path]"]
+      test: ["CMD", "curl", "-f", "http://localhost:[port]/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -663,7 +663,7 @@ run_step "Verify services are healthy" \
 # --- Health: [STORY-ID] ---
 echo "→ Waiting for [title]..."
 HEALTH_PORT=[first port from runtime.exposed_ports]
-HEALTH_PATH=[/health or / — infer from story spec interfaces]
+HEALTH_PATH=/health
 if [[ "$DRY_RUN" == "true" ]]; then
   HEALTH_HOST="localhost"
 else

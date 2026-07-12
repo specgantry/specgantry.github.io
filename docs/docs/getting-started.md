@@ -35,7 +35,7 @@ You should see:
 
 ```
 ✓ Plugin installed: SpecGantry v5.1.0
-✓ 2 skills loaded · 7 agents registered
+✓ 2 skills loaded · 8 agents registered
 ```
 
 ### Update an Existing Install

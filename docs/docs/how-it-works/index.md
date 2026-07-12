@@ -183,21 +183,38 @@ After all sections, guardrails from `architecture.md` are checked. Any violation
 ### Phase 3 — Build {#build}
 
 **Time:** Depends on story complexity
-**Output:** Source code committed · `specs/stories/STORY-NNN/build-report.yaml`
+**Output:** Source code committed · `specs/stories/STORY-NNN/build-report.yaml` · `specs/stories/STORY-NNN/governor-report.yaml`
 
-The build phase turns the confirmed spec into working code. The dev agent works through each acceptance criterion, implementing each one and verifying it works before moving to the next.
+The build phase turns the confirmed spec into working code and verifies it meets quality standards before the story is marked done.
 
-Key behaviors:
-- Implements the full vertical slice — UI, backend, data layer, AI integration — exactly as specced
+**Before the dev agent writes a line**, the Governor reviews the spec and produces a pre-build brief — surfacing ambiguities in acceptance criteria, storage choice questions, UI state gaps, and implementation risks. The dev agent reads this brief as part of its context.
+
+**The dev agent** then builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:
 - Respects every guardrail in `architecture.md` and uses env var names exactly as defined in `## Configuration`
-- Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values
-- Maintains `.env.example` at the project root with every env var the project needs — safe to commit, placeholders for secrets
-- Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.
-- Implements a `GET /health` endpoint (returning `{"status":"ok"}`) as the first backend route on any story that exposes a port — used by the test runner and investigation agent to confirm the app is running.
+- Secrets and all runtime config come from environment variables — no hardcoded values
+- Maintains `.env.example` at the project root with every env var the project needs
+- Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences)
+- Implements a `GET /health` endpoint as the first backend route on any story that exposes a port
+
+**After the build**, the Governor reads the actual code alongside the spec and reviews 7 quality dimensions:
+
+| Dimension | What it checks |
+|-----------|---------------|
+| Spec adherence | Does the code logic satisfy every acceptance criterion, including error paths? |
+| Contract fidelity | Are all required fields in each contract actually populated from real data? |
+| Input completeness | Are all required fields validated? Correct error status codes? |
+| Persistence appropriateness | Is the storage choice right for the entity's lifecycle and use case? |
+| UI quality | Theme consistency, loading/error states, accessibility basics, breakpoints |
+| Scope hygiene | Extra code not in the spec, or missing code that is in the spec |
+| Cross-story coherence | Consistent field names, error patterns, and naming vs prior stories |
+
+Each dimension produces a verdict: **PASS**, **FLAG**, **ADVISORY**, or **SKIP** (for API-only stories on UI dimensions). If any blocking dimension is flagged, the Governor writes file-specific fix instructions and the dev agent does a full rebuild. This loop continues until all blocking dimensions pass or the configured maximum iterations are reached.
+
+The final outcome is recorded in `specs/stories/STORY-NNN/governor-report.yaml` with status `passed`, `partial` (loop detected), or `capped` (max iterations). A capped or partial story is still marked built — the report documents what remains for the user to decide on.
 
 **Test plan**
 
-After building, the build agent writes a `test_plan` section to `build-report.yaml` — one shell command per observable acceptance criterion, with the health check always first:
+The build agent writes a `test_plan` section to `build-report.yaml` — one shell command per observable acceptance criterion, with the health check always first:
 
 ```yaml
 test_plan:
@@ -209,23 +226,23 @@ test_plan:
     cmd: "curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/api/bookmarks/99999 | grep -q 404"
 ```
 
-After the build completes, SpecGantry offers to run these checks against your running app:
+After the build and governor review complete, SpecGantry offers to run these checks against your running app:
 
 ```
-✓ Build complete — STORY-001: Bookmark CRUD API
+✓ Build complete — STORY-001: Bookmark CRUD API  ·  governor: passed (2 iters)
 
   [R] Run tests (3 criteria)   [S] Skip
 ```
 
 `[R]` first checks that the app is responding at `/health` — if not, it skips cleanly and marks the story built without running tests. If the app is up, it runs each command and shows pass/fail per criterion. If any fail you can fix and rebuild, or mark the story built anyway.
 
-`[S]` marks the story built immediately — same as the previous behavior.
+`[S]` marks the story built immediately.
 
 **Auto-continue mode** always skips test execution and marks stories built immediately — test verification is a manual checkpoint.
 
 The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.
 
-A story is **complete** once all acceptance criteria are met (or you choose to proceed).
+A story is **complete** once the governor review passes and all acceptance criteria are met (or you choose to proceed).
 
 ---
 

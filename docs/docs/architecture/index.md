@@ -165,8 +165,8 @@ How state and subagents connect across the full lifecycle:
         </div>
         <div style="display:flex;align-items:center;color:var(--slate-300);font-size:.9rem">→</div>
         <div style="flex:1;min-width:150px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: built</div>
+          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build + Governor</div>
+          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: built · governor_status</div>
         </div>
       </div>
       <div class="dg-flow-node-meta" style="margin-top:6px">gap.md written if spec diverges from build</div>

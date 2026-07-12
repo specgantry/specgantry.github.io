@@ -210,9 +210,41 @@ The safe path for mid-build adjustments is a gap spec, not a direct edit. If you
 
 ### What is the test plan and do I have to use it?
 
-After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: `[S] Skip` marks the story built immediately, same as the previous behavior. `[R] Run tests` runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.
+After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: `[S] Skip` marks the story built immediately. `[R] Run tests` runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.
 
 The same checks are used automatically by the investigation agent when you report a bug — it runs them first to pinpoint which criterion is currently failing before reading any source code.
+
+### What is the Governor and why does it add time to each build?
+
+The Governor is a quality review agent that runs automatically during every build — no extra commands needed. It works in two passes:
+
+**Before the dev agent builds:** it reads the spec and produces a pre-build brief flagging spec ambiguities, storage choice questions, UI state gaps, and implementation risks. The dev agent uses this brief as additional context.
+
+**After the build:** it reads the actual code alongside the spec and reviews 7 quality dimensions — whether the code satisfies each acceptance criterion, whether contract shapes are correct, whether required inputs are validated, whether the storage choice suits the use case, whether the UI follows the project's visual system, whether scope is clean, and whether patterns are consistent with prior stories. Any blocking issue gets a file-specific fix instruction, and the dev agent does a full rebuild to address it.
+
+The extra time is intentional — it front-loads the review work that would otherwise surface as post-delivery bugs and rework.
+
+### What does "governor: capped" mean in the build transition note?
+
+It means the Governor ran the maximum number of review-rebuild iterations (default: 3) and still had unresolved blocking issues. The story is marked built anyway — the `specs/stories/STORY-NNN/governor-report.yaml` file documents exactly which dimensions didn't pass and what the fix instructions were. You can address them as an enhancement, or adjust the governor config if the threshold is wrong for your project.
+
+### What does "governor: partial" mean?
+
+It means the same blocking dimensions were flagged on two consecutive iterations — the dev agent rebuilt but produced the same gaps. This usually means the spec itself needs clarification. Check `governor-report.yaml` and the patch files under `specs/stories/STORY-NNN/patches/` — the fix instructions will point to the root ambiguity.
+
+### Can I configure how strict the Governor is?
+
+Yes — add a `governor:` block to `project-state.yaml`:
+
+```yaml
+governor:
+  max_iterations: 3        # default: 3 — raise for complex stories, lower for prototyping
+  blocking_override:
+    persistence_appropriateness: advisory   # downgrade to advisory for this project
+    cross_story_coherence: blocking         # upgrade to blocking
+```
+
+If the block is absent, all defaults apply. Dimensions not listed in `blocking_override` use their defaults.
 
 ### Why does investigation ask me to start the app?
 

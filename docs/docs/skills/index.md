@@ -158,6 +158,28 @@ SpecGantry always confirms its classification and story mapping before proceedin
 
 ---
 
+### The Governor
+
+Every story passes through a quality review loop during the build phase — automatically, without any extra commands.
+
+**Before the dev agent builds:** the Governor reads the spec and surfaces a pre-build brief — spec ambiguities to resolve, storage choice questions, UI state gaps to address, and implementation risks to watch for.
+
+**After the build:** the Governor reads the actual code and reviews 7 quality dimensions: does the code satisfy every acceptance criterion? Are contract shapes correct? Are required inputs validated? Is the persistence choice appropriate? Does the UI follow the project's visual system? Is the scope clean? The review produces a per-dimension verdict with file-specific fix instructions for anything that doesn't pass.
+
+If blocking issues are found, the dev agent rebuilds with the fix instructions as part of its brief. The loop continues until all blocking dimensions pass. The result is recorded in `specs/stories/STORY-NNN/governor-report.yaml`.
+
+**Governor config** (in `project-state.yaml`):
+```yaml
+governor:
+  max_iterations: 3        # rebuild cycles before capping (default: 3)
+  blocking_override: {}    # override per-dimension classification, e.g.:
+                           # persistence_appropriateness: advisory
+```
+
+The transition note tells you how it went: `governor: passed (2 iters)`, `governor: capped (3 iters, 2 flags remain)`, or `governor: partial (cycling)`.
+
+---
+
 ### Session Resume
 
 All progress is saved after every question and every section. Every `/spec-gantry` invocation picks up exactly where you left off — no manual state management, no lost progress.
@@ -283,10 +305,11 @@ Useful for understanding whether your spend profile aligns with what you'd expec
 | Ideation | Sonnet 4.6 | Low–medium — conversational, but architecture reasoning |
 | Investigation | Haiku 4.5 | Very low — read-only codebase search |
 | Story spec | Haiku 4.5 | Low — per story, bounded spec format |
+| Governor | Sonnet 4.6 | Low–medium per iteration — reads actual code; 1–3 iterations typical |
 | Development | Sonnet 4.6 | Highest — code generation |
 | Deployment | Sonnet 4.6 | Low — script generation, one-shot |
 
-Development dominates total spend. If costs are higher than expected, check the By Story view — a single complex story often accounts for a disproportionate share.
+Development still dominates total spend. Governor adds a modest overhead per story — typically 1–2 iterations — that front-loads quality review cost that would otherwise surface as post-delivery rework.
 
 ---
 

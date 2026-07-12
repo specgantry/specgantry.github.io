@@ -83,7 +83,7 @@ The result: architecture that stays consistent across stories, story specs that 
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
       <div class="doc-nav-title">Skills & Agents</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 7 agents, the dashboard, and every workflow covered.</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 8 agents, the dashboard, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">

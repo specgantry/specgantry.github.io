@@ -26,6 +26,7 @@ You are the **orchestrator** — the only session-level entity that can spawn su
 | `spec-gantry:investigate:investigate-subagent` | investigation | haiku-4-5 |
 | `spec-gantry:story-spec:story-spec-subagent` | story spec | haiku-4-5 (v5 — was sonnet) |
 | `spec-gantry:development:development-subagent` | build | sonnet-4-6 |
+| `spec-gantry:governor:governor-subagent` | build (governor loop) | sonnet-4-6 |
 | `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
 | `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | haiku-4-5 (v5 — was sonnet) |
 
@@ -40,6 +41,7 @@ Auto-continue clears back to `false` (and the pipeline stops) on any of:
 - Any pending gap flag set (`pending_arch_gap` or `pending_spec_gap`) — automatic recovery routing still runs, but the pipeline halts after
 - All unblocked stories built and ready for deploy — pipeline halts at `confirm_and_deploy` for explicit user go-ahead (deploy is never auto-run)
 - Any subagent error, build-report failure, or `SPEC_HELD` signal
+- `GOVERNOR_HELD:[reason]` signal from the governor subagent
 - User types any input while a pause point is imminent (interrupts the auto-run — treat as a manual command)
 
 When auto-continue clears due to any of the above, set `auto_continue: false` in project-state.yaml before re-rendering. Emit a one-line note above the dashboard matching the clear reason:
@@ -423,65 +425,117 @@ Find the next story to build: lowest-numbered story in topological order where `
 
 Set `project.active_story: [story_id]` and `project.active_phase: development` in `specs/project-state.yaml`.
 
-**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`
+Read `governor.max_iterations` (default `3`) and `governor.blocking_override` (default `{}`) from `project-state.yaml`.
 
-**After:** 
-- If the subagent's last line is `CONCERN_RAISED:[summary]` (v5): read `specs/stories/[story_id]/gap.md → ## Concern` · surface using Q&A format with action bar `[!] Concern: <one-line summary>` and options `[Y] Proceed with suggestion   [N] Ignore, build as-spec   [E] Edit spec first` · ⏸ pause. On user response:
-  - `Y` — append one line to `specs/concerns-log.ndjson` (phase: development, response: Y) · re-invoke development with `concern_resolution: apply`
-  - `N` — append one line to `specs/concerns-log.ndjson` (phase: development, response: N) · re-invoke development with `concern_resolution: ignore`
-  - `E` — append one line to `specs/concerns-log.ndjson` (phase: development, response: E) · clear `project.active_story` · clear `project.active_phase` · set `pending_spec_gap: {triggered_by: development-concern, story_id: [story_id], reason: "user chose to edit spec after concern", resume_phase: development}` · re-route to P1
-- If `pending_spec_gap` non-null: clear `project.active_story` · clear `project.active_phase` · re-route to P1.
-- If `specs/stories/[story_id]/build-report.yaml` does not exist on disk → clear `active_story` · clear `active_phase` · emit:
+**Step G0 — Reconstruct patch list from disk:**
+Scan `specs/stories/[story_id]/patches/` for existing patch files (sort numerically). This is the authoritative `governor_patch_files` list — always derived from disk so the loop survives crash, P1 recovery, and concern resolution.
+
+**Step G1 — Governor approach review (if patches/patch-0.yaml absent):**
+If `specs/stories/[story_id]/patches/patch-0.yaml` does not exist:
+- Invoke `spec-gantry:governor:governor-subagent` · description: `"Approach review for [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`, `mode: approach`, `iteration: 0`
+- On `APPROACH_REVIEW_WRITTEN:patches/patch-0.yaml`: verify file exists on disk · append to `governor_patch_files`
+- On any other return or missing file: emit `⚠ Governor approach review failed for [story_id] — continuing without it.` · proceed (non-fatal)
+
+**Step G2 — Development subagent:**
+Compute iteration N = (count of `type: review` patch files in `governor_patch_files`) + 1.
+
+**Invoke:** `spec-gantry:development:development-subagent` · description: `"Building [story_id]: [title] (iteration [N])"` · pass `story_id`, `project_dir`, `arch_ref`, `governor_patch_files: [cumulative list]`, plus any applicable optional params (`gate_bypass`, `enhancement_gap`, `concern_resolution`, `investigation_findings`)
+
+**After (existing signal handling — unchanged):**
+- If last line is `CONCERN_RAISED:[summary]`: read `specs/stories/[story_id]/gap.md → ## Concern` · surface with action bar `[!] Concern: <one-line>` and options `[Y] Proceed   [N] Ignore   [E] Edit spec` · ⏸ pause. On response:
+  - `Y` — log to concerns-log.ndjson · re-invoke development with `concern_resolution: apply` and same `governor_patch_files`
+  - `N` — log to concerns-log.ndjson · re-invoke development with `concern_resolution: ignore` and same `governor_patch_files`
+  - `E` — log to concerns-log.ndjson · clear active_story/active_phase · set `pending_spec_gap: {triggered_by: development-concern, story_id: [story_id], reason: "user chose to edit spec after concern", resume_phase: development}` · re-route to P1
+- If `pending_spec_gap` non-null: clear active_story/active_phase · re-route to P1. (On resume, G0 reconstructs patch list from disk automatically.)
+- If `specs/stories/[story_id]/build-report.yaml` missing → clear active_story/active_phase · emit incomplete build message (existing format) · re-render · ⏸
+- If `overall_status: fail` → clear active_story/active_phase · emit build failed message (existing format) · re-render · ⏸
+
+**Step G3 — Governor quality review (after overall_status:pass, before built:true):**
+Check for an already-completed governor report:
+- If `specs/stories/[story_id]/governor-report.yaml` exists AND `status` is `passed`, `partial`, or `capped` → skip to **Mark built** (governor loop already completed for this build)
+
+Otherwise invoke governor:
+Invoke `spec-gantry:governor:governor-subagent` · description: `"Reviewing [story_id]: [title] (iteration [N])"` · pass `story_id`, `project_dir`, `arch_ref`, `mode: review`, `iteration: [N]`, `prior_patches: [governor_patch_files]`
+
+**Step G4 — Governor signal handling:**
+
+`GOVERNOR_PASSED`:
+- Write to project-state: `stories.[story_id].governor_status: passed` · `governor_iterations: [N]`
+- → **Mark built**
+
+`GOVERNOR_FLAGGED:[n] blocking flags`:
+- Read `blocking_flags` from the review patch just written (`patches/patch-[N].yaml`)
+- **Partial detection:** if N > 1, read `blocking_flags` from `patches/patch-[N-1].yaml`. If both lists contain the same set of dimension names: the loop is cycling — the dev agent cannot fix these without a spec change. Write `governor_status: partial` · emit partial note · → **Mark built**
+- If flags differ (or N == 1 — no prior review to compare): check if N >= max_iterations → write `governor_status: capped` · emit capped note · → **Mark built**
+- Otherwise: append `patches/patch-[N].yaml` to `governor_patch_files` · **go back to Step G2** (full rebuild, increment N)
+
+`GOVERNOR_PARTIAL`:
+- Write to project-state: `governor_status: partial` · `governor_iterations: [N]`
+- Emit: `⚠ Governor: [story_id] same dimensions flagged across iterations — exiting loop. Check specs/stories/[story_id]/governor-report.yaml`
+- → **Mark built**
+
+`GOVERNOR_CAPPED`:
+- Write to project-state: `governor_status: capped` · `governor_iterations: [N]`
+- Emit: `⚠ Governor: [story_id] capped after [N] iterations — check specs/stories/[story_id]/governor-report.yaml`
+- → **Mark built**
+
+`GOVERNOR_HELD:[reason]`:
+- Clear `project.active_story: null` · clear `project.active_phase: null`
+- Set `auto_continue: false`
+- Emit: `⏸ Governor held — [story_id]: [reason]. Check specs/stories/[story_id]/governor-report.yaml.`
+- Re-render dashboard · ⏸ pause
+
+`TURN:awaiting_governor_question:[summary]`:
+- Read `specs/stories/[story_id]/governor-question.md` for the full question text
+- Surface using Q&A format with action bar `[!] Governor question: <summary>` and options `[Y] [N] [E]` (text from the question file)
+- ⏸ pause. On user response:
+  - Log to `specs/concerns-log.ndjson`: `{"ts":"...","phase":"governor","story_id":"[story_id]","concern":"[summary]","response":"Y|N|E"}`
+  - Delete `specs/stories/[story_id]/governor-question.md` from disk
+  - Re-invoke `spec-gantry:governor:governor-subagent` with same params plus `question_resolution: [Y|N|E]`
+  - Continue from G4 signal handling on return
+- Note: `GOVERNOR_HELD` signal clears `auto_continue`. Governor questions do NOT clear `auto_continue` — if `auto_continue:true`, surface the question, wait for the answer, then resume auto-run.
+
+**Mark built (shared exit for all governor outcomes):**
+
+**If `auto_continue:true`** → set `built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard · route to next unblocked story (row 4 or 5) without waiting for user input.
+
+**If `auto_continue:false`** → read `build-report.yaml → test_plan` and `runtime.exposed_ports[0]`.
+
+If `test_plan` absent or `exposed_ports` empty: set `built:true` · clear active_story/active_phase · re-render dashboard · route forward.
+
+If `test_plan` present: run health gate first:
+- `curl -sf http://localhost:[exposed_ports[0]]/health`
+- If health gate **fails**: emit `⚠ App not running — skipping test verification.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
+- If health gate **passes**: offer:
   ```
-  ⚠ Build did not complete — [STORY-ID]: [title]
-  The build agent stopped before writing its completion report — it was likely interrupted mid-run. No code was committed for this story.
-  Technical detail: specs/stories/[STORY-ID]/build-report.yaml is missing.
-  Recovery: run /spec-gantry — it will detect the incomplete build and restart it.
+  ✓ Build complete — [STORY-ID]: [title]  ·  governor: [status] ([N] iters)
+
+    [R] Run tests ([n] criteria)   [S] Skip
   ```
-  Re-render full dashboard · ⏸
-- Read `overall_status` from `build-report.yaml`; if `fail` → clear `active_story` · clear `active_phase` · emit:
+  On `[S]`: set `built:true` · clear active_story/active_phase · re-render · route forward.
+
+  On `[R]`: run each `test_plan` cmd in order. Show result per label:
   ```
-  ✗ Build failed — [STORY-ID]: [title]
-  The build agent completed but the build report marks this story as failed.
-  Technical detail: check specs/stories/[STORY-ID]/build-report.yaml → gap_specs and warnings for the failure details.
-  Recovery: run /spec-gantry to re-build, edit the spec, or inspect the gap manually.
+  ✓ app is healthy
+  ✓ POST /api/recipes creates a recipe
+  ✗ GET /api/recipes/:id returns 404 for unknown id
   ```
-  Re-render full dashboard · ⏸
-- Else (overall_status: pass):
-  **If `auto_continue:true`** → set `built:true` · clear `project.active_story: null` · clear `project.active_phase: null` · re-render dashboard · route to next unblocked story (row 4 or 5) without waiting for user input.
+  If **all pass**: emit `✓ All [n] tests passed.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
 
-  **If `auto_continue:false`** → read `build-report.yaml → test_plan` and `runtime.exposed_ports[0]`.
+  If **any fail**: emit:
+  ```
+  ✗ [n] test(s) failed — story not marked built.
 
-  If `test_plan` absent or `exposed_ports` empty: set `built:true` · clear active_story/active_phase · re-render dashboard · route forward (same as today).
+    [1] Fix and rebuild   [2] Mark built anyway   [X] Cancel
+  ```
+  - `[1]` → re-invoke `spec-gantry:development:development-subagent` for this story with same `governor_patch_files` · repeat After: block on return.
+  - `[2]` → set `built:true` · append warning to `build-report.yaml → warnings`: "marked built with [n] failing test(s)" · clear active_story/active_phase · re-render · route forward.
+  - `[X]` → leave `built:false` · clear active_story/active_phase · re-render · ⏸ pause.
 
-  If `test_plan` present: run health gate first:
-  - `curl -sf http://localhost:[exposed_ports[0]]/health`
-  - If health gate **fails**: emit `⚠ App not running — skipping test verification.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
-  - If health gate **passes**: offer:
-    ```
-    ✓ Build complete — [STORY-ID]: [title]
-
-      [R] Run tests ([n] criteria)   [S] Skip
-    ```
-    On `[S]`: set `built:true` · clear active_story/active_phase · re-render · route forward.
-
-    On `[R]`: run each `test_plan` cmd in order. Show result per label:
-    ```
-    ✓ app is healthy
-    ✓ POST /api/recipes creates a recipe
-    ✗ GET /api/recipes/:id returns 404 for unknown id
-    ```
-    If **all pass**: emit `✓ All [n] tests passed.` · set `built:true` · clear active_story/active_phase · re-render · route forward.
-
-    If **any fail**: emit:
-    ```
-    ✗ [n] test(s) failed — story not marked built.
-
-      [1] Fix and rebuild   [2] Mark built anyway   [X] Cancel
-    ```
-    - `[1]` → re-invoke `spec-gantry:development:development-subagent` for this story · repeat After: block on return.
-    - `[2]` → set `built:true` · append warning to `build-report.yaml → warnings`: "marked built with [n] failing test(s)" · clear active_story/active_phase · re-render · route forward.
-    - `[X]` → leave `built:false` · clear active_story/active_phase · re-render · ⏸ pause.
+**Transition note format** (emit above dashboard on build complete):
+- Passed: `✓ Build complete · [STORY-ID]: [title]  ·  governor: passed ([N] iters)`
+- Capped: `✓ Build complete · [STORY-ID]: [title]  ·  governor: capped ([N] iters, [n] flags remain)`
+- Partial: `✓ Build complete · [STORY-ID]: [title]  ·  governor: partial (cycling on [flag list])`
 
 When all stories have `built:true`:
 - Re-render full dashboard (action bar shows `[1] Deploy release [version]`)

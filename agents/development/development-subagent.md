@@ -15,6 +15,13 @@ You do not make architectural decisions. The spec is the contract. If reality di
 
 **Input:** `story_id` (e.g. `STORY-001`)
 
+Optional inputs:
+- `gate_bypass:true` — skip `spec_done` check (bug fix / enhancement hot path)
+- `enhancement_gap:[filename]` — read this gap file immediately after gate; `## Changes` bullets are the change brief
+- `concern_resolution: apply|ignore` — skip concern scan and proceed with resolved directive
+- `investigation_findings` — targeted brief for bug fixes (files, root_cause)
+- `governor_patch_files: [list of patch paths]` — cumulative governor patches to load (e.g. `patches/patch-0.yaml, patches/patch-1.yaml`)
+
 ## HARD GATE
 
 ```
@@ -39,6 +46,11 @@ Before writing any code, load context in this exact order (stable-first for prom
 2. `specs/stories/[story_id]/intent.md` — grounds your judgment calls. When you face an ambiguity not covered by the spec, the intent tells you what the user is trying to accomplish.
 
 3. `specs/stories/[story_id]/story-spec.md` — extract the `reads:` block from the YAML frontmatter. This is your fetch list for step 5.
+
+3.5. **Governor patches (if `governor_patch_files` provided):** Read each patch file in the list, in order. Accumulate:
+   - From the `type: approach` patch: `review.spec_ambiguities`, `review.persistence_questions`, `review.ui_questions`, `review.risk_flags`
+   - From all `type: review` patches: flatten all per-dimension `fix_instructions` across all iterations into a single ordered list
+   - If `governor_patch_files` is absent or empty: proceed silently — no governor context.
 
 4. `specs/architecture/architecture.md` — extract three things only:
    - `## Artifact Index` — parse once per preamble § 3
@@ -142,6 +154,25 @@ If a concern was already raised on a prior invocation for this story (i.e. `conc
 ## Implementation
 
 Read the full `story-spec.md`. This is your implementation contract. The `## Criteria` section defines done. Implement everything required to satisfy every criterion.
+
+**Governor patch integration (when `governor_patch_files` provided):**
+
+Before starting the work order, work through the accumulated governor context:
+
+**From the approach patch** (no review patches yet — first build):
+- For each `spec_ambiguity`: resolve it from intent.md and arch artifacts before writing any code. If resolvable: note your interpretation in `build-report.yaml → warnings`. If not resolvable: raise as a concern (existing concern-raising protocol).
+- For each `persistence_question`: read the entity in `data-model.md` and the relevant `actor:` section. Make a clear persistence decision before designing the data layer. Note the decision in `build-report.yaml → warnings`.
+- For each `ui_question`: read `ux:component-conventions` and `ux:visual-system`. Make the call. Note it in warnings if non-obvious.
+- For each `risk_flag`: keep it in mind during implementation. Implement defensively where flagged.
+- All approach items are pre-flight checklists — they do not override the spec.
+
+**From review patches** (iteration 2+ — one or more review patches present):
+- This is a **full rebuild**. Read the existing codebase for orientation only. Do not attempt to patch the prior implementation.
+- Consolidate all `fix_instructions` from all review patches into a single ordered list.
+- Treat (original spec + consolidated fix instructions) as your complete brief. Rewrite the story from scratch, satisfying every criterion in the spec and every fix instruction in the list.
+- Each fix instruction names a specific file and a specific criterion, contract, or interface that was not satisfied. Address each one directly — no guessing.
+- Do NOT modify spec or arch artifacts based on fix instructions. If a fix instruction reveals a spec gap, raise a concern or signal `pending_spec_gap` per the existing protocol.
+- HARD GATE, contract pre-flight, and concern scan run identically on every iteration — no shortcuts on governor rebuilds.
 
 Work in this order:
 1. Data layer first — schema, migrations, seed data if needed

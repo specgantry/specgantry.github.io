@@ -10,4 +10,7 @@ arch_seeded: false
 pending_arch_gap: null
 pending_spec_gap: null
 auto_continue: false
+governor:
+  max_iterations: 3
+  blocking_override: {}
 stories: {}

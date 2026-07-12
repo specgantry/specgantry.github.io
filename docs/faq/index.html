@@ -102,6 +102,7 @@
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
           <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
           <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#governor" class="sidebar-link sidebar-sublink">Governor</a>
           <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
           <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
           <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
@@ -372,9 +373,40 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="what-is-the-test-plan-and-do-i-have-to-use-it">What is the test plan and do I have to use it?</h3>
 
-<p>After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: <code class="language-plaintext highlighter-rouge">[S] Skip</code> marks the story built immediately, same as the previous behavior. <code class="language-plaintext highlighter-rouge">[R] Run tests</code> runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.</p>
+<p>After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: <code class="language-plaintext highlighter-rouge">[S] Skip</code> marks the story built immediately. <code class="language-plaintext highlighter-rouge">[R] Run tests</code> runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.</p>
 
 <p>The same checks are used automatically by the investigation agent when you report a bug — it runs them first to pinpoint which criterion is currently failing before reading any source code.</p>
+
+<h3 id="what-is-the-governor-and-why-does-it-add-time-to-each-build">What is the Governor and why does it add time to each build?</h3>
+
+<p>The Governor is a quality review agent that runs automatically during every build — no extra commands needed. It works in two passes:</p>
+
+<p><strong>Before the dev agent builds:</strong> it reads the spec and produces a pre-build brief flagging spec ambiguities, storage choice questions, UI state gaps, and implementation risks. The dev agent uses this brief as additional context.</p>
+
+<p><strong>After the build:</strong> it reads the actual code alongside the spec and reviews 7 quality dimensions — whether the code satisfies each acceptance criterion, whether contract shapes are correct, whether required inputs are validated, whether the storage choice suits the use case, whether the UI follows the project’s visual system, whether scope is clean, and whether patterns are consistent with prior stories. Any blocking issue gets a file-specific fix instruction, and the dev agent does a full rebuild to address it.</p>
+
+<p>The extra time is intentional — it front-loads the review work that would otherwise surface as post-delivery bugs and rework.</p>
+
+<h3 id="what-does-governor-capped-mean-in-the-build-transition-note">What does “governor: capped” mean in the build transition note?</h3>
+
+<p>It means the Governor ran the maximum number of review-rebuild iterations (default: 3) and still had unresolved blocking issues. The story is marked built anyway — the <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code> file documents exactly which dimensions didn’t pass and what the fix instructions were. You can address them as an enhancement, or adjust the governor config if the threshold is wrong for your project.</p>
+
+<h3 id="what-does-governor-partial-mean">What does “governor: partial” mean?</h3>
+
+<p>It means the same blocking dimensions were flagged on two consecutive iterations — the dev agent rebuilt but produced the same gaps. This usually means the spec itself needs clarification. Check <code class="language-plaintext highlighter-rouge">governor-report.yaml</code> and the patch files under <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/patches/</code> — the fix instructions will point to the root ambiguity.</p>
+
+<h3 id="can-i-configure-how-strict-the-governor-is">Can I configure how strict the Governor is?</h3>
+
+<p>Yes — add a <code class="language-plaintext highlighter-rouge">governor:</code> block to <code class="language-plaintext highlighter-rouge">project-state.yaml</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">governor</span><span class="pi">:</span>
+  <span class="na">max_iterations</span><span class="pi">:</span> <span class="m">3</span>        <span class="c1"># default: 3 — raise for complex stories, lower for prototyping</span>
+  <span class="na">blocking_override</span><span class="pi">:</span>
+    <span class="na">persistence_appropriateness</span><span class="pi">:</span> <span class="s">advisory</span>   <span class="c1"># downgrade to advisory for this project</span>
+    <span class="na">cross_story_coherence</span><span class="pi">:</span> <span class="s">blocking</span>         <span class="c1"># upgrade to blocking</span>
+</code></pre></div></div>
+
+<p>If the block is absent, all defaults apply. Dimensions not listed in <code class="language-plaintext highlighter-rouge">blocking_override</code> use their defaults.</p>
 
 <h3 id="why-does-investigation-ask-me-to-start-the-app">Why does investigation ask me to start the app?</h3>
 

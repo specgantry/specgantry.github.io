@@ -102,6 +102,7 @@
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
           <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
           <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
+          <a href="/docs/skills#governor" class="sidebar-link sidebar-sublink">Governor</a>
           <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
           <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
           <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
@@ -322,23 +323,69 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 <h3 id="build">Phase 3 — Build</h3>
 
 <p><strong>Time:</strong> Depends on story complexity
-<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></p>
+<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code> · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code></p>
 
-<p>The build phase turns the confirmed spec into working code. The dev agent works through each acceptance criterion, implementing each one and verifying it works before moving to the next.</p>
+<p>The build phase turns the confirmed spec into working code and verifies it meets quality standards before the story is marked done.</p>
 
-<p>Key behaviors:</p>
+<p><strong>Before the dev agent writes a line</strong>, the Governor reviews the spec and produces a pre-build brief — surfacing ambiguities in acceptance criteria, storage choice questions, UI state gaps, and implementation risks. The dev agent reads this brief as part of its context.</p>
+
+<p><strong>The dev agent</strong> then builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:</p>
 <ul>
-  <li>Implements the full vertical slice — UI, backend, data layer, AI integration — exactly as specced</li>
   <li>Respects every guardrail in <code class="language-plaintext highlighter-rouge">architecture.md</code> and uses env var names exactly as defined in <code class="language-plaintext highlighter-rouge">## Configuration</code></li>
-  <li>Secrets and all runtime config (model names, ports, timeouts) come from environment variables — no hardcoded values</li>
-  <li>Maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root with every env var the project needs — safe to commit, placeholders for secrets</li>
-  <li>Writes machine-readable anchor comments in source files: <code class="language-plaintext highlighter-rouge">@story</code> (file→story mapping), <code class="language-plaintext highlighter-rouge">@entry</code> (route/handler entry points), <code class="language-plaintext highlighter-rouge">@contract</code> (data shapes at layer boundaries), <code class="language-plaintext highlighter-rouge">@gap</code> (inline at spec divergences). These are used by the investigation agent to navigate the codebase without full reads.</li>
-  <li>Implements a <code class="language-plaintext highlighter-rouge">GET /health</code> endpoint (returning <code class="language-plaintext highlighter-rouge">{"status":"ok"}</code>) as the first backend route on any story that exposes a port — used by the test runner and investigation agent to confirm the app is running.</li>
+  <li>Secrets and all runtime config come from environment variables — no hardcoded values</li>
+  <li>Maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root with every env var the project needs</li>
+  <li>Writes machine-readable anchor comments in source files: <code class="language-plaintext highlighter-rouge">@story</code> (file→story mapping), <code class="language-plaintext highlighter-rouge">@entry</code> (route/handler entry points), <code class="language-plaintext highlighter-rouge">@contract</code> (data shapes at layer boundaries), <code class="language-plaintext highlighter-rouge">@gap</code> (inline at spec divergences)</li>
+  <li>Implements a <code class="language-plaintext highlighter-rouge">GET /health</code> endpoint as the first backend route on any story that exposes a port</li>
 </ul>
+
+<p><strong>After the build</strong>, the Governor reads the actual code alongside the spec and reviews 7 quality dimensions:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dimension</th>
+      <th>What it checks</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Spec adherence</td>
+      <td>Does the code logic satisfy every acceptance criterion, including error paths?</td>
+    </tr>
+    <tr>
+      <td>Contract fidelity</td>
+      <td>Are all required fields in each contract actually populated from real data?</td>
+    </tr>
+    <tr>
+      <td>Input completeness</td>
+      <td>Are all required fields validated? Correct error status codes?</td>
+    </tr>
+    <tr>
+      <td>Persistence appropriateness</td>
+      <td>Is the storage choice right for the entity’s lifecycle and use case?</td>
+    </tr>
+    <tr>
+      <td>UI quality</td>
+      <td>Theme consistency, loading/error states, accessibility basics, breakpoints</td>
+    </tr>
+    <tr>
+      <td>Scope hygiene</td>
+      <td>Extra code not in the spec, or missing code that is in the spec</td>
+    </tr>
+    <tr>
+      <td>Cross-story coherence</td>
+      <td>Consistent field names, error patterns, and naming vs prior stories</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Each dimension produces a verdict: <strong>PASS</strong>, <strong>FLAG</strong>, <strong>ADVISORY</strong>, or <strong>SKIP</strong> (for API-only stories on UI dimensions). If any blocking dimension is flagged, the Governor writes file-specific fix instructions and the dev agent does a full rebuild. This loop continues until all blocking dimensions pass or the configured maximum iterations are reached.</p>
+
+<p>The final outcome is recorded in <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code> with status <code class="language-plaintext highlighter-rouge">passed</code>, <code class="language-plaintext highlighter-rouge">partial</code> (loop detected), or <code class="language-plaintext highlighter-rouge">capped</code> (max iterations). A capped or partial story is still marked built — the report documents what remains for the user to decide on.</p>
 
 <p><strong>Test plan</strong></p>
 
-<p>After building, the build agent writes a <code class="language-plaintext highlighter-rouge">test_plan</code> section to <code class="language-plaintext highlighter-rouge">build-report.yaml</code> — one shell command per observable acceptance criterion, with the health check always first:</p>
+<p>The build agent writes a <code class="language-plaintext highlighter-rouge">test_plan</code> section to <code class="language-plaintext highlighter-rouge">build-report.yaml</code> — one shell command per observable acceptance criterion, with the health check always first:</p>
 
 <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">test_plan</span><span class="pi">:</span>
   <span class="pi">-</span> <span class="na">label</span><span class="pi">:</span> <span class="s2">"</span><span class="s">app</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">healthy"</span>
@@ -349,22 +396,22 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
     <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">curl</span><span class="nv"> </span><span class="s">-sf</span><span class="nv"> </span><span class="s">-o</span><span class="nv"> </span><span class="s">/dev/null</span><span class="nv"> </span><span class="s">-w</span><span class="nv"> </span><span class="s">'%{http_code}'</span><span class="nv"> </span><span class="s">http://localhost:3000/api/bookmarks/99999</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">grep</span><span class="nv"> </span><span class="s">-q</span><span class="nv"> </span><span class="s">404"</span>
 </code></pre></div></div>
 
-<p>After the build completes, SpecGantry offers to run these checks against your running app:</p>
+<p>After the build and governor review complete, SpecGantry offers to run these checks against your running app:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete — STORY-001: Bookmark CRUD API
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete — STORY-001: Bookmark CRUD API  ·  governor: passed (2 iters)
 
   [R] Run tests (3 criteria)   [S] Skip
 </code></pre></div></div>
 
 <p><code class="language-plaintext highlighter-rouge">[R]</code> first checks that the app is responding at <code class="language-plaintext highlighter-rouge">/health</code> — if not, it skips cleanly and marks the story built without running tests. If the app is up, it runs each command and shows pass/fail per criterion. If any fail you can fix and rebuild, or mark the story built anyway.</p>
 
-<p><code class="language-plaintext highlighter-rouge">[S]</code> marks the story built immediately — same as the previous behavior.</p>
+<p><code class="language-plaintext highlighter-rouge">[S]</code> marks the story built immediately.</p>
 
 <p><strong>Auto-continue mode</strong> always skips test execution and marks stories built immediately — test verification is a manual checkpoint.</p>
 
 <p>The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.</p>
 
-<p>A story is <strong>complete</strong> once all acceptance criteria are met (or you choose to proceed).</p>
+<p>A story is <strong>complete</strong> once the governor review passes and all acceptance criteria are met (or you choose to proceed).</p>
 
 <hr />
 

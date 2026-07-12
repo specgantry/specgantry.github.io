@@ -136,7 +136,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.3.0 · Production Ready
+          Claude Code Plugin · v5.3.1 · Production Ready
         </div>
         <h1 class="hero-headline">
           Architecture First.<br>
@@ -168,8 +168,8 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.3.0</div>
-            <div class="terminal-line output">✓ 2 skills loaded · 7 agents registered</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.3.1</div>
+            <div class="terminal-line output">✓ 2 skills loaded · 8 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  <span class="hl-blue">SpecGantry v5</span>  |  Acme Platform  |  release 1.0.0</div>
@@ -278,7 +278,7 @@
             <div class="ng-node phase-node phase-build-color">
               <div class="ng-num">03</div>
               <div class="ng-name">Build</div>
-              <div class="ng-output">@story · @intent · @entry · @contract anchors · build-report.yaml · gap.md (if any)</div>
+              <div class="ng-output">Governor review · @story · @intent · @entry · @contract anchors · build-report.yaml · governor-report.yaml · gap.md (if any)</div>
             </div>
 
             <!-- Connector + Gate -->
@@ -448,8 +448,8 @@
             <div class="stat-label">Skills — /spec-gantry for every workflow, /track-cost for spend visibility</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">7</div>
-            <div class="stat-label">Agents — Ideation through deployment, plus investigation and reverse engineering</div>
+            <div class="stat-num">8</div>
+            <div class="stat-label">Agents — Ideation through deployment, quality review, investigation, and reverse engineering</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">6</div>
@@ -466,7 +466,7 @@
     <!-- ─── SKILLS + AGENTS ──────────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">2 Skills · 7 Agents</div>
+        <div class="section-label center">2 Skills · 8 Agents</div>
         <h2 class="center">One command. Every workflow covered.</h2>
 
         <!-- Skills -->
@@ -489,7 +489,7 @@
         </div>
 
         <!-- Agents table -->
-        <h3 class="agents-heading">The 7 Agents</h3>
+        <h3 class="agents-heading">The 8 Agents</h3>
         <div class="agents-table">
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> Ideation</div>
@@ -500,6 +500,11 @@
             <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> Story Spec</div>
             <div class="agent-model">Sonnet</div>
             <div class="agent-desc">Finalizes intent.md, validates arch references, writes a slim story-spec.md (≤60 lines) with a reads: block. Signals arch gaps (P0) when a required section is missing. Self-reviews before setting spec_done:true.</div>
+          </div>
+          <div class="agent-row">
+            <div class="agent-name"><i class="bi bi-shield-check-fill"></i> Governor</div>
+            <div class="agent-model">Sonnet</div>
+            <div class="agent-desc">Thinks through each story before and after build — like a senior engineer reviewing the work. Pre-build: surfaces spec ambiguities, persistence questions, UI gaps, and implementation risks before the dev agent writes a line. Post-build: reads actual code against the spec across 7 quality dimensions. Flags blocking issues with file-specific fix instructions. Loops with the dev agent until quality clears or max iterations are reached.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-code-square"></i> Development</div>

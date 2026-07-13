@@ -42,22 +42,13 @@ Not required. SpecGantry saves state as plain text files in `specs/` — git is 
 
 ### How do I update SpecGantry? {#how-do-i-update-specgantry}
 
-**Option 1 — From the marketplace (recommended):**
+Run both commands together:
 
 ```bash
-claude plugin marketplace update spec-gantry
+claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
 ```
 
-Or from within Claude Code:
-```
-/plugin marketplace update spec-gantry
-```
-
-**Option 2 — Direct plugin update:**
-
-```bash
-claude plugin update spec-gantry@spec-gantry
-```
+**SpecGantry notifies you automatically** when a new version is available — a banner appears at the top of the dashboard the next time you open a session, showing the version number and the update command.
 
 Check your current version anytime:
 ```bash
@@ -66,7 +57,7 @@ claude plugin list
 
 ### What's the difference between `plugin marketplace update` and `plugin update`?
 
-Both update to the latest version. `marketplace update` is recommended — it verifies the plugin structure as part of the update. Use whichever is more convenient.
+`marketplace update` refreshes the plugin registry entry; `plugin update` pulls the latest plugin files. Running both together ensures the registry and installed files are always in sync — use the combined command above.
 
 ### How do I uninstall SpecGantry? {#how-do-i-uninstall-specgantry}
 

@@ -46,6 +46,16 @@ SpecGantry v5  |  [project.name or "New Project"]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 ```
 
+**Update check:** before rendering the header, read `.claude/spec-gantry-update-check.txt` (relative to `project_dir`). If it exists and contains `UPDATE_AVAILABLE`, parse `local=` and `remote=` values and append one line immediately after the separator:
+
+```
+🎉 SpecGantry [remote] is out!  You're on [local] — a new version is ready for you.
+   To update, run:  claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
+──────────────────────────────────────────────────────────
+```
+
+If the file does not exist or does not contain `UPDATE_AVAILABLE`, render the header normally with no extra line.
+
 In STATE 2 (pipeline active), append a progress line below the separator:
 
 ```

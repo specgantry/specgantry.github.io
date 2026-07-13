@@ -32,6 +32,7 @@ LANDING_PAGE="docs/_layouts/landing.html"
 GETTING_STARTED="docs/docs/getting-started/index.md"
 SKILL_FILE="skills/spec-gantry/SKILL.md"
 SKILLS_GUIDE="docs/docs/skills/index.md"
+VERSION_FILE="VERSION"
 
 # Logging helpers
 STEP=0
@@ -250,6 +251,16 @@ verify_version_sync() {
     fi
   done
 
+  # Check VERSION file
+  local version_file_content
+  version_file_content=$(cat "$VERSION_FILE" | tr -d '[:space:]')
+  if [ "$version_file_content" = "$expected" ]; then
+    log_success "$VERSION_FILE → $version_file_content"
+  else
+    log_warning "$VERSION_FILE → $version_file_content (expected $expected)"
+    all_ok=false
+  fi
+
   if [ "$all_ok" = false ]; then
     log_error "Version mismatch detected after update. Aborting release."
   fi
@@ -355,6 +366,10 @@ release() {
     fi
     log_success "Updated $file"
   done
+
+  # Update VERSION file (plain semver, no 'v' prefix)
+  echo "$version" > "$VERSION_FILE"
+  log_success "Updated $VERSION_FILE"
 
   # Step 3: Verify sync
   verify_version_sync "$version"

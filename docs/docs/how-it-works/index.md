@@ -260,7 +260,7 @@ The deployment agent:
 4. Resolves deployment order via the dependency graph
 5. Generates per-service Dockerfiles and a `docker-compose.yml` for local production-parity testing
 6. Generates `specs/.env.example` with every env var the project needs
-7. Generates `specs/deploy.sh` covering build, push, migrations, deploy, and health checks per story — with `--dry-run` for local Docker testing
+7. Generates `specs/deploy.sh` covering build, push, migrations, deploy, and health checks per story — with `--dry-run` for local Docker testing. When `--dry-run` completes successfully, the script prints per-service local URLs, log commands for each service, and the stop command.
 8. Validates the script with `bash -n` and sets executable permissions
 9. Writes `deploy-artifact.md` summarising the release
 10. Marks all stories deployed and updates `project.release`
@@ -327,7 +327,7 @@ The initial release always deploys as `1.0.0`.
 
 ## The Architecture Artifact {#architecture-artifact}
 
-`specs/architecture.md` is the single source of truth for the system. It contains:
+`specs/architecture/architecture.md` is the single source of truth for the system. It contains:
 
 - **Vision** — what the system is, who it's for, why it's worth building
 - **Problem & Users** — user population, use case, success criteria

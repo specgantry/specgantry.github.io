@@ -54,7 +54,8 @@ project-root/
 └── stories/
     ├── STORY-001/
     │   ├── story-spec.md           # Six-section story spec (cross-references architecture.md)
-    │   ├── build-report.yaml       # Build notes and results
+    │   ├── build-report.yaml       # Build notes, test plan, and results
+    │   ├── governor-report.yaml    # Quality review outcome: passed / partial / capped
     │   └── gap.md                 # Gap file (accumulates discoveries; deleted after deploy merge)
     └── STORY-002/
         └── ...
@@ -72,7 +73,7 @@ project-root/
 
 The project registry. Contains the project name and vision, `ideation_complete` flag, `active_story`, and the full story backlog with each story's `title`, `depends_on`, `spec_done`, `built`, and `deployed` flags.
 
-### `specs/architecture.md`
+### `specs/architecture/architecture.md`
 
 The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, and a `## Configuration` table listing every env var the project uses with description and safe example value. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.
 
@@ -82,7 +83,11 @@ A six-section specification for a single story: what the user can do, screens an
 
 ### `specs/stories/STORY-NNN/build-report.yaml`
 
-Written by the development agent on completion. Contains: acceptance criteria implemented, files modified, commits, any gap specs written, warnings, and `overall_status: pass | fail`.
+Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, commits, any gap specs written, warnings, a `test_plan` (one shell command per observable criterion), and `overall_status: pass | fail`.
+
+### `specs/stories/STORY-NNN/governor-report.yaml`
+
+Written by the Governor after the quality review loop completes. Records the outcome (`passed`, `partial`, or `capped`), the verdict per dimension, how many iterations ran, and any advisory notes. A `partial` or `capped` outcome means the story is still marked built — the report documents what remains.
 
 ### `specs/stories/STORY-NNN/gap.md`
 

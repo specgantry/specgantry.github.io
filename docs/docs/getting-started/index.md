@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.3.3`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v5.3.4`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once; future installs and updates use the registered entry.
@@ -49,24 +49,18 @@ Claude Code will clone the SpecGantry repository, register its skills and agents
 
 If you already have SpecGantry installed, keep it up to date with the latest features and fixes.
 
-**Option 1 — From the marketplace (recommended):**
+Run both commands together:
 
-In your terminal:
 ```bash
-claude plugin marketplace update spec-gantry
+claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
 ```
 
 Or from within Claude Code:
 ```
-/plugin marketplace update spec-gantry
+/plugin marketplace update spec-gantry && /plugin update spec-gantry@spec-gantry
 ```
 
-**Option 2 — Direct plugin update:**
-
-In your terminal:
-```bash
-claude plugin update spec-gantry@spec-gantry
-```
+**SpecGantry notifies you automatically.** When a new version is available, a banner appears at the top of the dashboard the next time you open a session — showing the version number and the update command. No manual checking needed.
 
 Check the current version anytime:
 ```bash
@@ -182,7 +176,7 @@ SpecGantry detects your situation automatically and guides you from there.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.3.3  |  New Project
+SpecGantry v5.3.4  |  New Project
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   No project found in this directory.
@@ -234,7 +228,8 @@ project-root/
 │   └── stories/
 │       ├── STORY-001/
 │       │   ├── story-spec.md       # Story specification
-│       │   ├── build-report.yaml   # Build notes and results
+│       │   ├── build-report.yaml   # Build notes, test plan, and results
+│       │   ├── governor-report.yaml # Quality review outcome: passed / partial / capped
 │       │   └── gap.md              # Gap file (if written during build or post-release; deleted after deploy merge)
 │       └── STORY-002/
 │           └── ...
@@ -273,7 +268,7 @@ Shown during ideation, or when no project exists. The middle section shows the c
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.3.3  |  My App
+SpecGantry v5.3.4  |  My App
 [░░░░░░░░░░]  0/0 stories deployed  |  release 1.0.0
 ──────────────────────────────────────────────────────────
   Ideation in progress — Beat 1: 2/4 topics answered.
@@ -293,7 +288,7 @@ Shown once ideation is complete. The pipeline table and story picker are unified
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5.3.3  |  Acme Platform  |  release 1.0.0
+SpecGantry v5.3.4  |  Acme Platform  |  release 1.0.0
 Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
 ──────────────────────────────────────────────────────────
   ID      Story                          Spec   Build

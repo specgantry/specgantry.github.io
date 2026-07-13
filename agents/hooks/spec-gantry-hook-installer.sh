@@ -55,7 +55,50 @@ cat > "$HOOK_SCRIPT" <<'HOOKEOF'
 set -euo pipefail
 
 CONTRACT_PATH="${CLAUDE_PROJECT_DIR:-.}/.claude/CONTRACT.md"
+UPDATE_CACHE="${CLAUDE_PROJECT_DIR:-.}/.claude/spec-gantry-update-check.txt"
+REMOTE_VERSION_URL="https://raw.githubusercontent.com/specgantry/specgantry.github.io/main/VERSION"
 
+# --- Version check (async, non-blocking, once per session) ---
+check_for_update() {
+  # Resolve local installed version from the plugin's own VERSION file
+  local plugin_dir
+  plugin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local local_version=""
+  # Walk up from hooks/ to find VERSION file in the plugin root
+  local search_dir="$plugin_dir"
+  for _ in 1 2 3 4 5; do
+    if [[ -f "$search_dir/VERSION" ]]; then
+      local_version=$(cat "$search_dir/VERSION" | tr -d '[:space:]')
+      break
+    fi
+    search_dir="$(dirname "$search_dir")"
+  done
+  [[ -z "$local_version" ]] && return  # can't find local version — skip silently
+
+  # Fetch remote version with short timeout (background, non-blocking)
+  local remote_version
+  remote_version=$(curl -fsSL --max-time 3 "$REMOTE_VERSION_URL" 2>/dev/null | tr -d '[:space:]') || return
+
+  [[ -z "$remote_version" ]] && return
+
+  if [[ "$remote_version" != "$local_version" ]]; then
+    # Write update notice to cache — orchestrator reads this at dashboard render time
+    cat > "$UPDATE_CACHE" <<EOF
+UPDATE_AVAILABLE
+local=$local_version
+remote=$remote_version
+EOF
+  else
+    # Up to date — clear any stale cache
+    rm -f "$UPDATE_CACHE"
+  fi
+}
+
+# Run version check in background — never blocks session start
+check_for_update &
+disown
+
+# --- Contract injection ---
 if [[ ! -f "$CONTRACT_PATH" ]]; then
   python3 -c "
 import json, sys

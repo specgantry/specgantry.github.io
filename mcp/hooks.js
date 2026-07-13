@@ -40,6 +40,26 @@ async function hookSessionStart() {
   // Install engagement hooks if not already present
   installEngagementHooks(cwd);
 
+  // Version check — compare installed version against marketplace clone.
+  // __dirname is .../cache/spec-gantry/spec-gantry/X.Y.Z/mcp at runtime.
+  // plugin.json lives at X.Y.Z/.claude-plugin/plugin.json.
+  // Five levels up from mcp/ lands at ~/.claude/plugins/, then into marketplaces/.
+  let updateNotice = '';
+  try {
+    const installedPluginJson = path.join(__dirname, '..', '.claude-plugin', 'plugin.json');
+    const marketplacePluginJson = path.join(
+      __dirname, '..', '..', '..', '..', '..', 'marketplaces', 'spec-gantry', '.claude-plugin', 'plugin.json'
+    );
+    if (fs.existsSync(installedPluginJson) && fs.existsSync(marketplacePluginJson)) {
+      const installedVersion = JSON.parse(fs.readFileSync(installedPluginJson, 'utf8')).version;
+      const latestVersion    = JSON.parse(fs.readFileSync(marketplacePluginJson, 'utf8')).version;
+      if (latestVersion && installedVersion && latestVersion !== installedVersion) {
+        updateNotice = `\n\n[SpecGantry] Update available: v${installedVersion} → v${latestVersion}. Run: claude plugin update spec-gantry`;
+        logInfo(`SessionStart: update available — installed=${installedVersion} latest=${latestVersion}`);
+      }
+    }
+  } catch { /* non-fatal — skip version check */ }
+
   let projectName = 'unknown';
   let release = 'unknown';
   try {
@@ -50,7 +70,7 @@ async function hookSessionStart() {
     if (releaseMatch) release     = releaseMatch[1].trim();
   } catch { /* ignore — still inject the note */ }
 
-  const note = `[SpecGantry] Active project detected: ${projectName} (release ${release}). Invoke the spec-gantry skill to manage this project.`;
+  const note = `[SpecGantry] Active project detected: ${projectName} (release ${release}). Invoke the spec-gantry skill to manage this project.${updateNotice}`;
   logInfo(`SessionStart: injecting project note — ${projectName} @ ${release}`);
 
   process.stdout.write(JSON.stringify({

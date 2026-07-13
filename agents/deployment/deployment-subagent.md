@@ -468,6 +468,11 @@ if [[ "$DRY_RUN" == "true" ]]; then
   echo "  Services:"
   [for each service: "  [service-name]:  http://localhost:[port]"]
   echo ""
+  echo "  How to check logs:"
+  echo "    All services:      docker-compose -f specs/docker-compose.yml logs -f"
+  [for each service: "    [service-name]:    docker-compose -f specs/docker-compose.yml logs -f [service-name]"]
+  echo "    Since last start:  docker-compose -f specs/docker-compose.yml logs --since 1m"
+  echo ""
   echo "  Stop with:  docker-compose -f specs/docker-compose.yml down"
   exit 0
 fi

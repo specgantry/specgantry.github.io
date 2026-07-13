@@ -707,15 +707,18 @@ For enhancement classification, before execute:
 
 `bug_fix` — for each affected story, in topological order:
 - Set `project.next_release_type: patch`
-- Set `project.active_story: [story_id]` · re-render dashboard
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `investigation_findings: [findings]` — description: `"Bug fix: [story_id]: [title]"`. Pass `project_dir`, `arch_ref`, the `files` list and `root_cause` from findings as a targeted brief so the build agent goes directly to the right place.
-- After build: set `built:true · deployed:false` in project-state · clear `active_story` · re-render dashboard
+- Set `project.active_story: [story_id]` and `project.active_phase: development` · re-render dashboard
+- **Clear prior patch state:** delete `specs/stories/[story_id]/patches/` and `specs/stories/[story_id]/governor-report.yaml` if they exist — they belong to the original build and must not bleed into this fix's governor loop.
+- **Run governor loop (Steps G0–G4) with these differences from `build_next_story`:**
+  - **Skip G1 (approach review)** — the investigation findings already serve this purpose. Go directly to G0 → G2 → G3 → G4.
+  - In G2: invoke dev agent with `gate_bypass:true` and `investigation_findings: [findings]` — description: `"Bug fix: [story_id]: [title] (iteration [N])"`. Pass `project_dir`, `arch_ref`, `governor_patch_files`.
+  - All other G2–G4 behaviour (concern handling, P1 re-route, GOVERNOR_FLAGGED rebuild loop, GOVERNOR_HELD, test verification) is identical to `build_next_story`.
 - Do **not** reset `spec_done` — spec is still valid, only the code changed
 
 `enhancement` — for each affected story, in topological order:
 - Set `project.next_release_type: minor`
 - Set `deployed:false` for this story in project-state **immediately** — before invoking the build agent, so the dashboard never shows `✅ deployed` for code that has been modified but not yet re-deployed
-- Set `project.active_story: [story_id]` · re-render dashboard
+- Set `project.active_story: [story_id]` and `project.active_phase: development` · re-render dashboard
 - Write or append to the story's single gap file using investigation findings as content:
   **File:** `specs/stories/[story_id]/gap.md` — one file per story, persists until deploy-time merge
   - `## Changes` bullet: derived from `findings.root_cause` + `findings.recommended_action`
@@ -723,8 +726,10 @@ For enhancement classification, before execute:
   - `## Side-effects on other stories`: from `findings.side_effects`
   - `## Recommended spec update`: from `findings.spec_alignment`
   - If `gap.md` already exists, append under `## Changes` and update the other sections
-- Invoke `spec-gantry:development:development-subagent` with `gate_bypass:true` and `enhancement_gap:gap.md` — description: `"Building enhancement: [story_id]: [change summary]"`. Pass `project_dir`, `arch_ref`, `investigation_findings` so the build agent has the precise file list.
-- After build: set `built:true` in project-state · clear `active_story` · re-render dashboard
+- **Clear prior patch state:** delete `specs/stories/[story_id]/patches/` and `specs/stories/[story_id]/governor-report.yaml` if they exist.
+- **Run governor loop (Steps G0–G4) identical to `build_next_story`:**
+  - In G2: invoke dev agent with `gate_bypass:true`, `enhancement_gap:gap.md`, and `investigation_findings` — description: `"Building enhancement: [story_id]: [change summary] (iteration [N])"`. Pass `project_dir`, `arch_ref`, `governor_patch_files`.
+  - All other G1–G4 behaviour is identical to `build_next_story`.
 - Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
 
 Both types: after all affected stories are built, re-render. Do **not** return to the normal pipeline — the work is already done.

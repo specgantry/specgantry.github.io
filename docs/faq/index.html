@@ -182,19 +182,12 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="how-do-i-update-specgantry">How do I update SpecGantry?</h3>
 
-<p><strong>Option 1 — From the marketplace (recommended):</strong></p>
+<p>Run both commands together:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry <span class="o">&amp;&amp;</span> claude plugin update spec-gantry@spec-gantry
 </code></pre></div></div>
 
-<p>Or from within Claude Code:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/plugin marketplace update spec-gantry
-</code></pre></div></div>
-
-<p><strong>Option 2 — Direct plugin update:</strong></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin update spec-gantry@spec-gantry
-</code></pre></div></div>
+<p><strong>SpecGantry notifies you automatically</strong> when a new version is available — a banner appears at the top of the dashboard the next time you open a session, showing the version number and the update command.</p>
 
 <p>Check your current version anytime:</p>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin list
@@ -202,7 +195,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="whats-the-difference-between-plugin-marketplace-update-and-plugin-update">What’s the difference between <code class="language-plaintext highlighter-rouge">plugin marketplace update</code> and <code class="language-plaintext highlighter-rouge">plugin update</code>?</h3>
 
-<p>Both update to the latest version. <code class="language-plaintext highlighter-rouge">marketplace update</code> is recommended — it verifies the plugin structure as part of the update. Use whichever is more convenient.</p>
+<p><code class="language-plaintext highlighter-rouge">marketplace update</code> refreshes the plugin registry entry; <code class="language-plaintext highlighter-rouge">plugin update</code> pulls the latest plugin files. Running both together ensures the registry and installed files are always in sync — use the combined command above.</p>
 
 <h3 id="how-do-i-uninstall-specgantry">How do I uninstall SpecGantry?</h3>
 

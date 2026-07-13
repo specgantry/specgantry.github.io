@@ -430,7 +430,7 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
   <li>Resolves deployment order via the dependency graph</li>
   <li>Generates per-service Dockerfiles and a <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> for local production-parity testing</li>
   <li>Generates <code class="language-plaintext highlighter-rouge">specs/.env.example</code> with every env var the project needs</li>
-  <li>Generates <code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> covering build, push, migrations, deploy, and health checks per story — with <code class="language-plaintext highlighter-rouge">--dry-run</code> for local Docker testing</li>
+  <li>Generates <code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> covering build, push, migrations, deploy, and health checks per story — with <code class="language-plaintext highlighter-rouge">--dry-run</code> for local Docker testing. When <code class="language-plaintext highlighter-rouge">--dry-run</code> completes successfully, the script prints per-service local URLs, log commands for each service, and the stop command.</li>
   <li>Validates the script with <code class="language-plaintext highlighter-rouge">bash -n</code> and sets executable permissions</li>
   <li>Writes <code class="language-plaintext highlighter-rouge">deploy-artifact.md</code> summarising the release</li>
   <li>Marks all stories deployed and updates <code class="language-plaintext highlighter-rouge">project.release</code></li>
@@ -525,7 +525,7 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 
 <h2 id="architecture-artifact">The Architecture Artifact</h2>
 
-<p><code class="language-plaintext highlighter-rouge">specs/architecture.md</code> is the single source of truth for the system. It contains:</p>
+<p><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> is the single source of truth for the system. It contains:</p>
 
 <ul>
   <li><strong>Vision</strong> — what the system is, who it’s for, why it’s worth building</li>

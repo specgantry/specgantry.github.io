@@ -188,7 +188,8 @@
 └── stories/
     ├── STORY-001/
     │   ├── story-spec.md           # Six-section story spec (cross-references architecture.md)
-    │   ├── build-report.yaml       # Build notes and results
+    │   ├── build-report.yaml       # Build notes, test plan, and results
+    │   ├── governor-report.yaml    # Quality review outcome: passed / partial / capped
     │   └── gap.md                 # Gap file (accumulates discoveries; deleted after deploy merge)
     └── STORY-002/
         └── ...
@@ -206,7 +207,7 @@
 
 <p>The project registry. Contains the project name and vision, <code class="language-plaintext highlighter-rouge">ideation_complete</code> flag, <code class="language-plaintext highlighter-rouge">active_story</code>, and the full story backlog with each story’s <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">depends_on</code>, <code class="language-plaintext highlighter-rouge">spec_done</code>, <code class="language-plaintext highlighter-rouge">built</code>, and <code class="language-plaintext highlighter-rouge">deployed</code> flags.</p>
 
-<h3 id="specsarchitecturemd"><code class="language-plaintext highlighter-rouge">specs/architecture.md</code></h3>
+<h3 id="specsarchitecturearchitecturemd"><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code></h3>
 
 <p>The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, and a <code class="language-plaintext highlighter-rouge">## Configuration</code> table listing every env var the project uses with description and safe example value. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.</p>
 
@@ -216,7 +217,11 @@
 
 <h3 id="specsstoriesstory-nnnbuild-reportyaml"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></h3>
 
-<p>Written by the development agent on completion. Contains: acceptance criteria implemented, files modified, commits, any gap specs written, warnings, and <code class="language-plaintext highlighter-rouge">overall_status: pass | fail</code>.</p>
+<p>Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, commits, any gap specs written, warnings, a <code class="language-plaintext highlighter-rouge">test_plan</code> (one shell command per observable criterion), and <code class="language-plaintext highlighter-rouge">overall_status: pass | fail</code>.</p>
+
+<h3 id="specsstoriesstory-nnngovernor-reportyaml"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code></h3>
+
+<p>Written by the Governor after the quality review loop completes. Records the outcome (<code class="language-plaintext highlighter-rouge">passed</code>, <code class="language-plaintext highlighter-rouge">partial</code>, or <code class="language-plaintext highlighter-rouge">capped</code>), the verdict per dimension, how many iterations ran, and any advisory notes. A <code class="language-plaintext highlighter-rouge">partial</code> or <code class="language-plaintext highlighter-rouge">capped</code> outcome means the story is still marked built — the report documents what remains.</p>
 
 <h3 id="specsstoriesstory-nnngapmd"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/gap.md</code></h3>
 

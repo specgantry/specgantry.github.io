@@ -41,10 +41,12 @@ Release 1.0.0                Tokens        Cost
   investigation               8,420       $0.12
   story_spec                 90,160       $3.76
   development                69,760       $2.07
+  evaluation                  4,200       $0.06
+  repair_plan                 2,100       $0.03
   deployment                  1,560       $0.18
   reverse_engineer               —           —
 ────────────────────────────────────────────────
-  Subtotal                  212,240       $6.65
+  Subtotal                  218,540       $6.74
 
 Release 1.1.0                Tokens        Cost
 ────────────────────────────────────────────────
@@ -52,18 +54,20 @@ Release 1.1.0                Tokens        Cost
   investigation               3,210       $0.05
   story_spec                 18,440       $0.55
   development                21,270       $0.64
+  evaluation                  3,100       $0.04
+  repair_plan                    —           —
   deployment                     —           —
   reverse_engineer               —           —
 ────────────────────────────────────────────────
-  Subtotal                   42,920       $1.24
+  Subtotal                   46,020       $1.28
 
 ════════════════════════════════════════════════
-  Total                     255,160       $7.89
+  Total                     264,560       $8.02
 ```
 
 Rules:
 - Releases sorted ascending; entries with `release: null` or `release: "unknown"` grouped under `unknown`, sorted last
-- All six phases shown in every release section in pipeline order (ideation, investigation, story_spec, development, deployment, reverse_engineer) — show `—` in both columns if no entries for that phase in that release
+- All eight phases shown in every release section in pipeline order (ideation, investigation, story_spec, development, evaluation, repair_plan, deployment, reverse_engineer) — show `—` in both columns if no entries for that phase in that release
 - Multiple entries for the same release+phase are summed before display
 - Subtotal row per release section, grand Total row at bottom with `════` separator
 - No menu bar, no navigation — render and stop

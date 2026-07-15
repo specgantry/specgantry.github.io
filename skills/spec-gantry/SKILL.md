@@ -463,6 +463,8 @@ Check for `specs/stories/[story_id]/.quality-loop.yaml` on disk:
 
 **Step Q2 — Evaluate subagent:**
 
+Set `project.active_phase: evaluation` in `specs/project-state.yaml`.
+
 Track in orchestrator memory: `iteration_N` (starts at 1), `prior_failing_dimensions` (null on iteration 1), `prior_evaluation_summary` (null on iteration 1), `last_fix_steps` (null on iteration 1).
 
 Build `prior_evaluation` string to pass: if iteration 1 → `null`. If iteration 2+ → `"failing=[dim1,dim2] | reason: [overall_reason from prior evaluation]"`.
@@ -497,6 +499,8 @@ Build `prior_evaluation` string to pass: if iteration 1 → `null`. If iteration
 
 **Step Q3 — Plan subagent:**
 
+Set `project.active_phase: repair_plan` in `specs/project-state.yaml`.
+
 Build `prior_fix_steps` string: if iteration 2 → `null`. If iteration 3+ → compact string of prior fix_steps: `"[1] file — change | [2] file — change"`.
 
 **Invoke:** `spec-gantry:plan:plan-subagent` · description: `"Planning repair for [story_id]: [title] (iteration [N])"` · pass `story_id`, `project_dir`, `arch_ref`, `evaluation: [full JSON from Q2]`, `iteration: [N]`, `prior_fix_steps: [string or null]`
@@ -517,6 +521,8 @@ last_approach_change: [plan.approach_change]
 ---
 
 **Step Q4 — Development subagent (repair mode, iteration 2+):**
+
+Set `project.active_phase: development` in `specs/project-state.yaml`.
 
 Increment `iteration_N`. Store `last_approach_change = plan.approach_change`. Build `prior_context` string: `"Iteration [N-1]: failing=[dim1,dim2] | root_cause: [plan.root_cause]"`.
 

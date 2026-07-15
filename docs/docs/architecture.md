@@ -58,7 +58,7 @@ project:
   release: "1.0.0"
   next_release_type: null     # null | patch | minor | major
   active_story: null          # STORY-ID while subagent is running, null otherwise
-  active_phase: null          # ideation | story-spec | development | investigation | null
+  active_phase: null          # ideation | story-spec | development | evaluation | repair_plan | deployment | investigation | amendment | null
 
 ideation_complete: false      # true after all Beat 2 topics confirmed
 arch_seeded: false            # true after all 6 architecture artifacts + intent.md written (Pass 2)

@@ -60,7 +60,7 @@ Enter story ID or action:  >
 
 **Icon legend:**
 - `✅` Complete
-- `🔄` In progress (active_story matches this ID)
+- `🔄` In progress (active_story matches this ID — covers development, evaluation, and repair_plan phases)
 - `🔴` Blocked by dependency
 - `⏳` Ready to work
 - `○` Not yet reached
@@ -113,25 +113,25 @@ Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [██�
 
 Cost Matrix  |  release 1.0.0
 
-Story        ideation   story_spec  development  deployment    Total
-────────────────────────────────────────────────────────────────────
-PROJECT        $0.82        —            —          $0.49      $1.31
-STORY-001        —        $0.54        $0.41          —        $0.95
-STORY-002        —        $0.61        $0.35          —        $0.96
-STORY-003        —        $0.48        $0.28          —        $0.76
-STORY-004        —        $0.43        $0.40          —        $0.83
-────────────────────────────────────────────────────────────────────
-Total          $0.82      $2.06        $1.44        $0.49      $4.81
+Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
+────────────────────────────────────────────────────────────────────────────────────────────
+PROJECT        $0.82        —            —             —           —          $0.49      $1.31
+STORY-001        —        $0.54        $0.41         $0.04         —            —        $0.99
+STORY-002        —        $0.61        $0.35         $0.03       $0.02          —        $1.01
+STORY-003        —        $0.48        $0.28         $0.03         —            —        $0.79
+STORY-004        —        $0.43        $0.40         $0.04       $0.03          —        $0.90
+────────────────────────────────────────────────────────────────────────────────────────────
+Total          $0.82      $2.06        $1.44         $0.14       $0.05        $0.49      $5.00
 
-Story        ideation   story_spec  development  deployment    Total
-────────────────────────────────────────────────────────────────────
-PROJECT       42,340        —            —         4,890      47,230
-STORY-001        —       12,840        9,610          —       22,450
-STORY-002        —       14,310        8,140          —       22,450
-STORY-003        —       11,260        6,540          —       17,800
-STORY-004        —       10,120        9,380          —       19,500
-────────────────────────────────────────────────────────────────────
-Total         42,340     48,530       33,670        4,890    129,430
+Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
+────────────────────────────────────────────────────────────────────────────────────────────
+PROJECT       42,340        —            —             —           —         4,890      47,230
+STORY-001        —       12,840        9,610         2,100         —            —       24,550
+STORY-002        —       14,310        8,140         2,050       1,640          —       26,140
+STORY-003        —       11,260        6,540         2,080         —            —       19,880
+STORY-004        —       10,120        9,380         2,130       1,720          —       23,350
+────────────────────────────────────────────────────────────────────────────────────────────
+Total         42,340     48,530       33,670         8,360       3,360        4,890     141,150
 
 Stories:
   STORY-001  User authentication
@@ -250,7 +250,37 @@ Total context: ~130 lines.
 
 ---
 
-### Deployment {#agent-deployment}
+### Evaluate {#agent-evaluate}
+
+**Model:** claude-haiku-4-5-20251001  
+**Invoked:** after every development or repair build (Step Q2 of the quality loop)
+
+Read-only. Scores the completed build against the active quality rubric. Never writes source files.
+
+**Read sequence:**
+1. `quality-dimensions.md` — builds the active rubric from story signals (`has_ui`, `has_ai`, `has_data_mutations`, `has_external_calls`, `has_auth`)
+2. `intent.md` + `story-spec.md` — functional grounding
+3. `build-report.yaml` — `files_modified` list
+4. Source files listed in `files_modified`
+
+**Returns:** raw JSON — `overall: PASS|FAIL`, `overall_reason`, `active_rubric[]`, `dimensions[]` (each with `name`, `verdict: PASS|FAIL|SKIP`, `reason`), `failing_dimensions[]`, `advisory_notes[]`.
+
+A `PASS` exits the quality loop and marks the story built. A `FAIL` triggers the Plan agent.
+
+---
+
+### Plan {#agent-plan}
+
+**Model:** claude-haiku-4-5-20251001  
+**Invoked:** after every `FAIL` from the Evaluate agent (Step Q3 of the quality loop)
+
+Read-only. Receives the evaluation JSON and produces a targeted repair strategy for the Development agent. Never writes source files.
+
+**Returns:** raw JSON — `root_cause`, `fix_steps[]` (max 3, each `"file — what to do (addresses dimension_name)"`), `preserve` (what must not change), `approach_change` (boolean — true when the component's core architecture must be rewritten, not just patched).
+
+`approach_change: true` is reserved for cases where prior iterations attempted targeted fixes and the same dimensions keep failing. The orchestrator uses this to detect cycling and exit the loop if the same dimensions fail again after an `approach_change` repair.
+
+---
 
 **Model:** claude-sonnet-4-6  
 **Invoked:** Phase 4, after all stories are built
@@ -337,8 +367,10 @@ Returns `arch gap resolved — [what was added/changed]`. The orchestrator clear
 |-------|-------|-------|----------|
 | Ideation | Sonnet | Phase 1 | architecture/ · intent.md · story list |
 | Ideation (gap mode) | Sonnet | P0/P2 | missing arch sections · intent.md |
-| Story Spec | Sonnet | Phase 2 | story-spec.md (≤60 lines) · intent.md final |
+| Story Spec | Haiku | Phase 2 | story-spec.md (≤60 lines) · intent.md final |
 | Development | Sonnet | Phase 3 | code + anchors · build-report.yaml |
+| Evaluate | Haiku | Quality loop (Q2) | evaluation JSON — PASS/FAIL per dimension |
+| Plan | Haiku | Quality loop (Q3) | repair strategy JSON — root cause + fix steps |
 | Deployment | Sonnet | Phase 4 | deploy.sh · deploy-artifact.md |
 | Investigation | Haiku | Post-release | findings report (read-only) |
-| Reverse Engineer | Sonnet | Pre-pipeline | full architecture layer · stubs |
+| Reverse Engineer | Haiku | Pre-pipeline | full architecture layer · stubs |

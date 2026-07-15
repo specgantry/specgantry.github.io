@@ -15,7 +15,7 @@
       },
       "displayName": "SpecGantry",
       "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-      "version": "5.3.5",
+      "version": "5.3.6",
       "author": {
         "name": "Mangesh Pise",
         "email": "mppise@gmail.com",

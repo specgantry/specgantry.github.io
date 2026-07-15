@@ -4,7 +4,7 @@ All paths relative to `project_dir`.
 
 | File | Key fields |
 |------|------------|
-| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story, active_phase) · `ideation_complete` · `arch_seeded` · `pending_arch_gap` · `pending_spec_gap` · `quality_loop` config (max_iterations) · `stories` map (title, depends_on, intent_done, spec_done, built, deployed per STORY-ID) |
+| `specs/project-state.yaml` | `project` (name, created, release, next_release_type, active_story, active_phase) · valid `active_phase` values: `ideation` · `story-spec` · `development` · `evaluation` · `repair_plan` · `deployment` · `investigation` · `amendment` · `null` · `ideation_complete` · `arch_seeded` · `pending_arch_gap` · `pending_spec_gap` · `quality_loop` config (max_iterations) · `stories` map (title, depends_on, intent_done, spec_done, built, deployed per STORY-ID) |
 | `specs/architecture/architecture.md` | Narrative sections (Vision, Problem & Users, Constraints, Risks, Tech Stack, Guardrails, Configuration, UX Model) + `## Artifact Index` YAML block (last section). Single entry point for all arch context. |
 | `specs/architecture/data-model.md` | All entities, fields, types, relationships, state machines. `## entity:[name]` anchors. |
 | `specs/architecture/actors.md` | All roles, permissions, ownership rules. `## actor:[name]` anchors. |

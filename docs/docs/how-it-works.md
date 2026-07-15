@@ -314,7 +314,7 @@ Once all stories are deployed, `[N] New work` routes to `classify_and_route`. Yo
 
 Every agent invocation is automatically logged to `specs/cost-log.ndjson` via the SubagentStop hook. Each entry records:
 
-- Phase (`ideation`, `story_spec`, `development`, `deployment`, `investigation`)
+- Phase (`ideation`, `story_spec`, `development`, `evaluation`, `repair_plan`, `deployment`, `investigation`, `reverse_engineer`)
 - Story ID (where applicable)
 - Model (`claude-sonnet-4-6`, `claude-haiku-4-5-20251001`)
 - Token counts: input, output, cache write, cache read
@@ -354,7 +354,7 @@ project:
   release: "1.0.0"
   next_release_type: null    # patch | minor | major — set on new work
   active_story: null         # set while a subagent is running
-  active_phase: null         # ideation | story-spec | development | investigation
+  active_phase: null         # ideation | story-spec | development | evaluation | repair_plan | deployment | investigation | amendment | null
 ideation_complete: false
 arch_seeded: false           # true after all architecture artifacts + intent.md written
 pending_arch_gap: null       # P0 gap signal

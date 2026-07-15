@@ -115,7 +115,7 @@ Middle section — story table:
 
 **Story column flags:**
 - Spec = `spec_done` — show `~` when `spec_done:false · built:true` (reverse-engineered, stub spec only)
-- Build = `built` (show 🔄 while `project.active_story` matches this ID)
+- Build = `built` (show 🔄 while `project.active_story` matches this ID and `project.active_phase` is `development`, `evaluation`, or `repair_plan`)
 
 **Release row** — always the last row, separated by a line:
 - `○ not deployed` — any story has `deployed:false`

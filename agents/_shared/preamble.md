@@ -104,45 +104,6 @@ Story-spec and development subagents may raise **at most one concern per invocat
 - If in doubt whether something is worth raising: proceed silently. Concerns are a scarce interruption budget.
 - Concerns are logged (append) to `specs/concerns-log.ndjson` by the orchestrator after the user responds. Do not write to that file yourself.
 
-## 6A. Bounded raise-a-question (governor only)
-
-The governor may raise **at most one question per invocation** when it genuinely cannot produce a PASS or FLAG verdict without user input. This is distinct from a concern — it is not a problem to fix, it is a judgment the governor cannot make from spec and code alone.
-
-**When to raise a question:**
-- A criterion is too vague to have a ground truth (e.g. "handle errors gracefully") and the dev agent's implementation could be correct or incorrect depending on what the user actually meant
-- A persistence choice requires knowing intended data lifecycle that is not captured anywhere in the spec or arch artifacts
-- A scope hygiene question where the extra code may be intentional infrastructure for an upcoming story
-
-**When NOT to raise a question:**
-- The approach patch already flagged the ambiguity — the dev agent had the chance to resolve it; if it didn't, that is a FLAG, not a question
-- The ambiguity is advisory (low-impact) — surface it in `advisory_notes`, not as a question
-- The governor can make a reasonable judgment call — make it, explain the rationale, and proceed
-
-**How to raise a question:**
-
-Return `TURN:awaiting_governor_question:[one-line summary]` as the last line. Before returning, write a `## Governor Question` block into `specs/stories/[story_id]/governor-question.md`:
-
-```markdown
-## Governor Question
-Raised: [YYYY-MM-DD]
-Story: [story_id]
-Dimension: [spec_adherence | persistence_appropriateness | scope_hygiene | ...]
-Cannot judge: [one sentence — exactly what the governor cannot determine]
-
-[Y] [what answering Y means for the verdict — e.g. "criterion 5 is satisfied as implemented"]
-[N] [what answering N means for the verdict — e.g. "criterion 5 is not satisfied — add observable error feedback"]
-[E] Edit the spec to clarify this criterion before the governor re-reviews
-```
-
-The orchestrator surfaces the question using Q&A format with `[!] Governor question: <summary>` and the `[Y]/[N]/[E]` triad. On user response, the orchestrator logs to `specs/concerns-log.ndjson` (phase: governor), deletes `governor-question.md`, and re-invokes the governor with `question_resolution: Y|N|E` appended to the prompt.
-
-**On re-invocation:** if `question_resolution` is present, skip directly to judgment using the answer. Do NOT raise another question on this invocation — produce a verdict.
-
-**Rules:**
-- One question per invocation maximum.
-- The question must name the dimension it blocks and both judgment paths.
-- If the answer still leaves the verdict ambiguous, make a judgment call, note it in the rationale, and proceed — no chaining questions.
-
 ## 7. GATE_FORMAT
 
 Gate failures use exactly this format so the orchestrator surfaces them verbatim:

@@ -64,17 +64,11 @@ If `build-report.yaml → source: reverse-engineered`: surface a warning (non-bl
 
 **Port resolution rule:** for each story's service in `deployment:services`, the `port:` field may contain a comment placeholder (`# fill at deploy time`) if the story was not yet built when Topic 10 ran. Always resolve the actual port from `build-report.yaml → runtime.exposed_ports[0]`. If `exposed_ports` is empty or absent, check the story spec's `## Interfaces` for a port. If still unresolvable: emit `# MANUAL: set PORT for [service-name]` in the generated Dockerfile EXPOSE and docker-compose ports field, and surface a warning. Never emit a comment or placeholder as a literal port value in any generated file.
 
-## Compute next release version
+## Use release version from orchestrator
 
-Read `project.release` from `specs/project-state.yaml`.
-Read `project.next_release_type` from `specs/project-state.yaml`.
+The orchestrator passes `release_version` in the invocation prompt — use this value as `next_version` everywhere in this subagent. Do **not** compute the version independently.
 
-**Initial release** (`next_release_type` is null): deploy as-is — `next_version = project.release`. No bump.
-
-**Subsequent releases** (`next_release_type` is set):
-- `major` → bump major (`1.0.0` → `2.0.0`)
-- `minor` → bump minor (`1.0.0` → `1.1.0`)
-- `patch` → bump patch (`1.0.0` → `1.0.1`)
+Read `project.release` and `project.next_release_type` only if `release_version` is absent from the prompt (legacy fallback). If both are absent: halt with `✗ Deployment gate FAILED · release_version not provided · Run /spec-gantry`.
 
 ## Resolve deployment order
 
@@ -755,8 +749,7 @@ For every story in this release, set in `specs/project-state.yaml → stories.[S
 deployed: true
 ```
 
-Set `project.release: [next_version]` in `specs/project-state.yaml`.
-Set `project.next_release_type: null` in `specs/project-state.yaml`.
+Do **not** write `project.release` or `project.next_release_type` — the orchestrator owns those fields and writes them after this subagent returns.
 
 ## Step 10 — Write deploy-artifact.md
 

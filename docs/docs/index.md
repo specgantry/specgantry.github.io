@@ -30,7 +30,7 @@ The result: architecture that stays consistent across stories, story specs that 
   <div class="dg-node dg-ideation">
     <div class="dg-node-num">01</div>
     <div class="dg-node-name">Ideation + Architecture</div>
-    <div class="dg-node-output">architecture/ · 6 artifacts · intent.md</div>
+    <div class="dg-node-output">architecture/ (6 artifacts) · intent.md per story</div>
   </div>
 
   <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
@@ -45,8 +45,8 @@ The result: architecture that stays consistent across stories, story specs that 
 
   <div class="dg-node dg-build">
     <div class="dg-node-num">03</div>
-    <div class="dg-node-name">Build</div>
-    <div class="dg-node-output">@story @intent @entry @contract · build-report.yaml</div>
+    <div class="dg-node-name">Build + Quality Loop</div>
+    <div class="dg-node-output">dev builds · evaluate scores · plan targets · dev repairs · build-report.yaml</div>
   </div>
 
   <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built:true"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
@@ -83,7 +83,7 @@ The result: architecture that stays consistent across stories, story specs that 
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
       <div class="doc-nav-title">Skills & Agents</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 8 agents, the dashboard, and every workflow covered.</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 8 agents (ideation, story-spec, evaluate, plan, development, deployment, investigation, reverse-engineer), the dashboard, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">

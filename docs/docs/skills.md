@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills & Agents
-description: Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the Governor quality review agent.
+description: Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the quality review loop.
 permalink: /docs/skills/
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"

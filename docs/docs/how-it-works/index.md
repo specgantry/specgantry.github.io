@@ -38,9 +38,9 @@ A complete walkthrough of the pipeline and what happens at each phase.
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Story Spec</div>
-      <div class="dg-flow-node-desc">Spec each story before any code is written</div>
-      <div class="dg-flow-node-meta">story-spec.md per story</div>
+      <div class="dg-flow-node-title">Story Spec <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">Spec each story before code is written — then immediately into build</div>
+      <div class="dg-flow-node-meta">story-spec.md · reads: block · intent.md</div>
     </div>
   </div>
 
@@ -53,9 +53,9 @@ A complete walkthrough of the pipeline and what happens at each phase.
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Build</div>
-      <div class="dg-flow-node-desc">Implementation · gap specs written if needed</div>
-      <div class="dg-flow-node-meta">build-report.yaml · gap.md (if any)</div>
+      <div class="dg-flow-node-title">Build + Quality Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">dev builds → evaluate scores dimensions → plan targets fixes → dev repairs · loops until pass or cap</div>
+      <div class="dg-flow-node-meta">build-report.yaml (quality block) · gap.md (if any)</div>
     </div>
   </div>
 
@@ -88,7 +88,7 @@ A complete walkthrough of the pipeline and what happens at each phase.
 </div>
 </div>
 
-Stories run in dependency order. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.
+Stories run in dependency order, and the pipeline **interleaves spec and build per story** — a story is fully built before the next story is specced. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.
 
 After deployment, use `[N] New work` for any changes. Bug fixes and enhancements always start with the investigation agent — it reads the actual codebase to locate the exact files and root cause before any code is touched.
 
@@ -147,9 +147,9 @@ Directly from the matured idea, SpecGantry proposes the system shape across six 
 - **Tech stack** — one clear choice per layer
 - **Guardrails** — enforceable rules every story must follow
 - **Configuration** — every env var the project needs, in a table
-- **Story list** — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval.
 - **UX model** — navigation pattern, visual system, component conventions
 - **Deployment target** — cloud platform, container registry, service architecture, secrets strategy, CI/CD. Each answer is flushed to `specs/architecture/deployment.md` immediately — a crash mid-topic loses at most one answer.
+- **Story list** — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval. This is the last Beat 2 topic.
 
 Everything is written to `specs/architecture/` after every answer. A crash mid-session loses at most one exchange.
 
@@ -183,34 +183,37 @@ After all sections, guardrails from `architecture.md` are checked. Any violation
 ### Phase 3 — Build {#build}
 
 **Time:** Depends on story complexity
-**Output:** Source code committed · `specs/stories/STORY-NNN/build-report.yaml` · `specs/stories/STORY-NNN/governor-report.yaml`
+**Output:** Source code committed · `specs/stories/STORY-NNN/build-report.yaml`
 
 The build phase turns the confirmed spec into working code and verifies it meets quality standards before the story is marked done.
 
-**Before the dev agent writes a line**, the Governor reviews the spec and produces a pre-build brief — surfacing ambiguities in acceptance criteria, storage choice questions, UI state gaps, and implementation risks. The dev agent reads this brief as part of its context.
-
-**The dev agent** then builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:
+**The dev agent** builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:
 - Respects every guardrail in `architecture.md` and uses env var names exactly as defined in `## Configuration`
 - Secrets and all runtime config come from environment variables — no hardcoded values
-- Maintains `.env.example` at the project root with every env var the project needs
 - Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences)
 - Implements a `GET /health` endpoint as the first backend route on any story that exposes a port
 
-**After the build**, the Governor reads the actual code alongside the spec and reviews 7 quality dimensions:
+**Quality loop** — runs automatically after every build, no extra commands needed:
 
-| Dimension | What it checks |
-|-----------|---------------|
-| Spec adherence | Does the code logic satisfy every acceptance criterion, including error paths? |
-| Contract fidelity | Are all required fields in each contract actually populated from real data? |
-| Input completeness | Are all required fields validated? Correct error status codes? |
-| Persistence appropriateness | Is the storage choice right for the entity's lifecycle and use case? |
-| UI quality | Theme consistency, loading/error states, accessibility basics, breakpoints |
-| Scope hygiene | Extra code not in the spec, or missing code that is in the spec |
-| Cross-story coherence | Consistent field names, error patterns, and naming vs prior stories |
+1. **Evaluate** reads the built code and scores it across dimensions: spec adherence, contract fidelity, input validation, UI completeness, scope hygiene, data integrity, and more. Dimensions are selected dynamically based on what the story actually contains — a story with no UI skips UI dimensions, a story using AI activates prompt/output checks.
+2. **Plan** receives the evaluation verdict and produces up to 3 targeted fix steps — each naming the exact file, location, and change needed.
+3. **Dev** applies the fixes in repair mode (targeted edits, not a full rebuild) and the loop returns to step 1.
 
-Each dimension produces a verdict: **PASS**, **FLAG**, **ADVISORY**, or **SKIP** (for API-only stories on UI dimensions). If any blocking dimension is flagged, the Governor writes file-specific fix instructions and the dev agent does a full rebuild. This loop continues until all blocking dimensions pass or the configured maximum iterations are reached.
+This continues until all dimensions pass or the maximum iterations are reached (default: 3).
 
-The final outcome is recorded in `specs/stories/STORY-NNN/governor-report.yaml` with status `passed`, `partial` (loop detected), or `capped` (max iterations). A capped or partial story is still marked built — the report documents what remains for the user to decide on.
+The quality outcome is recorded in the story's `build-report.yaml`:
+
+| Status | Meaning |
+|--------|---------|
+| `pass` | All active dimensions cleared |
+| `partial` | Same dimensions still failing after an approach-change repair — usually a spec ambiguity |
+| `capped` | Max iterations reached with unresolved dimensions |
+| `build_failed` | Dev agent returned a build failure during a repair cycle |
+| `unknown` | Evaluation output could not be parsed |
+
+A `partial` or `capped` story is still marked built — the report documents what remains for you to decide on.
+
+---
 
 **Test plan**
 
@@ -226,10 +229,10 @@ test_plan:
     cmd: "curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/api/bookmarks/99999 | grep -q 404"
 ```
 
-After the build and governor review complete, SpecGantry offers to run these checks against your running app:
+After the build and quality review complete, SpecGantry offers to run these checks against your running app:
 
 ```
-✓ Build complete — STORY-001: Bookmark CRUD API  ·  governor: passed (2 iters)
+✓ Build complete — STORY-001: Bookmark CRUD API  ·  quality: pass (2 iters)
 
   [R] Run tests (3 criteria)   [S] Skip
 ```
@@ -242,7 +245,7 @@ After the build and governor review complete, SpecGantry offers to run these che
 
 The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.
 
-A story is **complete** once the governor review passes and all acceptance criteria are met (or you choose to proceed).
+A story is **complete** once the quality review passes and all acceptance criteria are met (or you choose to proceed).
 
 ---
 

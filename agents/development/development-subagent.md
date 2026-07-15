@@ -20,7 +20,11 @@ Optional inputs:
 - `enhancement_gap:[filename]` — read this gap file immediately after gate; `## Changes` bullets are the change brief
 - `concern_resolution: apply|ignore` — skip concern scan and proceed with resolved directive
 - `investigation_findings` — targeted brief for bug fixes (files, root_cause)
-- `governor_patch_files: [list of patch paths]` — cumulative governor patches to load (e.g. `patches/patch-0.yaml, patches/patch-1.yaml`)
+- `fix_steps: [list]` — repair instructions from the plan subagent (triggers repair mode)
+- `root_cause` — the planner's root cause diagnosis (repair mode only)
+- `preserve` — patterns and files the planner confirmed are correct and must not be changed (repair mode only)
+- `prior_context` — compact summary of prior iteration(s): `"Iteration N: failing=[dim1,dim2] | root_cause: ..."` (repair mode only)
+- `approach_change: true|false` — when true, rewrite affected files from scratch rather than making targeted edits (repair mode only, default false)
 
 ## HARD GATE
 
@@ -46,11 +50,6 @@ Before writing any code, load context in this exact order (stable-first for prom
 2. `specs/stories/[story_id]/intent.md` — grounds your judgment calls. When you face an ambiguity not covered by the spec, the intent tells you what the user is trying to accomplish.
 
 3. `specs/stories/[story_id]/story-spec.md` — extract the `reads:` block from the YAML frontmatter. This is your fetch list for step 5.
-
-3.5. **Governor patches (if `governor_patch_files` provided):** Read each patch file in the list, in order. Accumulate:
-   - From the `type: approach` patch: `review.spec_ambiguities`, `review.persistence_questions`, `review.ui_questions`, `review.risk_flags`
-   - From all `type: review` patches: flatten all per-dimension `fix_instructions` across all iterations into a single ordered list
-   - If `governor_patch_files` is absent or empty: proceed silently — no governor context.
 
 4. `specs/architecture/architecture.md` — extract three things only:
    - `## Artifact Index` — parse once per preamble § 3
@@ -155,24 +154,25 @@ If a concern was already raised on a prior invocation for this story (i.e. `conc
 
 Read the full `story-spec.md`. This is your implementation contract. The `## Criteria` section defines done. Implement everything required to satisfy every criterion.
 
-**Governor patch integration (when `governor_patch_files` provided):**
+**Repair mode (when `fix_steps` is provided):**
 
-Before starting the work order, work through the accumulated governor context:
+You are on a quality loop iteration — a prior build was evaluated and found failing. Do not do a full rebuild.
 
-**From the approach patch** (no review patches yet — first build):
-- For each `spec_ambiguity`: resolve it from intent.md and arch artifacts before writing any code. If resolvable: note your interpretation in `build-report.yaml → warnings`. If not resolvable: raise as a concern (existing concern-raising protocol).
-- For each `persistence_question`: read the entity in `data-model.md` and the relevant `actor:` section. Make a clear persistence decision before designing the data layer. Note the decision in `build-report.yaml → warnings`.
-- For each `ui_question`: read `ux:component-conventions` and `ux:visual-system`. Make the call. Note it in warnings if non-obvious.
-- For each `risk_flag`: keep it in mind during implementation. Implement defensively where flagged.
-- All approach items are pre-flight checklists — they do not override the spec.
+Before writing any code:
+1. Read `prior_context` — understand what was tried and what still failed.
+2. Read `preserve` — these files and patterns are confirmed correct. Do not touch them.
+3. Read `root_cause` — this is the planner's diagnosis of the underlying problem.
+4. Read each step in `fix_steps[]` in order. Each names a specific file, location, and change.
 
-**From review patches** (iteration 2+ — one or more review patches present):
-- This is a **full rebuild**. Read the existing codebase for orientation only. Do not attempt to patch the prior implementation.
-- Consolidate all `fix_instructions` from all review patches into a single ordered list.
-- Treat (original spec + consolidated fix instructions) as your complete brief. Rewrite the story from scratch, satisfying every criterion in the spec and every fix instruction in the list.
-- Each fix instruction names a specific file and a specific criterion, contract, or interface that was not satisfied. Address each one directly — no guessing.
-- Do NOT modify spec or arch artifacts based on fix instructions. If a fix instruction reveals a spec gap, raise a concern or signal `pending_spec_gap` per the existing protocol.
-- HARD GATE, contract pre-flight, and concern scan run identically on every iteration — no shortcuts on governor rebuilds.
+If `approach_change: false` (default): make targeted edits only. Open each file named in `fix_steps`, make the precise change described, nothing more. Do not refactor surrounding code. Do not touch files not named in `fix_steps` unless a fix step's change cascades a required update (e.g. a new prop requires a type update in a shared file — note it in build-report warnings).
+
+If `approach_change: true`: rewrite the affected files named in `fix_steps` from scratch. Use the original spec + fix_steps as your complete brief. Preserve the patterns named in `preserve` by re-implementing them correctly in the new version.
+
+HARD GATE, contract pre-flight, and concern scan run identically in repair mode — no shortcuts.
+
+After completing all fix steps, update `build-report.yaml`:
+- Append to `warnings[]`: `"Repair iteration [N]: addressed [dim1, dim2] per fix_steps"`
+- Update `files_modified` to reflect any additional files touched during repair
 
 Work in this order:
 1. Data layer first — schema, migrations, seed data if needed

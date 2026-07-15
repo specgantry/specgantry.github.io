@@ -158,25 +158,26 @@ SpecGantry always confirms its classification and story mapping before proceedin
 
 ---
 
-### The Governor
+### Quality Review
 
 Every story passes through a quality review loop during the build phase — automatically, without any extra commands.
 
-**Before the dev agent builds:** the Governor reads the spec and surfaces a pre-build brief — spec ambiguities to resolve, storage choice questions, UI state gaps to address, and implementation risks to watch for.
+**After the build**, the code is evaluated across several dimensions: whether every acceptance criterion is satisfied, whether contract shapes are correct, whether required inputs are validated, whether the storage choice suits the use case, whether the UI follows the project's visual system, whether scope is clean, and whether patterns are consistent with prior stories. Any dimension that doesn't pass produces a targeted fix and the build is updated. This loop runs until all dimensions pass or the maximum iterations are reached.
 
-**After the build:** the Governor reads the actual code and reviews 7 quality dimensions: does the code satisfy every acceptance criterion? Are contract shapes correct? Are required inputs validated? Is the persistence choice appropriate? Does the UI follow the project's visual system? Is the scope clean? The review produces a per-dimension verdict with file-specific fix instructions for anything that doesn't pass.
+The result is recorded in the story's `build-report.yaml`. The transition note tells you how it went:
 
-If blocking issues are found, the dev agent rebuilds with the fix instructions as part of its brief. The loop continues until all blocking dimensions pass. The result is recorded in `specs/stories/STORY-NNN/governor-report.yaml`.
-
-**Governor config** (in `project-state.yaml`):
-```yaml
-governor:
-  max_iterations: 3        # rebuild cycles before capping (default: 3)
-  blocking_override: {}    # override per-dimension classification, e.g.:
-                           # persistence_appropriateness: advisory
+```
+✓ Build complete · STORY-001: User registration  ·  quality: pass (2 iters)
+✓ Build complete · STORY-002: Profile page       ·  quality: capped (3 iters, 2 dims remain)
 ```
 
-The transition note tells you how it went: `governor: passed (2 iters)`, `governor: capped (3 iters, 2 flags remain)`, or `governor: partial (cycling)`.
+`quality: pass` — all dimensions cleared. `quality: capped` — max iterations reached; the report documents what remains for you to decide on. `quality: partial` — same dimensions failed on two consecutive iterations, usually indicating a spec ambiguity worth clarifying.
+
+**Config** (in `project-state.yaml`):
+```yaml
+quality_loop:
+  max_iterations: 3   # rebuild cycles before capping (default: 3)
+```
 
 ---
 
@@ -296,7 +297,7 @@ Total           80,601      $7.79
 ```
 </div>
 
-Useful for understanding whether your spend profile aligns with what you'd expect — Haiku is used for ideation; Sonnet is used for story spec, development, and deployment phases.
+Useful for understanding whether your spend profile aligns with what you'd expect — Sonnet handles reasoning-heavy phases (ideation, development, deployment); Haiku handles bounded read-and-score phases (story spec, investigation, evaluate, plan).
 
 **Typical cost profile per phase:**
 
@@ -305,11 +306,11 @@ Useful for understanding whether your spend profile aligns with what you'd expec
 | Ideation | Sonnet 4.6 | Low–medium — conversational, but architecture reasoning |
 | Investigation | Haiku 4.5 | Very low — read-only codebase search |
 | Story spec | Haiku 4.5 | Low — per story, bounded spec format |
-| Governor | Sonnet 4.6 | Low–medium per iteration — reads actual code; 1–3 iterations typical |
+| Quality review | Haiku 4.5 | Very low per iteration — evaluation and repair planning; 1–3 iterations typical |
 | Development | Sonnet 4.6 | Highest — code generation |
 | Deployment | Sonnet 4.6 | Low — script generation, one-shot |
 
-Development still dominates total spend. Governor adds a modest overhead per story — typically 1–2 iterations — that front-loads quality review cost that would otherwise surface as post-delivery rework.
+Development still dominates total spend. The quality review adds a modest overhead per story — typically 1–2 iterations — that front-loads review cost that would otherwise surface as post-delivery rework.
 
 ---
 

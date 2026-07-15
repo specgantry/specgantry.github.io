@@ -44,6 +44,7 @@ All file paths are relative to `project_dir` passed in the prompt. Prefix every 
 - `COHERENT` followed by the confirmed story list — coherence passed; orchestrator writes stories to project-state and calls you again with `mode: seed_artifacts`
 - `COHERENCE_ISSUES: [list of targeted questions]` — conflicts found; orchestrator feeds these back into the turn loop one by one
 - `IDEATION_COMPLETE` — arch artifacts seeded, flags set, done
+- `IDEATION_SAVED` — user chose to save and stop mid-ideation (Beat 1 `[X]` or Topic 10 `[X]`); orchestrator treats this as a clean pause, does NOT run post-ideation verification
 
 ---
 
@@ -205,7 +206,7 @@ Process answer: write to `## Risks & Out of Scope`. Then return the **Beat 1 sum
 On next turn:
 - `Y` → proceed to Beat 2 (return Topic 5 question)
 - `E` → return `TURN:` asking which section to edit, revise on next answer, re-return summary
-- `X` → set `ideation_complete:false` (already is), return `IDEATION_COMPLETE` signal with note "saved — resume with /spec-gantry"
+- `X` → set `ideation_complete:false` (already is), return `IDEATION_SAVED` signal with note "saved — resume with /spec-gantry"
 
 ---
 
@@ -392,7 +393,7 @@ Proposed stories — [n] total
 
 Process answer:
 - `E` → return `TURN:` asking what to change (merge, split, rename, reorder, add, remove) — apply on next answer, re-return proposal
-- `X` → set `ideation_complete:false`, return `IDEATION_COMPLETE` — story list not yet committed
+- `X` → set `ideation_complete:false`, return `IDEATION_SAVED` — story list not yet committed
 - `Y` → **write the approved story list to `specs/.ideation-scratchpad.yaml`** (scratchpad only, NOT to `project-state.yaml` yet — committed only after coherence passes):
   ```yaml
   proposed_stories:

@@ -136,7 +136,7 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.3.4 · Production Ready
+          Claude Code Plugin · v5.3.5 · Production Ready
         </div>
         <h1 class="hero-headline">
           Architecture First.<br>
@@ -168,7 +168,7 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.3.4</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.3.5</div>
             <div class="terminal-line output">✓ 2 skills loaded · 8 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
@@ -258,27 +258,27 @@
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 2: Story Spec -->
+            <!-- Node 2: Story Spec (per story) -->
             <div class="ng-node phase-node phase-spec-color">
               <div class="ng-num">02</div>
               <div class="ng-name">Story Spec</div>
-              <div class="ng-output">story-spec.md (≤60 lines) · reads: block · intent.md finalized</div>
+              <div class="ng-output">story-spec.md (≤60 lines) · reads: block · intent.md · spec_done — then immediately into build</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: spec_done + intent_done flags per story">
+              <div class="ng-gate" title="Gate: spec_done per story — spec and build interleave; each story is built before the next is specced">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 3: Build -->
+            <!-- Node 3: Build + Quality Loop (per story) -->
             <div class="ng-node phase-node phase-build-color">
               <div class="ng-num">03</div>
-              <div class="ng-name">Build</div>
-              <div class="ng-output">Governor review · @story · @intent · @entry · @contract anchors · build-report.yaml · governor-report.yaml · gap.md (if any)</div>
+              <div class="ng-name">Build + Quality Loop</div>
+              <div class="ng-output">dev builds · evaluate scores · plan targets · dev repairs · build-report.yaml · gap.md (if any)</div>
             </div>
 
             <!-- Connector + Gate -->
@@ -449,7 +449,7 @@
           </div>
           <div class="stat-item">
             <div class="stat-num">8</div>
-            <div class="stat-label">Agents — Ideation through deployment, quality review, investigation, and reverse engineering</div>
+            <div class="stat-label">Agents — ideation · story-spec · evaluate · plan · development · deployment · investigation · reverse-engineer</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">6</div>
@@ -494,7 +494,7 @@
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> Ideation</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Two-beat conversational session. Auto-detects simple projects and routes them through quick-start mode (3 questions, smart defaults). For complex projects, matures the idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, story list, UX model, and deployment target. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
+            <div class="agent-desc">Two-beat conversational session. Auto-detects simple projects and routes them through quick-start mode (3 questions, smart defaults). For complex projects, matures the idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, UX model, deployment target, and story list. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> Story Spec</div>
@@ -502,14 +502,19 @@
             <div class="agent-desc">Finalizes intent.md, validates arch references, writes a slim story-spec.md (≤60 lines) with a reads: block. Signals arch gaps (P0) when a required section is missing. Self-reviews before setting spec_done:true.</div>
           </div>
           <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-shield-check-fill"></i> Governor</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Thinks through each story before and after build — like a senior engineer reviewing the work. Pre-build: surfaces spec ambiguities, persistence questions, UI gaps, and implementation risks before the dev agent writes a line. Post-build: reads actual code against the spec across 7 quality dimensions. Flags blocking issues with file-specific fix instructions. Loops with the dev agent until quality clears or max iterations are reached.</div>
-          </div>
-          <div class="agent-row">
             <div class="agent-name"><i class="bi bi-code-square"></i> Development</div>
             <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Builds one story end-to-end from intent.md + story-spec.md. Reads only the targeted arch sections declared in reads: (~130 lines total). Implements a /health endpoint as the first backend route. Writes @story, @intent, @entry, @contract anchors in every file. Writes a test_plan to build-report.yaml — one shell command per observable criterion. Signals spec gaps (P1) when a contract or entity is wrong.</div>
+            <div class="agent-desc">Builds one story end-to-end from intent.md + story-spec.md. Reads only the targeted arch sections declared in reads: (~130 lines total). Implements a /health endpoint as the first backend route. Writes @story, @intent, @entry, @contract anchors in every file. Writes a test_plan to build-report.yaml — one shell command per observable criterion. In repair mode, applies targeted fix steps from the Plan agent without rebuilding from scratch.</div>
+          </div>
+          <div class="agent-row">
+            <div class="agent-name"><i class="bi bi-clipboard2-check-fill"></i> Evaluate</div>
+            <div class="agent-model">Haiku</div>
+            <div class="agent-desc">Reads the built code after every dev pass and scores it across quality dimensions — spec adherence, contract fidelity, input validation, UI completeness, scope hygiene, data integrity, and more. Dynamically selects which dimensions apply based on story signals (has UI, uses AI, has data mutations). Returns a structured verdict that drives the repair loop.</div>
+          </div>
+          <div class="agent-row">
+            <div class="agent-name"><i class="bi bi-wrench-adjustable-circle-fill"></i> Plan</div>
+            <div class="agent-model">Haiku</div>
+            <div class="agent-desc">Receives the evaluation verdict and produces a targeted repair plan — up to 3 fix steps, each naming the exact file, location, and change needed. Decides whether the repair is a targeted edit or a full rewrite of affected files. The dev agent uses this plan in repair mode without rebuilding from scratch.</div>
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-rocket-takeoff-fill"></i> Deployment</div>
@@ -523,13 +528,8 @@
           </div>
           <div class="agent-row">
             <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> Reverse Engineer</div>
-            <div class="agent-model">Sonnet</div>
+            <div class="agent-model">Haiku</div>
             <div class="agent-desc">Analyzes an existing codebase and synthesizes the full SpecGantry project structure — architecture layer (all 6 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-puzzle-fill"></i> Ideation (gap mode)</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Invoked automatically when story-spec or development signals a missing arch section. Adds or updates the missing entity, actor, contract, pattern, or UX section — and updates the Artifact Index. Returns control to the pipeline without user intervention.</div>
           </div>
         </div>
 

@@ -102,7 +102,7 @@
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
           <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
           <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
-          <a href="/docs/skills#governor" class="sidebar-link sidebar-sublink">Governor</a>
+          <a href="/docs/skills#quality-review" class="sidebar-link sidebar-sublink">Quality Review</a>
           <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
           <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
           <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
@@ -178,21 +178,27 @@
 │   └── hooks/
 │       └── spec-gantry-contract.sh # Reads CONTRACT.md and emits it as additionalContext to Claude Code
 ├── specs/
-├── project-state.yaml              # Project metadata, story backlog, ideation_complete flag, active_story
-├── architecture.md                 # Single source of truth — vision, constraints, tech stack, guardrails
-├── cost-log.ndjson                 # Token usage and cost per agent session
-├── .env.example                    # All project env vars — safe to commit, placeholders for secrets
-├── deploy.sh                       # Generated deployment script (whole system)
-├── deploy.sh.old                   # Previous deployment script (backup)
-├── deploy-artifact.md              # Deployment validation summary
-└── stories/
-    ├── STORY-001/
-    │   ├── story-spec.md           # Six-section story spec (cross-references architecture.md)
-    │   ├── build-report.yaml       # Build notes, test plan, and results
-    │   ├── governor-report.yaml    # Quality review outcome: passed / partial / capped
-    │   └── gap.md                 # Gap file (accumulates discoveries; deleted after deploy merge)
-    └── STORY-002/
-        └── ...
+│   ├── project-state.yaml          # Project metadata, story backlog, pipeline state flags
+│   ├── cost-log.ndjson             # Token usage and cost per agent session
+│   ├── .env.example                # All project env vars — safe to commit, placeholders for secrets
+│   ├── deploy.sh                   # Generated deployment script (whole system)
+│   ├── deploy-artifact.md          # Deployment validation summary
+│   ├── architecture/
+│   │   ├── architecture.md         # Single source of truth — vision, constraints, tech stack, guardrails, Artifact Index
+│   │   ├── data-model.md           # All entities, fields, types, relationships, state machines
+│   │   ├── actors.md               # All roles, permissions, ownership rules
+│   │   ├── contracts.md            # Shared API shapes, error envelopes
+│   │   ├── patterns.md             # Dominant backend interaction patterns
+│   │   ├── ux.md                   # Navigation model, visual system, component conventions
+│   │   └── deployment.md           # Cloud platform, registry, services, secrets, CI/CD config
+│   └── stories/
+│       ├── STORY-001/
+│       │   ├── intent.md           # 2-paragraph story purpose and outcome
+│       │   ├── story-spec.md       # Story spec — criteria, interfaces, permissions, state, data
+│       │   ├── build-report.yaml   # Build notes, test plan, quality outcome
+│       │   └── gap.md              # Gap file (accumulates discoveries; deleted after deploy merge)
+│       └── STORY-002/
+│           └── ...
 </code></pre></div></div>
 
 <p><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git.</strong> This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.</p>
@@ -205,11 +211,11 @@
 
 <h3 id="specsproject-stateyaml"><code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></h3>
 
-<p>The project registry. Contains the project name and vision, <code class="language-plaintext highlighter-rouge">ideation_complete</code> flag, <code class="language-plaintext highlighter-rouge">active_story</code>, and the full story backlog with each story’s <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">depends_on</code>, <code class="language-plaintext highlighter-rouge">spec_done</code>, <code class="language-plaintext highlighter-rouge">built</code>, and <code class="language-plaintext highlighter-rouge">deployed</code> flags.</p>
+<p>The project registry. Contains the project name, <code class="language-plaintext highlighter-rouge">ideation_complete</code> and <code class="language-plaintext highlighter-rouge">arch_seeded</code> flags, <code class="language-plaintext highlighter-rouge">active_story</code>, <code class="language-plaintext highlighter-rouge">active_phase</code>, <code class="language-plaintext highlighter-rouge">auto_continue</code>, <code class="language-plaintext highlighter-rouge">pending_arch_gap</code>, <code class="language-plaintext highlighter-rouge">pending_spec_gap</code>, <code class="language-plaintext highlighter-rouge">quality_loop</code> config, and the full story backlog with each story’s <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">depends_on</code>, <code class="language-plaintext highlighter-rouge">spec_done</code>, <code class="language-plaintext highlighter-rouge">built</code>, and <code class="language-plaintext highlighter-rouge">deployed</code> flags.</p>
 
 <h3 id="specsarchitecturearchitecturemd"><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code></h3>
 
-<p>The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, and a <code class="language-plaintext highlighter-rouge">## Configuration</code> table listing every env var the project uses with description and safe example value. Amendment blocks are appended by gap merge — prior content is never overwritten. Story specs reference this document rather than duplicating it.</p>
+<p>The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, a <code class="language-plaintext highlighter-rouge">## Configuration</code> table listing every env var the project uses, and a <code class="language-plaintext highlighter-rouge">## Artifact Index</code> YAML block that maps anchor names to file paths and section anchors. Amendment sections are appended by ideation (in amendment mode) when new stories or architectural changes are made — prior content is never overwritten. Story specs reference this document rather than duplicating it.</p>
 
 <h3 id="specsstoriesstory-nnnstory-specmd"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/story-spec.md</code></h3>
 
@@ -217,11 +223,7 @@
 
 <h3 id="specsstoriesstory-nnnbuild-reportyaml"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></h3>
 
-<p>Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, commits, any gap specs written, warnings, a <code class="language-plaintext highlighter-rouge">test_plan</code> (one shell command per observable criterion), and <code class="language-plaintext highlighter-rouge">overall_status: pass | fail</code>.</p>
-
-<h3 id="specsstoriesstory-nnngovernor-reportyaml"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code></h3>
-
-<p>Written by the Governor after the quality review loop completes. Records the outcome (<code class="language-plaintext highlighter-rouge">passed</code>, <code class="language-plaintext highlighter-rouge">partial</code>, or <code class="language-plaintext highlighter-rouge">capped</code>), the verdict per dimension, how many iterations ran, and any advisory notes. A <code class="language-plaintext highlighter-rouge">partial</code> or <code class="language-plaintext highlighter-rouge">capped</code> outcome means the story is still marked built — the report documents what remains.</p>
+<p>Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, warnings, a <code class="language-plaintext highlighter-rouge">test_plan</code> (one shell command per observable criterion), and <code class="language-plaintext highlighter-rouge">overall_status: pass</code>. After the quality loop exits, the orchestrator appends a <code class="language-plaintext highlighter-rouge">quality</code> block with: <code class="language-plaintext highlighter-rouge">overall</code> (<code class="language-plaintext highlighter-rouge">pass | partial | capped | build_failed | unknown</code>), <code class="language-plaintext highlighter-rouge">iterations</code>, <code class="language-plaintext highlighter-rouge">exit_reason</code>, <code class="language-plaintext highlighter-rouge">active_rubric</code>, and per-dimension results.</p>
 
 <h3 id="specsstoriesstory-nnngapmd"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/gap.md</code></h3>
 
@@ -307,7 +309,7 @@
     <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Ideation <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— or init if no project found</span></div>
-      <div class="dg-flow-node-desc">Collect name + vision → write project-state.yaml · architecture.md</div>
+      <div class="dg-flow-node-desc">Collect name + vision → write project-state.yaml · architecture/ (6 artifacts) · intent.md per story · Sets: ideation_complete</div>
       <div class="dg-flow-node-meta">Sets: ideation_complete</div>
     </div>
   </div>
@@ -329,11 +331,11 @@
         </div>
         <div style="display:flex;align-items:center;color:var(--slate-300);font-size:.9rem">→</div>
         <div style="flex:1;min-width:150px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build + Governor</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: built · governor_status</div>
+          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build + Quality Review</div>
+          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">dev → evaluate → plan → repair</div>
         </div>
       </div>
-      <div class="dg-flow-node-meta" style="margin-top:6px">gap.md written if spec diverges from build</div>
+      <div class="dg-flow-node-meta" style="margin-top:6px">build-report.yaml (quality block) · gap.md (if any) · Sets: built</div>
     </div>
   </div>
 

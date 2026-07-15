@@ -102,7 +102,7 @@
           <a href="/docs/skills#track-cost" class="sidebar-link sidebar-sublink">/track-cost</a>
           <a href="/docs/skills#agent-ideation" class="sidebar-link sidebar-sublink">Ideation agent</a>
           <a href="/docs/skills#agent-story-spec" class="sidebar-link sidebar-sublink">Story Spec agent</a>
-          <a href="/docs/skills#governor" class="sidebar-link sidebar-sublink">Governor</a>
+          <a href="/docs/skills#quality-review" class="sidebar-link sidebar-sublink">Quality Review</a>
           <a href="/docs/skills#agent-development" class="sidebar-link sidebar-sublink">Development agent</a>
           <a href="/docs/skills#agent-deployment" class="sidebar-link sidebar-sublink">Deployment agent</a>
           <a href="/docs/skills#agent-investigate" class="sidebar-link sidebar-sublink">Investigation agent</a>
@@ -173,9 +173,9 @@
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Story Spec</div>
-      <div class="dg-flow-node-desc">Spec each story before any code is written</div>
-      <div class="dg-flow-node-meta">story-spec.md per story</div>
+      <div class="dg-flow-node-title">Story Spec <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">Spec each story before code is written — then immediately into build</div>
+      <div class="dg-flow-node-meta">story-spec.md · reads: block · intent.md</div>
     </div>
   </div>
 
@@ -188,9 +188,9 @@
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Build</div>
-      <div class="dg-flow-node-desc">Implementation · gap specs written if needed</div>
-      <div class="dg-flow-node-meta">build-report.yaml · gap.md (if any)</div>
+      <div class="dg-flow-node-title">Build + Quality Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">dev builds → evaluate scores dimensions → plan targets fixes → dev repairs · loops until pass or cap</div>
+      <div class="dg-flow-node-meta">build-report.yaml (quality block) · gap.md (if any)</div>
     </div>
   </div>
 
@@ -223,7 +223,7 @@
 </div>
 </div>
 
-<p>Stories run in dependency order. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.</p>
+<p>Stories run in dependency order, and the pipeline <strong>interleaves spec and build per story</strong> — a story is fully built before the next story is specced. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.</p>
 
 <p>After deployment, use <code class="language-plaintext highlighter-rouge">[N] New work</code> for any changes. Bug fixes and enhancements always start with the investigation agent — it reads the actual codebase to locate the exact files and root cause before any code is touched.</p>
 
@@ -284,9 +284,9 @@
   <li><strong>Tech stack</strong> — one clear choice per layer</li>
   <li><strong>Guardrails</strong> — enforceable rules every story must follow</li>
   <li><strong>Configuration</strong> — every env var the project needs, in a table</li>
-  <li><strong>Story list</strong> — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval.</li>
   <li><strong>UX model</strong> — navigation pattern, visual system, component conventions</li>
   <li><strong>Deployment target</strong> — cloud platform, container registry, service architecture, secrets strategy, CI/CD. Each answer is flushed to <code class="language-plaintext highlighter-rouge">specs/architecture/deployment.md</code> immediately — a crash mid-topic loses at most one answer.</li>
+  <li><strong>Story list</strong> — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval. This is the last Beat 2 topic.</li>
 </ul>
 
 <p>Everything is written to <code class="language-plaintext highlighter-rouge">specs/architecture/</code> after every answer. A crash mid-session loses at most one exchange.</p>
@@ -323,65 +323,64 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 <h3 id="build">Phase 3 — Build</h3>
 
 <p><strong>Time:</strong> Depends on story complexity
-<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code> · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code></p>
+<strong>Output:</strong> Source code committed · <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></p>
 
 <p>The build phase turns the confirmed spec into working code and verifies it meets quality standards before the story is marked done.</p>
 
-<p><strong>Before the dev agent writes a line</strong>, the Governor reviews the spec and produces a pre-build brief — surfacing ambiguities in acceptance criteria, storage choice questions, UI state gaps, and implementation risks. The dev agent reads this brief as part of its context.</p>
-
-<p><strong>The dev agent</strong> then builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:</p>
+<p><strong>The dev agent</strong> builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:</p>
 <ul>
   <li>Respects every guardrail in <code class="language-plaintext highlighter-rouge">architecture.md</code> and uses env var names exactly as defined in <code class="language-plaintext highlighter-rouge">## Configuration</code></li>
   <li>Secrets and all runtime config come from environment variables — no hardcoded values</li>
-  <li>Maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root with every env var the project needs</li>
   <li>Writes machine-readable anchor comments in source files: <code class="language-plaintext highlighter-rouge">@story</code> (file→story mapping), <code class="language-plaintext highlighter-rouge">@entry</code> (route/handler entry points), <code class="language-plaintext highlighter-rouge">@contract</code> (data shapes at layer boundaries), <code class="language-plaintext highlighter-rouge">@gap</code> (inline at spec divergences)</li>
   <li>Implements a <code class="language-plaintext highlighter-rouge">GET /health</code> endpoint as the first backend route on any story that exposes a port</li>
 </ul>
 
-<p><strong>After the build</strong>, the Governor reads the actual code alongside the spec and reviews 7 quality dimensions:</p>
+<p><strong>Quality loop</strong> — runs automatically after every build, no extra commands needed:</p>
+
+<ol>
+  <li><strong>Evaluate</strong> reads the built code and scores it across dimensions: spec adherence, contract fidelity, input validation, UI completeness, scope hygiene, data integrity, and more. Dimensions are selected dynamically based on what the story actually contains — a story with no UI skips UI dimensions, a story using AI activates prompt/output checks.</li>
+  <li><strong>Plan</strong> receives the evaluation verdict and produces up to 3 targeted fix steps — each naming the exact file, location, and change needed.</li>
+  <li><strong>Dev</strong> applies the fixes in repair mode (targeted edits, not a full rebuild) and the loop returns to step 1.</li>
+</ol>
+
+<p>This continues until all dimensions pass or the maximum iterations are reached (default: 3).</p>
+
+<p>The quality outcome is recorded in the story’s <code class="language-plaintext highlighter-rouge">build-report.yaml</code>:</p>
 
 <table>
   <thead>
     <tr>
-      <th>Dimension</th>
-      <th>What it checks</th>
+      <th>Status</th>
+      <th>Meaning</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Spec adherence</td>
-      <td>Does the code logic satisfy every acceptance criterion, including error paths?</td>
+      <td><code class="language-plaintext highlighter-rouge">pass</code></td>
+      <td>All active dimensions cleared</td>
     </tr>
     <tr>
-      <td>Contract fidelity</td>
-      <td>Are all required fields in each contract actually populated from real data?</td>
+      <td><code class="language-plaintext highlighter-rouge">partial</code></td>
+      <td>Same dimensions still failing after an approach-change repair — usually a spec ambiguity</td>
     </tr>
     <tr>
-      <td>Input completeness</td>
-      <td>Are all required fields validated? Correct error status codes?</td>
+      <td><code class="language-plaintext highlighter-rouge">capped</code></td>
+      <td>Max iterations reached with unresolved dimensions</td>
     </tr>
     <tr>
-      <td>Persistence appropriateness</td>
-      <td>Is the storage choice right for the entity’s lifecycle and use case?</td>
+      <td><code class="language-plaintext highlighter-rouge">build_failed</code></td>
+      <td>Dev agent returned a build failure during a repair cycle</td>
     </tr>
     <tr>
-      <td>UI quality</td>
-      <td>Theme consistency, loading/error states, accessibility basics, breakpoints</td>
-    </tr>
-    <tr>
-      <td>Scope hygiene</td>
-      <td>Extra code not in the spec, or missing code that is in the spec</td>
-    </tr>
-    <tr>
-      <td>Cross-story coherence</td>
-      <td>Consistent field names, error patterns, and naming vs prior stories</td>
+      <td><code class="language-plaintext highlighter-rouge">unknown</code></td>
+      <td>Evaluation output could not be parsed</td>
     </tr>
   </tbody>
 </table>
 
-<p>Each dimension produces a verdict: <strong>PASS</strong>, <strong>FLAG</strong>, <strong>ADVISORY</strong>, or <strong>SKIP</strong> (for API-only stories on UI dimensions). If any blocking dimension is flagged, the Governor writes file-specific fix instructions and the dev agent does a full rebuild. This loop continues until all blocking dimensions pass or the configured maximum iterations are reached.</p>
+<p>A <code class="language-plaintext highlighter-rouge">partial</code> or <code class="language-plaintext highlighter-rouge">capped</code> story is still marked built — the report documents what remains for you to decide on.</p>
 
-<p>The final outcome is recorded in <code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/governor-report.yaml</code> with status <code class="language-plaintext highlighter-rouge">passed</code>, <code class="language-plaintext highlighter-rouge">partial</code> (loop detected), or <code class="language-plaintext highlighter-rouge">capped</code> (max iterations). A capped or partial story is still marked built — the report documents what remains for the user to decide on.</p>
+<hr />
 
 <p><strong>Test plan</strong></p>
 
@@ -396,9 +395,9 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
     <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">curl</span><span class="nv"> </span><span class="s">-sf</span><span class="nv"> </span><span class="s">-o</span><span class="nv"> </span><span class="s">/dev/null</span><span class="nv"> </span><span class="s">-w</span><span class="nv"> </span><span class="s">'%{http_code}'</span><span class="nv"> </span><span class="s">http://localhost:3000/api/bookmarks/99999</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">grep</span><span class="nv"> </span><span class="s">-q</span><span class="nv"> </span><span class="s">404"</span>
 </code></pre></div></div>
 
-<p>After the build and governor review complete, SpecGantry offers to run these checks against your running app:</p>
+<p>After the build and quality review complete, SpecGantry offers to run these checks against your running app:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete — STORY-001: Bookmark CRUD API  ·  governor: passed (2 iters)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete — STORY-001: Bookmark CRUD API  ·  quality: pass (2 iters)
 
   [R] Run tests (3 criteria)   [S] Skip
 </code></pre></div></div>
@@ -411,7 +410,7 @@ Stories are building blocks, not micro-tasks. A story is a vertical slice — so
 
 <p>The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.</p>
 
-<p>A story is <strong>complete</strong> once the governor review passes and all acceptance criteria are met (or you choose to proceed).</p>
+<p>A story is <strong>complete</strong> once the quality review passes and all acceptance criteria are met (or you choose to proceed).</p>
 
 <hr />
 

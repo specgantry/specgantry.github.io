@@ -436,9 +436,12 @@ Read `quality_loop.max_iterations` (default `3`) from `project-state.yaml`.
 
 **Resume guard (fixes #8 — quality loop crash recovery):**
 Check for `specs/stories/[story_id]/.quality-loop.yaml` on disk:
-- If present AND `specs/stories/[story_id]/build-report.yaml` exists with `overall_status: pass` AND the quality block is already written in build-report.yaml → the quality loop already completed; skip to **Mark built**.
+- If present AND `specs/stories/[story_id]/build-report.yaml` exists with `overall_status: pass` AND the quality block is already written in build-report.yaml AND `.quality-loop.yaml` is absent → the quality loop completed cleanly (orchestrator writes the quality block then deletes `.quality-loop.yaml` atomically); skip to **Mark built**.
 - If present AND build-report.yaml exists with `overall_status: pass` AND no quality block yet → restore loop state from `.quality-loop.yaml` (`iteration_N`, `prior_failing_dimensions`, `prior_evaluation_summary`, `last_fix_steps`) and re-enter at **Step Q2** using the restored state. The dev agent's work from the prior session is on disk — do not rebuild.
+- If present AND build-report.yaml exists with `overall_status: pass` AND quality block is present → `.quality-loop.yaml` was not yet deleted, meaning the session crashed after the orchestrator wrote the quality block but before it deleted the checkpoint. Delete `.quality-loop.yaml` and skip to **Mark built**.
 - If absent or build-report.yaml missing → start from Step Q1 (fresh build).
+
+**Quality block ownership:** the `quality:` key in build-report.yaml is written **only** by the orchestrator at Step Q2 exit (PASS path) or at loop cap/cycling/unknown exits. If build-report.yaml already contains a `quality:` key when the orchestrator reaches Step Q2 (e.g. written prematurely by a non-compliant dev agent), **remove that key before invoking the evaluate subagent** — do not let a dev-agent-written quality block substitute for the orchestrator-owned evaluation. The correct pattern: dev agent writes `overall_status: pass`, orchestrator reads that, then independently runs evaluate, then writes `quality:`.
 
 **Quality loop — shared by build_next_story, bug_fix, and enhancement. Orchestrator owns all loop state; checkpointed to `.quality-loop.yaml` after each Q2/Q3 step.**
 

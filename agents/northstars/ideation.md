@@ -81,8 +81,26 @@ After ideation, no question exists that would force a spec, development, or depl
 
 Failing signal: any architecture artifact section would contain `_not yet written_` or equivalent after ideation exits.
 
+### 9. Every story has a stated trigger-to-outcome mapping
+For each story in the story list, the ideation output records:
+- The **trigger**: what the user does (submits a form, clicks a button, navigates to a screen)
+- The **system outcome**: what the system does in response (creates a record, calls an API, sends a notification, transitions state)
+- The **governing rule**: any business rule, condition, or constraint that applies (e.g. "only the owner can delete", "max 3 retries", "requires verified email")
+- The **non-happy-path outcome**: what happens when the operation fails, is rejected, or the precondition is not met
+
+Failing signal: a spec writer would need to decide what the system does when the user performs the story's primary action, or would need to invent a business rule not grounded in an ideation answer.
+
+### 10. Roles and permissions are defined with visibility rules
+If the system has more than one actor or any access-controlled resource:
+- Every role is named with its permitted actions (what it can create, read, update, delete)
+- Every screen or UI section that is role-conditional states which roles can see or access it
+- Every API endpoint or server action that requires a specific role names that role
+- The permission model is stated at the role level, not just as "authenticated vs unauthenticated"
+
+Failing signal: a spec writer would need to decide which UI elements are visible to which actor, or a developer would need to decide what role is required to access an endpoint, without any ideation answer to ground that decision.
+
 ---
 
 ## Handoff criteria (what ACHIEVED means)
 
-When the ideation-eval-agent returns `verdict: ACHIEVED`, it must confirm all 8 criteria above are met with specific evidence from the written artifacts. The orchestrator derives Goal₀ for each story's spec loop directly from the canonical artifacts on disk — no handoff payload is needed from the eval agent.
+When the ideation-eval-agent returns `verdict: ACHIEVED`, it must confirm all 10 criteria above are met with specific evidence from the written artifacts. The orchestrator derives Goal₀ for each story's spec loop directly from the canonical artifacts on disk — no handoff payload is needed from the eval agent.

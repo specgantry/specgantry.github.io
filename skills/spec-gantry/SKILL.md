@@ -24,18 +24,18 @@ SpecGantry v6 uses a universal Plan-Produce-Evaluate (PPE) loop at every phase. 
 
 | Type | Phase | Model |
 |------|-------|-------|
-| `spec-gantry:ideation:ideation-plan-agent` | ideation plan | sonnet-5 |
-| `spec-gantry:ideation:ideation-produce-agent` | ideation produce | sonnet-5 |
-| `spec-gantry:ideation:ideation-eval-agent` | ideation evaluate | sonnet-5 |
-| `spec-gantry:spec:spec-plan-agent` | spec plan | sonnet-5 |
-| `spec-gantry:spec:spec-produce-agent` | spec produce | haiku-4-5 |
-| `spec-gantry:spec:spec-eval-agent` | spec evaluate | sonnet-5 |
-| `spec-gantry:code:code-plan-agent` | code plan | sonnet-5 |
-| `spec-gantry:code:code-produce-agent` | code produce | sonnet-5 |
-| `spec-gantry:code:code-eval-agent` | code evaluate | sonnet-5 |
-| `spec-gantry:investigate:investigate-subagent` | investigation | haiku-4-5 |
-| `spec-gantry:deployment:deployment-subagent` | deployment | sonnet-4-6 |
-| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | haiku-4-5 |
+| `spec-gantry:ideation:ideation-plan-agent` | ideation plan | haiku |
+| `spec-gantry:ideation:ideation-produce-agent` | ideation produce | haiku |
+| `spec-gantry:ideation:ideation-eval-agent` | ideation evaluate | haiku |
+| `spec-gantry:spec:spec-plan-agent` | spec plan | sonnet |
+| `spec-gantry:spec:spec-produce-agent` | spec produce | sonnet |
+| `spec-gantry:spec:spec-eval-agent` | spec evaluate | sonnet |
+| `spec-gantry:code:code-plan-agent` | code plan | sonnet |
+| `spec-gantry:code:code-produce-agent` | code produce | sonnet |
+| `spec-gantry:code:code-eval-agent` | code evaluate | sonnet |
+| `spec-gantry:investigate:investigate-subagent` | investigation | haiku |
+| `spec-gantry:deployment:deployment-subagent` | deployment | haiku |
+| `spec-gantry:reverse-engineer:reverse-engineer-subagent` | reverse_engineer | haiku |
 
 Always pass `project_dir: [absolute cwd]` to every subagent invocation. The architecture path is always `[project_dir]/specs/architecture/architecture.md` — subagents derive it from `project_dir` and never receive it as a separate parameter.
 
@@ -184,7 +184,7 @@ Check for `specs/stories/[story_id]/.ppe-loop.yaml` on disk before entering any 
 - If present: restore `iteration_N`, `prior_eval_verdict`, `prior_northstar_gaps`, `must_not_miss` from the checkpoint. Re-derive the goal from disk (`initial_goal_fn`) then merge `must_not_miss` from the checkpoint into the goal. Re-enter at the plan step.
 - If absent: start fresh at iteration 1.
 
-**Cache-first context ordering (v6).** Every subagent invocation prompt must instruct the subagent to `Read: agents/_shared/preamble.md` **once per session, first**, before any other read. Then reads follow the order: preamble → `architecture.md` → named arch sections → per-story files → `project-state.yaml`. Stable-first ordering maximizes prompt-cache reuse across invocations in the same session.
+**Cache-first context ordering (v6).** Every subagent invocation prompt must instruct the subagent to `Read: agents/_shared/preamble.md` once per session, first.
 
 **Auto-continue mode (v5.1).** `project-state.yaml → auto_continue: true|false` (default `false`). When true, the orchestrator does **not** pause on story-spec approval prompts — a spec that passes self-review with no concern is auto-approved (`spec_done:true` written, next action routed) without user input. Auto-continue also skips post-build test execution — builds are marked `built:true` immediately without offering `[R] Run tests`. The flag is user-controlled via the `[>] Run to next pause` dashboard action.
 
@@ -252,7 +252,7 @@ Key files: `specs/project-state.yaml` (pipeline state + story flags) · `specs/a
 
 Valid `active_phase` values: `ideation_plan` · `ideation_produce` · `ideation_eval` · `spec_plan` · `spec_produce` · `spec_eval` · `code_plan` · `code_produce` · `code_eval` · `deployment` · `investigation` · `amendment` · `null`
 
-Any scratch or intermediate files **must** go under `specs/scratchpad/`. Pass this to every subagent.
+Pass `specs/scratchpad/` to every subagent as the scratch path (preamble §1).
 
 ---
 

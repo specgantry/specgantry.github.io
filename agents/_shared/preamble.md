@@ -64,7 +64,7 @@ Arch artifact files use `## [type]:[name]` headings as anchors:
 - `ux.md` — `## ux:navigation-model`, `## ux:screen-template`
 - `deployment.md` — `## deployment:target`, `## deployment:secrets`
 
-When your story spec's `reads:` block names sections, read **only** the named sections up to the next `##` heading. Do not read the whole file. Cost tracking flags full-file reads as inefficient.
+When your story spec's `reads:` block names sections, read **only** the named sections up to the next `##` heading. Do not read the whole file.
 
 **Contract sections (v5.2)** carry both prose and a fenced ` ```yaml ``` ` block (OpenAPI 3.1 or JSON Schema). When reading a `## contract:[name]` section:
 - The prose describes intent and usage — read it for judgment calls.

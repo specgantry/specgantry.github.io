@@ -64,16 +64,29 @@ Reading intent.md: if the intent describes any condition, constraint, or edge ca
 
 Failing signal: intent.md describes a scenario but the spec's criteria section has no entry for it. The developer would not know to handle it.
 
-### 8. Interfaces are complete and unambiguous
+### 8. Interfaces are complete, unambiguous, and role-gated
 For every endpoint or server action in `## Interfaces`:
 - Auth requirement is stated
 - Every guard/precondition is stated
 - Response contract is referenced (not inlined)
 - Every error response is listed with its HTTP status and trigger condition
 
-Failing signal: a developer would need to decide what status code to return on a validation failure, or whether an endpoint requires authentication.
+For every UI element, screen section, or action that is conditional on role or permission:
+- The required role is named
+- What a user without that role sees is stated (hidden, disabled, redirect, error message)
 
-### 9. Layout and structural decisions are made
+Failing signal: a developer would need to decide what status code to return on a validation failure, or whether an endpoint requires authentication, or what an unauthorised user sees when they encounter a role-gated element.
+
+### 10. Every user input has stated validation rules
+For every input field, form, or data submission in the story:
+- The validation rule is stated (required, max length, format, allowed values, etc.)
+- The trigger point is stated (on blur, on submit, or real-time)
+- The error message text is specified (not "show an error" — the actual message the user reads)
+- The error display location is stated (inline below the field, above the form, toast, etc.)
+
+Failing signal: a developer would need to decide what constitutes valid input, when to validate it, what to say to the user when it is invalid, or where to show that message.
+
+### 11. Layout and structural decisions are made
 The spec does not leave structural decisions to the developer. For any screen or component:
 - The layout approach is stated (e.g. "two-column: left nav, right content", "centered card", "full-width table")
 - The screen template from `ux:screen-template` is referenced or a deviation is stated
@@ -85,4 +98,4 @@ Failing signal: spec describes what a screen must contain but not how it is stru
 
 ## Handoff criteria (what ACHIEVED means)
 
-When the spec-eval-agent returns `verdict: ACHIEVED`, it must confirm all 9 criteria above are met with specific evidence from the written story-spec.md. The orchestrator derives Goal₀ for the code loop directly from `story-spec.md`, `intent.md`, and the code north star — no handoff payload is needed from the eval agent.
+When the spec-eval-agent returns `verdict: ACHIEVED`, it must confirm all 11 criteria above are met with specific evidence from the written story-spec.md. The orchestrator derives Goal₀ for the code loop directly from `story-spec.md`, `intent.md`, and the code north star — no handoff payload is needed from the eval agent.

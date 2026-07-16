@@ -1,7 +1,7 @@
 ---
 name: deployment-subagent
 description: Gathers deployment details interactively, runs pre-flight checks, generates .env.example, per-service Dockerfiles, docker-compose.yml, and a versioned deploy.sh with per-step diagnostics for GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose.
-model: claude-sonnet-4-6
+model: haiku
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -9,11 +9,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 
 You are a **subagent** of the SpecGantry orchestrator, responsible for the deployment phase. The orchestrator delegated this work to you — complete it fully and set the required state flags so the orchestrator can advance the pipeline.
 
-All file paths are relative to `project_dir` passed in the prompt. Prefix every file read/write with it.
-
 **Design principle:** eliminate the class of "script ran but deploy failed" errors by (a) gathering everything needed upfront, (b) running pre-flight checks before generating any file, and (c) embedding per-step verification with actionable diagnostics in every generated script.
-
-**Developer workflow note:** During development (before this phase), developers run code natively — no Docker. Docker enters the picture exclusively here. The `--dry-run` flag is the production-parity local test: it builds Docker images and starts all containers locally, exactly as production would.
 
 ## HARD GATE
 
@@ -23,7 +19,7 @@ Read: specs/architecture/architecture.md →  must exist · ## Artifact Index pr
 Read: specs/architecture/deployment.md  →  must exist · ## deployment:target present
 ```
 
-On any failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
+On any failure — use GATE_FORMAT (preamble §7):
 `✗ Deployment gate FAILED · [failing condition] · Run /spec-gantry`
 
 For each story, read `specs/stories/[STORY-ID]/build-report.yaml` and verify `overall_status:pass`. If any story shows `overall_status:fail` or build-report.yaml is missing: halt with `✗ Deployment gate FAILED · build-report missing or failed for [STORY-ID] · rebuild before deploying`.
@@ -46,7 +42,7 @@ This is non-blocking — gap specs are informational at deploy time.
 
 ## Step 1 — Load deployment context
 
-Read `agents/_shared/preamble.md` **once per session** as your first read. Then read (stable-first for prompt cache):
+Read `agents/_shared/preamble.md` **once per session** as your first read. Then read:
 1. `specs/architecture/deployment.md` — full file
 2. `specs/architecture/architecture.md → ## Configuration` — all env vars
 3. `specs/architecture/architecture.md → ## Guardrails` — project structure rules
@@ -711,7 +707,6 @@ echo "  Deployment log:  specs/deploy-artifact.md"
 - Every production-only command (push to registry, cloud API call, service update) must be inside the production path (not in `--dry-run` branch)
 - Every `$VAR` reference in the production path must appear in the header's env vars list
 - Every command is wrapped in `run_step` with a specific fix hint
-- Echo section start markers for every section
 - The complete script must be self-contained — no sourcing external files beyond `.env`
 - `set -euo pipefail` at the top — the script exits on first error
 

@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpecGantry Documentation — SpecGantry Docs</title>
-  <meta name="description" content="Complete documentation for SpecGantry v5 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
+  <meta name="description" content="Complete documentation for SpecGantry v6 — universal Plan-Produce-Evaluate loop for Claude Code. Quality validated at ideation, spec, and code — before anything ships.">
   <meta property="og:title" content="SpecGantry Documentation">
-  <meta property="og:description" content="Complete documentation for SpecGantry v5 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
+  <meta property="og:description" content="Complete documentation for SpecGantry v6 — universal Plan-Produce-Evaluate loop for Claude Code. Quality validated at ideation, spec, and code — before anything ships.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="SpecGantry Documentation">
-  <meta name="twitter:description" content="Complete documentation for SpecGantry v5 — reference-driven SDLC for Claude Code. Shared architecture artifacts, slim story specs, targeted model reads, enforced phase gates.">
+  <meta name="twitter:description" content="Complete documentation for SpecGantry v6 — universal Plan-Produce-Evaluate loop for Claude Code. Quality validated at ideation, spec, and code — before anything ships.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -142,7 +142,7 @@
       <article class="docs-article">
         <h1 id="specgantry-documentation">SpecGantry Documentation</h1>
 
-<p><strong>Reference-driven SDLC for Claude Code.</strong> Architecture artifacts written once. Story specs that reference them. Agents that read only what they need. Enforced phase gates from first idea through deployment.</p>
+<p><strong>Quality at every phase, not just at the end.</strong> Architecture artifacts written once. Story specs machine-validated before a line of code is written. Code evaluated against a north star — not just a checklist. Three self-correcting loops that together produce software that works the way users actually need it to.</p>
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -152,42 +152,42 @@
 
 <h2 id="what-is-specgantry">What Is SpecGantry?</h2>
 
-<p>SpecGantry is a Claude Code plugin that enforces a structured development process. The core v5 insight: architectural knowledge should live once in shared artifacts, not duplicated in every story spec. Every story references the shared layer. Every agent reads only the sections it needs.</p>
+<p>SpecGantry is a Claude Code plugin that enforces a structured, self-correcting development process. The v6 insight: quality must be validated at every phase — not just when code is written. A thin spec produces bad code no matter how many code review iterations you run. SpecGantry catches gaps at the earliest possible moment.</p>
 
-<p>The result: architecture that stays consistent across stories, story specs that stay slim and precise, and agents that make fewer wrong decisions because their context is targeted rather than broad.</p>
+<p>Every phase runs the same universal loop: <strong>Plan → Produce → Evaluate</strong>. The evaluator holds both the output and the plan against a canonical north star. If the plan’s goals were insufficient, the evaluator upgrades them — and the loop reruns with a richer target. This happens at ideation, spec, and code. Nothing exits a phase until the north star is satisfied.</p>
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The SpecGantry v5 Pipeline</div>
+<div class="dg-diagram-title">The SpecGantry v6 Pipeline</div>
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">
     <div class="dg-node-num">01</div>
-    <div class="dg-node-name">Ideation + Architecture</div>
-    <div class="dg-node-output">architecture/ (6 artifacts) · intent.md per story</div>
+    <div class="dg-node-name">Ideation PPE Loop</div>
+    <div class="dg-node-output">plan questions → ask → evaluate completeness → architecture/ artifacts · intent.md per story</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: ideation_complete + arch_seeded · north star: all 8 criteria met"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-spec">
     <div class="dg-node-num">02</div>
-    <div class="dg-node-name">Story Spec</div>
-    <div class="dg-node-output">story-spec.md (≤60 lines) + reads: block</div>
+    <div class="dg-node-name">Spec PPE Loop — per story</div>
+    <div class="dg-node-output">plan criteria → write spec → evaluate sufficiency → story-spec.md (machine-validated)</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_done + intent_done per story"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: spec_done per story · north star: 9 criteria met"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-build">
     <div class="dg-node-num">03</div>
-    <div class="dg-node-name">Build + Quality Loop</div>
-    <div class="dg-node-output">dev builds · evaluate scores · plan targets · dev repairs · build-report.yaml</div>
+    <div class="dg-node-name">Code PPE Loop — per story</div>
+    <div class="dg-node-output">plan build approach → build → evaluate correctness + experience → build-report.yaml</div>
   </div>
 
-  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built:true"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
+  <div class="dg-connector"><div class="dg-line"></div><div class="dg-gate" title="Gate: all stories built:true · north star: 7 criteria met"><span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span></div><div class="dg-line"></div></div>
 
   <div class="dg-node dg-deploy">
     <div class="dg-node-num">04</div>
     <div class="dg-node-name">Deploy Release</div>
-    <div class="dg-node-output">deploy.sh · gap specs merged</div>
+    <div class="dg-node-output">deploy.sh · gap specs merged · release versioned</div>
   </div>
 
 </div>
@@ -209,14 +209,14 @@
     <div class="doc-nav-icon"><i class="bi bi-gear"></i></div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">Complete walkthrough — the architecture layer, all pipeline phases, gap flows, reverse engineering, and release management.</div>
+      <div class="doc-nav-desc">The PPE loop, all three phases, north stars, GOAL_GAP routing, gap flows, and release management.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
       <div class="doc-nav-title">Skills &amp; Agents</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 8 agents (ideation, story-spec, evaluate, plan, development, deployment, investigation, reverse-engineer), the dashboard, and every workflow covered.</div>
+      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 12 agents, the v6 dashboard, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
@@ -230,7 +230,7 @@
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, pipeline, costs, and troubleshooting.</div>
+      <div class="doc-nav-desc">Common questions on installation, the PPE loop, costs, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -252,21 +252,59 @@ claude plugin <span class="nb">install </span>spec-gantry
 
 <h3 id="keep-specgantry-updated">Keep SpecGantry Updated</h3>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry
-</code></pre></div></div>
-
-<p>Or from within Claude Code:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/plugin marketplace update spec-gantry
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry <span class="o">&amp;&amp;</span> claude plugin update spec-gantry@spec-gantry
 </code></pre></div></div>
 
 <hr />
 
 <h2 id="key-concepts">Key Concepts</h2>
 
+<h3 id="the-ppe-loop">The PPE Loop</h3>
+
+<p>Every phase in SpecGantry runs the same universal loop:</p>
+
+<ol>
+  <li><strong>Plan</strong> — given the current goal, what must be produced and how?</li>
+  <li><strong>Produce</strong> — execute the plan</li>
+  <li><strong>Evaluate</strong> — did produce achieve the plan? did the plan cover the north star?</li>
+</ol>
+
+<p>If the plan was right but execution was incomplete → <strong>EXECUTION_GAP</strong> → replan, same goal.<br />
+If execution satisfied the plan but the plan missed a north star criterion → <strong>GOAL_GAP</strong> → evaluator upgrades the goal, replan.<br />
+If all criteria are met → <strong>ACHIEVED</strong> → phase exits and hands off to the next phase.</p>
+
+<p>This loop runs at ideation, spec, and code. Nothing exits a phase until the evaluator confirms the north star is satisfied.</p>
+
+<h3 id="the-north-stars">The North Stars</h3>
+
+<p>Each phase has a canonical quality bar the evaluator holds every output against — independently of what any plan says:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>North star question</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation</td>
+      <td>Can every architecture artifact be written without invented assumptions?</td>
+    </tr>
+    <tr>
+      <td>Spec</td>
+      <td>If built exactly as written, does the user get everything the intent promises?</td>
+    </tr>
+    <tr>
+      <td>Code</td>
+      <td>Does the running software deliver the full experience the intent describes?</td>
+    </tr>
+  </tbody>
+</table>
+
 <h3 id="the-architecture-layer">The Architecture Layer</h3>
 
-<p>SpecGantry introduced a dedicated <code class="language-plaintext highlighter-rouge">specs/architecture/</code> directory containing six structured files:</p>
+<p>SpecGantry maintains a <code class="language-plaintext highlighter-rouge">specs/architecture/</code> directory with six structured files written during ideation:</p>
 
 <table>
   <thead>
@@ -303,7 +341,7 @@ claude plugin <span class="nb">install </span>spec-gantry
   </tbody>
 </table>
 
-<p>These are written once during ideation and referenced by every story spec via a <code class="language-plaintext highlighter-rouge">reads:</code> block. An agent building a story loads only the specific sections that story uses — not the full architecture.</p>
+<p>These are written once during ideation and referenced by every story spec via a <code class="language-plaintext highlighter-rouge">reads:</code> block.</p>
 
 <h3 id="the-reads-block">The reads: Block</h3>
 
@@ -316,31 +354,19 @@ claude plugin <span class="nb">install </span>spec-gantry
   <span class="na">ux</span><span class="pi">:</span>        <span class="pi">[</span><span class="nv">component-conventions</span><span class="pi">,</span> <span class="nv">screen-template</span><span class="pi">]</span>
 </code></pre></div></div>
 
-<p>The development agent resolves each entry through the Artifact Index and loads only those sections — approximately 130 lines of targeted context rather than the entire architecture.</p>
+<p>The code produce agent resolves each entry and loads only those sections — approximately 130 lines of targeted context rather than the entire architecture.</p>
 
-<h3 id="slim-story-specs-60-lines">Slim Story Specs (≤60 lines)</h3>
+<h3 id="specs-are-the-memory">Specs Are the Memory</h3>
 
-<p>Story specs are navigation maps, not knowledge dumps. They contain five sections: criteria, interfaces, permissions, state, and data — all as references to shared artifacts. The 60-line limit is enforced before <code class="language-plaintext highlighter-rouge">spec_done:true</code> can be set.</p>
-
-<h3 id="self-healing-gap-flows">Self-Healing Gap Flows</h3>
-
-<p>When story-spec finds a missing arch section (P0 gap) or development finds a wrong contract (P1 gap), SpecGantry automatically fills the gap via the ideation agent and resumes — no user intervention required.</p>
-
-<h3 id="the-intentmd">The intent.md</h3>
-
-<p>Every story has a 2-paragraph <code class="language-plaintext highlighter-rouge">intent.md</code> that states the functional purpose and outcome in plain English. It grounds the development agent’s judgment calls and propagates as a one-line <code class="language-plaintext highlighter-rouge">@intent</code> anchor in every source file — so investigation never needs to load full specs to understand what a file does.</p>
+<p>All knowledge lives in <code class="language-plaintext highlighter-rouge">specs/</code>. Architecture decisions, story intent, what was built, why gaps were made — all in plain-text YAML and Markdown, committed to git. Agents read from disk; nothing is duplicated in transition files or passed through parameters that could be derived from the canonical artifacts.</p>
 
 <h3 id="state-that-survives-anything">State That Survives Anything</h3>
 
-<p>All progress is written after every answer and every phase transition. State flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tell the orchestrator exactly where to resume. A crash between any two writes triggers P2 routing on next run, which detects incomplete state and recovers automatically.</p>
+<p>All progress is written after every answer and every phase transition. State flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tell the orchestrator exactly where to resume. A crash mid-loop restores from <code class="language-plaintext highlighter-rouge">.ppe-loop.yaml</code> — iteration count, prior verdict, and accumulated gaps — and re-enters at the plan step.</p>
 
 <h3 id="engagement-hooks">Engagement Hooks</h3>
 
-<p>On every session start, SpecGantry’s <code class="language-plaintext highlighter-rouge">hooks.js</code> checks whether <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> exists in the current directory. If it does, it automatically installs <code class="language-plaintext highlighter-rouge">.claude/settings.json</code> hooks, a contract shell script, and <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> — a binding directive injected into every Claude Code session. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects the contract after every <code class="language-plaintext highlighter-rouge">/compact</code>, so Claude never loses track of the pipeline mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.</p>
-
-<h3 id="specs-in-git">Specs in Git</h3>
-
-<p>Everything under <code class="language-plaintext highlighter-rouge">specs/</code> is plain-text YAML and Markdown. Commit it for complete history, meaningful diffs, and a single source of truth across sessions.</p>
+<p>On every session start, SpecGantry checks whether <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> exists. If it does, it installs <code class="language-plaintext highlighter-rouge">.claude/settings.json</code> hooks, a contract shell script, and <code class="language-plaintext highlighter-rouge">CONTRACT.md</code> — a binding directive injected into every Claude Code session. The <code class="language-plaintext highlighter-rouge">PostCompact</code> hook re-injects after every <code class="language-plaintext highlighter-rouge">/compact</code>. This runs in Node.js — not by Claude — and cannot be skipped.</p>
 
 <hr />
 
@@ -356,11 +382,11 @@ claude plugin <span class="nb">install </span>spec-gantry
   <tbody>
     <tr>
       <td>New project from scratch</td>
-      <td>Ideation shapes your system as a partner conversation. Architecture seeded once. Stories built against a shared contract.</td>
+      <td>Ideation shapes your system. Specs are validated before code is written. Code is evaluated against what users actually need.</td>
     </tr>
     <tr>
       <td>Existing codebase</td>
-      <td>Reverse engineering synthesizes the full architecture layer from your code. Stub specs and anchor tags generated automatically.</td>
+      <td>Reverse engineering synthesizes the full architecture layer. Stub specs and anchor tags generated automatically.</td>
     </tr>
     <tr>
       <td>Solo developer</td>
@@ -368,7 +394,7 @@ claude plugin <span class="nb">install </span>spec-gantry
     </tr>
     <tr>
       <td>Any project using Claude Code</td>
-      <td>Token cost visibility by phase, story, and release. Know exactly what each feature cost.</td>
+      <td>Token cost visibility by plan/produce/eval, by story, by phase, by release. Know exactly what each feature cost and where.</td>
     </tr>
   </tbody>
 </table>

@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills & Agents — SpecGantry Docs</title>
-  <meta name="description" content="Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the quality review loop.">
+  <meta name="description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
   <meta property="og:title" content="Skills & Agents">
-  <meta property="og:description" content="Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the quality review loop.">
+  <meta property="og:description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/skills/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Skills & Agents">
-  <meta name="twitter:description" content="Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the quality review loop.">
+  <meta name="twitter:description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -143,485 +143,533 @@
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="skills--agents">Skills &amp; Agents</h1>
+        <h1 id="specgantry-skills-guide">SpecGantry Skills Guide</h1>
 
-<p>SpecGantry provides 2 skills (entry-point commands) and 8 agents (subagents the orchestrator spawns). You only ever type the skills — the orchestrator decides which agents to invoke and when.</p>
+<p>SpecGantry has two skills. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is the one you use every day — it handles everything. <code class="language-plaintext highlighter-rouge">/track-cost</code> is your real-time cost dashboard.</p>
 
 <hr />
 
-<h2 id="skills">Skills</h2>
-
-<h3 id="spec-gantry">/spec-gantry</h3>
-
-<p>Your single entry point for everything. Run this at the start of every Claude Code session.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
-</code></pre></div></div>
-
-<p>SpecGantry reads <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code>, determines where you are in the pipeline, and routes you to the right action. It renders the dashboard every response and enforces phase gates automatically.</p>
-
-<p><strong>What it handles:</strong></p>
-<ul>
-  <li>New projects (triggers ideation)</li>
-  <li>Existing codebases (triggers reverse engineering)</li>
-  <li>Daily pipeline progress (spec → build → deploy)</li>
-  <li>Post-release work (bug fixes, enhancements, new stories, architectural changes)</li>
-  <li>Crash recovery (P0/P1/P2 gap routing)</li>
-</ul>
-
-<p><strong>The dashboard:</strong></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5  |  MyProject  |  release 1.0.0
-──────────────────────────────────────────────────────────────────
-Spec [███░░] 3/5  ·  Build [██░░░] 2/5  ·  Deploy [░░░░░] not deployed
-──────────────────────────────────────────────────────────────────
-  ID      Story                              Spec   Build
-  ────────────────────────────────────────────────────────────────
-  [001]   User authentication                  ✅     ✅
-  [002]   User profile management              ✅     ✅
-  [003]   User submits application             ✅     🔄
-  [004]   Admin reviews submissions            ✅     ○      depends on 003
-  [005]   Admin manages settings               ⏳     ○
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                       ○ not deployed
-──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it            [$] Cost
-  [1] Build next story — STORY-003        [?] Help
-  [N] New work                            [X] Exit
-──────────────────────────────────────────────────────────────────
-Enter story ID or action:  &gt;
-</code></pre></div></div>
-
-<p><strong>Icon legend:</strong></p>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">✅</code> Complete</li>
-  <li><code class="language-plaintext highlighter-rouge">🔄</code> In progress (active_story matches this ID — covers development, evaluation, and repair_plan phases)</li>
-  <li><code class="language-plaintext highlighter-rouge">🔴</code> Blocked by dependency</li>
-  <li><code class="language-plaintext highlighter-rouge">⏳</code> Ready to work</li>
-  <li><code class="language-plaintext highlighter-rouge">○</code> Not yet reached</li>
-  <li><code class="language-plaintext highlighter-rouge">~</code> Stub spec (reverse-engineered — full spec not yet written)</li>
-</ul>
-
-<p><strong>Action bar — left column:</strong> auto-derived from current pipeline state. Shows the single most actionable next step. Always ends with <code class="language-plaintext highlighter-rouge">[N] New work</code>.</p>
-
-<p><strong>Action bar — right column:</strong> always visible: <code class="language-plaintext highlighter-rouge">[$]</code> Cost, <code class="language-plaintext highlighter-rouge">[?]</code> Help (expands to <code class="language-plaintext highlighter-rouge">[A]</code> Architecture + docs link), <code class="language-plaintext highlighter-rouge">[X]</code> Exit.</p>
-
-<p><strong>Input handling:</strong></p>
-<ul>
-  <li>Type a story number (<code class="language-plaintext highlighter-rouge">001</code>, <code class="language-plaintext highlighter-rouge">1</code>, or <code class="language-plaintext highlighter-rouge">STORY-001</code>) to jump directly to that story</li>
-  <li>Type a story with stub spec (<code class="language-plaintext highlighter-rouge">built:true · spec_done:false</code>) to complete its spec</li>
-  <li>Type lettered commands (<code class="language-plaintext highlighter-rouge">N</code>, <code class="language-plaintext highlighter-rouge">$</code>, <code class="language-plaintext highlighter-rouge">?</code>, <code class="language-plaintext highlighter-rouge">A</code>, <code class="language-plaintext highlighter-rouge">X</code>) to execute those actions</li>
-</ul>
-
-<p><strong>The routing table</strong> (evaluated in order, P-rows first):</p>
+<h2 id="skills-overview">Skills Overview</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Priority</th>
-      <th>Condition</th>
-      <th>Action</th>
+      <th>Skill</th>
+      <th>Command</th>
+      <th>Purpose</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>P0</td>
-      <td><code class="language-plaintext highlighter-rouge">pending_arch_gap</code> non-null</td>
-      <td>Fill missing arch section → resume</td>
+      <td><strong>spec-gantry</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">/spec-gantry</code></td>
+      <td>Your single entry point — dashboard, pipeline, new projects, changes, everything</td>
     </tr>
     <tr>
-      <td>P1</td>
-      <td><code class="language-plaintext highlighter-rouge">pending_spec_gap</code> non-null</td>
-      <td>Fix spec reference → resume build</td>
-    </tr>
-    <tr>
-      <td>P2</td>
-      <td><code class="language-plaintext highlighter-rouge">ideation_complete:true</code> + <code class="language-plaintext highlighter-rouge">arch_seeded:false</code></td>
-      <td>Recover crashed arch write</td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>No project, no source files</td>
-      <td>Start new project</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>No project, source files exist</td>
-      <td>Offer RE or new project</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td><code class="language-plaintext highlighter-rouge">ideation_complete:false</code></td>
-      <td>Continue ideation</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>Any <code class="language-plaintext highlighter-rouge">spec_done:false + built:false</code></td>
-      <td>Spec next story</td>
-    </tr>
-    <tr>
-      <td>5</td>
-      <td>All <code class="language-plaintext highlighter-rouge">spec_done:true</code>, any <code class="language-plaintext highlighter-rouge">built:false</code></td>
-      <td>Build next story</td>
-    </tr>
-    <tr>
-      <td>6</td>
-      <td>All <code class="language-plaintext highlighter-rouge">built:true</code>, any <code class="language-plaintext highlighter-rouge">deployed:false</code></td>
-      <td>Deploy release</td>
-    </tr>
-    <tr>
-      <td>7</td>
-      <td>All <code class="language-plaintext highlighter-rouge">deployed:true</code></td>
-      <td>New work (classify + route)</td>
+      <td><strong>track-cost</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">/track-cost</code></td>
+      <td>Cost breakdown by Plan/Produce/Eval, story, phase, and release</td>
     </tr>
   </tbody>
 </table>
 
 <hr />
 
-<h3 id="track-cost">/track-cost</h3>
+<h2 id="spec-gantry">/spec-gantry</h2>
 
-<p>Token usage and cost breakdown by phase, story, model, and release.</p>
+<p><strong>The only command you need to know.</strong></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
 </code></pre></div></div>
 
-<p>Reads <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> and renders the Cost Matrix as the default view, with three drill-down options:</p>
+<p>Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are, and tells you what to do next.</p>
 
-<p><strong>Cost Matrix (default — input <code class="language-plaintext highlighter-rouge">1</code>):</strong></p>
+<hr />
 
-<p>Two tables — cost in USD first, then token counts. Stories as rows, phases as columns.</p>
+<h3 id="the-dashboard">The Dashboard</h3>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5  |  MyProject
-Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
+<p><strong>State 1 — No stories yet</strong> (ideation in progress, or no project):</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  Recipe Manager
 ──────────────────────────────────────────────────────────
-
-Cost Matrix  |  release 1.0.0
-
-Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
-────────────────────────────────────────────────────────────────────────────────────────────
-PROJECT        $0.82        —            —             —           —          $0.49      $1.31
-STORY-001        —        $0.54        $0.41         $0.04         —            —        $0.99
-STORY-002        —        $0.61        $0.35         $0.03       $0.02          —        $1.01
-STORY-003        —        $0.48        $0.28         $0.03         —            —        $0.79
-STORY-004        —        $0.43        $0.40         $0.04       $0.03          —        $0.90
-────────────────────────────────────────────────────────────────────────────────────────────
-Total          $0.82      $2.06        $1.44         $0.14       $0.05        $0.49      $5.00
-
-Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
-────────────────────────────────────────────────────────────────────────────────────────────
-PROJECT       42,340        —            —             —           —         4,890      47,230
-STORY-001        —       12,840        9,610         2,100         —            —       24,550
-STORY-002        —       14,310        8,140         2,050       1,640          —       26,140
-STORY-003        —       11,260        6,540         2,080         —            —       19,880
-STORY-004        —       10,120        9,380         2,130       1,720          —       23,350
-────────────────────────────────────────────────────────────────────────────────────────────
-Total         42,340     48,530       33,670         8,360       3,360        4,890     141,150
-
-Stories:
-  STORY-001  User authentication
-  STORY-002  User profile management
-  STORY-003  User submits application
-  STORY-004  Admin reviews submissions
+  Ideation in progress  ·  🔄 produce — Topic 6/9
 
 ──────────────────────────────────────────────────────────
-  [1] Matrix        [2] By release    [3] By model
-                                      [X] Return
+  [1] Continue ideation               [$] Cost
+                                      [?] Help
+                                      [X] Exit
 ──────────────────────────────────────────────────────────
-Enter option:  &gt;
-</code></pre></div></div>
+</code></pre></div>  </div>
+</div>
 
-<p><strong>By Release (input <code class="language-plaintext highlighter-rouge">2</code>):</strong></p>
+<p><strong>State 2 — Story pipeline active:</strong></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Release
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-Release       Tokens        Cost
-─────────────────────────────────
-1.0.0        129,430      $12.94
-─────────────────────────────────
-Total        129,430      $12.94
-</code></pre></div></div>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  HireFlow  |  release 1.0.0
+Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
+──────────────────────────────────────────────────────────
+  ID      Story                            Spec        Build
+  ────────────────────────────────────────────────────────────────
+  [001]  User authentication                ✅          ✅
+  [002]  Company posts a job                ✅          🔄 eval·2
+  [003]  Admin reviews applications         🔄 eval     ⏳
+  [004]  Candidate browses and applies      ⏳          ○
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                        ○ not deployed
+──────────────────────────────────────────────────────────────────
+  Type a story ID to manage it        [$] Cost
+  [1] Build next — [002]: Company…    [?] Help
+  [&gt;] Run to next pause               [X] Exit
+  [N] New work
+──────────────────────────────────────────────────────────────────
+Enter story ID or action:  &gt;
+</code></pre></div>  </div>
+</div>
 
-<p><strong>By Model (input <code class="language-plaintext highlighter-rouge">3</code>):</strong></p>
+<p><strong>What the in-progress labels mean:</strong></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Model  |  release 1.0.0
+<p>The Spec and Build columns show exactly where in the PPE loop a story is:</p>
 
-Model            Tokens        Cost
-────────────────────────────────────
-sonnet-4-6      117,889      $11.79
-haiku-4-5        11,541       $1.15
-────────────────────────────────────
-Total           129,430      $12.94
-</code></pre></div></div>
+<table>
+  <thead>
+    <tr>
+      <th>Label</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 plan</code></td>
+      <td>Plan agent running</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 write</code></td>
+      <td>Spec produce agent writing story-spec.md</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 eval</code></td>
+      <td>Eval agent checking north star (iteration 1)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 eval·2</code></td>
+      <td>Eval agent on iteration 2 — a repair loop is running</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 build</code></td>
+      <td>Code produce agent building</td>
+    </tr>
+  </tbody>
+</table>
 
-<p><strong>Cost data is exact</strong> — the SubagentStop hook reads actual <code class="language-plaintext highlighter-rouge">input_tokens</code>, <code class="language-plaintext highlighter-rouge">output_tokens</code>, <code class="language-plaintext highlighter-rouge">cache_creation_input_tokens</code>, and <code class="language-plaintext highlighter-rouge">cache_read_input_tokens</code> from the API response. Cache reads and writes are tracked separately because they have different cost profiles. Model names strip the <code class="language-plaintext highlighter-rouge">claude-</code> prefix for display.</p>
+<p><strong>Pipeline stage icons:</strong></p>
 
-<hr />
+<table>
+  <thead>
+    <tr>
+      <th>Icon</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">✅</code></td>
+      <td>ACHIEVED — north star confirmed</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 [label]</code></td>
+      <td>Active — shows which PPE step and iteration</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔴</code></td>
+      <td>Blocked by a dependency</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">⏳</code></td>
+      <td>Ready — not blocked, not yet started</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">○</code></td>
+      <td>Not yet reached</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">~</code></td>
+      <td>Built but no spec written (reverse-engineered story)</td>
+    </tr>
+  </tbody>
+</table>
 
-<h2 id="agents">Agents</h2>
-
-<p>The orchestrator (SKILL.md) decides which agent to invoke. You never call agents directly.</p>
-
-<h3 id="agent-ideation">Ideation</h3>
-
-<p><strong>Model:</strong> claude-sonnet-4-6<br />
-<strong>Invoked:</strong> at project start, for new stories (<code class="language-plaintext highlighter-rouge">new_story</code> path), for architectural changes, and in gap mode (P0/P2)</p>
-
-<p>Runs a two-beat conversational session that matures your idea and shapes the system. Acts as a partner and advisor — proposes one direction, asks for confirmation or redirection. Never decides silently.</p>
-
-<p><strong>Beat 1 (4 topics):</strong> Vision → Problem &amp; Users → Constraints → Risks &amp; Out of Scope<br />
-<strong>Beat 2 (5 topics):</strong> Tech Stack → Guardrails → Configuration → Story List → UX Model</p>
-
-<p>After Beat 2: seeds all 6 architecture artifacts + Artifact Index + <code class="language-plaintext highlighter-rouge">intent.md</code> per story. Runs a self-review before setting <code class="language-plaintext highlighter-rouge">arch_seeded:true</code>.</p>
-
-<p><strong>Arch gap mode (P0/P2):</strong> when invoked for a missing arch section, reads the Artifact Index, adds the missing entity/actor/contract/pattern/ux section to the appropriate file, and updates the index. Story-level gaps target one section; project-level gaps (P2) check all missing files and write them.</p>
-
-<p><strong>Amendment mode:</strong> when architecture changes are needed for <code class="language-plaintext highlighter-rouge">new_story</code> or <code class="language-plaintext highlighter-rouge">project_change</code>, appends dated amendment blocks — never replaces prior content.</p>
-
-<hr />
-
-<h3 id="agent-story-spec">Story Spec</h3>
-
-<p><strong>Model:</strong> claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)<br />
-<strong>Invoked:</strong> for each story in pipeline order (Phase 2), for stub spec completion (RE projects), in spec gap mode (P1), and at deploy time for gap merges</p>
-
-<p>Produces a slim, precise <code class="language-plaintext highlighter-rouge">story-spec.md</code> (max 60 lines) and finalizes <code class="language-plaintext highlighter-rouge">intent.md</code>.</p>
-
-<p><strong>Steps:</strong></p>
-<ol>
-  <li>Load <code class="language-plaintext highlighter-rouge">architecture.md</code> + all 6 architecture artifacts + <code class="language-plaintext highlighter-rouge">intent.md</code> + project-state</li>
-  <li>Detect RE stub (<code class="language-plaintext highlighter-rouge">⚠ Stub spec</code> marker) — if stub, skips validation; treats <code class="language-plaintext highlighter-rouge">reads:</code> as a context hint</li>
-  <li>Finalize <code class="language-plaintext highlighter-rouge">intent.md</code> (skip if <code class="language-plaintext highlighter-rouge">intent_done:true</code>)</li>
-  <li>Validate arch references — signal P0 if any required section is missing</li>
-  <li>Write <code class="language-plaintext highlighter-rouge">story-spec.md</code> — 5 sections + <code class="language-plaintext highlighter-rouge">reads:</code> block</li>
-  <li>Self-review — 11 items, 60-line hard stop</li>
-  <li>User confirmation: <code class="language-plaintext highlighter-rouge">[Y] Approve  [E] Edit  [X] Hold</code></li>
-  <li>Set <code class="language-plaintext highlighter-rouge">spec_done:true</code></li>
-</ol>
-
-<p><strong>Spec gap mode (P1):</strong> updates the relevant spec section (reads: block, interfaces, or data) based on what development flagged as missing.</p>
-
-<p><strong>Gap merge mode (deploy time):</strong> applies <code class="language-plaintext highlighter-rouge">gap.md</code> changes to <code class="language-plaintext highlighter-rouge">story-spec.md</code> in place, updates <code class="language-plaintext highlighter-rouge">intent.md</code> if fundamental purpose changed, appends change history row, deletes <code class="language-plaintext highlighter-rouge">gap.md</code>.</p>
-
-<hr />
-
-<h3 id="agent-development">Development</h3>
-
-<p><strong>Model:</strong> claude-sonnet-4-6<br />
-<strong>Invoked:</strong> for each story in build order (Phase 3), for bug fixes, and for enhancements</p>
-
-<p>Implements one story end-to-end: data layer → backend → AI integration → frontend.</p>
-
-<p><strong>Read sequence:</strong></p>
-<ol>
-  <li><code class="language-plaintext highlighter-rouge">intent.md</code> — functional grounding</li>
-  <li><code class="language-plaintext highlighter-rouge">story-spec.md</code> — extract <code class="language-plaintext highlighter-rouge">reads:</code> block</li>
-  <li><code class="language-plaintext highlighter-rouge">architecture.md</code> — Artifact Index + Guardrails + Configuration</li>
-  <li>For each <code class="language-plaintext highlighter-rouge">reads:</code> entry: load only that specific <code class="language-plaintext highlighter-rouge">##</code> section from the architecture artifact</li>
-</ol>
-
-<p>Total context: ~130 lines.</p>
-
-<p><strong>Code anchors written</strong> in every new file:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@story STORY-002 | submissions
-@intent allows an applicant to submit their completed draft for admin review
-@entry POST /api/applications/:id/submit | submit draft application
-@contract input: {...} → output: contract:submission-response | errors: ...
-@gap [date] [divergence from spec]  (only when gap.md entry exists)
-</code></pre></div></div>
-
-<p><strong>P1 gap signal:</strong> if a referenced arch section doesn’t exist at read time, writes <code class="language-plaintext highlighter-rouge">pending_spec_gap</code> to project-state and stops. Does not modify any arch or spec files.</p>
-
-<p><strong>Produces:</strong> <code class="language-plaintext highlighter-rouge">build-report.yaml</code> (runtime profile, build command, migration info) + sets <code class="language-plaintext highlighter-rouge">built:true</code></p>
+<p><code class="language-plaintext highlighter-rouge">✅</code> in v6 means the evaluator confirmed the north star — not just that a format checklist passed. Spec ✅ means a machine-validated spec. Build ✅ means code that passed both the quality dimension rubric and the code north star.</p>
 
 <hr />
 
-<h3 id="agent-evaluate">Evaluate</h3>
+<h3 id="what-spec-gantry-handles">What /spec-gantry Handles</h3>
 
-<p><strong>Model:</strong> claude-haiku-4-5-20251001<br />
-<strong>Invoked:</strong> after every development or repair build (Step Q2 of the quality loop)</p>
+<p><strong>Starting a new project</strong> — name and vision, then quick-start (3 questions, smart defaults) or full ideation (9 topics). For simple projects, quick-start activates automatically.</p>
 
-<p>Read-only. Scores the completed build against the active quality rubric. Never writes source files.</p>
+<p><strong>Analysing an existing codebase</strong> — source files detected without a project → scan and generate architecture, story backlog, and anchor tags.</p>
 
-<p><strong>Read sequence:</strong></p>
-<ol>
-  <li><code class="language-plaintext highlighter-rouge">quality-dimensions.md</code> — builds the active rubric from story signals (<code class="language-plaintext highlighter-rouge">has_ui</code>, <code class="language-plaintext highlighter-rouge">has_ai</code>, <code class="language-plaintext highlighter-rouge">has_data_mutations</code>, <code class="language-plaintext highlighter-rouge">has_external_calls</code>, <code class="language-plaintext highlighter-rouge">has_auth</code>)</li>
-  <li><code class="language-plaintext highlighter-rouge">intent.md</code> + <code class="language-plaintext highlighter-rouge">story-spec.md</code> — functional grounding</li>
-  <li><code class="language-plaintext highlighter-rouge">build-report.yaml</code> — <code class="language-plaintext highlighter-rouge">files_modified</code> list</li>
-  <li>Source files listed in <code class="language-plaintext highlighter-rouge">files_modified</code></li>
-</ol>
+<p><strong>Full story lifecycle</strong> — ideation → spec (with north-star validation) → code (with PPE loop) → deploy. Phase gates enforced automatically.</p>
 
-<p><strong>Returns:</strong> raw JSON — <code class="language-plaintext highlighter-rouge">overall: PASS|FAIL</code>, <code class="language-plaintext highlighter-rouge">overall_reason</code>, <code class="language-plaintext highlighter-rouge">active_rubric[]</code>, <code class="language-plaintext highlighter-rouge">dimensions[]</code> (each with <code class="language-plaintext highlighter-rouge">name</code>, <code class="language-plaintext highlighter-rouge">verdict: PASS|FAIL|SKIP</code>, <code class="language-plaintext highlighter-rouge">reason</code>), <code class="language-plaintext highlighter-rouge">failing_dimensions[]</code>, <code class="language-plaintext highlighter-rouge">advisory_notes[]</code>.</p>
-
-<p>A <code class="language-plaintext highlighter-rouge">PASS</code> exits the quality loop and marks the story built. A <code class="language-plaintext highlighter-rouge">FAIL</code> triggers the Plan agent.</p>
+<p><strong>Bug fixes and new work</strong> — <code class="language-plaintext highlighter-rouge">[N] New work</code> at any point. Investigation agent reads the codebase, confirms findings, build agent fixes, full code PPE loop runs.</p>
 
 <hr />
 
-<h3 id="agent-plan">Plan</h3>
+<h3 id="action-bar-commands">Action Bar Commands</h3>
 
-<p><strong>Model:</strong> claude-haiku-4-5-20251001<br />
-<strong>Invoked:</strong> after every <code class="language-plaintext highlighter-rouge">FAIL</code> from the Evaluate agent (Step Q3 of the quality loop)</p>
-
-<p>Read-only. Receives the evaluation JSON and produces a targeted repair strategy for the Development agent. Never writes source files.</p>
-
-<p><strong>Returns:</strong> raw JSON — <code class="language-plaintext highlighter-rouge">root_cause</code>, <code class="language-plaintext highlighter-rouge">fix_steps[]</code> (max 3, each <code class="language-plaintext highlighter-rouge">"file — what to do (addresses dimension_name)"</code>), <code class="language-plaintext highlighter-rouge">preserve</code> (what must not change), <code class="language-plaintext highlighter-rouge">approach_change</code> (boolean — true when the component’s core architecture must be rewritten, not just patched).</p>
-
-<p><code class="language-plaintext highlighter-rouge">approach_change: true</code> is reserved for cases where prior iterations attempted targeted fixes and the same dimensions keep failing. The orchestrator uses this to detect cycling and exit the loop if the same dimensions fail again after an <code class="language-plaintext highlighter-rouge">approach_change</code> repair.</p>
-
-<hr />
-
-<p><strong>Model:</strong> claude-sonnet-4-6<br />
-<strong>Invoked:</strong> Phase 4, after all stories are built</p>
-
-<p>Generates a versioned <code class="language-plaintext highlighter-rouge">deploy.sh</code> for all stories. Reads <code class="language-plaintext highlighter-rouge">build-report.yaml</code> for runtime profiles, infers infrastructure target from tech stack and guardrails.</p>
-
-<p><strong>Produces:</strong></p>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">specs/deploy.sh</code> — build + migrations + deploy + health checks per story, <code class="language-plaintext highlighter-rouge">--dry-run</code> support</li>
-  <li><code class="language-plaintext highlighter-rouge">specs/deploy-artifact.md</code> — deployment metadata, environment variable requirements, manual steps</li>
-  <li>Updates <code class="language-plaintext highlighter-rouge">deployed:true</code> per story, clears <code class="language-plaintext highlighter-rouge">next_release_type</code></li>
-</ul>
-
-<p><strong>Infrastructure detection:</strong> Kubernetes, AWS ECS, GCP Cloud Run, Azure Container Apps, docker-compose, AWS Lambda, Heroku, PM2/systemd, static CDN — inferred from tech stack signals. Ambiguous targets emit <code class="language-plaintext highlighter-rouge"># MANUAL:</code> blocks.</p>
-
-<hr />
-
-<h3 id="agent-investigate">Investigation</h3>
-
-<p><strong>Model:</strong> claude-haiku-4-5-20251001<br />
-<strong>Invoked:</strong> at the start of every <code class="language-plaintext highlighter-rouge">bug_fix</code> or <code class="language-plaintext highlighter-rouge">enhancement</code> in the post-release <code class="language-plaintext highlighter-rouge">classify_and_route</code> flow</p>
-
-<p>Read-only. Never writes code or modifies files. Searches the codebase using anchor tags and returns a structured findings report.</p>
-
-<p><strong>Anchor search order:</strong></p>
-<ol>
-  <li><code class="language-plaintext highlighter-rouge">@story</code> — map files to stories</li>
-  <li><code class="language-plaintext highlighter-rouge">@intent</code> — orient to functional purpose across stories without loading intent.md files</li>
-  <li><code class="language-plaintext highlighter-rouge">@entry</code> — route handlers and action entry points</li>
-  <li><code class="language-plaintext highlighter-rouge">@contract</code> — data shapes at layer boundaries</li>
-  <li><code class="language-plaintext highlighter-rouge">@gap</code> — known divergences already noted in code</li>
-</ol>
-
-<p><strong>Stub detection:</strong> if the story spec is a RE stub (no <code class="language-plaintext highlighter-rouge">## Criteria</code>), uses code structure and arch artifacts for spec alignment instead.</p>
-
-<p><strong>Returns:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>INVESTIGATION FINDINGS
-status: confirmed
-type: bug_fix | enhancement
-affected_stories: [...]
-root_cause: ...
-spec_alignment: ...
-confidence: high | medium | low
-</code></pre></div></div>
-
-<p>User confirms before findings are passed to the build agent.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[1]</code>–<code class="language-plaintext highlighter-rouge">[n]</code> contextual</td>
+      <td>Pipeline action for your current state</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[&gt;]</code> Run to next pause</td>
+      <td>Enable auto-continue — pipeline runs until a genuine decision point</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[N]</code> New work</td>
+      <td>Describe a bug, improvement, new story, or change</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost</td>
+      <td>Opens the cost dashboard</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[?]</code> Help</td>
+      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture · docs link</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[X]</code> Exit</td>
+      <td>Return to normal Claude Code</td>
+    </tr>
+  </tbody>
+</table>
 
 <hr />
 
-<h3 id="agent-reverse-engineer">Reverse Engineer</h3>
+<h3 id="the-12-agents">The 12 Agents</h3>
 
-<p><strong>Model:</strong> claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)<br />
-<strong>Invoked:</strong> when source files exist but no SpecGantry artifacts are found</p>
+<p>SpecGantry v6 uses 12 agents — three per PPE phase plus three supporting agents:</p>
 
-<p>Analyzes an existing codebase and synthesizes the complete v5 project structure.</p>
-
-<p><strong>Analysis (silent, no output):</strong> tech stack, project structure, user-facing capabilities (grouped into 3–6 candidate stories), auth model, completion level per story, guardrail candidates, configuration, entry points, dependencies, runtime profile.</p>
-
-<p><strong>Produces (in order):</strong></p>
-<ol>
-  <li>Presents inferred story list for user review and confirmation</li>
-  <li>Writes <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> Pass 1 — with <code class="language-plaintext highlighter-rouge">arch_seeded:false</code>, <code class="language-plaintext highlighter-rouge">intent_done:false</code> per story</li>
-  <li>Writes <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> — narrative + UX Model</li>
-  <li>Analyzes frontend code for UX patterns</li>
-  <li>Writes all 6 architecture artifacts + Artifact Index</li>
-  <li>Writes <code class="language-plaintext highlighter-rouge">intent.md</code> and stub <code class="language-plaintext highlighter-rouge">story-spec.md</code> per story</li>
-  <li>Writes <code class="language-plaintext highlighter-rouge">build-report.yaml</code> stubs for built stories</li>
-  <li>Updates project-state Pass 2 — sets <code class="language-plaintext highlighter-rouge">arch_seeded:true</code>, <code class="language-plaintext highlighter-rouge">intent_done:true</code></li>
-  <li>Asks to tag source files with anchor comments (<code class="language-plaintext highlighter-rouge">[Y] Add tags  [S] Skip  [X] Cancel</code>)</li>
-</ol>
-
-<hr />
-
-<h3 id="agent-gap">Ideation — Arch Gap Mode</h3>
-
-<p>The ideation agent runs in a special mode when invoked via P0 or P2. It does not start a conversational session — it targets a specific missing artifact section and fills it.</p>
-
-<p><strong>P0 (story-level gap):</strong> reads the Artifact Index, reads the relevant architecture artifact, adds the missing section (entity/actor/contract/pattern/ux), updates the index list.</p>
-
-<p><strong>P2 (project-level gap, <code class="language-plaintext highlighter-rouge">story_id: null</code>):</strong> checks all architecture artifacts for existence, writes any missing ones, writes <code class="language-plaintext highlighter-rouge">intent.md</code> for any story where <code class="language-plaintext highlighter-rouge">intent_done:false</code> and file is absent.</p>
-
-<p>Returns <code class="language-plaintext highlighter-rouge">arch gap resolved — [what was added/changed]</code>. The orchestrator clears the gap flag and resumes the interrupted phase.</p>
-
-<hr />
-
-<h2 id="summary-table">Summary Table</h2>
+<p><strong>Ideation phase</strong></p>
 
 <table>
   <thead>
     <tr>
       <th>Agent</th>
+      <th>Role</th>
       <th>Model</th>
-      <th>Phase</th>
-      <th>Produces</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Ideation</td>
-      <td>Sonnet</td>
-      <td>Phase 1</td>
-      <td>architecture/ · intent.md · story list</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-plan-agent</code></td>
+      <td>Determines what topics remain to satisfy the ideation north star</td>
+      <td>Sonnet 5</td>
     </tr>
     <tr>
-      <td>Ideation (gap mode)</td>
-      <td>Sonnet</td>
-      <td>P0/P2</td>
-      <td>missing arch sections · intent.md</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-produce-agent</code></td>
+      <td>Asks questions, writes all architecture artifacts</td>
+      <td>Sonnet 5</td>
     </tr>
     <tr>
-      <td>Story Spec</td>
-      <td>Haiku</td>
-      <td>Phase 2</td>
-      <td>story-spec.md (≤60 lines) · intent.md final</td>
-    </tr>
-    <tr>
-      <td>Development</td>
-      <td>Sonnet</td>
-      <td>Phase 3</td>
-      <td>code + anchors · build-report.yaml</td>
-    </tr>
-    <tr>
-      <td>Evaluate</td>
-      <td>Haiku</td>
-      <td>Quality loop (Q2)</td>
-      <td>evaluation JSON — PASS/FAIL per dimension</td>
-    </tr>
-    <tr>
-      <td>Plan</td>
-      <td>Haiku</td>
-      <td>Quality loop (Q3)</td>
-      <td>repair strategy JSON — root cause + fix steps</td>
-    </tr>
-    <tr>
-      <td>Deployment</td>
-      <td>Sonnet</td>
-      <td>Phase 4</td>
-      <td>deploy.sh · deploy-artifact.md</td>
-    </tr>
-    <tr>
-      <td>Investigation</td>
-      <td>Haiku</td>
-      <td>Post-release</td>
-      <td>findings report (read-only)</td>
-    </tr>
-    <tr>
-      <td>Reverse Engineer</td>
-      <td>Haiku</td>
-      <td>Pre-pipeline</td>
-      <td>full architecture layer · stubs</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-eval-agent</code></td>
+      <td>Evaluates artifacts against the ideation north star</td>
+      <td>Sonnet 5</td>
     </tr>
   </tbody>
 </table>
+
+<p><strong>Spec phase</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Agent</th>
+      <th>Role</th>
+      <th>Model</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spec-plan-agent</code></td>
+      <td>Determines what the spec must capture — thinks like a product head</td>
+      <td>Sonnet 5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spec-produce-agent</code></td>
+      <td>Writes <code class="language-plaintext highlighter-rouge">story-spec.md</code> following the plan</td>
+      <td>Haiku 4.5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">spec-eval-agent</code></td>
+      <td>Evaluates spec against the spec north star, emits approval summary</td>
+      <td>Sonnet 5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Code phase</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Agent</th>
+      <th>Role</th>
+      <th>Model</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">code-plan-agent</code></td>
+      <td>Plans the build approach (iteration 1) or repair strategy (iteration 2+)</td>
+      <td>Sonnet 5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">code-produce-agent</code></td>
+      <td>Builds the full story end-to-end</td>
+      <td>Sonnet 5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">code-eval-agent</code></td>
+      <td>Evaluates code against quality dimensions + code north star; emits GOAL_GAP when spec was insufficient</td>
+      <td>Sonnet 5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Supporting agents</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Agent</th>
+      <th>Role</th>
+      <th>Model</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">investigate-subagent</code></td>
+      <td>Read-only codebase search for bug fixes and enhancements</td>
+      <td>Haiku 4.5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">deployment-subagent</code></td>
+      <td>Generates Dockerfiles, docker-compose, deploy.sh</td>
+      <td>Sonnet 4.6</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">reverse-engineer-subagent</code></td>
+      <td>Synthesises architecture and story backlog from existing code</td>
+      <td>Haiku 4.5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Plan and eval agents use Sonnet 5 — genuine reasoning is required to challenge plan goals and evaluate against north stars. Haiku is only used where the task is bounded and deterministic (spec writing, investigation, reverse engineering).</p>
+
+<hr />
+
+<h3 id="quality-review">Quality Review</h3>
+
+<p>The code PPE loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before the produce agent writes any code — so async patterns, state management, and experience requirements are decided upfront.</p>
+
+<p>The transition note tells you how it went:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete · STORY-001  ·  quality: pass (1 iter)
+✓ Build complete · STORY-002  ·  quality: pass (2 iters — loading state added to save action)
+✓ Build complete · STORY-003  ·  quality: pass (1 iter after spec update)
+  ↑ this story had a GOAL_GAP — spec was updated mid-build
+</code></pre></div></div>
+
+<p><strong>Config</strong> (in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>):</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">ppe_loop</span><span class="pi">:</span>
+  <span class="na">max_iterations</span><span class="pi">:</span>
+    <span class="na">ideation</span><span class="pi">:</span> <span class="m">3</span>
+    <span class="na">spec</span><span class="pi">:</span> <span class="m">2</span>
+    <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="track-cost">/track-cost</h2>
+
+<p><strong>See exactly what your AI development is costing — broken down by Plan, Produce, and Eval columns.</strong></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost
+</code></pre></div></div>
+
+<p>Cost data is captured automatically after every agent run and stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>, committed to git.</p>
+
+<hr />
+
+<h3 id="the-cost-dashboard">The Cost Dashboard</h3>
+
+<p><strong>Default view — Cost by Phase and Story:</strong></p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  HireFlow  |  release 1.0.0
+Spec [████] 4/4  ·  Build [████] 4/4
+──────────────────────────────────────────────────────────
+
+Release 1.0.0                        Plan     Produce      Eval     Total
+───────────────────────────────────────────────────────────────────────────
+Ideation                            $0.61      $1.84      $0.43     $2.88
+Investigation                          —       $0.08         —      $0.08
+Deployment                             —       $0.22         —      $0.22
+Reverse engineer                       —          —          —         —
+
+[001] User authentication
+  Spec                               $0.22      $0.11      $0.26     $0.59
+  Code                               $0.34      $2.41      $0.48     $3.23
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.56      $2.52      $0.74     $3.82
+
+[002] Company posts a job
+  Spec                               $0.18      $0.09      $0.20     $0.47
+  Code                               $0.28      $1.87      $0.39     $2.54
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.46      $1.96      $0.59     $3.01
+
+═══════════════════════════════════════════════════════════════════════════
+Total                               $3.15     $12.06      $3.37    $18.58
+
+  [T] Show tokens   Run /spec-gantry to return to the dashboard.
+</code></pre></div>  </div>
+</div>
+
+<p>Type <code class="language-plaintext highlighter-rouge">[T]</code> to switch to token counts. Same layout, numbers in tokens (abbreviated to <code class="language-plaintext highlighter-rouge">12k</code> format). Type <code class="language-plaintext highlighter-rouge">[C]</code> to switch back to cost.</p>
+
+<p><strong>What the Plan/Produce/Eval columns tell you</strong></p>
+
+<p>The column split exposes where AI spend goes within each story:</p>
+
+<ul>
+  <li><strong>Plan</strong> — the cost of thinking through what to build (ideation topics, spec criteria, build approach, repair strategy). Low cost, high leverage.</li>
+  <li><strong>Produce</strong> — the cost of actually generating artifacts and code. Dominates total spend.</li>
+  <li><strong>Eval</strong> — the cost of evaluating against the north star. For a 4-story project, Plan + Eval together typically represent 30–35% of total cost — the price of quality assurance that would otherwise surface as post-delivery rework.</li>
+</ul>
+
+<p><strong>Story total rows</strong> let you see the end-to-end cost of each story immediately — no mental arithmetic needed across Spec and Code rows.</p>
+
+<hr />
+
+<h3 id="how-cost-tracking-works">How Cost Tracking Works</h3>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">SubagentStop</code> hook fires automatically when each agent completes</li>
+  <li>Token counts are read directly from the agent’s transcript — exact API values, not estimates</li>
+  <li>All 12 v6 agents are mapped: plan/produce/eval per phase into separate cost entries</li>
+  <li>One entry appended to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> per agent run — never overwritten</li>
+  <li><code class="language-plaintext highlighter-rouge">claude-sonnet-5</code> rates included in the rates cache</li>
+</ul>
+
+<p><strong>Typical cost profile for a 3-story project:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase group</th>
+      <th>Relative share</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation (plan + produce + eval)</td>
+      <td>10–15%</td>
+    </tr>
+    <tr>
+      <td>Spec × N stories (plan + produce + eval)</td>
+      <td>10–15%</td>
+    </tr>
+    <tr>
+      <td>Code × N stories (plan + produce + eval)</td>
+      <td>60–70%</td>
+    </tr>
+    <tr>
+      <td>Supporting (investigate + deploy)</td>
+      <td>5–10%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Code produce still dominates. The plan and eval agents across all phases together add roughly 30–35% overhead compared to a produce-only pipeline — but that overhead front-loads quality checks that would otherwise appear as bugs, rework, and extra sessions.</p>
+
+<hr />
+
+<h2 id="common-workflows">Common Workflows</h2>
+
+<h3 id="starting-a-new-project">Starting a New Project</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [1] Start new project
+            → Enter name and vision
+            → Quick-start (3 questions) or [F] full ideation
+            → Ideation PPE loop runs (catches gaps automatically)
+            → architecture.md + story backlog written
+            → Commit specs/ to git
+            → Spec PPE loop per story (north-star validated specs)
+            → Code PPE loop per story (with GOAL_GAP routing if needed)
+</code></pre></div></div>
+
+<h3 id="handling-a-production-bug">Handling a Production Bug</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → type story ID  (or [N] New work → describe bug)
+            → Investigation agent locates files and root cause
+            → Confirms findings with you
+            → Code PPE loop: plan → build → evaluate
+            → [1] Deploy release (patch version bump)
+</code></pre></div></div>
+
+<h3 id="using-auto-continue">Using Auto-Continue</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [&gt;] Run to next pause
+            → Pipeline runs: ideation → spec (all stories) → code (all stories)
+            → Pauses only at genuine decision points
+            → Resume summary shows what happened, grouped by Spec and Build
+</code></pre></div></div>
+
+<h3 id="reviewing-project-costs">Reviewing Project Costs</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost             → cost by Plan/Produce/Eval, by story
+  → [T]                 → same view in tokens
+  → [C]                 → back to cost
+  → Run /spec-gantry    → return to dashboard
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="next-steps">Next Steps</h2>
+
+<div class="next-steps-grid">
+  <a href="/docs/architecture" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
+    <div>
+      <strong>Reference</strong>
+      <span>File structure, state flags, agent ownership, and extension points.</span>
+    </div>
+  </a>
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Common questions on installation, the PPE loop, costs, and troubleshooting.</span>
+    </div>
+  </a>
+</div>
 
       </article>
 

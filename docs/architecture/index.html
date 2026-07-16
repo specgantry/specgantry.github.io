@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reference — SpecGantry Docs</title>
-  <meta name="description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <meta name="description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
   <meta property="og:title" content="Reference">
-  <meta property="og:description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <meta property="og:description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/architecture/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Reference">
-  <meta name="twitter:description" content="SpecGantry's design principles, file structure, security model, and extension points.">
+  <meta name="twitter:description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -143,340 +143,322 @@
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="reference">Reference</h1>
+        <h1 id="specgantry-v6-reference">SpecGantry v6 Reference</h1>
 
-<p>Design principles, project file structure, security model, and how to extend SpecGantry.</p>
+<p>File structure, state flags, design principles, and extension points.</p>
 
 <hr />
 
 <h2 id="design-principles">Design Principles</h2>
 
-<p>SpecGantry is built on three principles.</p>
+<p><strong>1. Specs and artifacts are the memory.</strong><br />
+All knowledge lives in <code class="language-plaintext highlighter-rouge">specs/</code>. Agents read from canonical artifacts on disk. Nothing is duplicated in transition files, passed as parameters, or held in temporary state that could be derived from the canonical sources. The <code class="language-plaintext highlighter-rouge">reads:</code> block in every story spec is the agent’s fetch list — nothing else is loaded.</p>
 
-<h3 id="structure-before-code">Structure Before Code</h3>
+<p><strong>2. Quality at the earliest possible moment.</strong><br />
+A thin spec produces bad code regardless of how many code repair iterations you run. The PPE loop catches gaps at ideation (before architecture is decided), at spec (before code is written), and at code (before shipping). Each phase’s north star is independent of what any plan says — the evaluator challenges both the output and the goal.</p>
 
-<p>Specs, architecture, and planning happen <strong>before</strong> development begins — enforced, not advisory. SpecGantry verifies that each phase’s output exists and is complete before the next phase can start. The intent is to make skipping a phase impossible, not just inconvenient.</p>
-
-<h3 id="session-safety-by-default">Session Safety by Default</h3>
-
-<p>Every phase saves progress after each question or section. If a session is interrupted for any reason — network drop, context reset, end of day — the next invocation resumes at the next unanswered item. Zero progress loss is a design requirement.</p>
-
-<h3 id="solo-first-simplicity">Solo-First Simplicity</h3>
-
-<p>SpecGantry is designed for a single developer who wears every hat. The pipeline enforces the discipline of spec-before-code without requiring role coordination, approval workflows, or team state management.</p>
+<p><strong>3. Session safety over throughput.</strong><br />
+All progress is written to disk after every answer and every phase transition. A crash mid-loop restores from <code class="language-plaintext highlighter-rouge">.ppe-loop.yaml</code> — iteration count, prior verdict, and accumulated gaps — and re-enters at the plan step with the goal re-derived from canonical artifacts. No work is lost.</p>
 
 <hr />
 
-<h2 id="project-file-structure">Project File Structure</h2>
-
-<p>After SpecGantry runs, your project contains a <code class="language-plaintext highlighter-rouge">specs/</code> directory committed to git, and a <code class="language-plaintext highlighter-rouge">.claude/</code> directory for Claude Code session management:</p>
+<h2 id="file-structure">File Structure</h2>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-root/
-├── .claude/
-│   ├── settings.json               # SessionStart + PostCompact hooks wired to spec-gantry-contract.sh
-│   ├── CONTRACT.md                 # Engagement contract injected into every session (gitignored — regenerated on setup)
-│   └── hooks/
-│       └── spec-gantry-contract.sh # Reads CONTRACT.md and emits it as additionalContext to Claude Code
-├── specs/
-│   ├── project-state.yaml          # Project metadata, story backlog, pipeline state flags
-│   ├── cost-log.ndjson             # Token usage and cost per agent session
-│   ├── .env.example                # All project env vars — safe to commit, placeholders for secrets
-│   ├── deploy.sh                   # Generated deployment script (whole system)
-│   ├── deploy-artifact.md          # Deployment validation summary
-│   ├── architecture/
-│   │   ├── architecture.md         # Single source of truth — vision, constraints, tech stack, guardrails, Artifact Index
-│   │   ├── data-model.md           # All entities, fields, types, relationships, state machines
-│   │   ├── actors.md               # All roles, permissions, ownership rules
-│   │   ├── contracts.md            # Shared API shapes, error envelopes
-│   │   ├── patterns.md             # Dominant backend interaction patterns
-│   │   ├── ux.md                   # Navigation model, visual system, component conventions
-│   │   └── deployment.md           # Cloud platform, registry, services, secrets, CI/CD config
-│   └── stories/
-│       ├── STORY-001/
-│       │   ├── intent.md           # 2-paragraph story purpose and outcome
-│       │   ├── story-spec.md       # Story spec — criteria, interfaces, permissions, state, data
-│       │   ├── build-report.yaml   # Build notes, test plan, quality outcome
-│       │   └── gap.md              # Gap file (accumulates discoveries; deleted after deploy merge)
-│       └── STORY-002/
-│           └── ...
+  specs/
+    project-state.yaml            pipeline state, story flags, PPE loop config
+    concerns-log.ndjson           — removed in v6
+    cost-log.ndjson               token usage per agent run (committed to git)
+    architecture/
+      architecture.md             Vision, Problem &amp; Users, Constraints, Risks,
+                                  Tech Stack, Guardrails, Configuration, UX Model,
+                                  + ## Artifact Index (YAML block, last section)
+      data-model.md               ## entity:[name] sections
+      actors.md                   ## actor:[name] sections
+      contracts.md                ## contract:[name] sections (prose + yaml block)
+      patterns.md                 ## pattern:[name] sections
+      ux.md                       ## ux:[name] sections
+      deployment.md               ## deployment:[name] sections
+    stories/
+      STORY-NNN/
+        intent.md                 2 paragraphs: functional purpose + outcome
+        story-spec.md             ≤60 lines: criteria, interfaces, permissions,
+                                  state, data — all as references to arch artifacts
+        build-report.yaml         overall_status, quality block, test_plan, runtime
+        gap.md                    divergences (optional, deleted at deploy)
+    scratchpad/                   gitignored — agent intermediate work only
+  .claude/
+    settings.json                 SessionStart + PostCompact hooks
+    hooks/spec-gantry-contract.sh contract injection script
+    CONTRACT.md                   binding directive (gitignored)
+    CLAUDE.md                     spec-gantry-notice prepended at project init
 </code></pre></div></div>
 
-<p><strong>Commit <code class="language-plaintext highlighter-rouge">specs/</code> to git.</strong> This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.</p>
+<hr />
 
-<p><strong>Do not commit <code class="language-plaintext highlighter-rouge">.claude/CONTRACT.md</code>.</strong> It is gitignored by default — SpecGantry regenerates it on setup. The hook scripts and <code class="language-plaintext highlighter-rouge">settings.json</code> in <code class="language-plaintext highlighter-rouge">.claude/</code> are safe to commit if you want them version-controlled.</p>
+<h2 id="state-flags--project-stateyaml">State Flags — project-state.yaml</h2>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">project</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">My</span><span class="nv"> </span><span class="s">App"</span>
+  <span class="na">created</span><span class="pi">:</span> <span class="s">2026-07-16</span>
+  <span class="na">release</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1.0.0"</span>
+  <span class="na">next_release_type</span><span class="pi">:</span> <span class="kc">null</span>          <span class="c1"># patch | minor | major — set by classify_and_route</span>
+  <span class="na">active_story</span><span class="pi">:</span> <span class="kc">null</span>               <span class="c1"># STORY-NNN while a loop is running</span>
+  <span class="na">active_phase</span><span class="pi">:</span> <span class="kc">null</span>               <span class="c1"># see valid values below</span>
+
+<span class="na">ideation_complete</span><span class="pi">:</span> <span class="kc">false</span>
+<span class="na">arch_seeded</span><span class="pi">:</span> <span class="kc">false</span>
+<span class="na">pending_arch_gap</span><span class="pi">:</span> <span class="kc">null</span>             <span class="c1"># set by spec/code produce agents on missing arch section</span>
+<span class="na">pending_spec_gap</span><span class="pi">:</span> <span class="kc">null</span>             <span class="c1"># set by code produce agent on missing spec reference</span>
+
+<span class="na">auto_continue</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># set to true by [&gt;] — cleared on decision points</span>
+
+<span class="na">ppe_loop</span><span class="pi">:</span>
+  <span class="na">max_iterations</span><span class="pi">:</span>
+    <span class="na">ideation</span><span class="pi">:</span> <span class="m">3</span>
+    <span class="na">spec</span><span class="pi">:</span> <span class="m">2</span>
+    <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
+
+<span class="na">stories</span><span class="pi">:</span>
+  <span class="na">STORY-001</span><span class="pi">:</span>
+    <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Manage</span><span class="nv"> </span><span class="s">recipes"</span>
+    <span class="na">depends_on</span><span class="pi">:</span> <span class="pi">[]</span>
+    <span class="na">intent_done</span><span class="pi">:</span> <span class="kc">false</span>
+    <span class="na">spec_done</span><span class="pi">:</span> <span class="kc">false</span>
+    <span class="na">built</span><span class="pi">:</span> <span class="kc">false</span>
+    <span class="na">deployed</span><span class="pi">:</span> <span class="kc">false</span>
+</code></pre></div></div>
+
+<p><strong>Valid <code class="language-plaintext highlighter-rouge">active_phase</code> values:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">ideation_plan</code> · <code class="language-plaintext highlighter-rouge">ideation_produce</code> · <code class="language-plaintext highlighter-rouge">ideation_eval</code> · <code class="language-plaintext highlighter-rouge">spec_plan</code> · <code class="language-plaintext highlighter-rouge">spec_produce</code> · <code class="language-plaintext highlighter-rouge">spec_eval</code> · <code class="language-plaintext highlighter-rouge">code_plan</code> · <code class="language-plaintext highlighter-rouge">code_produce</code> · <code class="language-plaintext highlighter-rouge">code_eval</code> · <code class="language-plaintext highlighter-rouge">deployment</code> · <code class="language-plaintext highlighter-rouge">investigation</code> · <code class="language-plaintext highlighter-rouge">amendment</code> · <code class="language-plaintext highlighter-rouge">null</code></p>
 
 <hr />
 
-<h2 id="the-specs-files">The specs/ Files</h2>
-
-<h3 id="specsproject-stateyaml"><code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></h3>
-
-<p>The project registry. Contains the project name, <code class="language-plaintext highlighter-rouge">ideation_complete</code> and <code class="language-plaintext highlighter-rouge">arch_seeded</code> flags, <code class="language-plaintext highlighter-rouge">active_story</code>, <code class="language-plaintext highlighter-rouge">active_phase</code>, <code class="language-plaintext highlighter-rouge">auto_continue</code>, <code class="language-plaintext highlighter-rouge">pending_arch_gap</code>, <code class="language-plaintext highlighter-rouge">pending_spec_gap</code>, <code class="language-plaintext highlighter-rouge">quality_loop</code> config, and the full story backlog with each story’s <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">depends_on</code>, <code class="language-plaintext highlighter-rouge">spec_done</code>, <code class="language-plaintext highlighter-rouge">built</code>, and <code class="language-plaintext highlighter-rouge">deployed</code> flags.</p>
-
-<h3 id="specsarchitecturearchitecturemd"><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code></h3>
-
-<p>The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, a <code class="language-plaintext highlighter-rouge">## Configuration</code> table listing every env var the project uses, and a <code class="language-plaintext highlighter-rouge">## Artifact Index</code> YAML block that maps anchor names to file paths and section anchors. Amendment sections are appended by ideation (in amendment mode) when new stories or architectural changes are made — prior content is never overwritten. Story specs reference this document rather than duplicating it.</p>
-
-<h3 id="specsstoriesstory-nnnstory-specmd"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/story-spec.md</code></h3>
-
-<p>A six-section specification for a single story: what the user can do, screens and states, data and backend, AI integration, enterprise checks, and acceptance criteria. The spec also contains a Change History table recording every release in which the story changed. A guardrail compliance section must be clean before build begins.</p>
-
-<h3 id="specsstoriesstory-nnnbuild-reportyaml"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/build-report.yaml</code></h3>
-
-<p>Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, warnings, a <code class="language-plaintext highlighter-rouge">test_plan</code> (one shell command per observable criterion), and <code class="language-plaintext highlighter-rouge">overall_status: pass</code>. After the quality loop exits, the orchestrator appends a <code class="language-plaintext highlighter-rouge">quality</code> block with: <code class="language-plaintext highlighter-rouge">overall</code> (<code class="language-plaintext highlighter-rouge">pass | partial | capped | build_failed | unknown</code>), <code class="language-plaintext highlighter-rouge">iterations</code>, <code class="language-plaintext highlighter-rouge">exit_reason</code>, <code class="language-plaintext highlighter-rouge">active_rubric</code>, and per-dimension results.</p>
-
-<h3 id="specsstoriesstory-nnngapmd"><code class="language-plaintext highlighter-rouge">specs/stories/STORY-NNN/gap.md</code></h3>
-
-<p>One gap file per story. Written during development when the spec is discovered to be incomplete or incorrect, or when an enhancement is applied post-release. Records what changed, files affected, and the recommended spec update. Multiple discoveries accumulate as bullets in <code class="language-plaintext highlighter-rouge">## Changes</code> — no new files are created. Deleted automatically after it is merged at deploy time.</p>
-
-<h3 id="specsdeploysh"><code class="language-plaintext highlighter-rouge">specs/deploy.sh</code></h3>
-
-<p>A single deployment script covering the entire system, generated by the deployment agent. Organised in dependency order. The previous version is backed up to <code class="language-plaintext highlighter-rouge">specs/deploy.sh.old</code> before each new deployment.</p>
-
-<h3 id="specsdeploy-artifactmd"><code class="language-plaintext highlighter-rouge">specs/deploy-artifact.md</code></h3>
-
-<p>A deployment validation summary for the most recent release: all stories included, deployment order, checks performed, and the release version.</p>
-
-<h3 id="specscost-logndjson"><code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code></h3>
-
-<p>An append-only record of token usage and cost for every agent session. Each entry includes the phase, story ID where applicable, model, token counts by type, and cost by type. Run <code class="language-plaintext highlighter-rouge">/track-cost</code> to see this data rendered as a readable breakdown.</p>
-
-<hr />
-
-<h2 id="security-model">Security Model</h2>
-
-<h3 id="secrets-handling">Secrets Handling</h3>
-
-<p>The story spec requires that every secret, API key, and credential used by the story is declared by its environment variable name. The development agent enforces this: no literal credential values in source files. If a violation is detected during build, it is reported immediately and must be resolved before proceeding.</p>
-
-<p>All runtime configuration — API keys, model names, ports, connection strings, timeouts — must come from environment variables. The build agent maintains <code class="language-plaintext highlighter-rouge">.env.example</code> at the project root on every build run, keeping it current with all variables across <code class="language-plaintext highlighter-rouge">architecture.md ## Configuration</code> and each story’s enterprise checks section. <code class="language-plaintext highlighter-rouge">.env.example</code> values are safe to commit — placeholders for secrets, realistic defaults for config. The actual <code class="language-plaintext highlighter-rouge">.env</code> file is never written by SpecGantry.</p>
-
-<h3 id="source-annotation-schema">Source Annotation Schema</h3>
-
-<p>The build agent writes machine-readable anchor comments into every source file it creates or significantly modifies. These tags let the investigation agent navigate the codebase with targeted greps rather than full file reads.</p>
+<h2 id="write-ownership">Write Ownership</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Tag</th>
-      <th>Placement</th>
-      <th>Content</th>
+      <th>Field / file</th>
+      <th>Writer</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">@story</code></td>
-      <td>Top of file</td>
-      <td><code class="language-plaintext highlighter-rouge">@story STORY-NNN \| slug</code> — maps the file to its owning story</td>
+      <td><code class="language-plaintext highlighter-rouge">built:true</code></td>
+      <td>Orchestrator only (after code PPE loop exits ACHIEVED)</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">@entry</code></td>
-      <td>Above route handlers / primary functions</td>
-      <td><code class="language-plaintext highlighter-rouge">@entry METHOD /path \| description</code> — marks story entry points</td>
+      <td><code class="language-plaintext highlighter-rouge">spec_done:true</code></td>
+      <td>Orchestrator only (after spec-eval-agent returns ACHIEVED and user approves)</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">@contract</code></td>
-      <td>Above cross-layer functions</td>
-      <td><code class="language-plaintext highlighter-rouge">@contract input: {shape} → output: {shape} \| errors</code> — documents data shapes</td>
+      <td><code class="language-plaintext highlighter-rouge">deployed:true</code></td>
+      <td>Deployment subagent</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">@gap</code></td>
-      <td>Inline at spec divergences</td>
-      <td><code class="language-plaintext highlighter-rouge">@gap YYYY-MM-DD reason</code> — mirrors the gap.md entry at the code location</td>
+      <td><code class="language-plaintext highlighter-rouge">project.release</code></td>
+      <td>Orchestrator only (after deployment subagent returns)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">auto_continue</code></td>
+      <td>Orchestrator only</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">intent_done:true</code></td>
+      <td>ideation-produce-agent, spec-produce-agent, reverse-engineer-subagent</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pending_spec_gap</code></td>
+      <td>code-produce-agent · Orchestrator (cross-story drift)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pending_arch_gap</code></td>
+      <td>spec-produce-agent or code-produce-agent</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">.ppe-loop.yaml</code></td>
+      <td>Orchestrator only (written at each eval step, deleted on loop exit)</td>
     </tr>
   </tbody>
 </table>
 
-<p>Tags are written in the language’s native comment syntax. The reverse-engineer agent also writes <code class="language-plaintext highlighter-rouge">@story</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, and <code class="language-plaintext highlighter-rouge">@contract</code> tags into existing codebases during the reverse-engineering phase.</p>
-
 <hr />
 
-<h2 id="pipeline-flow">Pipeline Flow</h2>
-
-<p>How state and subagents connect across the full lifecycle:</p>
-
-<div class="dg-wrap">
-<div class="dg-diagram-title">Full pipeline state flow</div>
-<div class="dg-flow">
-
-  <div class="dg-flow-node dg-neutral" style="justify-content:center;font-family:var(--font-mono);font-weight:700;color:var(--blue-700);border-color:var(--blue-400);background:rgba(37,99,235,.06)">
-    <div>/spec-gantry invoked</div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-ideation">
-    <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Ideation <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— or init if no project found</span></div>
-      <div class="dg-flow-node-desc">Collect name + vision → write project-state.yaml · architecture/ (6 artifacts) · intent.md per story · Sets: ideation_complete</div>
-      <div class="dg-flow-node-meta">Sets: ideation_complete</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete</div>
-  </div>
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-spec">
-    <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Story Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— one story at a time</span></div>
-      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
-        <div style="flex:1;min-width:150px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Story Spec</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: spec_done</div>
-        </div>
-        <div style="display:flex;align-items:center;color:var(--slate-300);font-size:.9rem">→</div>
-        <div style="flex:1;min-width:150px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build + Quality Review</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">dev → evaluate → plan → repair</div>
-        </div>
-      </div>
-      <div class="dg-flow-node-meta" style="margin-top:6px">build-report.yaml (quality block) · gap.md (if any) · Sets: built</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built</div>
-  </div>
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-decision">
-    <div class="dg-flow-node-icon"><i class="bi bi-signpost-split"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Confirm deploy <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— decision point</span></div>
-      <div class="dg-flow-node-desc"><strong>Step 1 (if gaps exist):</strong> Show gap list → [Y] run gap-merge → summary shown<br /><strong>Step 2:</strong> [1] Deploy release · [X] hold</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-deploy">
-    <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">deploy_release</div>
-      <div class="dg-flow-node-desc">Deployment agent → deploy.sh → chmod +x → deploy-artifact.md</div>
-      <div class="dg-flow-node-meta">Sets: deployed (per story) · project.release bumped</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-neutral">
-    <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Post-deployment — [N] New work</div>
-      <div class="dg-flow-node-desc">
-        <strong>Bug fix / Enhancement:</strong> Investigate agent reads codebase → confirms findings with user → build agent fixes or writes gap.md → re-deploy<br />
-        <strong>New story:</strong> Ideation (amendment mode) → normal story loop<br />
-        <strong>Project change:</strong> Ideation (amendment mode) → full re-spec
-      </div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-<p><strong>State flags that gate each transition:</strong></p>
+<h2 id="session-scratchpad-files-gitignored">Session Scratchpad Files (gitignored)</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Transition</th>
-      <th>Flag set</th>
-      <th>Flag read by next gate</th>
+      <th>File</th>
+      <th>Purpose</th>
+      <th>Lifetime</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Ideation complete</td>
-      <td><code class="language-plaintext highlighter-rouge">ideation_complete</code></td>
-      <td>story spec routing</td>
+      <td><code class="language-plaintext highlighter-rouge">specs/.ideation-turn.md</code></td>
+      <td>Pending ideation question + topic</td>
+      <td>Deleted when question is answered</td>
     </tr>
     <tr>
-      <td>Story Spec</td>
-      <td><code class="language-plaintext highlighter-rouge">spec_done</code> (per story)</td>
-      <td>build routing</td>
+      <td><code class="language-plaintext highlighter-rouge">specs/.story-spec-turn.md</code></td>
+      <td>Pending spec interaction state</td>
+      <td>Deleted on SPEC_COMPLETE or SPEC_HELD</td>
     </tr>
     <tr>
-      <td>Build</td>
-      <td><code class="language-plaintext highlighter-rouge">built</code> (per story)</td>
-      <td>confirm_deploy</td>
+      <td><code class="language-plaintext highlighter-rouge">specs/.investigate-turn.md</code></td>
+      <td>Pending investigation confirmation</td>
+      <td>Deleted on INVESTIGATION_CONFIRMED/CANCELLED</td>
     </tr>
     <tr>
-      <td>Gaps merged</td>
-      <td>gap.md deleted per story (no flag — orchestrator re-scans)</td>
-      <td>deploy</td>
+      <td><code class="language-plaintext highlighter-rouge">specs/.ideation-scratchpad.yaml</code></td>
+      <td>Proposed story list between approval and seed_artifacts</td>
+      <td>Deleted after seed_artifacts completes</td>
     </tr>
     <tr>
-      <td>Deploy</td>
-      <td><code class="language-plaintext highlighter-rouge">deployed</code> (per story)</td>
-      <td>routing row 6</td>
-    </tr>
-    <tr>
-      <td>Post-deploy bug/enhancement</td>
-      <td>investigation findings (in-memory)</td>
-      <td>classify_and_route → build</td>
+      <td><code class="language-plaintext highlighter-rouge">specs/stories/[ID]/.ppe-loop.yaml</code></td>
+      <td>Loop checkpoint: <code class="language-plaintext highlighter-rouge">iteration_N</code>, <code class="language-plaintext highlighter-rouge">prior_eval_verdict</code>, <code class="language-plaintext highlighter-rouge">prior_northstar_gaps</code>, <code class="language-plaintext highlighter-rouge">must_not_miss</code>, <code class="language-plaintext highlighter-rouge">spec_reentry_count</code></td>
+      <td>Deleted when loop exits ACHIEVED or CAPPED</td>
     </tr>
   </tbody>
 </table>
+
+<p>No handoff files exist in v6 — Goal₀ for each phase is derived directly from canonical artifacts on disk. <code class="language-plaintext highlighter-rouge">.spec-handoff.yaml</code> and <code class="language-plaintext highlighter-rouge">.code-handoff.yaml</code> from v5 are no longer written.</p>
+
+<hr />
+
+<h2 id="the-artifact-index">The Artifact Index</h2>
+
+<p>The last section of <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> is a machine-parseable YAML block that maps artifact types to their files and named sections:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## Artifact Index</span>
+
+<span class="err">```</span><span class="s">yaml</span>
+<span class="na">data-model</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/data-model.md</span>
+  <span class="na">entities</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">application</span><span class="pi">,</span> <span class="nv">submission</span><span class="pi">,</span> <span class="nv">review</span><span class="pi">,</span> <span class="nv">user</span><span class="pi">]</span>
+<span class="na">actors</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/actors.md</span>
+  <span class="na">roles</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">applicant</span><span class="pi">,</span> <span class="nv">admin</span><span class="pi">,</span> <span class="nv">reviewer</span><span class="pi">]</span>
+<span class="na">contracts</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/contracts.md</span>
+  <span class="na">shapes</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">submission-response</span><span class="pi">,</span> <span class="nv">review-response</span><span class="pi">,</span> <span class="nv">error-envelope</span><span class="pi">]</span>
+<span class="na">patterns</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/patterns.md</span>
+  <span class="na">patterns</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">rest-crud</span><span class="pi">,</span> <span class="nv">optimistic-update</span><span class="pi">]</span>
+<span class="na">ux</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/ux.md</span>
+  <span class="na">sections</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">navigation-model</span><span class="pi">,</span> <span class="nv">visual-system</span><span class="pi">,</span> <span class="nv">component-conventions</span><span class="pi">,</span> <span class="nv">screen-template</span><span class="pi">]</span>
+<span class="na">deployment</span><span class="pi">:</span>
+  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/deployment.md</span>
+  <span class="na">sections</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">target</span><span class="pi">,</span> <span class="nv">services</span><span class="pi">,</span> <span class="nv">secrets</span><span class="pi">,</span> <span class="nv">ingress</span><span class="pi">,</span> <span class="nv">cicd</span><span class="pi">]</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Agents read the Artifact Index once to build a lookup map, then use it to resolve `reads:` entries to exact file paths and section anchors — without reading the full architecture file.
+
+---
+
+## Contract Sections
+
+Every `## contract:[name]` section in `contracts.md` must contain both prose and a machine-readable YAML block:
+
+````markdown
+## contract:submission-response
+The response shape returned by POST /api/submissions and GET /api/submissions/:id.
+
+```yaml
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+required: [id, status, created_at]
+properties:
+  id: { type: string, format: uuid }
+  status: { type: string, enum: [draft, submitted, approved, rejected] }
+  title: { type: string }
+  created_at: { type: string, format: date-time }
+additionalProperties: false
+</code></pre></div></div>
+<pre><code class="language-`">
+The code produce agent validates every `required:` field is present before writing API endpoints. If the yaml block is missing, it signals a spec gap and stops.
+
+---
+
+## Code Anchor Schema
+
+Every source file touched by the code produce or reverse-engineer agent gets one-line anchor comments:
+
+| Anchor | Where | Example |
+|---|---|---|
+| `@story` | Top of file | `// @story STORY-002 \| submissions` |
+| `@intent` | After `@story` | `// @intent allows an applicant to submit their draft` |
+| `@entry` | Above each route handler | `// @entry POST /api/submissions \| create draft submission` |
+| `@contract` | Above cross-layer functions | `// @contract input: {...} → output: {...} \| errors: [422,500]` |
+| `@gap` | At spec divergences | `// @gap 2026-07-16 status enum extended — spec only defines draft\|submitted` |
+
+The investigation agent greps these anchors to locate code without loading full files.
+
+---
+
+## The PPE Loop Objects
+
+Three shared data objects travel between plan, produce, and eval agents in each loop iteration. Plan and eval agents return raw JSON.
+
+**Goal** (orchestrator-owned, derived from disk)
+```yaml
+goal:
+  phase: ideation | spec | code
+  iteration: N
+  statement: "what good looks like"
+  must_achieve: [north star criteria for this iteration]
+  must_not_miss: [gaps carried forward from prior iterations]
+  source: initial | upgraded
+</code></pre>
+
+<p><strong>Plan</strong> (returned by plan agents)</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"approach"</span><span class="p">:</span><span class="w"> </span><span class="s2">"strategy to achieve the goal"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"steps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nl">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"addresses"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"produces"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"known_risks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"..."</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"scope_boundary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><strong>Evaluation</strong> (returned by eval agents)</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"verdict"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACHIEVED | EXECUTION_GAP | GOAL_GAP"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"plan_compliance"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nl">"step_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nl">"met"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nl">"evidence"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}],</span><span class="w">
+  </span><span class="nl">"northstar_gaps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="nl">"gap"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"gap_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"experience_gap"</span><span class="p">,</span><span class="w"> </span><span class="nl">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blocking"</span><span class="p">,</span><span class="w"> </span><span class="nl">"proposed_goal_addition"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"execution_gaps"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nl">"step_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nl">"met"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nl">"evidence"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}],</span><span class="w">
+  </span><span class="nl">"upgraded_goal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"statement"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"must_achieve"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w"> </span><span class="nl">"must_not_miss"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">execution_gaps</code> is only present when verdict is <code class="language-plaintext highlighter-rouge">GOAL_GAP</code> and produce also failed to execute one or more plan steps — both are fed to the next plan agent in one pass.</p>
 
 <hr />
 
 <h2 id="extension-points">Extension Points</h2>
 
-<p>SpecGantry is open source and designed to be extended.</p>
+<p><strong>Custom guardrails</strong> — edit <code class="language-plaintext highlighter-rouge">## Guardrails</code> in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code>. Every subagent reads guardrails before writing code. Changes take effect on the next build.</p>
 
-<h3 id="custom-guardrails">Custom Guardrails</h3>
+<p><strong>PPE loop configuration</strong> — edit <code class="language-plaintext highlighter-rouge">ppe_loop.max_iterations</code> in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> to adjust how many iterations each phase runs before capping.</p>
 
-<p>Add custom rules to the <code class="language-plaintext highlighter-rouge">## Guardrails</code> section of <code class="language-plaintext highlighter-rouge">architecture.md</code>. The story-spec agent enforces every guardrail in that section — adding new ones requires no code changes. Examples:</p>
-
-<ul>
-  <li>“All API endpoints must require authentication”</li>
-  <li>“No direct database queries from the presentation layer”</li>
-  <li>“All external API calls must respect a 5-second timeout”</li>
-</ul>
-
-<h3 id="custom-agents">Custom Agents</h3>
-
-<p>Add domain-specific agents by placing a new agent definition file in the <code class="language-plaintext highlighter-rouge">agents/</code> directory with standard frontmatter. Custom agents follow the same subagent pattern as built-in phase agents.</p>
-
-<h3 id="custom-phase-pipeline">Custom Phase Pipeline</h3>
-
-<p>Advanced users can extend the pipeline — for example, inserting a security review phase between spec and build — by adding a new agent and wiring it into the <code class="language-plaintext highlighter-rouge">/spec-gantry</code> skill routing logic.</p>
+<p><strong>Custom deployment platforms</strong> — the deployment subagent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in <code class="language-plaintext highlighter-rouge">specs/architecture/deployment.md</code> drives the generated <code class="language-plaintext highlighter-rouge">deploy.sh</code>.</p>
 
 <hr />
 
-<h2 id="contributing">Contributing</h2>
+<h2 id="security-model">Security Model</h2>
 
-<p>SpecGantry is open source under Apache 2.0. See <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for details.</p>
+<p><strong>Secrets</strong> — never hardcoded. Every secret is an environment variable named in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md → ## Configuration</code>. The code produce agent uses these names exactly. <code class="language-plaintext highlighter-rouge">.env.example</code> is generated automatically at deploy time with safe placeholder values.</p>
 
-<p>Issues and PRs welcome: <a href="https://github.com/specgantry/specgantry.github.io">github.com/specgantry/specgantry.github.io</a></p>
+<p><strong>Source annotations</strong> — <code class="language-plaintext highlighter-rouge">@story</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, <code class="language-plaintext highlighter-rouge">@contract</code>, <code class="language-plaintext highlighter-rouge">@gap</code> anchors written by the code produce and reverse-engineer agents are machine-readable but contain no runtime secrets. They are safe to commit.</p>
 
-<hr />
-
-<h2 id="next-steps">Next Steps</h2>
-
-<div class="next-steps-grid">
-  <a href="/docs/faq" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
-    <div>
-      <strong>FAQ</strong>
-      <span>Answers to common questions about installation, pipeline phases, costs, and troubleshooting.</span>
-    </div>
-  </a>
-  <a href="/docs/getting-started" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-rocket-takeoff"></i></div>
-    <div>
-      <strong>Getting Started</strong>
-      <span>Install and run your first session in under 5 minutes.</span>
-    </div>
-  </a>
-</div>
+<p><strong>CONTRACT.md</strong> — the engagement directive injected at session start is gitignored by default. It contains no secrets — only instructions for Claude.</p>
 
       </article>
 

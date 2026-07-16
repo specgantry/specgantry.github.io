@@ -589,7 +589,7 @@ If `test_plan` present: run health gate first:
     [1] Fix and rebuild   [2] Mark built anyway   [X] Cancel
   ```
   - `[1]` → re-invoke `spec-gantry:development:development-subagent` for this story · repeat After: block from Step Q1 on return · then re-enter quality loop at Step Q2.
-  - `[2]` → set `built:true` · append warning to `build-report.yaml → warnings`: "marked built with [n] failing test(s)" · clear active_story/active_phase · re-render · route forward.
+  - `[2]` → write quality block with `overall: capped`, `exit_reason: "marked built with [n] failing test(s) — user override"`, `iterations: 0` · set `built:true` · append warning to `build-report.yaml → warnings`: "marked built with [n] failing test(s)" · clear active_story/active_phase · re-render · route forward.
   - `[X]` → leave `built:false` · clear active_story/active_phase · re-render · ⏸ pause.
 
 **Transition note format** (emit above dashboard on build complete):
@@ -783,12 +783,14 @@ For enhancement classification, before execute:
 
 **Step 4 — Execute inline.**
 
+> **QUALITY LOOP IS MANDATORY.** After EVERY development subagent invocation in this step — whether `bug_fix` or `enhancement`, whether the change is one line or a full rewrite — the orchestrator MUST proceed to **Step Q2** (evaluate → plan → repair). There are NO exceptions. Skipping the quality loop is a protocol violation. The evaluate subagent is always invoked; the plan+repair subagents run only if evaluate returns FAIL.
+
 `bug_fix` — for each affected story, in topological order:
 - Set `project.next_release_type: patch`
 - Set `project.active_story: [story_id]` and `project.active_phase: development` · re-render dashboard
 - **Invoke:** `spec-gantry:development:development-subagent` · description: `"Bug fix: [story_id]: [title]"` · pass `story_id`, `project_dir`, `arch_ref`, `gate_bypass:true`, `investigation_findings: [findings]`
 - Handle return signals identically to **Step Q1** in `build_next_story` (concern handling, P1 re-route, build-report checks)
-- On success → enter quality loop at **Step Q2** (evaluate → plan → repair as needed). Use same `max_iterations` from project-state.
+- On `overall_status: pass` → **→ Step Q2** (mandatory — do not skip)
 - Do **not** reset `spec_done` — spec is still valid, only the code changed
 
 `enhancement` — for each affected story, in topological order:
@@ -804,12 +806,14 @@ For enhancement classification, before execute:
   - If `gap.md` already exists, append under `## Changes` and update the other sections
 - **Invoke:** `spec-gantry:development:development-subagent` · description: `"Enhancement: [story_id]: [change summary]"` · pass `story_id`, `project_dir`, `arch_ref`, `gate_bypass:true`, `enhancement_gap:gap.md`, `investigation_findings`
 - Handle return signals identically to **Step Q1** in `build_next_story`
-- On success → enter quality loop at **Step Q2** (evaluate → plan → repair as needed). Use same `max_iterations` from project-state.
+- On `overall_status: pass` → **→ Step Q2** (mandatory — do not skip)
 - Do **not** touch `spec_done` or patch `story-spec.md` — `gap.md` is the living delta; spec merges at deploy time
-- After all affected stories are built and marked built: emit one-line note above the dashboard: `⚠ Enhancement complete — [story_id] not yet deployed. Run /spec-gantry to deploy when ready.`
+- After all affected stories complete the full quality loop and are marked built: emit one-line note above the dashboard: `⚠ Enhancement complete — [story_id] not yet deployed. Run /spec-gantry to deploy when ready.`
 
-Both types: after all affected stories are built, re-render. Do **not** return to the normal pipeline — the work is already done.
+Both types: after all affected stories complete the quality loop and are marked built, re-render. Do **not** return to the normal pipeline — the work is already done.
 Note: for `enhancement`, `deployed:false` was already set per-story before each build — no further flag update needed here.
+
+**Step Q2, Q3, Q4 apply identically here** — use the same evaluate/plan/repair loop defined in `build_next_story`. The `max_iterations`, cycling check, cap check, quality block schema, and `.quality-loop.yaml` checkpoint are all shared. The only difference is the exit: instead of routing to the next pipeline story, re-render and stop.
 
 `new_story` → invoke **start_ideation** (amendment mode):
 - Set `next_release_type: minor`

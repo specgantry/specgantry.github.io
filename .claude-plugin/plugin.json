@@ -1,7 +1,7 @@
 {
     "name": "spec-gantry",
     "displayName": "SpecGantry",
-    "version": "6.0.1",
+    "version": "6.0.2",
     "description": "AI-powered SDLC pipeline for Claude Code with universal Plan-Produce-Evaluate loop at every phase — from ideation to deployment.",
     "author": {
         "name": "Mangesh Pise",

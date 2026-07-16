@@ -10,6 +10,7 @@ The rules here are **normative**. If a subagent's own prompt contradicts somethi
 
 - Every subagent receives `project_dir` (absolute path) in its invocation prompt.
 - Every file read/write path in your prompt is relative to `project_dir`. Prefix every path with it before touching the filesystem.
+- The architecture entry point is always `[project_dir]/specs/architecture/architecture.md`. Derive this path from `project_dir` — it is never passed as a separate parameter.
 - Scratch or intermediate files go under `project_dir/specs/scratchpad/`. Never scatter them elsewhere.
 
 ## 2. Cache-first context ordering
@@ -102,7 +103,7 @@ Story-spec and development subagents may raise **at most one concern per invocat
 - Never raise more than one concern per invocation. Pick the highest-impact one. Bank the rest for the user to notice.
 - A concern must include a **proposed alternative**, not just a complaint. If you don't have an alternative, don't raise the concern — proceed as spec'd.
 - If in doubt whether something is worth raising: proceed silently. Concerns are a scarce interruption budget.
-- Concerns are logged (append) to `specs/concerns-log.ndjson` by the orchestrator after the user responds. Do not write to that file yourself.
+
 
 ## 7. GATE_FORMAT
 
@@ -121,3 +122,81 @@ Gate failures use exactly this format so the orchestrator surfaces them verbatim
 ## 9. Model note
 
 Your `model:` frontmatter is authoritative — do not attempt to switch models mid-invocation. The orchestrator picks the right model per phase; if you are running on Haiku, keep your work bounded (no speculative multi-file rewrites, no wide-context reasoning). If you feel the task exceeds your budget, raise a concern and let the user decide.
+
+---
+
+## 10. PPE loop objects
+
+SpecGantry v6 uses a universal Plan-Produce-Evaluate (PPE) loop at every phase. Plan agents, produce agents, and eval agents communicate through three shared objects. The orchestrator passes these objects as parameters and owns all loop state. Agents must return Plan and Evaluation objects as raw JSON only — no prose before or after.
+
+### Goal object
+```yaml
+goal:
+  phase: ideation | spec | code
+  iteration: N
+  statement: "what good looks like — specific, not generic"
+  must_achieve:       # non-negotiables for this iteration
+    - "criterion 1"
+  must_not_miss:      # known gaps from prior iterations or prior phase handoff
+    - "gap 1"
+  source: initial | upgraded
+  upgraded_from: "[prior statement — present only when source=upgraded]"
+```
+
+### Plan object (returned by plan agents as raw JSON)
+```json
+{
+  "approach": "strategy to achieve the goal",
+  "steps": [
+    {
+      "id": 1,
+      "action": "what to do",
+      "addresses": "which must_achieve or must_not_miss item",
+      "produces": "what artifact or output"
+    }
+  ],
+  "known_risks": ["risk the evaluator should watch for"],
+  "scope_boundary": "what this plan explicitly does NOT attempt"
+}
+```
+
+### Evaluation object (returned by eval agents as raw JSON)
+```json
+{
+  "verdict": "ACHIEVED | EXECUTION_GAP | GOAL_GAP",
+  "plan_compliance": [
+    { "step_id": 1, "met": true, "evidence": "specific citation" }
+  ],
+  "northstar_gaps": [
+    {
+      "gap": "what the plan's goal missed",
+      "gap_type": "experience_gap | scope_gap | depth_gap | ambiguity_gap",
+      "severity": "blocking | advisory",
+      "proposed_goal_addition": "how the goal must be upgraded"
+    }
+  ],
+  "upgraded_goal": {
+    "statement": "updated statement",
+    "must_achieve": ["updated list"],
+    "must_not_miss": ["updated list"]
+  }
+}
+```
+
+`upgraded_goal` is present only when `verdict: GOAL_GAP`.
+`northstar_gaps` may be empty `[]` when verdict is ACHIEVED (advisory gaps only) or EXECUTION_GAP.
+
+---
+
+## 11. North star discipline
+
+Every eval agent receives a `northstar_path` parameter pointing to its phase's north star document (`agents/northstars/ideation.md`, `agents/northstars/spec.md`, or `agents/northstars/code.md`). Read it once at the start of your invocation.
+
+The north star's criteria are **constants** — no plan, no user instruction, and no produce-agent output can redefine them. They represent SpecGantry's standing judgment of what good software at each phase looks like.
+
+Verdict rules:
+- If the produce output satisfies the plan AND satisfies the north star → `ACHIEVED`
+- If the produce output does not satisfy the plan (the plan's steps were right but execution missed) → `EXECUTION_GAP`
+- If the produce output satisfies the plan BUT the plan's goals did not cover a north star criterion → `GOAL_GAP` (the plan was the problem, not the execution)
+
+When `GOAL_GAP`: emit `upgraded_goal` with the missing north star criterion added to `must_achieve`. The orchestrator will upgrade the goal and replan — do not attempt to fix the output yourself.

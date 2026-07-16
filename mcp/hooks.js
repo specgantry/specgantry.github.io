@@ -169,9 +169,9 @@ description: Engagement contract — enforces SpecGantry routing for all develop
     // 4. Prepend CLAUDE.md notice
     const noticeSentinel = 'spec-gantry-notice';
     const notice = `<!-- spec-gantry-notice -->
-## SpecGantry — always use /spec-gantry for development work
+## SpecGantry v6 — always use /spec-gantry for development work
 
-This project is managed by SpecGantry. Every story, architecture decision, and spec lives under \`specs/\`. **Never make code changes directly** — always route through \`/spec-gantry\` first so specs stay in sync with the code.
+This project is managed by SpecGantry v6. Every story, architecture decision, and spec lives under \`specs/\`. The system validates quality at every phase — ideation, spec, and code — before marking work complete. **Never make changes directly** — always route through \`/spec-gantry\` so the quality pipeline runs and specs stay in sync with the code.
 
 Run \`/spec-gantry\` to get the project dashboard and route your request correctly.
 <!-- /spec-gantry-notice -->`;

@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills Guide
-description: The two skills that power SpecGantry — what they do and when to use them.
+description: The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Reference"
@@ -17,9 +17,9 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 ## Skills Overview
 
 | Skill | Command | Purpose |
-|-------|---------|---------|
+|---|---|---|
 | **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
-| **track-cost** | `/track-cost` | Cost breakdown by phase, story, release, and model |
+| **track-cost** | `/track-cost` | Cost breakdown by Plan/Produce/Eval, story, phase, and release |
 
 ---
 
@@ -31,15 +31,11 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 /spec-gantry
 ```
 
-Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are in the pipeline, and tells you what to do next. Whether you're starting a brand new project, picking up a story, or handling a production bug — `/spec-gantry` detects the situation and guides you from there.
-
-You never need to remember separate commands for different workflows. One command, every time.
+Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are, and tells you what to do next.
 
 ---
 
 ### The Dashboard
-
-Two states depending on where you are in the pipeline.
 
 **State 1 — No stories yet** (ideation in progress, or no project):
 
@@ -47,9 +43,10 @@ Two states depending on where you are in the pipeline.
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5  |  My App  |  release 1.0.0
+SpecGantry v6  |  Recipe Manager
 ──────────────────────────────────────────────────────────
-  Ideation in progress — Beat 1: 3/4 topics answered.
+  Ideation in progress  ·  🔄 produce — Topic 6/9
+
 ──────────────────────────────────────────────────────────
   [1] Continue ideation               [$] Cost
                                       [?] Help
@@ -60,270 +57,229 @@ SpecGantry v5  |  My App  |  release 1.0.0
 
 **State 2 — Story pipeline active:**
 
-The pipeline table and story picker are unified. Every story is visible, its status is shown across all pipeline stages, and you can act on any story directly from the same screen — no navigation required.
-
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v5  |  Acme Platform  |  release 1.0.0
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
+SpecGantry v6  |  HireFlow  |  release 1.0.0
+Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
 ──────────────────────────────────────────────────────────
-  ID      Story                          Spec   Build
-  ──────────────────────────────────────────────────────
-  [001]  User registers and logs in       ✅    ✅
-  [002]  User manages their profile       ✅    🔄
-  [003]  User submits application         🔄    ○
-  [004]  Admin reviews submissions        ⏳    ○
-  ──────────────────────────────────────────────────────
-  Release 1.0.0                                ○ not deployed
-──────────────────────────────────────────────────────────
+  ID      Story                            Spec        Build
+  ────────────────────────────────────────────────────────────────
+  [001]  User authentication                ✅          ✅
+  [002]  Company posts a job                ✅          🔄 eval·2
+  [003]  Admin reviews applications         🔄 eval     ⏳
+  [004]  Candidate browses and applies      ⏳          ○
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                        ○ not deployed
+──────────────────────────────────────────────────────────────────
   Type a story ID to manage it        [$] Cost
-  [1] Continue spec – STORY-003       [?] Help
-  [N] New work                        [X] Exit
-──────────────────────────────────────────────────────────
-Enter story ID or action:  `>`
+  [1] Build next — [002]: Company…    [?] Help
+  [>] Run to next pause               [X] Exit
+  [N] New work
+──────────────────────────────────────────────────────────────────
+Enter story ID or action:  >
 ```
 </div>
 
-Type a story number directly (e.g. `004`) to pick it up. Blocked stories show their dependency inline. The left column shows the most useful contextual actions for your current state.
+**What the in-progress labels mean:**
 
-For stories that are already built (✅ spec · ✅ built), typing the story ID opens an inline prompt rather than routing to the normal pipeline:
+The Spec and Build columns show exactly where in the PPE loop a story is:
 
-```
-STORY-001: Bookmark CRUD API  ·  ✅ spec · ✅ built
-──────────────────────────────────────────────────────────
-What would you like to change?  >
-```
-
-Describe the change — a bug, an enhancement, or a new feature — and SpecGantry routes to the investigation agent pre-scoped to that story, then proceeds normally.
+| Label | Meaning |
+|---|---|
+| `🔄 plan` | Plan agent running |
+| `🔄 write` | Spec produce agent writing story-spec.md |
+| `🔄 eval` | Eval agent checking north star (iteration 1) |
+| `🔄 eval·2` | Eval agent on iteration 2 — a repair loop is running |
+| `🔄 build` | Code produce agent building |
 
 **Pipeline stage icons:**
 
 | Icon | Meaning |
-|------|---------|
-| `✅` | Complete |
-| `🔄` | Active / in progress |
+|---|---|
+| `✅` | ACHIEVED — north star confirmed |
+| `🔄 [label]` | Active — shows which PPE step and iteration |
 | `🔴` | Blocked by a dependency |
-| `⏳` | Not started, ready to pick up |
+| `⏳` | Ready — not blocked, not yet started |
 | `○` | Not yet reached |
 | `~` | Built but no spec written (reverse-engineered story) |
 
-Stories marked `~` are not pushed through the automatic spec pipeline — type their ID directly to write a spec for them at any time. They are immediately available for `[N] New work` (bug fixes and enhancements).
+`✅` in v6 means the evaluator confirmed the north star — not just that a format checklist passed. Spec ✅ means a machine-validated spec. Build ✅ means code that passed both the quality dimension rubric and the code north star.
 
 ---
 
 ### What /spec-gantry Handles
 
-**Starting a new project** — When no project exists, `/spec-gantry` walks you through setup (name and vision — no version number needed, every project starts at `1.0.0`) and moves into ideation. For simple projects (no auth, no AI, single actor, ≤3 capabilities), quick-start mode activates automatically — asking only three questions and setting smart defaults for the rest. Full ideation is always available via `[F]`.
+**Starting a new project** — name and vision, then quick-start (3 questions, smart defaults) or full ideation (9 topics). For simple projects, quick-start activates automatically.
 
-**Analysing an existing codebase** — If source files are found without a SpecGantry project, `/spec-gantry` offers to scan your code and generate an architecture, story backlog, and guardrails. You review and confirm before anything is written.
+**Analysing an existing codebase** — source files detected without a project → scan and generate architecture, story backlog, and anchor tags.
 
-**Full story lifecycle** — From picking up a story through spec, build, and deployment — every phase transition is handled through `/spec-gantry`. Phase gates are enforced automatically.
-**Bug fixes and new work** — Use `[N] New work` (visible once ideation is complete) to describe a bug, improvement, new story, or architectural change at any point in the pipeline — mid-flight or post-deployment. SpecGantry analyses the backlog and story specs to determine what's affected — you just describe the work.
+**Full story lifecycle** — ideation → spec (with north-star validation) → code (with PPE loop) → deploy. Phase gates enforced automatically.
+
+**Bug fixes and new work** — `[N] New work` at any point. Investigation agent reads the codebase, confirms findings, build agent fixes, full code PPE loop runs.
 
 ---
 
 ### Action Bar Commands
 
-| Command | Who | What it does |
-|---------|-----|-------------|
-| `[1]`–`[n]` contextual | You | The pipeline action for your current state (e.g. spec next story, build next story, deploy) |
-| `[N]` New work | You | Describe a bug, improvement, new story, or change. Always visible once ideation is complete. |
-| `[$]` Cost | You | Opens the cost dashboard — breakdown by phase, story, release, and model |
-| `[?]` Help | You | Quick reference and secondary commands: `[A]` Architecture · docs link |
-| `[X]` Exit | You | Return to normal Claude Code |
+| Command | What it does |
+|---|---|
+| `[1]`–`[n]` contextual | Pipeline action for your current state |
+| `[>]` Run to next pause | Enable auto-continue — pipeline runs until a genuine decision point |
+| `[N]` New work | Describe a bug, improvement, new story, or change |
+| `[$]` Cost | Opens the cost dashboard |
+| `[?]` Help | `[A]` Architecture · docs link |
+| `[X]` Exit | Return to normal Claude Code |
 
 ---
 
-### Classifying New Work
+### The 12 Agents
 
-When you use `[N] New work` or when all stories are deployed, SpecGantry asks what you want to work on next. It then:
+SpecGantry v6 uses 12 agents — three per PPE phase plus three supporting agents:
 
-1. **Classifies** the type of work
-2. **Maps it to stories** — reads all story specs to determine which existing stories are affected, or what new story to create. You don't need to specify this.
-3. **Confirms** the mapping with you before touching any state
-4. **Routes** — resets phase flags and re-enters the pipeline
+**Ideation phase**
 
-| Classification | When it applies |
-|---|---|
-| `bug_fix` | Something broken — investigation agent locates the exact files and root cause, confirms with you, then build agent fixes it directly. Spec not touched. |
-| `enhancement` | Existing story does more or works differently — investigation agent locates the change point, orchestrator writes to `gap.md`, build agent implements. Spec merges at deploy. |
-| `new_story` | A net-new capability — ideation agent runs in amendment mode to assign a story ID and update the backlog |
-| `project_change` | Cross-cutting: infrastructure, data model, multi-story scope — ideation agent runs in amendment mode first |
+| Agent | Role | Model |
+|---|---|---|
+| `ideation-plan-agent` | Determines what topics remain to satisfy the ideation north star | Sonnet 5 |
+| `ideation-produce-agent` | Asks questions, writes all architecture artifacts | Sonnet 5 |
+| `ideation-eval-agent` | Evaluates artifacts against the ideation north star | Sonnet 5 |
 
-SpecGantry always confirms its classification and story mapping before proceeding.
+**Spec phase**
 
-**Investigation agent:** for bug fixes and enhancements, SpecGantry first invokes a read-only investigative agent that searches the codebase — using `@story`, `@entry`, `@contract`, and `@gap` anchor tags written by the build agent — to locate the exact files, entry points, and root cause. It presents findings and confirms with you before any changes are made. The investigation replaces spec-reading as the source of truth for what to change.
+| Agent | Role | Model |
+|---|---|---|
+| `spec-plan-agent` | Determines what the spec must capture — thinks like a product head | Sonnet 5 |
+| `spec-produce-agent` | Writes `story-spec.md` following the plan | Haiku 4.5 |
+| `spec-eval-agent` | Evaluates spec against the spec north star, emits approval summary | Sonnet 5 |
+
+**Code phase**
+
+| Agent | Role | Model |
+|---|---|---|
+| `code-plan-agent` | Plans the build approach (iteration 1) or repair strategy (iteration 2+) | Sonnet 5 |
+| `code-produce-agent` | Builds the full story end-to-end | Sonnet 5 |
+| `code-eval-agent` | Evaluates code against quality dimensions + code north star; emits GOAL_GAP when spec was insufficient | Sonnet 5 |
+
+**Supporting agents**
+
+| Agent | Role | Model |
+|---|---|---|
+| `investigate-subagent` | Read-only codebase search for bug fixes and enhancements | Haiku 4.5 |
+| `deployment-subagent` | Generates Dockerfiles, docker-compose, deploy.sh | Sonnet 4.6 |
+| `reverse-engineer-subagent` | Synthesises architecture and story backlog from existing code | Haiku 4.5 |
+
+Plan and eval agents use Sonnet 5 — genuine reasoning is required to challenge plan goals and evaluate against north stars. Haiku is only used where the task is bounded and deterministic (spec writing, investigation, reverse engineering).
 
 ---
 
 ### Quality Review
 
-Every story passes through a quality review loop during the build phase — automatically, without any extra commands.
+The code PPE loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before the produce agent writes any code — so async patterns, state management, and experience requirements are decided upfront.
 
-**After the build**, the code is evaluated across several dimensions: whether every acceptance criterion is satisfied, whether contract shapes are correct, whether required inputs are validated, whether the storage choice suits the use case, whether the UI follows the project's visual system, whether scope is clean, and whether patterns are consistent with prior stories. Any dimension that doesn't pass produces a targeted fix and the build is updated. This loop runs until all dimensions pass or the maximum iterations are reached.
-
-The result is recorded in the story's `build-report.yaml`. The transition note tells you how it went:
+The transition note tells you how it went:
 
 ```
-✓ Build complete · STORY-001: User registration  ·  quality: pass (2 iters)
-✓ Build complete · STORY-002: Profile page       ·  quality: capped (3 iters, 2 dims remain)
+✓ Build complete · STORY-001  ·  quality: pass (1 iter)
+✓ Build complete · STORY-002  ·  quality: pass (2 iters — loading state added to save action)
+✓ Build complete · STORY-003  ·  quality: pass (1 iter after spec update)
+  ↑ this story had a GOAL_GAP — spec was updated mid-build
 ```
-
-`quality: pass` — all dimensions cleared. `quality: capped` — max iterations reached; the report documents what remains for you to decide on. `quality: partial` — same dimensions failed on two consecutive iterations, usually indicating a spec ambiguity worth clarifying.
 
 **Config** (in `project-state.yaml`):
 ```yaml
-quality_loop:
-  max_iterations: 3   # rebuild cycles before capping (default: 3)
+ppe_loop:
+  max_iterations:
+    ideation: 3
+    spec: 2
+    code: 3
 ```
-
----
-
-### Session Resume
-
-All progress is saved after every question and every section. Every `/spec-gantry` invocation picks up exactly where you left off — no manual state management, no lost progress.
 
 ---
 
 ## /track-cost {#track-cost}
 
-**See exactly what your AI development is costing — in real time, broken down every way that matters.**
+**See exactly what your AI development is costing — broken down by Plan, Produce, and Eval columns.**
 
 ```
 /track-cost
 ```
 
-SpecGantry captures token usage automatically after every agent run. No manual steps, no estimates — real API counts. `/track-cost` renders that data as a navigable cost dashboard with four views.
-
-Cost data lives in `specs/cost-log.ndjson`, committed to git alongside your specs. Full visibility into AI spend over the full project lifetime.
+Cost data is captured automatically after every agent run and stored in `specs/cost-log.ndjson`, committed to git.
 
 ---
 
 ### The Cost Dashboard
 
-**Default view — Cost Summary by Phase:**
+**Default view — Cost by Phase and Story:**
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v5  |  Acme Platform
-Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed
+SpecGantry v6  |  HireFlow  |  release 1.0.0
+Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
-Cost Summary  |  release 1.0.0
+Release 1.0.0                        Plan     Produce      Eval     Total
+───────────────────────────────────────────────────────────────────────────
+Ideation                            $0.61      $1.84      $0.43     $2.88
+Investigation                          —       $0.08         —      $0.08
+Deployment                             —       $0.22         —      $0.22
+Reverse engineer                       —          —          —         —
 
-Phase               Tokens       Cost
-──────────────────────────────────────
-ideation            12,605      $1.26
-story_spec          14,209      $1.43
-development         31,445      $3.14
-deployment           3,890      $0.39
-──────────────────────────────────────
-Total               62,149      $6.22
+[001] User authentication
+  Spec                               $0.22      $0.11      $0.26     $0.59
+  Code                               $0.34      $2.41      $0.48     $3.23
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.56      $2.52      $0.74     $3.82
 
-──────────────────────────────────────────────────────────
-  [1] By story      [2] By release    [3] By model
-                                      [X] Return
-──────────────────────────────────────────────────────────
-Enter option:  `>`
+[002] Company posts a job
+  Spec                               $0.18      $0.09      $0.20     $0.47
+  Code                               $0.28      $1.87      $0.39     $2.54
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.46      $1.96      $0.59     $3.01
+
+═══════════════════════════════════════════════════════════════════════════
+Total                               $3.15     $12.06      $3.37    $18.58
+
+  [T] Show tokens   Run /spec-gantry to return to the dashboard.
 ```
 </div>
 
-The menu bar persists across all views — switch between breakdowns without going back to the summary first.
+Type `[T]` to switch to token counts. Same layout, numbers in tokens (abbreviated to `12k` format). Type `[C]` to switch back to cost.
 
----
+**What the Plan/Produce/Eval columns tell you**
 
-**[1] By Story** — total spend per story across all phases:
+The column split exposes where AI spend goes within each story:
 
-<div class="docs-terminal" markdown="1">
-<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
+- **Plan** — the cost of thinking through what to build (ideation topics, spec criteria, build approach, repair strategy). Low cost, high leverage.
+- **Produce** — the cost of actually generating artifacts and code. Dominates total spend.
+- **Eval** — the cost of evaluating against the north star. For a 4-story project, Plan + Eval together typically represent 30–35% of total cost — the price of quality assurance that would otherwise surface as post-delivery rework.
 
-```
-Cost by Story  |  release 1.0.0
-
-Story            Tokens       Cost
-───────────────────────────────────
-STORY-001        14,320      $1.34
-STORY-002        18,441      $1.74
-STORY-003         9,112      $0.86
-STORY-004         9,112      $0.86
-───────────────────────────────────
-Total            51,985      $4.80
-```
-</div>
-
-Project-level phases (ideation, deployment) are excluded here — they belong to the project, not individual stories.
-
----
-
-**[2] By Release** — cumulative spend per deployed release:
-
-<div class="docs-terminal" markdown="1">
-<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
-
-```
-Cost by Release
-
-Release      Tokens       Cost
-──────────────────────────────
-1.0.0        80,601      $7.79
-1.1.0        42,340      $4.12
-──────────────────────────────
-Total       122,941     $11.91
-```
-</div>
-
-Shows full project history across all releases — useful for understanding how development costs evolve over time.
-
----
-
-**[3] By Model** — spend per model, most expensive first:
-
-<div class="docs-terminal" markdown="1">
-<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
-
-```
-Cost by Model  |  release 1.0.0
-
-Model           Tokens       Cost
-──────────────────────────────────
-sonnet-4-6      62,301      $6.23
-haiku-4-5       18,300      $0.92
-──────────────────────────────────
-Total           80,601      $7.79
-```
-</div>
-
-Useful for understanding whether your spend profile aligns with what you'd expect — Sonnet handles reasoning-heavy phases (ideation, development, deployment); Haiku handles bounded read-and-score phases (story spec, investigation, evaluate, plan).
-
-**Typical cost profile per phase:**
-
-| Phase | Model | Relative cost |
-|-------|-------|--------------|
-| Ideation | Sonnet 4.6 | Low–medium — conversational, but architecture reasoning |
-| Investigation | Haiku 4.5 | Very low — read-only codebase search |
-| Story spec | Haiku 4.5 | Low — per story, bounded spec format |
-| Quality review | Haiku 4.5 | Very low per iteration — evaluation and repair planning; 1–3 iterations typical |
-| Development | Sonnet 4.6 | Highest — code generation |
-| Deployment | Sonnet 4.6 | Low — script generation, one-shot |
-
-Development still dominates total spend. The quality review adds a modest overhead per story — typically 1–2 iterations — that front-loads review cost that would otherwise surface as post-delivery rework.
+**Story total rows** let you see the end-to-end cost of each story immediately — no mental arithmetic needed across Spec and Code rows.
 
 ---
 
 ### How Cost Tracking Works
 
-- The `SubagentStop` hook fires automatically when each SpecGantry agent completes
+- The `SubagentStop` hook fires automatically when each agent completes
 - Token counts are read directly from the agent's transcript — exact API values, not estimates
-- Cost is computed using live pricing rates fetched from Anthropic's pricing page on startup (fallback rates used if the fetch fails)
-- One entry is appended to `specs/cost-log.ndjson` per agent run — never overwritten
+- All 12 v6 agents are mapped: plan/produce/eval per phase into separate cost entries
+- One entry appended to `specs/cost-log.ndjson` per agent run — never overwritten
+- `claude-sonnet-5` rates included in the rates cache
 
-### If No Data Appears
+**Typical cost profile for a 3-story project:**
 
-Cost tracking starts automatically once your first agent session completes. If the report is empty after running a full phase, check the [FAQ troubleshooting section](/docs/faq#costs-not-being-recorded).
+| Phase group | Relative share |
+|---|---|
+| Ideation (plan + produce + eval) | 10–15% |
+| Spec × N stories (plan + produce + eval) | 10–15% |
+| Code × N stories (plan + produce + eval) | 60–70% |
+| Supporting (investigate + deploy) | 5–10% |
+
+Code produce still dominates. The plan and eval agents across all phases together add roughly 30–35% overhead compared to a produce-only pipeline — but that overhead front-loads quality checks that would otherwise appear as bugs, rework, and extra sessions.
 
 ---
 
@@ -334,57 +290,40 @@ Cost tracking starts automatically once your first agent session completes. If t
 ```
 /spec-gantry → [1] Start new project
             → Enter name and vision
-            → Quick-start (3 questions) or full ideation (15–30 min)
-            → architecture.md + backlog written
+            → Quick-start (3 questions) or [F] full ideation
+            → Ideation PPE loop runs (catches gaps automatically)
+            → architecture.md + story backlog written
             → Commit specs/ to git
-            → Type story ID to pick up first story
-            → story-spec → build
-```
-
-### Onboarding an Existing Codebase
-
-```
-/spec-gantry → detects source files, no project found
-            → [2] Analyse existing codebase
-            → Review proposed architecture and backlog
-            → Confirm → commit specs/ to git
+            → Spec PPE loop per story (north-star validated specs)
+            → Code PPE loop per story (with GOAL_GAP routing if needed)
 ```
 
 ### Handling a Production Bug
 
 ```
-/spec-gantry → type story ID (or [N] New work)
-            → Describe the bug
-            → Investigation agent checks if app is running (health gate)
-            → Investigation agent reads codebase → confirms findings with you
-            → Build agent uses findings as targeted brief — no spec rewrite
-            → confirm deploy prompt
-            → gap.md reviewed and merged (if any)
+/spec-gantry → type story ID  (or [N] New work → describe bug)
+            → Investigation agent locates files and root cause
+            → Confirms findings with you
+            → Code PPE loop: plan → build → evaluate
             → [1] Deploy release (patch version bump)
 ```
 
-### Deploying a Release
+### Using Auto-Continue
 
 ```
-(once all stories are built):
-/spec-gantry → confirm deploy prompt shown
-            → gap specs reviewed and confirmed (if any exist)
-            → [1] Deploy release 1.0.0
-            → Confirm
-            → SpecGantry generates specs/deploy.sh (executable)
-            → deploy-artifact.md written (deployment summary)
-            → Run: specs/deploy.sh --dry-run   (local test)
-            → Run: specs/deploy.sh             (production deploy)
+/spec-gantry → [>] Run to next pause
+            → Pipeline runs: ideation → spec (all stories) → code (all stories)
+            → Pauses only at genuine decision points
+            → Resume summary shows what happened, grouped by Spec and Build
 ```
 
 ### Reviewing Project Costs
 
 ```
-/track-cost          → summary by phase
-  → type 1           → breakdown by story
-  → type 2           → breakdown by release
-  → type 3           → breakdown by model
-  → type X           → return to main dashboard
+/track-cost             → cost by Plan/Produce/Eval, by story
+  → [T]                 → same view in tokens
+  → [C]                 → back to cost
+  → Run /spec-gantry    → return to dashboard
 ```
 
 ---
@@ -396,14 +335,14 @@ Cost tracking starts automatically once your first agent session completes. If t
     <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <strong>Reference</strong>
-      <span>File structure, security model, design principles, and how to extend SpecGantry.</span>
+      <span>File structure, state flags, agent ownership, and extension points.</span>
     </div>
   </a>
   <a href="/docs/faq" class="next-step-card">
     <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <strong>FAQ</strong>
-      <span>Answers to common questions about installation, the pipeline, costs, and troubleshooting.</span>
+      <span>Common questions on installation, the PPE loop, costs, and troubleshooting.</span>
     </div>
   </a>
 </div>

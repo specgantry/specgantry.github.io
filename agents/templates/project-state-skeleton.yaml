@@ -10,6 +10,9 @@ arch_seeded: false
 pending_arch_gap: null
 pending_spec_gap: null
 auto_continue: false
-quality_loop:
-  max_iterations: 3
+ppe_loop:
+  max_iterations:
+    ideation: 3
+    spec: 2
+    code: 3
 stories: {}

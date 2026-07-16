@@ -1,7 +1,13 @@
 {
-  "fetched_at": "2026-06-22T00:00:00Z",
+  "fetched_at": "2026-07-16T00:00:00Z",
   "_note": "Update fetched_at and rates when Anthropic changes pricing. No live fetch — the pricing page requires JS rendering.",
   "rates": {
+    "claude-sonnet-5": {
+      "input_per_1m": 3.00,
+      "output_per_1m": 15.00,
+      "cache_write_per_1m": 3.75,
+      "cache_read_per_1m": 0.30
+    },
     "claude-haiku-4-5-20251001": {
       "input_per_1m": 1.00,
       "output_per_1m": 5.00,

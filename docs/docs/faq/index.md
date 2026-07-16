@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: FAQ
-description: Frequently asked questions about SpecGantry — installation, pipeline, costs, and troubleshooting.
+description: Common questions about SpecGantry v6 — installation, the PPE loop, costs, and troubleshooting.
 prev_page: "Reference"
 prev_page_url: "/docs/architecture"
 ---
@@ -12,407 +12,230 @@ prev_page_url: "/docs/architecture"
 
 ## Installation
 
-### Plugin won't install — "Not found in marketplace"
-
-You need to register the SpecGantry marketplace first, then install:
+**How do I install SpecGantry?**
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-The `claude plugin install <github-url>` form does not work — `install` resolves names against registered marketplaces only.
+Both commands are required in order. The marketplace must be registered before the plugin can be installed. You only need to add the marketplace once.
 
-### Where does the plugin install?
-
-Claude Code manages plugins automatically:
-- **macOS:** `~/.claude/plugins/`
-- **Windows:** `%APPDATA%\Claude\plugins\`
-- **Linux:** `~/.claude/plugins/`
-
-### Can I use SpecGantry offline?
-
-Yes. SpecGantry runs entirely within Claude Code and your local project directory. The only network activity is the model invocations themselves — Claude Code's normal operation. Pricing rates are fetched automatically from Anthropic's pricing page when the MCP server starts.
-
-### Do I need git?
-
-Not required. SpecGantry saves state as plain text files in `specs/` — git is not involved in any state operation. That said, git is **strongly recommended** for:
-- Version history of your architecture and specs
-- Recovery from accidental file deletion
-
-### How do I update SpecGantry? {#how-do-i-update-specgantry}
-
-Run both commands together:
+**How do I update SpecGantry?**
 
 ```bash
 claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
 ```
 
-**SpecGantry notifies you automatically** when a new version is available — a banner appears at the top of the dashboard the next time you open a session, showing the version number and the update command.
-
-Check your current version anytime:
-```bash
-claude plugin list
+Or from within Claude Code:
+```
+/plugin marketplace update spec-gantry && /plugin update spec-gantry@spec-gantry
 ```
 
-### What's the difference between `plugin marketplace update` and `plugin update`?
+**Where is the plugin installed?**
 
-`marketplace update` refreshes the plugin registry entry; `plugin update` pulls the latest plugin files. Running both together ensures the registry and installed files are always in sync — use the combined command above.
+In your Claude home directory, typically `~/.claude/plugins/spec-gantry/`. The plugin runs entirely within Claude Code — no global npm install, no system-level changes.
 
-### How do I uninstall SpecGantry? {#how-do-i-uninstall-specgantry}
+**Does it work offline?**
 
-To remove the plugin and the marketplace entry completely:
+Yes. All agents run locally within Claude Code. The only network calls are to the Anthropic API (for Claude), the plugin marketplace (for updates — only when you explicitly run the update command), and optionally a version check on session start.
 
-```bash
-claude plugin uninstall spec-gantry@spec-gantry
-claude plugin marketplace remove spec-gantry
-```
+**Does SpecGantry require git?**
 
-Run them in that order — uninstall the plugin first, then remove the marketplace registration. Your project's `specs/` files are not affected.
-
-To reinstall afterwards, use the standard install sequence:
-
-```bash
-claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry
-```
+No, but it's strongly recommended. All specs are plain-text YAML and Markdown designed to be committed — meaningful diffs, full history, and a single source of truth across sessions.
 
 ---
 
-## Getting Started
+## The PPE Loop
 
-### I'm starting a new project. What do I do?
+**What is the PPE loop?**
 
-Run `/spec-gantry` in an empty folder. SpecGantry detects no project and prompts you to start one or reverse-engineer existing code. Select Start New Project and answer two questions — project name and vision. Every project starts at version `1.0.0` automatically.
+Plan-Produce-Evaluate. Every phase in SpecGantry runs the same loop: a plan agent determines what to produce and how, a produce agent executes the plan, and an eval agent checks both whether produce executed the plan and whether the plan itself covered the north star. This loop runs at ideation, spec, and code.
 
-For simple projects (no auth, no AI, single actor type, three or fewer capabilities), SpecGantry activates quick-start mode automatically — it sets smart defaults for most architecture decisions and asks only three focused questions. For more complex projects it runs the full two-beat ideation conversation.
+**What are the three north stars?**
 
-### I have an existing codebase. Should I reverse-engineer it?
+Each phase has a canonical quality bar the evaluator holds every output against — independently of what any plan says:
 
-Yes, if you want SpecGantry's structure — architecture documentation, a story backlog, and guardrails. Run `/spec-gantry` and select the reverse-engineer option. The agent analyses your codebase and proposes a story list where each story is marked `built`, `partial`, or `missing`. You review, adjust statuses if needed, and confirm before anything is written.
+- **Ideation:** "Can every architecture artifact be written without invented assumptions?" (8 criteria)
+- **Spec:** "If built exactly as written, does the user get everything the intent promises?" (9 criteria)
+- **Code:** "Does the running software deliver the full experience the intent describes?" (7 criteria)
 
-Built stories enter the modification pipeline immediately — use `[N] New work` for bug fixes and enhancements. Partial and missing stories follow the normal spec → build → deploy flow. Stories that are built but not yet specced show `~` in the dashboard — type their ID to write a spec at any time.
+**What is EXECUTION_GAP vs GOAL_GAP?**
 
----
+- **EXECUTION_GAP** — the plan was right, but produce didn't fully execute it. The evaluator loops with the same goal.
+- **GOAL_GAP** — produce executed the plan, but the plan itself missed a north star criterion. The evaluator upgrades the goal and the plan agent reruns with a richer target.
 
-## The Pipeline
+**Can both occur at the same time?**
 
-### Can I skip ideation?
+Yes. When both occur, the evaluator emits `GOAL_GAP` as the routing verdict (goal upgrade takes precedence) but also populates `execution_gaps` so the next plan agent addresses both in one pass.
 
-No. Ideation produces `architecture.md` and the story backlog — neither exists without it. There is no separate architecture phase; ideation does both in one conversation. For simple projects, quick-start mode reduces ideation to three questions without skipping any of the required outputs.
+**What happens when GOAL_GAP occurs during code?**
 
-### Is there a separate architecture phase?
+The orchestrator routes back to the spec phase with the upgraded goal. The spec PPE loop reruns, the spec is updated, then code is rebuilt from scratch. This is capped at one spec→code re-entry per story.
 
-No. Ideation is a two-beat session: Beat 1 matures the idea, Beat 2 shapes the system. The output of Beat 2 is the architecture — tech stack, system boundaries, guardrails, and a story backlog. There is no separate step to complete before stories can be picked up.
+**How many iterations does each phase run?**
 
-### Can I skip the story spec?
+Default maximums: ideation 3, spec 2, code 3. Configurable in `project-state.yaml → ppe_loop.max_iterations`.
 
-No. The story spec gate is the core of what SpecGantry enforces. No spec means no build — SpecGantry verifies the spec is complete and has zero guardrail violations before development can begin.
+**What happens when the loop caps?**
 
-### When can I deploy?
+The unresolved gaps are surfaced to you: `[Y] Accept and continue · [E] Address manually · [X] Stop`. Accepting continues the pipeline with the partial output documented.
 
-Once all stories are built. You are then presented with a single confirmation point: any gap specs are shown and confirmed first, then you choose `[1] Deploy release` or `[X] Hold`. The outcome is recorded in `project-state.yaml`.
+**What is CYCLING?**
 
-### Can I deploy individual stories?
-
-No. SpecGantry deploys the entire system as a single release. This is intentional — cloud infrastructure (containers, serverless, etc.) must be packaged and deployed as a coherent unit. The deployment script covers all stories in dependency order.
-
-### What are gap specs and when are they written?
-
-Gap specs are delta documents written to `specs/stories/STORY-NNN/gap.md` — one file per story. The build agent writes to this file when the spec turns out to be incomplete, contradicted by the actual code shape, or has side-effects. Post-release enhancements are also recorded here by the orchestrator before building. Multiple discoveries accumulate as bullets in a single file — no new dated files are created.
-
-Gap files are reviewed and merged at the confirm-deploy step, before deployment.
-
-### What happens during gap merge?
-
-When all stories are built, SpecGantry checks for unmerged gap specs and presents any it finds. After confirmation, the gap is merged into the story spec in place — sections are edited directly to reflect what was actually built. `gap.md` is deleted after it is merged. A summary of what changed is shown before the deploy prompt.
-
-### How long does each phase take?
-
-| Phase | Typical Time |
-|-------|-------------|
-| Ideation (idea maturation + system shaping) | 15–30 minutes |
-| Story Spec | 5–15 min per story |
-| Build (implementation) | Depends on complexity |
-| Gap merge (if gaps exist) | 2–5 minutes |
-| Deploy release | 5–10 minutes (whole system) |
-
-### Why does architecture feel lighter than expected?
-
-By design. The initial system shaping (Beat 2 of ideation) only covers what must exist before any story work begins: tech stack, system boundaries, guardrails, and a dependency-ordered backlog. You only elaborate what you actually build.
-
-### How should stories be sized?
-
-Stories are building blocks, not micro-tasks. A story should represent a meaningful vertical slice of the system — something completable in 1–3 sessions and demonstrable independently. Related capabilities belong in one story.
-
-When in doubt, err toward fewer, larger stories. You can always add scope via `[N] New work` after deployment.
-
-### What happens after all stories are deployed?
-
-SpecGantry enters post-deployment mode and asks what you want to work on next. Use `[N] New work` or describe a change when prompted. For bugs and enhancements, SpecGantry first runs an investigation agent that searches the actual codebase to locate the affected files and root cause — then confirms findings with you before acting. New stories and architectural changes go straight to ideation amendment mode. See [How It Works → Handling Changes After Deployment](/docs/how-it-works#post-deployment) for details.
-
-### How do stories stay versioned over time?
-
-Stories keep the same `STORY-NNN` identity forever. When a bug fix or enhancement changes a story, the spec is updated inline — changed lines are annotated with the release version (e.g. `` `__1.1.0__` ``), old text is struck through, and a row is appended to the spec's Change History table. This keeps the full audit trail inside the spec itself.
-
-### How does release versioning work?
-
-Every project starts at `1.0.0`. The version only changes when a release is deployed. The bump is computed automatically from the highest-severity change type across all stories in the release — `project_change` bumps major, `enhancement` or `new_story` bumps minor, `bug_fix` bumps patch. The initial release always deploys as `1.0.0`.
-
-### Who decides which stories are affected by a bug fix?
-
-SpecGantry does — via a two-step process. First, a read-only investigation agent searches the actual codebase using anchor tags (`@story`, `@entry`, `@contract`) written by the build agent to locate the exact files, entry points, and root cause. Then it presents its findings and confirms with you before touching any state. This means the mapping is grounded in real code, not just spec inference.
-
-### What's a "guardrail violation"?
-
-A guardrail is a rule from the architecture that applies to all stories. Examples:
-- "All API endpoints must use JWT authentication"
-- "No direct database access from the UI layer"
-- "All external API calls must have a timeout of 5 seconds or less"
-
-During the Story Spec phase, SpecGantry checks every guardrail against the spec. If a spec contradicts one, the violation is written to the spec file and the gate fails until it's resolved.
-
-Options to resolve a violation:
-1. Revise the spec to comply with the guardrail
-2. Update the guardrail in `architecture.md` (which affects all future stories)
+If the same northstar_gaps appear across two consecutive iterations after a GOAL_GAP upgrade was attempted, the loop is stuck. The orchestrator detects this and exits with the same CAPPED banner.
 
 ---
 
-## Specs and Approval
+## Spec Phase
 
-### What makes a good story spec?
+**What does the spec-eval-agent actually check?**
 
-A spec clear enough that you (or anyone) could pick it up and build the same thing. SpecGantry guides you through six sections:
+9 criteria from the spec north star, including:
+- Whether every async operation has loading, partial/streaming, completion, and failure states described
+- Whether output format and layout are specified (not left to developer interpretation)
+- Whether every criterion is testable by two developers independently implementing the same thing
+- Whether error states name a user-readable message and a recovery path
+- Whether the full user flow has no dead ends
 
-1. **What the user can do** — user-facing capabilities, including the full lifecycle of every entity the story manages: list, view, edit, delete. Any omitted operation must be explicitly declared out of scope.
-2. **Screens and states** — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions
-3. **Data and backend** — data owned, APIs, persistence. Every field named with its type and validation rule.
-4. **AI integration** — if AI is used: model ID, full literal prompt template, exact output schema, and a fallback path. The prompt must include an explicit instruction against adding commentary or filler. If no AI: N/A.
-5. **Enterprise checks** — auth, validation rules, error handling, data safety, rate limiting, and any new env vars this story needs
-6. **Acceptance criteria** — minimum 4, at least one must cover an error state
+**What does "machine-validated" mean on the approval prompt?**
 
-### Can I edit a spec after starting to build?
+It means the spec-eval-agent confirmed all 9 spec north star criteria before surfacing the spec to you. You're reviewing a spec that has already been challenged by a product-head-level evaluator — not a first draft. The `Loop:` line in the approval prompt tells you what was caught and fixed.
 
-Yes. Type the story ID from the dashboard — if the story is already built, SpecGantry shows an inline "What would you like to change?" prompt and routes through the investigation agent to understand the change before touching any state. If the story is mid-build (spec done, not yet built), return to `/spec-gantry`, select the story, and choose to edit the spec. Editing resets `spec_done` — you must re-confirm the spec before building can resume.
+**Can I edit the spec after approval?**
 
-### Can I edit a spec mid-build if something comes up?
+Yes. Type `[E]` instead of `[Y]` at the approval prompt to enter edit instructions. The spec-produce-agent applies the changes and the spec-eval-agent re-validates before re-surfacing for approval.
 
-The safe path for mid-build adjustments is a gap spec, not a direct edit. If your build reveals the spec needs changing, write a gap spec instead — the main spec stays stable. Gap specs are merged before deployment.
+**What is the 60-line limit on story specs?**
 
-### What is the test plan and do I have to use it?
+Story specs are navigation maps, not knowledge dumps. Everything reusable lives in architecture artifacts and is referenced via the `reads:` block. If a spec exceeds 60 lines, it's duplicating something that belongs in an architecture artifact. The limit is enforced before `spec_done:true` can be set.
 
-After building a story, SpecGantry offers to run a set of shell-command checks against your running app — one check per observable acceptance criterion. This is optional: `[S] Skip` marks the story built immediately. `[R] Run tests` runs the checks if your app is currently running and shows pass/fail per criterion. If the app is not running, SpecGantry skips the test run cleanly.
+---
 
-The same checks are used automatically by the investigation agent when you report a bug — it runs them first to pinpoint which criterion is currently failing before reading any source code.
+## Code Phase
 
-### What is the quality review and why does it add time to each build?
+**Why does the code-plan-agent run on iteration 1?**
 
-After the dev agent builds a story, a quality review runs automatically — no extra commands needed. It checks the built code across several dimensions: whether every acceptance criterion is satisfied, whether contract shapes are correct, whether required inputs are validated, whether the storage choice suits the use case, whether the UI follows the project's visual system, and whether scope is clean. Any issue produces a targeted fix and the build is updated. This loop runs until all dimensions pass or the maximum iterations are reached.
+Because the spec doesn't tell the developer *how* to build — only *what* to build. The plan agent on iteration 1 produces a build approach: which layer to build first, which async patterns to apply upfront, which experience requirements from the goal demand implementation choices the spec doesn't prescribe. Without this, the produce agent makes all those judgment calls itself.
 
-The extra time is intentional — it front-loads review work that would otherwise surface as post-delivery bugs and rework.
-
-### What does "quality: capped" mean in the build transition note?
-
-It means the quality review ran the maximum number of iterations (default: 3) and still had unresolved issues. The story is marked built anyway — the `quality` block in `specs/stories/STORY-NNN/build-report.yaml` documents exactly which dimensions didn't pass. You can address them as an enhancement, or adjust `quality_loop.max_iterations` in `project-state.yaml` if the threshold is wrong for your project.
-
-### What does "quality: partial" mean?
-
-It means the same dimensions were failing on two consecutive iterations — the build was updated but the same gaps remained. This usually means the spec itself needs clarification. Check the `quality` block in `build-report.yaml` — the `exit_reason` and `advisory_notes` will point to the root ambiguity.
-
-### Can I configure the quality review?
-
-Yes — add a `quality_loop:` block to `project-state.yaml`:
+**What does the quality block in build-report.yaml contain?**
 
 ```yaml
-quality_loop:
-  max_iterations: 3   # default: 3 — raise for complex stories, lower for prototyping
+quality:
+  overall: pass | partial | capped | build_failed | unknown
+  iterations: 2
+  exit_reason: "evaluator confirmed ACHIEVED"
+  active_rubric: [spec_adherence, contract_fidelity, element_visibility, ...]
+  dimensions:
+    spec_adherence: PASS
+    contract_fidelity: PASS
+    # one entry per active dimension
+  advisory_notes: []
+  northstar_gaps: []  # any blocking gaps that remain if capped
 ```
 
-If the block is absent, the default of 3 iterations applies.
+**What does `quality: partial` mean?**
 
-### Why does investigation ask me to start the app?
+The same dimensions were still failing after an `approach_change` repair — usually indicating a spec ambiguity that needs clarification rather than a code fix. The story is still marked built; the report documents what remains.
 
-The investigation agent needs the app to be running in order to confirm which acceptance criterion is currently failing. If it cannot reach the app at the expected port, it tells you the start command and cancels rather than producing findings that may be unreliable.
+**What does `quality: capped` mean?**
+
+The maximum iteration count was reached with unresolved dimensions. The story is built; you decide whether to accept, manually fix, or stop.
 
 ---
 
 ## State and Progress
 
-### What happens if I close Claude Code mid-session?
+**How does session resume work?**
 
-All progress is saved after every question. Closing Claude Code at any point loses nothing. The next `/spec-gantry` picks up at the next unanswered question.
+All progress is saved after every answer and every phase transition. On resume, the orchestrator reads `project-state.yaml → active_phase` and `active_story`, finds `.ppe-loop.yaml` for the active story (if any), and re-derives the current goal from canonical artifacts on disk. The loop re-enters at the plan step with `iteration_N` and `must_not_miss` restored from the checkpoint. No work is lost.
 
-### Can I have multiple stories in progress?
+**How does auto-continue work?**
 
-You can switch between stories from the dashboard. You might have one story in development while starting the spec on another.
+Type `[>]` to enable. The pipeline runs without pausing at spec approval prompts — a validated spec is auto-approved. Auto-continue stops at genuine decision points: concerns, arch/spec gaps, loop caps, all-stories-built. When it stops, you see a grouped log of everything that happened (spec events then build events, by story ID order).
 
-### How do I restart a phase?
+**Phase transitions (e.g. all specs done → start builds) do not pause auto-continue.** Only genuine decision points stop it.
 
-Use `/spec-gantry` and select the story to revisit a completed phase. Phase state can be reset through the project menu when appropriate.
+**Can I hold a story mid-spec?**
 
-### Can I move a story back to pending?
-
-Type the story ID from the dashboard to manage it. From the story's current phase you can reset it — this clears the spec or build state and returns the story to its previous step.
+Yes. Type `[X]` at the spec approval prompt. The story is marked `spec_done:false` and saved. Type the story ID to resume it — the held spec is shown for review.
 
 ---
 
 ## Costs and Tokens
 
-### How does cost tracking work?
+**How does cost tracking work?**
 
-SpecGantry tracks token usage automatically at the end of every agent run — no manual steps needed. Token counts are the real values from the API, not estimates. All cost data is stored in `specs/cost-log.ndjson` alongside your other project files and committed to git.
+The `SubagentStop` hook fires automatically when each of the 12 agents completes. Token counts are read directly from the agent transcript — exact API values. One entry is appended to `specs/cost-log.ndjson` per agent run.
 
-Run `/track-cost` for a navigable cost dashboard with four views: summary by phase, by story, by release, and by model. Switch between views by typing `1`, `2`, or `3` — the menu persists across views so you don't need to navigate back.
+**What are the three columns in /track-cost?**
 
-### Why are my costs higher than expected?
+**Plan** — the cost of plan agents determining what to produce. Low individual cost but runs at every iteration.  
+**Produce** — the cost of actually generating artifacts and code. Dominates total spend.  
+**Eval** — the cost of evaluation agents checking against north stars. Runs at every iteration including iteration 1.
 
-Run `/track-cost` and look at the Cache Write and Cache Read columns — these often account for the majority of cost when agents are working through large codebases or long conversations.
+Plan + Eval together typically represent 30–35% of total project cost — the price of quality assurance that would otherwise surface as post-delivery rework.
 
-Common reasons totals are higher than expected:
-- **Large codebase** — reverse-engineering or building against a large existing project means more context per turn
-- **Long conversations** — agents working through complex stories accumulate context over many turns
-- **Cache writes** — the first session turn incurs a slightly higher rate to build the context cache; subsequent turns are cheaper
-- **Iterative spec revisions** — multiple rounds of spec editing each consume tokens
+**What does `[T]` do in /track-cost?**
 
-### How do I refresh the pricing rates?
+Switches the display from dollar costs to token counts. Same layout, same rows. `[C]` switches back.
 
-Restart Claude Code. The MCP server fetches the latest rates from Anthropic's pricing page automatically on startup. If `/track-cost` shows `pricing_source: fallback` on any entry, a restart will resolve it.
+**What does the `Story total` row show?**
 
-### Can I export a cost report?
+It sums Spec + Code across all Plan/Produce/Eval columns for that story — the end-to-end cost of that story from spec writing to a passing code eval.
 
-Yes — `specs/cost-log.ndjson` is newline-delimited JSON committed to git. It contains one entry per agent session with full token counts and cost by type. Any tool that reads JSON can aggregate or visualize it.
+**Why are costs not being recorded?**
 
----
-
-## Troubleshooting
-
-### Costs not being recorded after agent runs {#costs-not-being-recorded}
-
-If `/track-cost` shows no data after completing a phase:
-
-1. **Update the plugin** — cost tracking improvements ship regularly:
-   ```bash
-   claude plugin marketplace update spec-gantry
-   ```
-2. **Check that Node.js is installed** — cost tracking requires Node.js to be available:
-   ```bash
-   node --version
-   ```
-3. **Reinstall if needed:**
-   ```bash
-   claude plugin uninstall spec-gantry@spec-gantry
-   claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-   claude plugin install spec-gantry
-   ```
-
-### `/spec-gantry` shows wrong state
-
-Re-run it. The dashboard re-reads all state from disk on every invocation — most inconsistencies self-correct. If the problem persists, check whether the `specs/` files are as expected and try again.
-
-### Story is stuck — can't advance
-
-Read the gate failure message in the dashboard. It will list exactly which conditions are unmet and what action to take to resolve each one. Address each item and run `/spec-gantry` again.
-
-### Spec won't pass guardrail check
-
-The spec contains a violation. Read the violation message — it names the specific guardrail and what needs to change. Either revise the spec to comply or update the architecture guardrail in `architecture.md`.
-
-### How do I control the MCP server log level? {#mcp-log-level}
-
-SpecGantry writes two separate log files to `.claude/logs/` in your project directory:
-
-| Log file | What it contains |
-|----------|-----------------|
-| `spec-gantry-costs.log` | Cost entries, token counts, pricing fetch results |
-| `spec-gantry-hooks.log` | Agent lifecycle events: start, stop, agent gating |
-
-Both log at `error` level by default. Set the `SPEC_GANTRY_LOG_LEVEL` environment variable to change verbosity:
-
-| Value | What you see |
-|-------|-------------|
-| `error` | Failures only **(default)** |
-| `info` | Key lifecycle events |
-| `debug` | Full detail: resolved paths, token counts, every tool call |
-
-Add it to your shell profile so it persists across sessions:
+Cost tracking requires Node.js. Check that `node` is available in your shell:
 
 ```bash
-# ~/.zshrc or ~/.bashrc
-export SPEC_GANTRY_LOG_LEVEL=debug
+node --version
 ```
 
-Then restart your terminal and reopen Claude Code.
-
-### Plugin stopped working after a Claude Code update
-
-Reinstall:
+If Node.js is installed but costs still aren't recording, enable debug logging:
 
 ```bash
-claude plugin uninstall spec-gantry@spec-gantry
-claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry
+SPEC_GANTRY_LOG_LEVEL=debug /spec-gantry
 ```
+
+Check `~/.claude/logs/spec-gantry-hooks.log` for errors.
 
 ---
 
 ## Engagement Hooks
 
-### What are the engagement hooks?
+**What are engagement hooks?**
 
-When SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs three files into the project's `.claude/` directory:
+When SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs `SessionStart` and `PostCompact` hooks into `.claude/settings.json`. On every session start and after every `/compact`, the hooks inject `CONTRACT.md` — a binding directive telling Claude to always route development through `/spec-gantry` — as system context before the first message. This runs in Node.js and cannot be skipped.
 
-- `.claude/settings.json` — registers `SessionStart` and `PostCompact` hooks with Claude Code
-- `.claude/hooks/spec-gantry-contract.sh` — reads `CONTRACT.md` and emits it as `additionalContext` to Claude Code
-- `.claude/CONTRACT.md` — a binding directive that tells Claude to always route development work through `/spec-gantry`
+**What is CONTRACT.md?**
 
-The `SessionStart` hook fires when you open Claude Code in the project, injecting the contract before any user message. The `PostCompact` hook re-fires after every `/compact` — which is the main scenario where Claude loses track of the pipeline. Together they ensure Claude never drifts away from `/spec-gantry` mid-session. This runs entirely in Node.js — not by Claude, so it cannot be skipped.
+A short file (gitignored) containing instructions for Claude: route all development through `/spec-gantry`, never make code changes directly. It is re-generated on every project setup and re-injected after every `/compact`.
 
-See [How It Works → Engagement Hooks](/docs/how-it-works#engagement-hooks) for a full walkthrough.
+**Are the hook files safe to commit?**
 
-### I updated SpecGantry but my existing project doesn't have the hooks yet
+`settings.json` and the hook script are safe to commit. `CONTRACT.md` is gitignored by default — it's regenerated on setup and adds noise with no benefit if committed.
 
-Open Claude Code in the project directory. The `SessionStart` hook in `hooks.js` checks for `specs/project-state.yaml` on every session start — if the engagement hooks are missing, it installs them automatically before Claude sees the first message. No manual action needed.
+**When are hooks installed?**
 
-### How do I verify the hooks are installed?
-
-Check that all three files exist:
-
-```bash
-ls .claude/settings.json .claude/CONTRACT.md .claude/hooks/spec-gantry-contract.sh
-```
-
-And verify `settings.json` contains the hook entries:
-
-```bash
-cat .claude/settings.json
-```
-
-You should see `SessionStart` and `PostCompact` entries pointing to `bash .claude/hooks/spec-gantry-contract.sh`.
-
-### Should I commit `.claude/CONTRACT.md` to git?
-
-No — it is gitignored by default. SpecGantry regenerates it on every project setup, so committing it would add noise without benefit. The hook script and `settings.json` are safe to commit if you want them version-controlled.
+Automatically on the first session start after a project is detected. If you update SpecGantry, hooks are re-checked idempotently — already-installed hooks are not duplicated.
 
 ---
 
 ## Advanced
 
-### Can I version my specs?
+**Can I use SpecGantry with other AI tools?**
 
-Yes — `specs/` is plain text committed to git. Use standard git tools to track spec evolution, compare versions, and understand how decisions changed over time.
+Yes. SpecGantry manages the pipeline and specs. The code produce agent writes standard source code — no SpecGantry-specific runtime dependencies. You can run, test, and deploy the output with any tool.
 
-### Can I extend SpecGantry with custom agents or guardrails?
+**Can I adjust the story list after ideation?**
 
-Yes. See [Reference → Extension Points](/docs/architecture#extension-points) for details on adding custom guardrails, agents, and skills.
+Yes. Use `[N] New work` → classify as `new_story` or `project_change`. The ideation agent runs in amendment mode — it updates the story list and architecture artifacts without re-running full ideation. Existing story flags are preserved.
 
-### Can I use SpecGantry with a different AI assistant?
+**What is v6 vs v5?**
 
-SpecGantry is designed specifically for Claude Code. It uses Claude Code's skill and agent system and won't work with other AI tools.
+v6 introduces the universal PPE loop — plan, produce, and evaluate at every phase (ideation, spec, and code). v5 had a quality loop only at the code phase. The key improvement: thin specs that would have produced bad code in v5 are now caught at spec time before any code is written. The GOAL_GAP verdict routes spec updates back from code evaluation. All 12 agents use Sonnet 5 for planning and evaluation (upgraded from Haiku 4.5 in v5).
 
----
+**How do I migrate a v5 project to v6?**
 
-## Getting Help
-
-- **Bug reports:** [GitHub Issues](https://github.com/specgantry/specgantry.github.io/issues)
-- **Feature requests:** [GitHub Discussions](https://github.com/specgantry/specgantry.github.io/discussions)
-- **Contributing:** See [CONTRIBUTING.md](https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md)
+Open Claude Code in your v5 project directory and run `/spec-gantry`. SpecGantry detects the existing `specs/` structure and resumes normally. The v6 PPE loop applies to new stories and new work — existing built stories are not re-evaluated unless you initiate new work on them.

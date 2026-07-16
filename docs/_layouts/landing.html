@@ -7,10 +7,10 @@
   <title>SpecGantry — AI-Assisted SDLC Pipeline for Claude Code</title>
   <meta name="google-site-verification" content="0rLKkEIQvHRi4lPU6COp8BOn_GnyYbFJIV-d0n3NhhQ" />
   <meta name="description"
-    content="SpecGantry v5 enforces a reference-driven SDLC for Claude Code — shared architecture artifacts, slim story specs, targeted model reads, session-level engagement hooks, and full token cost visibility from ideation to deployment.">
+    content="SpecGantry v6 enforces a universal Plan-Produce-Evaluate loop at every phase — ideation, spec, and code — so quality gaps are caught before they reach the next phase. North stars define good at each level. 12 agents, 3 phases, one pipeline.">
   <meta property="og:title" content="SpecGantry — AI-Assisted SDLC Pipeline for Claude Code">
   <meta property="og:description"
-    content="Reference-driven SDLC for Claude Code. Shared architecture artifacts. Slim story specs. Targeted model reads. Enforced phase gates from ideation to deployment.">
+    content="Universal PPE loop at every phase. Quality validated at ideation, spec, and code — before anything ships. 12 agents, 3 north stars, one pipeline.">
   <meta property="og:type" content="website">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -136,17 +136,17 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v5.3.8 · Production Ready
+          Claude Code Plugin · v6.0.0 · Production Ready
         </div>
         <h1 class="hero-headline">
-          Architecture First.<br>
-          <span class="gradient-text">Code That Knows Why It Exists.</span>
+          Quality at Every Phase.<br>
+          <span class="gradient-text">Not Just When Code Ships.</span>
         </h1>
         <p class="hero-sub">
-          SpecGantry enforces a reference-driven SDLC inside Claude Code — shared architecture artifacts,
-          slim story specs, enforced phase gates from ideation to deployment, and session-level engagement
-          hooks that keep Claude on-process every time. Quick-start mode gets simple apps to a story backlog
-          in three questions. One command. Every workflow covered.
+          SpecGantry v6 runs a universal Plan-Produce-Evaluate loop at ideation, spec, and code.
+          Each phase has a north star — a canonical definition of good that the evaluator holds
+          every output against. Thin specs, wrong layouts, missing async states: caught before
+          a line of code is written. 12 agents, 3 self-correcting loops, one pipeline.
         </p>
         <div class="hero-actions">
           <a href="{{ '/docs/getting-started' | relative_url }}" class="btn-primary">
@@ -168,25 +168,26 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v5.3.8</div>
-            <div class="terminal-line output">✓ 2 skills loaded · 8 agents registered</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v6.0.0</div>
+            <div class="terminal-line output">✓ 2 skills loaded · 12 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v5</span>  |  Acme Platform  |  release 1.0.0</div>
-            <div class="terminal-line output">  Spec [███░░] 3/4  ·  Build [██░░░] 2/4  ·  Deploy [░░░░░] not deployed</div>
+            <div class="terminal-line output">  <span class="hl-blue">SpecGantry v6</span>  |  HireFlow  |  release 1.0.0</div>
+            <div class="terminal-line output">  Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  ID      Story                         Spec  Build</div>
+            <div class="terminal-line output">  ID      Story                         Spec       Build</div>
             <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  [001]  User registers and logs in      ✅    ✅</div>
-            <div class="terminal-line output">  [002]  User manages their profile      ✅    🔄</div>
-            <div class="terminal-line output">  [003]  User submits application        🔄    ○</div>
-            <div class="terminal-line output">  [004]  Admin reviews submissions       ⏳    ○</div>
+            <div class="terminal-line output">  [001]  User authentication             ✅         ✅</div>
+            <div class="terminal-line output">  [002]  Company posts a job             ✅         🔄 eval·2</div>
+            <div class="terminal-line output">  [003]  Admin reviews applications      🔄 eval    ⏳</div>
+            <div class="terminal-line output">  [004]  Candidate browses and applies   ⏳         ○</div>
             <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  Release 1.0.0                               ○ not deployed</div>
+            <div class="terminal-line output">  Release 1.0.0                                    ○ not deployed</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  Type a story ID to manage it     [$] Cost</div>
-            <div class="terminal-line output">  [1] Spec next – STORY-003         [?] Help</div>
-            <div class="terminal-line output">  [N] New work                      [X] Exit</div>
+            <div class="terminal-line output">  [1] Build next — STORY-002        [?] Help</div>
+            <div class="terminal-line output">  [>] Run to next pause             [X] Exit</div>
+            <div class="terminal-line output">  [N] New work</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  Enter story ID or action:  ></div>
             <div class="terminal-line cursor-line"><span class="cursor">▌</span></div>
@@ -236,55 +237,55 @@
     <section class="section-pipeline">
       <div class="section-inner">
         <div class="section-label center">The Solution</div>
-        <h2 class="center">Architecture once. Stories that reference it. Code that reads only what it needs.</h2>
-        <p class="section-sub center">v5 separates architectural knowledge from story navigation. Shared artifacts are written once during ideation and referenced by every downstream agent — no duplication, no drift, no full-context loads. Session-level engagement hooks keep Claude on-process across context resets.</p>
+        <h2 class="center">One loop. Three phases. Quality validated before it moves on.</h2>
+        <p class="section-sub center">v6 introduces a universal Plan-Produce-Evaluate loop at every phase. Each phase has a north star — a canonical definition of what "done well" means that the evaluator holds every output against, independently of what any plan says. Gaps caught at ideation cost nothing. Gaps caught at spec save a full build cycle. Gaps caught at code are fixed before they ship.</p>
 
         <div class="pipeline-diagram">
           <div class="node-graph">
 
-            <!-- Node 1: Ideation + Architecture -->
+            <!-- Node 1: Ideation PPE Loop -->
             <div class="ng-node phase-node phase-complete-color">
               <div class="ng-num">01</div>
-              <div class="ng-name">Ideation + Architecture</div>
-              <div class="ng-output">architecture/ · data-model · actors · contracts · patterns · ux · intent.md per story</div>
+              <div class="ng-name">Ideation PPE Loop</div>
+              <div class="ng-output">plan questions → ask → evaluate completeness · north star: 8 criteria · architecture/ artifacts · intent.md per story</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: ideation_complete + arch_seeded flags in project-state.yaml">
+              <div class="ng-gate" title="Gate: ideation_complete + arch_seeded · NS1 all 8 criteria met">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 2: Story Spec (per story) -->
+            <!-- Node 2: Spec PPE Loop (per story) -->
             <div class="ng-node phase-node phase-spec-color">
               <div class="ng-num">02</div>
-              <div class="ng-name">Story Spec</div>
-              <div class="ng-output">story-spec.md (≤60 lines) · reads: block · intent.md · spec_done — then immediately into build</div>
+              <div class="ng-name">Spec PPE Loop — per story</div>
+              <div class="ng-output">plan criteria → write spec → evaluate sufficiency · north star: 9 criteria · story-spec.md (machine-validated) · user approves</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: spec_done per story — spec and build interleave; each story is built before the next is specced">
+              <div class="ng-gate" title="Gate: spec_done per story · NS2 all 9 criteria met">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
             </div>
 
-            <!-- Node 3: Build + Quality Loop (per story) -->
+            <!-- Node 3: Code PPE Loop (per story) -->
             <div class="ng-node phase-node phase-build-color">
               <div class="ng-num">03</div>
-              <div class="ng-name">Build + Quality Loop</div>
-              <div class="ng-output">dev builds · evaluate scores · plan targets · dev repairs · build-report.yaml · gap.md (if any)</div>
+              <div class="ng-name">Code PPE Loop — per story</div>
+              <div class="ng-output">plan build approach → build → evaluate code + experience · north star: 7 criteria · GOAL_GAP updates spec before rebuild · build-report.yaml</div>
             </div>
 
             <!-- Connector + Gate -->
             <div class="ng-connector">
               <div class="ng-line"></div>
-              <div class="ng-gate" title="Gate: all stories built:true">
+              <div class="ng-gate" title="Gate: all stories built:true · NS3 all 7 criteria met">
                 <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
               </div>
               <div class="ng-line"></div>
@@ -297,7 +298,7 @@
               <div class="ng-output">deploy.sh · deploy-artifact.md · gap specs merged before release</div>
             </div>
 
-            <!-- Connector (no gate — post-deploy is free) -->
+            <!-- Connector (no gate) -->
             <div class="ng-connector">
               <div class="ng-line"></div>
               <div class="ng-line"></div>
@@ -307,7 +308,7 @@
             <div class="ng-node phase-node" style="border-color:var(--slate-300);background:rgba(100,116,139,.04)">
               <div class="ng-num" style="color:var(--slate-400)">05</div>
               <div class="ng-name" style="color:var(--slate-600)">[N] New Work — post-release</div>
-              <div class="ng-output" style="color:var(--slate-400)">Investigate → confirm → bug fix or enhancement gap → deploy patch/minor</div>
+              <div class="ng-output" style="color:var(--slate-400)">Investigate → confirm → full code PPE loop → deploy patch/minor</div>
             </div>
 
           </div>
@@ -315,12 +316,12 @@
 
         <!-- Gap feedback loop callout -->
         <div class="pipeline-note">
-          <strong>Self-healing gap flows:</strong> when story-spec finds a missing arch section (P0) or development finds a wrong contract (P1), the pipeline signals a gap, fills it automatically via ideation, and resumes — no user intervention required. Arch gaps stay in the shared layer. Stories stay slim.
+          <strong>Three north stars:</strong> ideation ("can every artifact be written without invented assumptions?") · spec ("if built exactly, does the user get everything the intent promises?") · code ("does the software deliver the full experience the intent describes?"). Each is evaluated independently of what any plan says.
         </div>
 
         <!-- Architecture layer callout -->
         <div class="pipeline-note" style="margin-top:0.75rem;">
-          <strong>Architecture layer is the key v5 change:</strong> <code>data-model.md</code> · <code>actors.md</code> · <code>contracts.md</code> · <code>patterns.md</code> · <code>ux.md</code> · <code>deployment.md</code> — written once during ideation, referenced by every story spec via a <code>reads:</code> block. Development agents load only the sections they need (~130 lines total), not the full spec context.
+          <strong>Specs are the memory:</strong> all knowledge lives in <code>specs/</code>. Agents read from canonical artifacts on disk — <code>intent.md</code>, <code>story-spec.md</code>, <code>architecture/</code> artifacts. Goal₀ for each phase is derived directly from those files. Nothing is duplicated in transition parameters.
         </div>
       </div>
     </section>
@@ -448,16 +449,16 @@
             <div class="stat-label">Skills — /spec-gantry for every workflow, /track-cost for spend visibility</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">8</div>
-            <div class="stat-label">Agents — ideation · story-spec · evaluate · plan · development · deployment · investigation · reverse-engineer</div>
+            <div class="stat-num">12</div>
+            <div class="stat-label">Agents — 3 per phase (plan · produce · eval) + investigate · deployment · reverse-engineer</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">6</div>
-            <div class="stat-label">Architecture artifacts — written once, referenced by every story and every agent</div>
+            <div class="stat-num">3</div>
+            <div class="stat-label">North stars — one per phase, canonical quality bars no plan can redefine</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">~130</div>
-            <div class="stat-label">Lines of context loaded per build — not full specs, just what each story needs</div>
+            <div class="stat-label">Lines of context loaded per build — targeted reads via the reads: block</div>
           </div>
         </div>
       </div>
@@ -466,8 +467,8 @@
     <!-- ─── SKILLS + AGENTS ──────────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">2 Skills · 8 Agents</div>
-        <h2 class="center">One command. Every workflow covered.</h2>
+        <div class="section-label center">2 Skills · 12 Agents</div>
+        <h2 class="center">One command. Three self-correcting loops. Every workflow covered.</h2>
 
         <!-- Skills -->
         <div class="skills-grid">
@@ -489,47 +490,71 @@
         </div>
 
         <!-- Agents table -->
-        <h3 class="agents-heading">The 8 Agents</h3>
+        <h3 class="agents-heading">The 12 Agents — 3 per PPE phase</h3>
         <div class="agents-table">
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> Ideation</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Two-beat conversational session. Auto-detects simple projects and routes them through quick-start mode (3 questions, smart defaults). For complex projects, matures the idea through 10 topics — vision, users, constraints, tech stack, guardrails, configuration, UX model, deployment target, and story list. Seeds all 6 architecture artifacts and intent.md per story. Partner, not decision-maker.</div>
+          <!-- Ideation trio -->
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-lightbulb-fill"></i> ideation-plan</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Reads the project vision and prior evaluation results. Determines which understanding gaps remain against the ideation north star (8 criteria). Outputs a plan of exactly which topics to cover — never re-asks what's already confirmed.</div>
           </div>
           <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> Story Spec</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Finalizes intent.md, validates arch references, writes a slim story-spec.md (≤60 lines) with a reads: block. Signals arch gaps (P0) when a required section is missing. Self-reviews before setting spec_done:true.</div>
+            <div class="agent-name"><i class="bi bi-lightbulb"></i> ideation-produce</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Executes the ideation plan — asks batched topic questions, collects answers, writes all 6 architecture artifacts (data-model, actors, contracts, patterns, ux, deployment) and intent.md per story. Flushes to disk after every answer. Runs coherence pass before seeding artifacts.</div>
+          </div>
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-shield-check"></i> ideation-eval</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Evaluates the written architecture artifacts against the ideation north star. Checks all 8 criteria: actors fully defined, data entities with ownership, UX conventions decided, deployment target set, tech stack with no open choices, story list complete. Returns ACHIEVED, EXECUTION_GAP, or GOAL_GAP.</div>
+          </div>
+          <!-- Spec trio -->
+          <div class="agent-row">
+            <div class="agent-name"><i class="bi bi-file-earmark-text-fill"></i> spec-plan</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Thinks like a product head. Reads intent.md, architecture, and the spec north star (9 criteria). Derives what the spec must capture — async states, output format, error handling, layout decisions, edge cases from intent. Plans only what's missing; doesn't re-plan what's already confirmed.</div>
+          </div>
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-file-earmark-text"></i> spec-produce</div>
+            <div class="agent-model">Haiku 4.5</div>
+            <div class="agent-desc">Writes story-spec.md following the plan exactly — criteria, interfaces, permissions, state, data, all as references to shared arch artifacts. Max 60 lines. Signals arch gaps (P0) when a required section is missing. Does not self-approve — that's the eval agent's job.</div>
           </div>
           <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-code-square"></i> Development</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Builds one story end-to-end from intent.md + story-spec.md. Reads only the targeted arch sections declared in reads: (~130 lines total). Implements a /health endpoint as the first backend route. Writes @story, @intent, @entry, @contract anchors in every file. Writes a test_plan to build-report.yaml — one shell command per observable criterion. In repair mode, applies targeted fix steps from the Plan agent without rebuilding from scratch.</div>
+            <div class="agent-name"><i class="bi bi-patch-check-fill"></i> spec-eval</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Evaluates story-spec.md against the spec north star. Checks all 9 criteria including async feedback states, output format specification, unambiguous criteria, and flow completeness. Catches gaps before any code is written. Emits the approval summary the user signs off on — showing what the loop caught.</div>
+          </div>
+          <!-- Code trio -->
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-cpu-fill"></i> code-plan</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">On iteration 1: produces a build approach — layer order, async patterns to apply upfront, implementation choices the experience contract requires. On iteration 2+: analyses the failing evaluation, classifies failures as code-level, design-level, or goal-level, and produces targeted repair steps or flags a spec re-entry.</div>
           </div>
           <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-clipboard2-check-fill"></i> Evaluate</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Reads the built code after every dev pass and scores it across quality dimensions — spec adherence, contract fidelity, input validation, UI completeness, scope hygiene, data integrity, and more. Dynamically selects which dimensions apply based on story signals (has UI, uses AI, has data mutations). Returns a structured verdict that drives the repair loop.</div>
+            <div class="agent-name"><i class="bi bi-code-square"></i> code-produce</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Builds one story end-to-end — data layer, backend, AI integration, frontend — following the plan from code-plan. On iteration 2+ applies targeted repairs, not full rebuilds. Writes @story, @intent, @entry, @contract anchors. Writes a test_plan to build-report.yaml.</div>
+          </div>
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-clipboard2-check-fill"></i> code-eval</div>
+            <div class="agent-model">Sonnet 5</div>
+            <div class="agent-desc">Two simultaneous checks: (1) quality dimension rubric — spec adherence, contract fidelity, UI completeness, state consistency, and more; (2) code north star — async feedback throughout, output format fitness, error surfaces, flow completeness. Returns ACHIEVED, EXECUTION_GAP, or GOAL_GAP (triggers spec re-entry).</div>
+          </div>
+          <!-- Supporting agents -->
+          <div class="agent-row">
+            <div class="agent-name"><i class="bi bi-search"></i> investigate</div>
+            <div class="agent-model">Haiku 4.5</div>
+            <div class="agent-desc">Read-only. For bug fixes and enhancements: checks app is running (health gate), runs the test plan to pinpoint the failing criterion, then reads codebase using @story/@entry/@contract anchors. Returns structured findings confirmed with you before any code is touched.</div>
+          </div>
+          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
+            <div class="agent-name"><i class="bi bi-rocket-takeoff-fill"></i> deployment</div>
+            <div class="agent-model">Sonnet 4.6</div>
+            <div class="agent-desc">Generates per-service Dockerfiles, docker-compose.yml, .env.example, and a versioned deploy.sh with --dry-run support. Supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. Merges gap specs before release.</div>
           </div>
           <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-wrench-adjustable-circle-fill"></i> Plan</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Receives the evaluation verdict and produces a targeted repair plan — up to 3 fix steps, each naming the exact file, location, and change needed. Decides whether the repair is a targeted edit or a full rewrite of affected files. The dev agent uses this plan in repair mode without rebuilding from scratch.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-rocket-takeoff-fill"></i> Deployment</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Generates a versioned deploy.sh covering build, version stamping, migrations, and infrastructure deployment for all stories. Supports --dry-run. Merges gap specs before release.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-search"></i> Investigation</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Read-only. Given a bug report or enhancement request, first checks the app is running (health gate), then runs the test plan to pinpoint the failing criterion before touching source code. Uses @story, @intent, @entry, @contract, @gap anchors for precise navigation. Returns a structured findings report confirmed with you before any changes.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> Reverse Engineer</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Analyzes an existing codebase and synthesizes the full SpecGantry project structure — architecture layer (all 6 artifacts), story list, intent.md per story, stub story-specs with reads: blocks, build-report stubs, and anchor tags in source files.</div>
+            <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> reverse-engineer</div>
+            <div class="agent-model">Haiku 4.5</div>
+            <div class="agent-desc">Analyses an existing codebase and synthesises the full SpecGantry project structure — all 6 architecture artifacts, story list with status (built/partial/missing), intent.md per story, stub story-specs with reads: blocks, build-report stubs, and @story/@entry/@contract anchor tags in source files.</div>
           </div>
         </div>
 
@@ -587,7 +612,7 @@
         <div class="install-box">
           <div class="install-text">
             <h2>Ready to add structure to your AI workflow?</h2>
-            <p>Install SpecGantry v5 in 90 seconds. Works with any Claude Code project — new or existing.</p>
+            <p>Install SpecGantry v6 in 90 seconds. Works with any Claude Code project — new or existing.</p>
           </div>
           <div class="install-code-block">
             <div class="code-header">
@@ -599,7 +624,7 @@
 claude plugin install spec-gantry</code></pre>
           </div>
           <div class="install-update">
-            <span class="update-label">Already installed? Update to v5:</span>
+            <span class="update-label">Already installed? Update to v6:</span>
             <code
               class="update-cmd">claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry</code>
             <a href="{{ '/docs/faq' | relative_url }}#how-do-i-update-specgantry" class="update-link">More update

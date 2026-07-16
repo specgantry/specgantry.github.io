@@ -1,285 +1,269 @@
 ---
 layout: docs
 title: Reference
-description: SpecGantry's design principles, file structure, security model, and extension points.
+description: SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.
 prev_page: "Skills Guide"
 prev_page_url: "/docs/skills"
 next_page: "FAQ"
 next_page_url: "/docs/faq"
 ---
 
-# Reference
+# SpecGantry v6 Reference
 
-Design principles, project file structure, security model, and how to extend SpecGantry.
+File structure, state flags, design principles, and extension points.
 
 ---
 
 ## Design Principles
 
-SpecGantry is built on three principles.
+**1. Specs and artifacts are the memory.**  
+All knowledge lives in `specs/`. Agents read from canonical artifacts on disk. Nothing is duplicated in transition files, passed as parameters, or held in temporary state that could be derived from the canonical sources. The `reads:` block in every story spec is the agent's fetch list — nothing else is loaded.
 
-### Structure Before Code
+**2. Quality at the earliest possible moment.**  
+A thin spec produces bad code regardless of how many code repair iterations you run. The PPE loop catches gaps at ideation (before architecture is decided), at spec (before code is written), and at code (before shipping). Each phase's north star is independent of what any plan says — the evaluator challenges both the output and the goal.
 
-Specs, architecture, and planning happen **before** development begins — enforced, not advisory. SpecGantry verifies that each phase's output exists and is complete before the next phase can start. The intent is to make skipping a phase impossible, not just inconvenient.
-
-### Session Safety by Default
-
-Every phase saves progress after each question or section. If a session is interrupted for any reason — network drop, context reset, end of day — the next invocation resumes at the next unanswered item. Zero progress loss is a design requirement.
-
-### Solo-First Simplicity
-
-SpecGantry is designed for a single developer who wears every hat. The pipeline enforces the discipline of spec-before-code without requiring role coordination, approval workflows, or team state management.
+**3. Session safety over throughput.**  
+All progress is written to disk after every answer and every phase transition. A crash mid-loop restores from `.ppe-loop.yaml` — iteration count, prior verdict, and accumulated gaps — and re-enters at the plan step with the goal re-derived from canonical artifacts. No work is lost.
 
 ---
 
-## Project File Structure
-
-After SpecGantry runs, your project contains a `specs/` directory committed to git, and a `.claude/` directory for Claude Code session management:
+## File Structure
 
 ```
 project-root/
-├── .claude/
-│   ├── settings.json               # SessionStart + PostCompact hooks wired to spec-gantry-contract.sh
-│   ├── CONTRACT.md                 # Engagement contract injected into every session (gitignored — regenerated on setup)
-│   └── hooks/
-│       └── spec-gantry-contract.sh # Reads CONTRACT.md and emits it as additionalContext to Claude Code
-├── specs/
-│   ├── project-state.yaml          # Project metadata, story backlog, pipeline state flags
-│   ├── cost-log.ndjson             # Token usage and cost per agent session
-│   ├── .env.example                # All project env vars — safe to commit, placeholders for secrets
-│   ├── deploy.sh                   # Generated deployment script (whole system)
-│   ├── deploy-artifact.md          # Deployment validation summary
-│   ├── architecture/
-│   │   ├── architecture.md         # Single source of truth — vision, constraints, tech stack, guardrails, Artifact Index
-│   │   ├── data-model.md           # All entities, fields, types, relationships, state machines
-│   │   ├── actors.md               # All roles, permissions, ownership rules
-│   │   ├── contracts.md            # Shared API shapes, error envelopes
-│   │   ├── patterns.md             # Dominant backend interaction patterns
-│   │   ├── ux.md                   # Navigation model, visual system, component conventions
-│   │   └── deployment.md           # Cloud platform, registry, services, secrets, CI/CD config
-│   └── stories/
-│       ├── STORY-001/
-│       │   ├── intent.md           # 2-paragraph story purpose and outcome
-│       │   ├── story-spec.md       # Story spec — criteria, interfaces, permissions, state, data
-│       │   ├── build-report.yaml   # Build notes, test plan, quality outcome
-│       │   └── gap.md              # Gap file (accumulates discoveries; deleted after deploy merge)
-│       └── STORY-002/
-│           └── ...
+  specs/
+    project-state.yaml            pipeline state, story flags, PPE loop config
+    concerns-log.ndjson           — removed in v6
+    cost-log.ndjson               token usage per agent run (committed to git)
+    architecture/
+      architecture.md             Vision, Problem & Users, Constraints, Risks,
+                                  Tech Stack, Guardrails, Configuration, UX Model,
+                                  + ## Artifact Index (YAML block, last section)
+      data-model.md               ## entity:[name] sections
+      actors.md                   ## actor:[name] sections
+      contracts.md                ## contract:[name] sections (prose + yaml block)
+      patterns.md                 ## pattern:[name] sections
+      ux.md                       ## ux:[name] sections
+      deployment.md               ## deployment:[name] sections
+    stories/
+      STORY-NNN/
+        intent.md                 2 paragraphs: functional purpose + outcome
+        story-spec.md             ≤60 lines: criteria, interfaces, permissions,
+                                  state, data — all as references to arch artifacts
+        build-report.yaml         overall_status, quality block, test_plan, runtime
+        gap.md                    divergences (optional, deleted at deploy)
+    scratchpad/                   gitignored — agent intermediate work only
+  .claude/
+    settings.json                 SessionStart + PostCompact hooks
+    hooks/spec-gantry-contract.sh contract injection script
+    CONTRACT.md                   binding directive (gitignored)
+    CLAUDE.md                     spec-gantry-notice prepended at project init
 ```
 
-**Commit `specs/` to git.** This gives you full history of project decisions, story progress, and cost data — with meaningful diffs across releases.
+---
 
-**Do not commit `.claude/CONTRACT.md`.** It is gitignored by default — SpecGantry regenerates it on setup. The hook scripts and `settings.json` in `.claude/` are safe to commit if you want them version-controlled.
+## State Flags — project-state.yaml
+
+```yaml
+project:
+  name: "My App"
+  created: 2026-07-16
+  release: "1.0.0"
+  next_release_type: null          # patch | minor | major — set by classify_and_route
+  active_story: null               # STORY-NNN while a loop is running
+  active_phase: null               # see valid values below
+
+ideation_complete: false
+arch_seeded: false
+pending_arch_gap: null             # set by spec/code produce agents on missing arch section
+pending_spec_gap: null             # set by code produce agent on missing spec reference
+
+auto_continue: false               # set to true by [>] — cleared on decision points
+
+ppe_loop:
+  max_iterations:
+    ideation: 3
+    spec: 2
+    code: 3
+
+stories:
+  STORY-001:
+    title: "Manage recipes"
+    depends_on: []
+    intent_done: false
+    spec_done: false
+    built: false
+    deployed: false
+```
+
+**Valid `active_phase` values:**
+
+`ideation_plan` · `ideation_produce` · `ideation_eval` · `spec_plan` · `spec_produce` · `spec_eval` · `code_plan` · `code_produce` · `code_eval` · `deployment` · `investigation` · `amendment` · `null`
 
 ---
 
-## The specs/ Files
+## Write Ownership
 
-### `specs/project-state.yaml`
-
-The project registry. Contains the project name, `ideation_complete` and `arch_seeded` flags, `active_story`, `active_phase`, `auto_continue`, `pending_arch_gap`, `pending_spec_gap`, `quality_loop` config, and the full story backlog with each story's `title`, `depends_on`, `spec_done`, `built`, and `deployed` flags.
-
-### `specs/architecture/architecture.md`
-
-The single source of truth for the system. Written during ideation. Contains vision, constraints, tech stack, system boundaries, guardrails, a `## Configuration` table listing every env var the project uses, and a `## Artifact Index` YAML block that maps anchor names to file paths and section anchors. Amendment sections are appended by ideation (in amendment mode) when new stories or architectural changes are made — prior content is never overwritten. Story specs reference this document rather than duplicating it.
-
-### `specs/stories/STORY-NNN/story-spec.md`
-
-A six-section specification for a single story: what the user can do, screens and states, data and backend, AI integration, enterprise checks, and acceptance criteria. The spec also contains a Change History table recording every release in which the story changed. A guardrail compliance section must be clean before build begins.
-
-### `specs/stories/STORY-NNN/build-report.yaml`
-
-Written by the development agent on completion. Contains: runtime profile (language, build command, exposed ports), files modified, warnings, a `test_plan` (one shell command per observable criterion), and `overall_status: pass`. After the quality loop exits, the orchestrator appends a `quality` block with: `overall` (`pass | partial | capped | build_failed | unknown`), `iterations`, `exit_reason`, `active_rubric`, and per-dimension results.
-
-### `specs/stories/STORY-NNN/gap.md`
-
-One gap file per story. Written during development when the spec is discovered to be incomplete or incorrect, or when an enhancement is applied post-release. Records what changed, files affected, and the recommended spec update. Multiple discoveries accumulate as bullets in `## Changes` — no new files are created. Deleted automatically after it is merged at deploy time.
-
-### `specs/deploy.sh`
-
-A single deployment script covering the entire system, generated by the deployment agent. Organised in dependency order. The previous version is backed up to `specs/deploy.sh.old` before each new deployment.
-
-### `specs/deploy-artifact.md`
-
-A deployment validation summary for the most recent release: all stories included, deployment order, checks performed, and the release version.
-
-### `specs/cost-log.ndjson`
-
-An append-only record of token usage and cost for every agent session. Each entry includes the phase, story ID where applicable, model, token counts by type, and cost by type. Run `/track-cost` to see this data rendered as a readable breakdown.
+| Field / file | Writer |
+|---|---|
+| `built:true` | Orchestrator only (after code PPE loop exits ACHIEVED) |
+| `spec_done:true` | Orchestrator only (after spec-eval-agent returns ACHIEVED and user approves) |
+| `deployed:true` | Deployment subagent |
+| `project.release` | Orchestrator only (after deployment subagent returns) |
+| `auto_continue` | Orchestrator only |
+| `intent_done:true` | ideation-produce-agent, spec-produce-agent, reverse-engineer-subagent |
+| `pending_spec_gap` | code-produce-agent · Orchestrator (cross-story drift) |
+| `pending_arch_gap` | spec-produce-agent or code-produce-agent |
+| `.ppe-loop.yaml` | Orchestrator only (written at each eval step, deleted on loop exit) |
 
 ---
 
-## Security Model
+## Session Scratchpad Files (gitignored)
 
-### Secrets Handling
-
-The story spec requires that every secret, API key, and credential used by the story is declared by its environment variable name. The development agent enforces this: no literal credential values in source files. If a violation is detected during build, it is reported immediately and must be resolved before proceeding.
-
-All runtime configuration — API keys, model names, ports, connection strings, timeouts — must come from environment variables. The build agent maintains `.env.example` at the project root on every build run, keeping it current with all variables across `architecture.md ## Configuration` and each story's enterprise checks section. `.env.example` values are safe to commit — placeholders for secrets, realistic defaults for config. The actual `.env` file is never written by SpecGantry.
-
-### Source Annotation Schema
-
-The build agent writes machine-readable anchor comments into every source file it creates or significantly modifies. These tags let the investigation agent navigate the codebase with targeted greps rather than full file reads.
-
-| Tag | Placement | Content |
-|-----|-----------|---------|
-| `@story` | Top of file | `@story STORY-NNN \| slug` — maps the file to its owning story |
-| `@entry` | Above route handlers / primary functions | `@entry METHOD /path \| description` — marks story entry points |
-| `@contract` | Above cross-layer functions | `@contract input: {shape} → output: {shape} \| errors` — documents data shapes |
-| `@gap` | Inline at spec divergences | `@gap YYYY-MM-DD reason` — mirrors the gap.md entry at the code location |
-
-Tags are written in the language's native comment syntax. The reverse-engineer agent also writes `@story`, `@entry`, and `@contract` tags into existing codebases during the reverse-engineering phase.
-
----
-
-## Pipeline Flow
-
-How state and subagents connect across the full lifecycle:
-
-<div class="dg-wrap">
-<div class="dg-diagram-title">Full pipeline state flow</div>
-<div class="dg-flow">
-
-  <div class="dg-flow-node dg-neutral" style="justify-content:center;font-family:var(--font-mono);font-weight:700;color:var(--blue-700);border-color:var(--blue-400);background:rgba(37,99,235,.06)">
-    <div>/spec-gantry invoked</div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-ideation">
-    <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Ideation <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— or init if no project found</span></div>
-      <div class="dg-flow-node-desc">Collect name + vision → write project-state.yaml · architecture/ (6 artifacts) · intent.md per story · Sets: ideation_complete</div>
-      <div class="dg-flow-node-meta">Sets: ideation_complete</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete</div>
-  </div>
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-spec">
-    <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Story Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— one story at a time</span></div>
-      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
-        <div style="flex:1;min-width:150px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Story Spec</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">Sets: spec_done</div>
-        </div>
-        <div style="display:flex;align-items:center;color:var(--slate-300);font-size:.9rem">→</div>
-        <div style="flex:1;min-width:150px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px">
-          <div style="font-size:.75rem;font-weight:700;color:var(--slate-700);margin-bottom:2px">Build + Quality Review</div>
-          <div style="font-size:.68rem;color:var(--slate-500);font-family:var(--font-mono)">dev → evaluate → plan → repair</div>
-        </div>
-      </div>
-      <div class="dg-flow-node-meta" style="margin-top:6px">build-report.yaml (quality block) · gap.md (if any) · Sets: built</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built</div>
-  </div>
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-decision">
-    <div class="dg-flow-node-icon"><i class="bi bi-signpost-split"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Confirm deploy <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— decision point</span></div>
-      <div class="dg-flow-node-desc"><strong>Step 1 (if gaps exist):</strong> Show gap list → [Y] run gap-merge → summary shown<br><strong>Step 2:</strong> [1] Deploy release · [X] hold</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-deploy">
-    <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">deploy_release</div>
-      <div class="dg-flow-node-desc">Deployment agent → deploy.sh → chmod +x → deploy-artifact.md</div>
-      <div class="dg-flow-node-meta">Sets: deployed (per story) · project.release bumped</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-neutral">
-    <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Post-deployment — [N] New work</div>
-      <div class="dg-flow-node-desc">
-        <strong>Bug fix / Enhancement:</strong> Investigate agent reads codebase → confirms findings with user → build agent fixes or writes gap.md → re-deploy<br>
-        <strong>New story:</strong> Ideation (amendment mode) → normal story loop<br>
-        <strong>Project change:</strong> Ideation (amendment mode) → full re-spec
-      </div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-**State flags that gate each transition:**
-
-| Transition | Flag set | Flag read by next gate |
+| File | Purpose | Lifetime |
 |---|---|---|
-| Ideation complete | `ideation_complete` | story spec routing |
-| Story Spec | `spec_done` (per story) | build routing |
-| Build | `built` (per story) | confirm_deploy |
-| Gaps merged | gap.md deleted per story (no flag — orchestrator re-scans) | deploy |
-| Deploy | `deployed` (per story) | routing row 6 |
-| Post-deploy bug/enhancement | investigation findings (in-memory) | classify_and_route → build |
+| `specs/.ideation-turn.md` | Pending ideation question + topic | Deleted when question is answered |
+| `specs/.story-spec-turn.md` | Pending spec interaction state | Deleted on SPEC_COMPLETE or SPEC_HELD |
+| `specs/.investigate-turn.md` | Pending investigation confirmation | Deleted on INVESTIGATION_CONFIRMED/CANCELLED |
+| `specs/.ideation-scratchpad.yaml` | Proposed story list between approval and seed_artifacts | Deleted after seed_artifacts completes |
+| `specs/stories/[ID]/.ppe-loop.yaml` | Loop checkpoint: `iteration_N`, `prior_eval_verdict`, `prior_northstar_gaps`, `must_not_miss`, `spec_reentry_count` | Deleted when loop exits ACHIEVED or CAPPED |
+
+No handoff files exist in v6 — Goal₀ for each phase is derived directly from canonical artifacts on disk. `.spec-handoff.yaml` and `.code-handoff.yaml` from v5 are no longer written.
+
+---
+
+## The Artifact Index
+
+The last section of `specs/architecture/architecture.md` is a machine-parseable YAML block that maps artifact types to their files and named sections:
+
+```yaml
+## Artifact Index
+
+```yaml
+data-model:
+  file: specs/architecture/data-model.md
+  entities: [application, submission, review, user]
+actors:
+  file: specs/architecture/actors.md
+  roles: [applicant, admin, reviewer]
+contracts:
+  file: specs/architecture/contracts.md
+  shapes: [submission-response, review-response, error-envelope]
+patterns:
+  file: specs/architecture/patterns.md
+  patterns: [rest-crud, optimistic-update]
+ux:
+  file: specs/architecture/ux.md
+  sections: [navigation-model, visual-system, component-conventions, screen-template]
+deployment:
+  file: specs/architecture/deployment.md
+  sections: [target, services, secrets, ingress, cicd]
+```
+```
+
+Agents read the Artifact Index once to build a lookup map, then use it to resolve `reads:` entries to exact file paths and section anchors — without reading the full architecture file.
+
+---
+
+## Contract Sections
+
+Every `## contract:[name]` section in `contracts.md` must contain both prose and a machine-readable YAML block:
+
+````markdown
+## contract:submission-response
+The response shape returned by POST /api/submissions and GET /api/submissions/:id.
+
+```yaml
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+required: [id, status, created_at]
+properties:
+  id: { type: string, format: uuid }
+  status: { type: string, enum: [draft, submitted, approved, rejected] }
+  title: { type: string }
+  created_at: { type: string, format: date-time }
+additionalProperties: false
+```
+````
+
+The code produce agent validates every `required:` field is present before writing API endpoints. If the yaml block is missing, it signals a spec gap and stops.
+
+---
+
+## Code Anchor Schema
+
+Every source file touched by the code produce or reverse-engineer agent gets one-line anchor comments:
+
+| Anchor | Where | Example |
+|---|---|---|
+| `@story` | Top of file | `// @story STORY-002 \| submissions` |
+| `@intent` | After `@story` | `// @intent allows an applicant to submit their draft` |
+| `@entry` | Above each route handler | `// @entry POST /api/submissions \| create draft submission` |
+| `@contract` | Above cross-layer functions | `// @contract input: {...} → output: {...} \| errors: [422,500]` |
+| `@gap` | At spec divergences | `// @gap 2026-07-16 status enum extended — spec only defines draft\|submitted` |
+
+The investigation agent greps these anchors to locate code without loading full files.
+
+---
+
+## The PPE Loop Objects
+
+Three shared data objects travel between plan, produce, and eval agents in each loop iteration. Plan and eval agents return raw JSON.
+
+**Goal** (orchestrator-owned, derived from disk)
+```yaml
+goal:
+  phase: ideation | spec | code
+  iteration: N
+  statement: "what good looks like"
+  must_achieve: [north star criteria for this iteration]
+  must_not_miss: [gaps carried forward from prior iterations]
+  source: initial | upgraded
+```
+
+**Plan** (returned by plan agents)
+```json
+{
+  "approach": "strategy to achieve the goal",
+  "steps": [
+    { "id": 1, "action": "...", "addresses": "...", "produces": "..." }
+  ],
+  "known_risks": ["..."],
+  "scope_boundary": "..."
+}
+```
+
+**Evaluation** (returned by eval agents)
+```json
+{
+  "verdict": "ACHIEVED | EXECUTION_GAP | GOAL_GAP",
+  "plan_compliance": [{ "step_id": 1, "met": true, "evidence": "..." }],
+  "northstar_gaps": [
+    { "gap": "...", "gap_type": "experience_gap", "severity": "blocking", "proposed_goal_addition": "..." }
+  ],
+  "execution_gaps": [{ "step_id": 2, "met": false, "evidence": "..." }],
+  "upgraded_goal": { "statement": "...", "must_achieve": [...], "must_not_miss": [...] }
+}
+```
+
+`execution_gaps` is only present when verdict is `GOAL_GAP` and produce also failed to execute one or more plan steps — both are fed to the next plan agent in one pass.
 
 ---
 
 ## Extension Points
 
-SpecGantry is open source and designed to be extended.
+**Custom guardrails** — edit `## Guardrails` in `specs/architecture/architecture.md`. Every subagent reads guardrails before writing code. Changes take effect on the next build.
 
-### Custom Guardrails
+**PPE loop configuration** — edit `ppe_loop.max_iterations` in `project-state.yaml` to adjust how many iterations each phase runs before capping.
 
-Add custom rules to the `## Guardrails` section of `architecture.md`. The story-spec agent enforces every guardrail in that section — adding new ones requires no code changes. Examples:
-
-- "All API endpoints must require authentication"
-- "No direct database queries from the presentation layer"
-- "All external API calls must respect a 5-second timeout"
-
-### Custom Agents
-
-Add domain-specific agents by placing a new agent definition file in the `agents/` directory with standard frontmatter. Custom agents follow the same subagent pattern as built-in phase agents.
-
-### Custom Phase Pipeline
-
-Advanced users can extend the pipeline — for example, inserting a security review phase between spec and build — by adding a new agent and wiring it into the `/spec-gantry` skill routing logic.
+**Custom deployment platforms** — the deployment subagent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in `specs/architecture/deployment.md` drives the generated `deploy.sh`.
 
 ---
 
-## Contributing
+## Security Model
 
-SpecGantry is open source under Apache 2.0. See [CONTRIBUTING.md](https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md) for details.
+**Secrets** — never hardcoded. Every secret is an environment variable named in `specs/architecture/architecture.md → ## Configuration`. The code produce agent uses these names exactly. `.env.example` is generated automatically at deploy time with safe placeholder values.
 
-Issues and PRs welcome: [github.com/specgantry/specgantry.github.io](https://github.com/specgantry/specgantry.github.io)
+**Source annotations** — `@story`, `@entry`, `@contract`, `@gap` anchors written by the code produce and reverse-engineer agents are machine-readable but contain no runtime secrets. They are safe to commit.
 
----
-
-## Next Steps
-
-<div class="next-steps-grid">
-  <a href="/docs/faq" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
-    <div>
-      <strong>FAQ</strong>
-      <span>Answers to common questions about installation, pipeline phases, costs, and troubleshooting.</span>
-    </div>
-  </a>
-  <a href="/docs/getting-started" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-rocket-takeoff"></i></div>
-    <div>
-      <strong>Getting Started</strong>
-      <span>Install and run your first session in under 5 minutes.</span>
-    </div>
-  </a>
-</div>
+**CONTRACT.md** — the engagement directive injected at session start is gitignored by default. It contains no secrets — only instructions for Claude.

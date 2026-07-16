@@ -9,207 +9,233 @@ next_page: "How It Works"
 next_page_url: "/docs/how-it-works"
 ---
 
-# Getting Started
+# Getting Started with SpecGantry v6
 
-SpecGantry installs as a Claude Code plugin in two commands. Once installed, a single skill — `/spec-gantry` — covers every workflow: new projects, existing codebases, daily development, bug fixes, and new features.
+Everything you need to install SpecGantry and complete your first session.
+
+**Estimated time: 5–10 minutes**
+
+---
+
+## Prerequisites
+
+- **Claude Code** installed and authenticated ([Get Claude Code](https://claude.ai/code))
+- A terminal or the Claude Code desktop app
+- (Optional but recommended) A git repository for your project
 
 ---
 
 ## Step 1 — Install the Plugin
 
-Run both commands in order. The marketplace must be registered before installing.
+You must register the SpecGantry marketplace **before** installing the plugin. Both commands are required, in this order:
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-**From within Claude Code** (alternative):
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v6.0.0`
 
-```
-/plugin marketplace add specgantry/specgantry.github.io
-/plugin install spec-gantry
-```
+<div class="info">
+  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once.
+</div>
 
-You should see:
-
-```
-✓ Plugin installed: SpecGantry v5.1.0
-✓ 2 skills loaded · 8 agents registered
-```
-
-### Update an Existing Install
-
-```bash
-claude plugin marketplace update spec-gantry
-```
-
-Or from within Claude Code:
-
-```
-/plugin marketplace update spec-gantry
-```
-
-### Remove SpecGantry
-
-```bash
-claude plugin uninstall spec-gantry
-```
-
-Removing the plugin does not delete your `specs/` directory. Your project state, architecture, and story specs are untouched.
+<div class="success">
+  <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
+</div>
 
 ---
 
-## Step 2 — Open a Project
+## Updating SpecGantry
 
-Open any directory in Claude Code — a new empty folder, or an existing project you want to bring structure to.
+```bash
+claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
+```
+
+---
+
+## Step 2 — Start Your First Session
+
+Open Claude Code in any directory and run:
 
 ```
 /spec-gantry
 ```
 
-SpecGantry reads the directory and routes you automatically:
+SpecGantry detects three situations:
 
-- **No project files, no source code** → starts a new project (ideation)
-- **Source code found, no SpecGantry artifacts** → offers to reverse-engineer the existing codebase
-- **Existing SpecGantry project** → shows the pipeline dashboard and your next action
+<div class="dg-wrap">
+<div class="dg-node-graph">
 
----
+  <div class="dg-node dg-neutral">
+    <div class="dg-node-num">A</div>
+    <div class="dg-node-name">Empty directory</div>
+    <div class="dg-node-output">→ Start new project — enter name and vision, then ideation begins</div>
+  </div>
 
-## Step 3a — New Project
+  <div class="dg-node dg-neutral">
+    <div class="dg-node-num">B</div>
+    <div class="dg-node-name">Source files, no specs/</div>
+    <div class="dg-node-output">→ Analyse existing codebase — reverse-engineer an architecture and story backlog from your code</div>
+  </div>
 
-If no project exists, SpecGantry prompts:
+  <div class="dg-node dg-neutral">
+    <div class="dg-node-num">C</div>
+    <div class="dg-node-name">specs/ exists</div>
+    <div class="dg-node-output">→ Resume — dashboard shows pipeline state, routes you to the next action</div>
+  </div>
 
-```
-Project name (max 60 chars):  >
-Project vision (2–4 sentences):  >
-```
-
-After you enter these, the ideation subagent starts a two-beat conversational session. Nine topics guide you from raw idea to shaped system:
-
-- **Beat 1** (Topics 1–4): Vision, Problem & Users, Constraints, Risks & Out of Scope
-- **Beat 2** (Topics 5–9): Tech Stack, Guardrails, Configuration, Story List, UX Model
-
-After ideation, SpecGantry seeds the full architecture layer — five artifact files, `intent.md` per story — and presents the pipeline dashboard.
-
-This is a good moment to `/compact` — all decisions are on disk, and the context from ideation is large.
-
----
-
-## Step 3b — Existing Codebase (Reverse Engineering)
-
-If source files are found without SpecGantry artifacts, you see:
-
-```
-Existing codebase detected — no SpecGantry project found.
-  [1] Start new project
-  [2] Analyse existing codebase
-```
-
-Choose `[2]`. The reverse-engineer subagent analyzes your code silently, then presents an inferred story list for your review:
-
-```
-Inferred stories from codebase:
-
-  ID        Title                          Status    Depends on
-  ─────────────────────────────────────────────────────────────
-  STORY-001  User authentication            built      —
-  STORY-002  User profile management        built      STORY-001
-  STORY-003  Admin dashboard                built      STORY-001
-  STORY-004  Reporting module               partial    STORY-001
-
-  Status: built = fully implemented  partial = incomplete  missing = not built
-
-[OK] Accept list   [E] Edit
-```
-
-Review the list, edit if needed, then accept. SpecGantry writes:
-
-- `specs/architecture/` — full architecture layer synthesized from your code
-- `specs/stories/[STORY-ID]/intent.md` — 2-paragraph intent per story
-- `specs/stories/[STORY-ID]/story-spec.md` — stub spec with `reads:` block per story
-- `specs/stories/[STORY-ID]/build-report.yaml` — runtime profile for built stories
-- `@story`, `@intent`, `@entry`, `@contract` anchor comments in source files
+</div>
+</div>
 
 ---
 
-## Step 4 — The Pipeline Dashboard
+## Step 3 — New Project: Enter Name and Vision
 
-After ideation or reverse engineering completes, the dashboard shows your project state:
+SpecGantry asks two things:
 
 ```
-SpecGantry v5  |  MyProject  |  release 1.0.0
-──────────────────────────────────────────────────────────────────
-Spec [░░░░░] 0/4  ·  Build [░░░░░] 0/4  ·  Deploy [░░░░░] not deployed
-──────────────────────────────────────────────────────────────────
-  ID      Story                              Spec   Build
+Project name (max 60 chars):  > Recipe Manager
+Project vision (2–4 sentences):  > A personal recipe manager where I can save,
+tag, and search recipes by ingredient. Simple CRUD, single user, no login needed.
+```
+
+For simple projects (no auth, no AI, single actor, ≤3 capabilities), quick-start activates automatically:
+
+```
+This looks like a simple single-user app. I'll apply these defaults and ask only 3 questions:
+
+  Defaults applied:  Node.js · SQLite · Bootstrap 5 · Docker Hub · single-user · no auth
+  Questions:         tech stack confirm · Docker Hub username · story list
+
+  [>] Quick start
+  [F] Full ideation  (10 topics, shape every decision yourself)
+```
+
+Quick-start asks three focused questions and produces a complete architecture. Full ideation is always available via `[F]`.
+
+For complex projects (multi-actor, auth, AI), full ideation starts automatically — no banner.
+
+---
+
+## Step 4 — Ideation
+
+SpecGantry acts as a thinking partner. The opening turn shows a topic roadmap so you know what the conversation covers, then works through each topic — proposing decisions for you to confirm or redirect.
+
+After the produce agent completes, the **ideation evaluator** checks all 8 north star criteria against the written artifacts. If anything is missing (deployment target not decided, story list too broad), the loop iterates automatically.
+
+When ideation exits:
+
+```
+✓ Ideation complete  ·  Manage recipes · Tag and organise · Search by ingredient
+💡 Good moment to /compact — ideation context is large, all decisions are on disk.
+```
+
+**Commit your specs now:**
+
+```bash
+git add specs/
+git commit -m "feat: SpecGantry project init"
+```
+
+---
+
+## Step 5 — Spec and Build
+
+The pipeline interleaves spec and build per story. For each story:
+
+**Spec PPE loop:** the spec-plan-agent reads `intent.md` and the architecture, plans what the spec must capture, and the spec-produce-agent writes it. The spec-eval-agent validates it against the spec north star — 9 criteria covering async states, output format, error handling, and flow completeness. The loop iterates until all criteria are met.
+
+You approve a machine-validated spec:
+
+```
+✓ Story spec validated — STORY-001: Manage recipes
+
+  North star:  all 9 criteria confirmed
+  Loop:        1 iteration — passed first pass
+
+  [Y] Approve spec   [E] Edit   [X] Hold
+```
+
+**Code PPE loop:** the code-plan-agent plans the build approach, the produce agent builds, and the code-eval-agent evaluates against both the quality dimension rubric and the code north star. If the spec was insufficient for the north star (GOAL_GAP), the spec is updated automatically before rebuilding.
+
+---
+
+## The Dashboard
+
+After ideation and during the build phase:
+
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+```
+SpecGantry v6  |  Recipe Manager  |  release 1.0.0
+Ideation ✅  ·  Spec [██░] 2/3  ·  Build [█░░] 1/3  ·  Deploy [░░░] –
+──────────────────────────────────────────────────────────
+  ID      Story                            Spec        Build
   ────────────────────────────────────────────────────────────────
-  [001]   User authentication                  ⏳     ○
-  [002]   User profile management              🔴     ○      depends on 001
-  [003]   User submits application             🔴     ○      depends on 001
-  [004]   Admin reviews submissions            🔴     ○      depends on 003
+  [001]  Manage recipes                    ✅          ✅
+  [002]  Tag and organise recipes          ✅          🔄 eval
+  [003]  Search recipes by ingredient      ⏳          ○
   ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                       ○ not deployed
+  Release 1.0.0                                        ○ not deployed
 ──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it            [$] Cost
-  [1] Spec next story — STORY-001         [?] Help
-  [N] New work                            [X] Exit
+  Type a story ID to manage it        [$] Cost
+  [1] Build next — [002]: Tag…        [?] Help
+  [>] Run to next pause               [X] Exit
+  [N] New work
 ──────────────────────────────────────────────────────────────────
-Enter story ID or action:  >
 ```
+</div>
 
-Icon legend: `✅` complete · `🔄` in progress · `🔴` blocked · `⏳` ready · `○` not reached · `~` stub spec (RE, not yet written)
-
-The action bar shows your next action automatically. Press `[1]` to begin, or type a story ID to jump to it directly.
+Type `[>]` to run the full pipeline automatically — spec and build all remaining stories, pausing only at genuine decision points like GOAL_GAP routing or loop caps.
 
 ---
 
-## Step 5 — Daily Workflow
+## Step 6 — Deploy
 
-Every session starts the same way:
-
-```
-/spec-gantry
-```
-
-SpecGantry reads your current state and shows the dashboard. From there:
-
-| What you want to do | How |
-|--------------------|-----|
-| Continue the pipeline | Press the numbered action shown |
-| Work on a specific story | Type the story ID (e.g. `001`) |
-| Complete a stub spec (RE projects) | Type the stub story ID, or use `Complete stub spec` action |
-| Report a bug or request an enhancement | Press `[N] New work` |
-| Add a new story | Press `[N] New work` → describe it |
-| See token costs | Press `[$]` |
-| View architecture | Press `[?]` then `[A]` |
+Once all stories are built, SpecGantry prompts to deploy. Gap specs (if any) are reviewed and merged first, then the deployment agent generates `specs/deploy.sh` and deploys.
 
 ---
 
-## What Gets Written to Disk
+## Daily Workflow
 
-All SpecGantry artifacts live under `specs/` in your project root:
+| Situation | What to type |
+|---|---|
+| Resuming any work | `/spec-gantry` — always |
+| Auto-run the pipeline | `/spec-gantry` then `[>]` |
+| Check costs | `/track-cost` |
+| Report a bug | `/spec-gantry` → `[N] New work` → describe the bug |
+| Work on a specific story | `/spec-gantry` → type the story ID |
+
+---
+
+## Disk Layout
 
 ```
-specs/
-  project-state.yaml          — pipeline state, story flags, gap signals
-  architecture/
-    architecture.md           — narrative + Artifact Index (entry point)
-    data-model.md             — entities, fields, state machines
-    actors.md                 — roles, permissions
-    contracts.md              — shared API shapes, error envelopes
-    patterns.md               — backend interaction patterns
-    ux.md                     — navigation, visual system, component conventions
-  stories/
-    STORY-001/
-      intent.md               — 2-paragraph functional purpose
-      story-spec.md           — criteria, interfaces, permissions, state, data
-      build-report.yaml       — runtime profile, build command, migration info
-      gap.md                  — mid-build discovery log (if any)
-  cost-log.ndjson             — token usage by phase, story, model, release
+project-root/
+  specs/
+    project-state.yaml          pipeline state + story flags
+    architecture/
+      architecture.md           vision, guardrails, UX model, Artifact Index
+      data-model.md             entities, fields, state machines
+      actors.md                 roles, permissions
+      contracts.md              API response shapes
+      patterns.md               backend interaction patterns
+      ux.md                     navigation, visual system, screen template
+      deployment.md             cloud platform, registry, CI/CD
+    stories/
+      STORY-001/
+        intent.md               2-paragraph purpose + outcome
+        story-spec.md           ≤60-line spec (machine-validated)
+        build-report.yaml       quality outcome, test plan
+        gap.md                  divergences (if any, deleted at deploy)
+    cost-log.ndjson             token usage per agent run (committed)
+  .claude/
+    settings.json               engagement hooks
+    hooks/spec-gantry-contract.sh  contract injection at session start
+    CONTRACT.md                 binding directive (gitignored)
 ```
-
-Add `specs/.current-session` to your `.gitignore` (SpecGantry does this automatically). Commit everything else.
 
 ---
 
@@ -220,14 +246,14 @@ Add `specs/.current-session` to your `.gitignore` (SpecGantry does this automati
     <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How It Works</strong>
-      <span>Deep dive into every phase, the architecture layer, gap flows, and reverse engineering.</span>
+      <span>Deep dive into the PPE loop, north stars, and GOAL_GAP routing.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
-      <strong>Skills & Agents</strong>
-      <span>Every command, every agent, and what they do.</span>
+      <strong>Skills Guide</strong>
+      <span>All 12 agents, the dashboard in detail, and workflow walkthroughs.</span>
     </div>
   </a>
 </div>

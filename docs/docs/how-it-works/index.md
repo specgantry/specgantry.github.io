@@ -1,16 +1,129 @@
 ---
 layout: docs
 title: How It Works
-description: A complete walkthrough of SpecGantry's pipeline — from raw idea to deployed system.
+description: A complete walkthrough of SpecGantry v6 — the universal PPE loop, all three phases, north stars, GOAL_GAP routing, gap flows, and release management.
 prev_page: "Getting Started"
 prev_page_url: "/docs/getting-started"
 next_page: "Skills Guide"
 next_page_url: "/docs/skills"
 ---
 
-# How SpecGantry Works
+# How SpecGantry v6 Works
 
 A complete walkthrough of the pipeline and what happens at each phase.
+
+---
+
+## The Universal PPE Loop
+
+Every phase in SpecGantry runs the same parameterized loop. What varies across phases is not the structure — it's the goal, the agents, and the north star.
+
+<div class="dg-wrap">
+<div class="dg-diagram-title">The Universal Plan-Produce-Evaluate Loop</div>
+<div class="dg-flow">
+
+  <div class="dg-flow-node dg-neutral">
+    <div class="dg-flow-node-icon"><i class="bi bi-bullseye"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Goal</div>
+      <div class="dg-flow-node-desc">Derived from canonical artifacts on disk — intent.md, story-spec.md, architecture artifacts, north star document. Not passed as a parameter.</div>
+    </div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-ideation">
+    <div class="dg-flow-node-icon"><i class="bi bi-list-check"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Plan</div>
+      <div class="dg-flow-node-desc">Given the goal and prior iteration context, determines exactly what to produce and how. Reads the north star to challenge whether the goal itself is sufficient.</div>
+    </div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-spec">
+    <div class="dg-flow-node-icon"><i class="bi bi-pencil-square"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Produce</div>
+      <div class="dg-flow-node-desc">Executes the plan. For ideation: asks questions, writes artifacts. For spec: writes story-spec.md. For code: builds the full story.</div>
+    </div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-build">
+    <div class="dg-flow-node-icon"><i class="bi bi-shield-check"></i></div>
+    <div class="dg-flow-node-body">
+      <div class="dg-flow-node-title">Evaluate</div>
+      <div class="dg-flow-node-desc">Two simultaneous checks: (1) did produce execute the plan? (2) did the plan cover the north star? Either failure loops back with a richer goal.</div>
+    </div>
+  </div>
+
+  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
+
+  <div class="dg-flow-node dg-neutral" style="display:flex;flex-direction:row;gap:1rem;padding:0.5rem">
+    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--green-50,#f0fdf4);border-radius:6px">
+      <strong style="color:var(--green-700,#15803d)">ACHIEVED</strong><br/>
+      <span style="font-size:.8rem">North star met → exit phase,<br/>hand off to next</span>
+    </div>
+    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--amber-50,#fffbeb);border-radius:6px">
+      <strong style="color:var(--amber-700,#b45309)">EXECUTION_GAP</strong><br/>
+      <span style="font-size:.8rem">Plan was right, produce missed<br/>→ replan, same goal</span>
+    </div>
+    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--red-50,#fef2f2);border-radius:6px">
+      <strong style="color:var(--red-700,#b91c1c)">GOAL_GAP</strong><br/>
+      <span style="font-size:.8rem">Plan missed north star<br/>→ upgrade goal, replan</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+### Exit conditions — how the loop stops
+
+Each phase has a hard cap and an escalation path:
+
+| Exit | Trigger | What happens |
+|---|---|---|
+| **ACHIEVED** | Evaluator confirms north star met | Phase exits, next phase begins |
+| **CAPPED** | `iteration_N >= max_iterations` | Unresolved gaps surfaced to user: `[Y] Accept · [E] Fix · [X] Stop` |
+| **CYCLING** | Identical gaps across two consecutive iterations after a goal upgrade | Same as CAPPED |
+| **Build failure** | Produce agent hard failure | Exit immediately, surface to user |
+
+Max iterations: ideation 3, spec 2, code 3 — configurable in `project-state.yaml → ppe_loop`.
+
+---
+
+## The Three North Stars
+
+Each phase has a canonical quality bar that the evaluator holds every output against — independently of what any plan says. No plan can redefine them.
+
+<div class="dg-wrap">
+<div class="dg-node-graph">
+
+  <div class="dg-node dg-ideation">
+    <div class="dg-node-num">NS1</div>
+    <div class="dg-node-name">Ideation North Star</div>
+    <div class="dg-node-output">"Can every architecture artifact be written without invented assumptions?" — 8 criteria covering actors, data entities, UX conventions, tech stack, deployment, story completeness</div>
+  </div>
+
+  <div class="dg-node dg-spec">
+    <div class="dg-node-num">NS2</div>
+    <div class="dg-node-name">Spec North Star</div>
+    <div class="dg-node-output">"If built exactly as written, does the user get everything the intent promises?" — 9 criteria covering async states, output format, error handling, flow completeness, unambiguous criteria</div>
+  </div>
+
+  <div class="dg-node dg-build">
+    <div class="dg-node-num">NS3</div>
+    <div class="dg-node-name">Code North Star</div>
+    <div class="dg-node-output">"Does the running software deliver the full experience the intent describes?" — 7 criteria covering feedback throughout async ops, output format fitness, error surfaces, flow completeness</div>
+  </div>
+
+</div>
+</div>
+
+The north stars are the reason SpecGantry catches what code review loops miss. A spec that says "display the result" will pass a compliance check — but fail the spec north star criterion "every async operation communicates state throughout." The evaluator catches the gap before any code is written.
 
 ---
 
@@ -23,45 +136,45 @@ A complete walkthrough of the pipeline and what happens at each phase.
   <div class="dg-flow-node dg-ideation">
     <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Ideation</div>
-      <div class="dg-flow-node-desc">Mature the idea · shape the system · propose story backlog</div>
-      <div class="dg-flow-node-meta">architecture.md · project-state.yaml</div>
+      <div class="dg-flow-node-title">Ideation PPE Loop</div>
+      <div class="dg-flow-node-desc">plan what to ask → ask questions → evaluate architecture completeness against north star → iterate until ACHIEVED</div>
+      <div class="dg-flow-node-meta">architecture.md · 5 artifact files · intent.md per story · project-state.yaml</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete · NS1 all 8 criteria met</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Story Spec <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
-      <div class="dg-flow-node-desc">Spec each story before code is written — then immediately into build</div>
-      <div class="dg-flow-node-meta">story-spec.md · reads: block · intent.md</div>
+      <div class="dg-flow-node-title">Spec PPE Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">plan what the spec must capture → write story-spec.md → evaluate spec sufficiency against north star → iterate until ACHIEVED → user approves a machine-validated spec</div>
+      <div class="dg-flow-node-meta">story-spec.md · intent.md (finalised)</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_done per story</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_done per story · NS2 all 9 criteria met</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Build + Quality Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
-      <div class="dg-flow-node-desc">dev builds → evaluate scores dimensions → plan targets fixes → dev repairs · loops until pass or cap</div>
+      <div class="dg-flow-node-title">Code PPE Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
+      <div class="dg-flow-node-desc">plan build approach → build full story → evaluate code + experience against north star → repair if needed → GOAL_GAP triggers spec update before rebuild</div>
       <div class="dg-flow-node-meta">build-report.yaml (quality block) · gap.md (if any)</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built · NS3 all 7 criteria met</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
@@ -69,7 +182,7 @@ A complete walkthrough of the pipeline and what happens at each phase.
     <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Deploy Release</div>
-      <div class="dg-flow-node-desc">Deployment script · whole system · release version bumped</div>
+      <div class="dg-flow-node-desc">Gap specs merged · deployment script generated · whole system deployed · release version bumped</div>
       <div class="dg-flow-node-meta">deploy.sh · deploy-artifact.md</div>
     </div>
   </div>
@@ -80,31 +193,14 @@ A complete walkthrough of the pipeline and what happens at each phase.
     <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">[N] New work — post-release modifications</div>
-      <div class="dg-flow-node-desc">Bug fix or enhancement: <strong>Investigate</strong> reads codebase · confirms with you · build agent fixes or writes gap.md · re-deploy</div>
-      <div class="dg-flow-node-meta">investigate-subagent (read-only) · then development-subagent</div>
+      <div class="dg-flow-node-desc">Bug fix or enhancement: investigate → build → full code PPE loop → re-deploy</div>
     </div>
   </div>
 
 </div>
 </div>
 
-Stories run in dependency order, and the pipeline **interleaves spec and build per story** — a story is fully built before the next story is specced. Once all stories are built, you are prompted at a single confirmation point: gap specs (if any) are shown for review and merge, then you confirm to deploy.
-
-After deployment, use `[N] New work` for any changes. Bug fixes and enhancements always start with the investigation agent — it reads the actual codebase to locate the exact files and root cause before any code is touched.
-
----
-
-## Video Overview
-
-<div class="video-placeholder">
-  <div class="video-placeholder-inner">
-    <div class="video-icon">▶</div>
-    <div class="video-text">
-      <strong>SpecGantry Pipeline Walkthrough</strong>
-      <span>Coming soon — a complete walkthrough of all phases from ideation to deployment.</span>
-    </div>
-  </div>
-</div>
+Stories run in dependency order and the pipeline **interleaves spec and code per story** — a story is fully built before the next is specced.
 
 ---
 
@@ -112,304 +208,240 @@ After deployment, use `[N] New work` for any changes. Bug fixes and enhancements
 
 ### Phase 1 — Ideation {#ideation}
 
-**Time:** 5–30 minutes (depends on project complexity)
 **Output:** `specs/architecture/` (6 artifacts) · story backlog in `specs/project-state.yaml`
-
-Ideation is a single conversation that does two things in sequence: matures the raw idea, then shapes the system. There is no separate architecture phase — the output of the conversation is the architecture.
 
 **Quick-start mode**
 
-After you enter a project name and vision, SpecGantry checks whether the project looks simple — no authentication, no AI integration, single actor type, three or fewer capabilities. If so, it switches to quick-start mode:
+After entering a project name and vision, SpecGantry checks whether the project is simple — no authentication, no AI integration, single actor, three or fewer capabilities. If so:
 
 ```
-This looks like a simple single-user app — I can set smart defaults and ask only 3 questions.
+This looks like a simple single-user app. I'll apply these defaults and ask only 3 questions:
 
-  [>] Quick start  (tech stack · Docker Hub username · story list)
-  [F] Full ideation  (10 topics, shape every decision)
+  Defaults applied:  Node.js · SQLite · Bootstrap 5 · Docker Hub · single-user · no auth
+  Questions:         tech stack confirm · Docker Hub username · story list
+
+  [>] Quick start
+  [F] Full ideation  (10 topics, shape every decision yourself)
 ```
 
-Quick-start sets sensible defaults for all architecture sections (problem & users, constraints, risks, guardrails, configuration, UX model), asks three focused questions, and produces the same complete architecture artifacts as full ideation — just faster. Full ideation is always available via `[F]`.
+Quick-start sets sensible defaults for all architecture sections and asks three focused questions. The story list proposal includes a one-line scope under each title so you know exactly what each story covers:
 
-**Beat 1 — Mature the idea** (full ideation only)
+```
+Proposed stories — 3 total
 
-SpecGantry acts as a thinking partner, not an interviewer. It reads your vision and reacts to it using one of three stances:
+  ID        Title                                         Depends on
+  ──────────────────────────────────────────────────────────────────
+  STORY-001  Manage recipes                               —
+             add, view, edit, and delete recipes
+  STORY-002  Tag and organise recipes                     STORY-001
+             create tags and attach them to recipes
+  STORY-003  Search recipes by ingredient                 STORY-001
+             find recipes that contain a given ingredient
+```
 
-- **"Yes, and…"** — affirms the direction and extends it with something you may not have considered
-- **"Fine, but…"** — accepts the premise but surfaces a tradeoff, constraint, or risk it creates
-- **"What about…"** — probes a gap or edge case the vision didn't address
+If stories share data without a blocking dependency, the proposal also shows `reads ... from:` annotations — surfacing implicit data relationships before spec writing begins.
 
-Four topics, one question each: vision, problem & users, constraints, risks & out of scope. After each answer, SpecGantry writes a synthesis — not a transcript of your words, but what it now understands to be true. You confirm a Beat 1 summary before moving on. You can save and stop at the Beat 1 summary — ideation will resume at Beat 2 on the next `/spec-gantry`.
+**Full ideation — Beat 1 and Beat 2**
 
-**Beat 2 — Shape the system** (full ideation only)
+Full ideation uses a thinking-partner stance — three stances:
+- **"Yes, and…"** — affirms the direction and extends it
+- **"Fine, but…"** — accepts the premise but surfaces a tradeoff
+- **"What about…"** — probes a gap the vision didn't address
 
-Directly from the matured idea, SpecGantry proposes the system shape across six topics — each a proposal for you to confirm or redirect, not an open-ended question:
+The opening turn shows a topic roadmap so you know what the conversation covers:
 
-- **Tech stack** — one clear choice per layer
-- **Guardrails** — enforceable rules every story must follow
-- **Configuration** — every env var the project needs, in a table
-- **UX model** — navigation pattern, visual system, component conventions
-- **Deployment target** — cloud platform, container registry, service architecture, secrets strategy, CI/CD. Each answer is flushed to `specs/architecture/deployment.md` immediately — a crash mid-topic loses at most one answer.
-- **Story list** — 3–5 vertical slices, dependency-ordered, right-sized. Written to disk on approval. This is the last Beat 2 topic.
+```
+Topics ahead: vision · users · constraints · risks · tech stack ·
+              auth+config · UX model · deployment · stories  (9 topics, ~9 turns)
+```
 
-Everything is written to `specs/architecture/` after every answer. A crash mid-session loses at most one exchange.
+Everything is flushed to disk after every answer. A crash mid-session loses at most one exchange.
 
-**Story granularity — Goldilocks rule:**
-Stories are building blocks, not micro-tasks. A story is a vertical slice — something completable in 1–3 sessions and demonstrable independently. Related capabilities belong in one story. When in doubt, merge — a story can always be extended later via `[N] New work`.
+**Ideation PPE loop**
+
+After the produce agent completes, the ideation evaluator checks all 8 north star criteria against the written artifacts. If the deployment target is `_not yet written_`, if no actor has explicit capabilities defined, if the story list combines two distinct capabilities into one story — these are caught before spec begins. The loop iterates until the north star is fully met.
+
+Transition note after ideation:
+```
+✓ Ideation complete  ·  Manage recipes · Tag and organise · Search by ingredient
+```
 
 ---
 
-### Phase 2 — Story Spec {#spec-gate}
+### Phase 2 — Story Spec {#spec}
 
-**Time:** 5–15 minutes per story
-**Output:** `specs/stories/STORY-NNN/story-spec.md`
+**Output:** `specs/stories/STORY-NNN/story-spec.md` (≤60 lines, machine-validated)
 
-No code is written until a complete spec exists.
+The spec loop runs before any code is written. The spec-plan-agent reads `intent.md`, the architecture, and the spec north star, then derives what the spec must capture — thinking like a product head, not a format checker.
 
-The spec covers six sections:
+**What the spec north star catches**
 
-1. **What the user can do** — user-facing capabilities. Every entity the story manages must have its full lifecycle accounted for: list, view, edit, delete. Missing operations must be explicitly declared out of scope with a reason.
-2. **Screens and states** — UI flows and state transitions, including empty states, error states, and confirmation dialogs for destructive actions
-3. **Data and backend** — data owned, APIs, persistence. Every field named with its type and validation rule. Every endpoint documented.
-4. **AI integration** — if AI is used: model ID, literal prompt template (full text, not a description), exact output schema, output-to-UI field mapping, fallback path. The prompt must include an anti-sycophancy instruction. If no AI: marked N/A.
-5. **Enterprise checks** — auth, validation, error states, data safety, rate limiting, and a list of any new env vars this story requires
-6. **Acceptance criteria** — minimum 4, at least one error-state criterion
+The spec evaluator checks 9 criteria against the written spec:
 
-Each section is written to disk immediately — sessions resume from the next incomplete section.
+| Criterion | What it catches |
+|---|---|
+| Visible triggers | "the user submits" without specifying the button label or location |
+| Async feedback throughout | No loading state described for an async AI call — spec only says "display result" |
+| Output format | "display the AI output" without specifying format or container |
+| Error states with recovery | "show an error message" without specifying message content or recovery action |
+| Flow completeness | Success state not described — user completes action but spec doesn't say what happens |
+| Unambiguous criteria | Any criterion using "graceful", "appropriate", "responsive" without concrete definition |
+| Edge cases from intent | intent.md says "handle when no results found" but spec has no criterion for empty state |
+| Complete interfaces | Missing auth, guard conditions, or error codes on endpoints |
+| Layout decisions | Screen contents described but no layout structure specified |
 
-After all sections, guardrails from `architecture.md` are checked. Any violation blocks the spec until resolved. You self-review and confirm before build begins.
+When gaps are found, the evaluator either re-runs the spec plan (EXECUTION_GAP — plan was right, produce missed something) or upgrades the goal (GOAL_GAP — plan itself didn't cover the criterion). In both cases the spec is updated before the user ever sees it.
+
+**User approval**
+
+The user sees a machine-validated approval prompt:
+
+```
+✓ Story spec validated — STORY-002: AI Text Generator
+
+  North star:  all 9 criteria confirmed
+  Loop:        2 iterations — async loading and streaming display criteria added
+
+  [Y] Approve spec   [E] Edit   [X] Hold
+```
+
+The user is approving a spec that has already been challenged by a product-head-level evaluator — not a first draft.
 
 ---
 
-### Phase 3 — Build {#build}
+### Phase 3 — Code {#build}
 
-**Time:** Depends on story complexity
-**Output:** Source code committed · `specs/stories/STORY-NNN/build-report.yaml`
+**Output:** Source code · `specs/stories/STORY-NNN/build-report.yaml`
 
-The build phase turns the confirmed spec into working code and verifies it meets quality standards before the story is marked done.
+**Iteration 1 — Plan then build**
 
-**The dev agent** builds the full vertical slice — UI, backend, data layer, AI integration — exactly as specced. Key behaviors:
-- Respects every guardrail in `architecture.md` and uses env var names exactly as defined in `## Configuration`
-- Secrets and all runtime config come from environment variables — no hardcoded values
-- Writes machine-readable anchor comments in source files: `@story` (file→story mapping), `@entry` (route/handler entry points), `@contract` (data shapes at layer boundaries), `@gap` (inline at spec divergences)
-- Implements a `GET /health` endpoint as the first backend route on any story that exposes a port
+The code-plan-agent runs first on every iteration including the first. On iteration 1 it produces a build approach — layer order, async patterns to apply upfront, implementation choices the spec's experience requirements demand. The produce agent builds against this plan, not just against the spec.
 
-**Quality loop** — runs automatically after every build, no extra commands needed:
+**Code PPE loop**
 
-1. **Evaluate** reads the built code and scores it across dimensions: spec adherence, contract fidelity, input validation, UI completeness, scope hygiene, data integrity, and more. Dimensions are selected dynamically based on what the story actually contains — a story with no UI skips UI dimensions, a story using AI activates prompt/output checks.
-2. **Plan** receives the evaluation verdict and produces up to 3 targeted fix steps — each naming the exact file, location, and change needed.
-3. **Dev** applies the fixes in repair mode (targeted edits, not a full rebuild) and the loop returns to step 1.
+After each build, the code evaluator checks two things simultaneously:
 
-This continues until all dimensions pass or the maximum iterations are reached (default: 3).
+1. **Quality dimension rubric** — spec adherence, contract fidelity, input validation, UI completeness, state consistency, and more. Dimensions activated dynamically based on what the story contains.
 
-The quality outcome is recorded in the story's `build-report.yaml`:
+2. **Code north star** — 7 criteria evaluated against the experience contract derived from `intent.md` and `story-spec.md`:
+
+| Criterion | What it catches |
+|---|---|
+| Async feedback throughout | AI call buffered — user sees nothing until complete, no loading indicator |
+| Output format fits content | AI text rendered as raw JSON string or in an overflow container |
+| Error states readable | `catch(e) { console.error(e) }` with no user-facing message |
+| Full flow completable | Form submits but success state doesn't update the UI |
+| No locked-in rigidity | Core algorithm hard-coded against a single case when intent implies extensibility |
+| State consistent after mutations | Deleted item reappears on next render — list not invalidated |
+
+**GOAL_GAP — spec update mid-build**
+
+If code satisfies all spec dimensions but fails a north star criterion because the spec never required that behaviour, the evaluator returns GOAL_GAP. The orchestrator surfaces a banner and automatically updates the spec before rebuilding:
+
+```
+⚠ Code eval found a spec gap — STORY-006: AI cover letter drafting
+  Gap: AI response is buffered — spec did not require streaming display
+  Updating spec now and rebuilding — no action needed.
+```
+
+After the spec update and rebuild:
+
+```
+✓ Spec updated + rebuilt · STORY-006  ·  quality: pass
+  Gap resolved: streaming display criterion added
+```
+
+**Quality outcomes**
 
 | Status | Meaning |
-|--------|---------|
-| `pass` | All active dimensions cleared |
-| `partial` | Same dimensions still failing after an approach-change repair — usually a spec ambiguity |
-| `capped` | Max iterations reached with unresolved dimensions |
-| `build_failed` | Dev agent returned a build failure during a repair cycle |
-| `unknown` | Evaluation output could not be parsed |
+|---|---|
+| `pass` | All dimensions and north star criteria cleared |
+| `partial` | Same dimensions still failing after approach-change repair — usually a spec ambiguity |
+| `capped` | Max iterations (default 3) reached with unresolved dimensions |
+| `build_failed` | Produce agent returned a hard failure |
 
-A `partial` or `capped` story is still marked built — the report documents what remains for you to decide on.
+Build transition note:
+```
+✓ Build complete · STORY-001  ·  quality: pass (2 iters — loading state added to save action)
+```
 
 ---
 
-**Test plan**
+## GOAL_GAP Cross-Phase Routing {#goal-gap}
 
-The build agent writes a `test_plan` section to `build-report.yaml` — one shell command per observable acceptance criterion, with the health check always first:
-
-```yaml
-test_plan:
-  - label: "app is healthy"
-    cmd: "curl -sf http://localhost:3000/health"
-  - label: "POST /api/bookmarks creates a bookmark"
-    cmd: "curl -sf -X POST http://localhost:3000/api/bookmarks ..."
-  - label: "GET /api/bookmarks/:id returns 404 for unknown id"
-    cmd: "curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/api/bookmarks/99999 | grep -q 404"
-```
-
-After the build and quality review complete, SpecGantry offers to run these checks against your running app:
+When the code evaluator finds that a spec was insufficient for the north star, it routes back to the spec phase — not to a code repair. This is the key difference from a simple evaluate→repair loop:
 
 ```
-✓ Build complete — STORY-001: Bookmark CRUD API  ·  quality: pass (2 iters)
+Code eval → GOAL_GAP
+  ↓
+Spec PPE loop re-runs with upgraded goal
+  → ACHIEVED → full code rebuild (iteration 1 fresh)
+  → CAPPED   → surface to user [Y] Accept / [X] Stop
 
-  [R] Run tests (3 criteria)   [S] Skip
+Code PPE loop restarts at iteration 1
 ```
 
-`[R]` first checks that the app is responding at `/health` — if not, it skips cleanly and marks the story built without running tests. If the app is up, it runs each command and shows pass/fail per criterion. If any fail you can fix and rebuild, or mark the story built anyway.
-
-`[S]` marks the story built immediately.
-
-**Auto-continue mode** always skips test execution and marks stories built immediately — test verification is a manual checkpoint.
-
-The test plan is also used by the investigation agent when you report a bug later — it runs the same checks to pinpoint which criterion is currently failing before any source code is read.
-
-A story is **complete** once the quality review passes and all acceptance criteria are met (or you choose to proceed).
+This is capped at one spec→code re-entry per story. If code eval returns GOAL_GAP a second time after a spec repair, the loop exits CAPPED and surfaces to the user.
 
 ---
 
-### Phase 4 — Deploy Release {#deploy}
+## Gap Specs {#gap-specs}
 
-**Time:** 5–10 minutes
-**Output:** `specs/deploy.sh` · `specs/docker-compose.yml` · `specs/.env.example` · `src/[story]/Dockerfile` · `specs/deploy-artifact.md`
-
-Once all stories are built (and any gap specs are merged), you are prompted to confirm deployment.
-
-The deployment agent:
-1. Gathers any missing deployment details interactively (registry identifier, domain, etc.)
-2. Runs platform-specific pre-flight checks (CLI installed, auth active, APIs enabled) — shows a pass/fail table before generating anything
-3. Computes the next release version from change types in the backlog
-4. Resolves deployment order via the dependency graph
-5. Generates per-service Dockerfiles and a `docker-compose.yml` for local production-parity testing
-6. Generates `specs/.env.example` with every env var the project needs
-7. Generates `specs/deploy.sh` covering build, push, migrations, deploy, and health checks per story — with `--dry-run` for local Docker testing. When `--dry-run` completes successfully, the script prints per-service local URLs, log commands for each service, and the stop command.
-8. Validates the script with `bash -n` and sets executable permissions
-9. Writes `deploy-artifact.md` summarising the release
-10. Marks all stories deployed and updates `project.release`
-
-Every release deploys the **entire system** — not individual stories.
-
----
-
-### Gap Specs {#gap-specs}
-
-If during development the spec is discovered to be incomplete, incorrect, or has side-effects, the build agent writes to the story's single gap file rather than editing the main spec directly:
-
-**File:** `specs/stories/STORY-NNN/gap.md` — one file per story, persists until deploy-time merge
-
-The gap file records: what changed, which files were affected, side-effects on other stories, and a recommended spec update. The main spec stays stable. Multiple discoveries accumulate as additional bullets in the same file — no new files are created.
+If during development the spec is discovered to be incomplete or has side-effects on other stories, the code produce agent writes to `specs/stories/STORY-NNN/gap.md` rather than editing the spec directly. Multiple discoveries accumulate as additional bullets in the same file — no new files are created.
 
 ### Gap Merge {#gap-merge}
 
-**Time:** 2–5 minutes
-**Output:** Updated `story-spec.md` · gap.md deleted
+When all stories are built, SpecGantry checks for unmerged gap files and presents any it finds. After confirmation, each gap is merged into the story spec in place. Each `gap.md` is deleted after successful merge.
 
-When all stories are built, SpecGantry checks for unmerged gap files and presents any it finds. After confirmation, each gap is merged into the story spec in place (sections edited, not appended). Each `gap.md` is deleted after successful merge. A summary is shown before the deploy prompt.
+---
 
-If no gaps exist, SpecGantry skips straight to the deploy prompt.
+## Auto-Continue Mode {#auto-continue}
+
+Type `[>]` to enable auto-continue. The pipeline runs without pausing at spec approval prompts, moving from ideation through spec through build without stopping — until a genuine decision point:
+
+- A concern raised by a subagent
+- An arch/spec gap requiring resolution
+- All stories built (deploy requires explicit confirmation)
+- A CAPPED or CYCLING loop exit
+
+When auto-continue pauses, you see a log of everything that happened while it ran, grouped by phase:
+
+```
+  While running:
+    Spec
+      ✓ [001]: User authentication  (2 loops — post-login redirect per role added)
+      ✓ [002]: Company posts a job  (1 loop — passed first pass)
+      ✓ [003]: Admin reviews applications  (1 loop — passed first pass)
+    Build
+      ✓ [001]: User authentication  · quality: pass (2 iters — login loading state added)
+      ✓ [002]: Company posts a job  · quality: pass (1 iter)
+      ⚠ [003]  · AI response buffered — updating spec
+      ✓ [003]  · spec updated + rebuilt
+
+⏸ Auto-run complete — all stories built. Use [1] Deploy release 1.0.0 to proceed.
+```
 
 ---
 
 ## Reverse Engineering an Existing Codebase {#reverse-engineering}
 
-If `/spec-gantry` is run in a directory that has source files but no `specs/` folder, it detects this and offers a choice: start a new project or analyse the existing codebase. Selecting reverse-engineer runs a dedicated agent that:
-
-1. **Silently analyses** the codebase — tech stack, structure, user-facing capabilities, auth model, completion level per feature, env vars from `.env.example` or config files, and entry points per story
-2. **Presents a story list** with a `Status` column for each story: `built` (fully implemented), `partial` (exists but incomplete), or `missing` (not yet built). You can edit the list — merge, rename, change status — before confirming.
-3. **Writes spec files** — `specs/architecture.md` (including a populated `## Configuration` table), `specs/project-state.yaml` with correct `built`/`deployed` flags per story, and stub `build-report.yaml` files for built stories so the deployment agent can read their runtime profiles
-4. **Tags source files** — adds `@story`, `@entry`, and `@contract` anchor comments to route/handler files so the investigation agent can navigate the codebase immediately
-5. **Confirms** — shows a summary of stories identified, env vars documented, and files tagged
-
-**Status mapping in the pipeline:**
-- `built` stories → `built:true · deployed:true` — they enter the pipeline at the modification stage immediately. Use `[N] New work` to fix bugs or add enhancements.
-- `partial` / `missing` stories → `built:false · deployed:false` — they follow the normal spec → build → deploy pipeline
-- `partial` stories that you'd prefer to treat as enhancements (rather than a full rebuild) can be changed to `built` during the review step
-
-**Routing after reverse-engineering:** the pipeline skips the automatic "Spec next story" action for stories with `built:true · spec_done:false` — these already have running code and don't need a full spec cycle before modifications can begin. Their `~` status in the dashboard shows they have no written spec yet. Type a story ID directly to write its spec at any time.
+If `/spec-gantry` is run in a directory that has source files but no `specs/` folder, it offers to scan the existing codebase and generate an architecture, story backlog, and anchor tags. After confirmation, the pipeline picks up from spec for any unbuilt stories.
 
 ---
 
 ## Release Versioning {#versioning}
 
-SpecGantry uses standard X.Y.Z semver. The version is a project-level concept — not per-story.
-
-- Every project starts at `1.0.0`
-- The version only changes when a release is deployed
-- The bump is computed automatically from the highest-severity change type across all stories in the release:
-
-| Change type | Bump | Example |
-|---|---|---|
-| `project_change` | major | `1.0.0` → `2.0.0` |
-| `enhancement` or `new_story` | minor | `1.0.0` → `1.1.0` |
-| `bug_fix` only | patch | `1.0.0` → `1.0.1` |
-
-The initial release always deploys as `1.0.0`.
-
----
-
-## The Architecture Artifact {#architecture-artifact}
-
-`specs/architecture/architecture.md` is the single source of truth for the system. It contains:
-
-- **Vision** — what the system is, who it's for, why it's worth building
-- **Problem & Users** — user population, use case, success criteria
-- **Constraints** — hard stops that architecture must respect
-- **Risks & Out of Scope** — top risks with mitigations, explicit v1 deferral list
-- **Tech Stack** — confirmed choices per layer
-- **Guardrails** — enforceable rules every story must respect
-- **Configuration** — env var table: every variable the project uses, its description, and a safe example value
-- **Change history** — gap merges append a row to each story spec's change history table; architecture is never overwritten
-
-Story specs **reference** this document rather than duplicating it. This keeps both the architecture and story specs slim.
-
----
-
-## Handling Changes After Deployment {#post-deployment}
-
-Use `[N] New work` at any point to describe new work — bug fix, enhancement, new story, or architectural change. SpecGantry classifies the work, reads the backlog and story specs to determine what's affected, confirms with you, and re-enters the pipeline.
-
-You can also act on a specific story directly from the dashboard. Type a story ID for a story that is already built — SpecGantry shows an inline prompt:
-
-```
-STORY-001: Bookmark CRUD API  ·  ✅ spec · ✅ built
-──────────────────────────────────────────────────────────
-What would you like to change?  >
-```
-
-Describe the change — a bug, an enhancement, or a new feature in that story's area — and SpecGantry routes it correctly without going through the `[N] New work` flow.
-
-| Type | What happens |
+| Change type | Bump |
 |---|---|
-| `bug_fix` | Investigation agent reads the codebase to locate the exact files and root cause — confirms findings with you. Build agent uses the findings as a targeted brief. Spec is not touched. Patch release on next deploy. |
-| `enhancement` | Investigation agent locates where the change slots in. Orchestrator writes/appends to `gap.md` for the affected story. Build agent implements against spec + gap. Spec merges at deploy time. Minor release on next deploy. |
-| `new_story` | Ideation agent runs in amendment mode to assign ID, update backlog and architecture. Then normal pipeline. |
-| `project_change` | Ideation agent runs in amendment mode first. Impacted story specs reset for re-spec. |
-
----
-
-## Session Safety & Resumption
-
-SpecGantry saves progress after every question, every answer, and every section. If a session is interrupted at any point, the next `/spec-gantry` picks up at the next unanswered item. This applies to all phases — ideation, story spec, and build.
-
----
-
-## Engagement Hooks {#engagement-hooks}
-
-**The problem:** Claude Code sessions have finite context. As a session grows — or after a `/compact` — Claude can lose track of the fact that this project is managed by SpecGantry and start making code changes directly, bypassing the pipeline entirely. Specs drift from code, and the core value of SpecGantry is lost.
-
-**The fix:** when SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs three files into the project's `.claude/` directory:
-
-| File | Purpose |
-|------|---------|
-| `.claude/settings.json` | Registers `SessionStart` and `PostCompact` hooks with Claude Code |
-| `.claude/hooks/spec-gantry-contract.sh` | Shell script that reads `CONTRACT.md` and emits it as `additionalContext` |
-| `.claude/CONTRACT.md` | The binding directive injected into every session (gitignored) |
-
-**How it works at runtime:**
-
-1. You open Claude Code in the project directory
-2. Claude Code fires the `SessionStart` hook — `spec-gantry-contract.sh` runs, reads `CONTRACT.md`, and injects its contents as system-level context before the first message
-3. Claude sees the directive before any user input: route all development through `/spec-gantry`, never bypass
-4. After `/compact` clears the conversation context, the `PostCompact` hook fires again — same injection, so Claude is immediately re-oriented
-
-**This runs entirely in Node.js via `hooks.js`** — not by Claude, not by the skill. It is deterministic and cannot be skipped.
-
-**Existing projects** get hooks installed automatically on the next session open after updating to v5.2.2+. No manual action needed — `hooks.js` checks for `specs/project-state.yaml` on every `SessionStart` and installs the hooks silently if they are missing.
-
-<div class="info">
-  <strong>CONTRACT.md is gitignored.</strong> It is regenerated on every project setup — committing it would add noise with no benefit. The hook script and <code>settings.json</code> are safe to commit if you want them version-controlled.
-</div>
+| `project_change` | major: `1.0.0` → `2.0.0` |
+| `enhancement` or `new_story` | minor: `1.0.0` → `1.1.0` |
+| `bug_fix` only | patch: `1.0.0` → `1.0.1` |
 
 ---
 
 ## Cost Visibility {#cost-tracking}
 
-SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson` and committed to git. Run `[$] Cost` or `/track-cost` for a breakdown by phase, story, release, and model.
-
-<div class="info">
-  <strong>Cost data in git:</strong> <code>specs/cost-log.ndjson</code> is committed alongside your specs — full history of AI development costs over the project lifetime.
-</div>
+SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson` and committed to git. Run `[$] Cost` or `/track-cost` for a breakdown by Plan/Produce/Eval columns, by story, and by release.
 
 ---
 
@@ -420,7 +452,7 @@ SpecGantry tracks the real cost of every agent run automatically. Token usage is
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
-      <span>Every skill command in detail — when to use each one and what it produces.</span>
+      <span>Every skill command in detail — the v6 dashboard, all 12 agents, and workflow walkthroughs.</span>
     </div>
   </a>
   <a href="/docs/architecture" class="next-step-card">

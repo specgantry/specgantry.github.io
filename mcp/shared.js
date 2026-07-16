@@ -43,29 +43,38 @@ const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
 // ─── Agent type → phase + model mapping ──────────────────────────────────────
 const AGENT_MAP = {
-  'spec-gantry:ideation:ideation-subagent':                 { phase: 'ideation',        model: 'claude-sonnet-4-6' },
+  // Ideation PPE trio
+  'spec-gantry:ideation:ideation-plan-agent':    { phase: 'ideation_plan',    model: 'claude-sonnet-5' },
+  'spec-gantry:ideation:ideation-produce-agent': { phase: 'ideation_produce', model: 'claude-sonnet-5' },
+  'spec-gantry:ideation:ideation-eval-agent':    { phase: 'ideation_eval',    model: 'claude-sonnet-5' },
+  // Spec PPE trio
+  'spec-gantry:spec:spec-plan-agent':            { phase: 'spec_plan',        model: 'claude-sonnet-5' },
+  'spec-gantry:spec:spec-produce-agent':         { phase: 'spec_produce',     model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:spec:spec-eval-agent':            { phase: 'spec_eval',        model: 'claude-sonnet-5' },
+  // Code PPE trio
+  'spec-gantry:code:code-plan-agent':            { phase: 'code_plan',        model: 'claude-sonnet-5' },
+  'spec-gantry:code:code-produce-agent':         { phase: 'code_produce',     model: 'claude-sonnet-5' },
+  'spec-gantry:code:code-eval-agent':            { phase: 'code_eval',        model: 'claude-sonnet-5' },
+  // Supporting agents (unchanged)
   'spec-gantry:investigate:investigate-subagent':           { phase: 'investigation',    model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:story-spec:story-spec-subagent':             { phase: 'story_spec',       model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:development:development-subagent':           { phase: 'development',      model: 'claude-sonnet-4-6' },
-  'spec-gantry:evaluate:evaluate-subagent':                 { phase: 'evaluation',       model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:plan:plan-subagent':                         { phase: 'repair_plan',      model: 'claude-haiku-4-5-20251001' },
   'spec-gantry:deployment:deployment-subagent':             { phase: 'deployment',       model: 'claude-sonnet-4-6' },
   'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-haiku-4-5-20251001' },
 };
 
 // Project-level phases — never associated with a story ID.
-const PROJECT_LEVEL_PHASES = new Set(['ideation', 'reverse_engineer', 'deployment', 'investigation']);
+const PROJECT_LEVEL_PHASES = new Set(['ideation_plan', 'ideation_produce', 'ideation_eval', 'reverse_engineer', 'deployment', 'investigation']);
 
 // ─── Fallback pricing ─────────────────────────────────────────────────────────
 const FALLBACK_RATES = {
-  'claude-haiku-4-5-20251001': { input_per_1m: 1.00,  output_per_1m:  5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
-  'claude-haiku-4-5':          { input_per_1m: 1.00,  output_per_1m:  5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
-  'claude-sonnet-4-6':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
-  'claude-sonnet-4-5':         { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
-  'claude-opus-4-8':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
-  'claude-opus-4-7':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
-  'claude-opus-4-6':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
-  'claude-opus-4-5':           { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-sonnet-5':            { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
+  'claude-haiku-4-5-20251001':  { input_per_1m: 1.00,  output_per_1m:  5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
+  'claude-haiku-4-5':           { input_per_1m: 1.00,  output_per_1m:  5.00, cache_write_per_1m: 1.25, cache_read_per_1m: 0.10 },
+  'claude-sonnet-4-6':          { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
+  'claude-sonnet-4-5':          { input_per_1m: 3.00,  output_per_1m: 15.00, cache_write_per_1m: 3.75, cache_read_per_1m: 0.30 },
+  'claude-opus-4-8':            { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-7':            { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-6':            { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
+  'claude-opus-4-5':            { input_per_1m: 5.00,  output_per_1m: 25.00, cache_write_per_1m: 6.25, cache_read_per_1m: 0.50 },
 };
 
 // ─── Rates ────────────────────────────────────────────────────────────────────

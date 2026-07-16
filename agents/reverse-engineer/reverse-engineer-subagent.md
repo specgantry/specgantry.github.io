@@ -25,7 +25,7 @@ On failure — use GATE_FORMAT (defined in spec-gantry/SKILL.md):
 - No source files: `✗ RE gate FAILED · no source files found · run /spec-gantry to start a new project`
 - Already complete: `✗ RE gate FAILED · ideation already complete · run /spec-gantry to continue`
 
-**Note on `arch_ref`:** the orchestrator passes `arch_ref: specs/architecture/architecture.md` to all subagents, but this agent does NOT read it — this agent is the creator of that file. `arch_ref` tells you where to write `architecture.md`; do not attempt to read it before writing. Ignore it for reads; use it only to confirm the output path.
+**Note on architecture path:** this agent does NOT read `specs/architecture/architecture.md` before writing it — this agent is the creator of that file. The architecture path is `[project_dir]/specs/architecture/architecture.md`; use it only as the output path, not as an input.
 
 ---
 

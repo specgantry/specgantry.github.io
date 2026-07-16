@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Skills & Agents
-description: Complete reference for SpecGantry's 2 skills and 8 agents — what they do, when they run, which model they use, and what they produce. v5 adds bounded raise-a-concern for story-spec and development, and cache-first context ordering via a shared preamble. v5.3 adds the quality review loop.
+description: The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.
 permalink: /docs/skills/
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
@@ -9,368 +9,341 @@ next_page: "Reference"
 next_page_url: "/docs/architecture"
 ---
 
-# Skills & Agents
+# SpecGantry Skills Guide
 
-SpecGantry provides 2 skills (entry-point commands) and 8 agents (subagents the orchestrator spawns). You only ever type the skills — the orchestrator decides which agents to invoke and when.
+SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is your real-time cost dashboard.
 
 ---
 
-## Skills
+## Skills Overview
 
-### /spec-gantry {#spec-gantry}
+| Skill | Command | Purpose |
+|---|---|---|
+| **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
+| **track-cost** | `/track-cost` | Cost breakdown by Plan/Produce/Eval, story, phase, and release |
 
-Your single entry point for everything. Run this at the start of every Claude Code session.
+---
+
+## /spec-gantry {#spec-gantry}
+
+**The only command you need to know.**
 
 ```
 /spec-gantry
 ```
 
-SpecGantry reads `specs/project-state.yaml`, determines where you are in the pipeline, and routes you to the right action. It renders the dashboard every response and enforces phase gates automatically.
-
-**What it handles:**
-- New projects (triggers ideation)
-- Existing codebases (triggers reverse engineering)
-- Daily pipeline progress (spec → build → deploy)
-- Post-release work (bug fixes, enhancements, new stories, architectural changes)
-- Crash recovery (P0/P1/P2 gap routing)
-
-**The dashboard:**
-
-```
-SpecGantry v5  |  MyProject  |  release 1.0.0
-──────────────────────────────────────────────────────────────────
-Spec [███░░] 3/5  ·  Build [██░░░] 2/5  ·  Deploy [░░░░░] not deployed
-──────────────────────────────────────────────────────────────────
-  ID      Story                              Spec   Build
-  ────────────────────────────────────────────────────────────────
-  [001]   User authentication                  ✅     ✅
-  [002]   User profile management              ✅     ✅
-  [003]   User submits application             ✅     🔄
-  [004]   Admin reviews submissions            ✅     ○      depends on 003
-  [005]   Admin manages settings               ⏳     ○
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                       ○ not deployed
-──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it            [$] Cost
-  [1] Build next story — STORY-003        [?] Help
-  [N] New work                            [X] Exit
-──────────────────────────────────────────────────────────────────
-Enter story ID or action:  >
-```
-
-**Icon legend:**
-- `✅` Complete
-- `🔄` In progress (active_story matches this ID — covers development, evaluation, and repair_plan phases)
-- `🔴` Blocked by dependency
-- `⏳` Ready to work
-- `○` Not yet reached
-- `~` Stub spec (reverse-engineered — full spec not yet written)
-
-**Action bar — left column:** auto-derived from current pipeline state. Shows the single most actionable next step. Always ends with `[N] New work`.
-
-**Action bar — right column:** always visible: `[$]` Cost, `[?]` Help (expands to `[A]` Architecture + docs link), `[X]` Exit.
-
-**Input handling:**
-- Type a story number (`001`, `1`, or `STORY-001`) to jump directly to that story
-- Type a story with stub spec (`built:true · spec_done:false`) to complete its spec
-- Type lettered commands (`N`, `$`, `?`, `A`, `X`) to execute those actions
-
-**The routing table** (evaluated in order, P-rows first):
-
-| Priority | Condition | Action |
-|----------|-----------|--------|
-| P0 | `pending_arch_gap` non-null | Fill missing arch section → resume |
-| P1 | `pending_spec_gap` non-null | Fix spec reference → resume build |
-| P2 | `ideation_complete:true` + `arch_seeded:false` | Recover crashed arch write |
-| 1 | No project, no source files | Start new project |
-| 2 | No project, source files exist | Offer RE or new project |
-| 3 | `ideation_complete:false` | Continue ideation |
-| 4 | Any `spec_done:false + built:false` | Spec next story |
-| 5 | All `spec_done:true`, any `built:false` | Build next story |
-| 6 | All `built:true`, any `deployed:false` | Deploy release |
-| 7 | All `deployed:true` | New work (classify + route) |
+Run this at the start of every session. SpecGantry reads your project state, determines exactly where you are, and tells you what to do next.
 
 ---
 
-### /track-cost {#track-cost}
+### The Dashboard
 
-Token usage and cost breakdown by phase, story, model, and release.
+**State 1 — No stories yet** (ideation in progress, or no project):
+
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+```
+SpecGantry v6  |  Recipe Manager
+──────────────────────────────────────────────────────────
+  Ideation in progress  ·  🔄 produce — Topic 6/9
+
+──────────────────────────────────────────────────────────
+  [1] Continue ideation               [$] Cost
+                                      [?] Help
+                                      [X] Exit
+──────────────────────────────────────────────────────────
+```
+</div>
+
+**State 2 — Story pipeline active:**
+
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
+
+```
+SpecGantry v6  |  HireFlow  |  release 1.0.0
+Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
+──────────────────────────────────────────────────────────
+  ID      Story                            Spec        Build
+  ────────────────────────────────────────────────────────────────
+  [001]  User authentication                ✅          ✅
+  [002]  Company posts a job                ✅          🔄 eval·2
+  [003]  Admin reviews applications         🔄 eval     ⏳
+  [004]  Candidate browses and applies      ⏳          ○
+  ────────────────────────────────────────────────────────────────
+  Release 1.0.0                                        ○ not deployed
+──────────────────────────────────────────────────────────────────
+  Type a story ID to manage it        [$] Cost
+  [1] Build next — [002]: Company…    [?] Help
+  [>] Run to next pause               [X] Exit
+  [N] New work
+──────────────────────────────────────────────────────────────────
+Enter story ID or action:  >
+```
+</div>
+
+**What the in-progress labels mean:**
+
+The Spec and Build columns show exactly where in the PPE loop a story is:
+
+| Label | Meaning |
+|---|---|
+| `🔄 plan` | Plan agent running |
+| `🔄 write` | Spec produce agent writing story-spec.md |
+| `🔄 eval` | Eval agent checking north star (iteration 1) |
+| `🔄 eval·2` | Eval agent on iteration 2 — a repair loop is running |
+| `🔄 build` | Code produce agent building |
+
+**Pipeline stage icons:**
+
+| Icon | Meaning |
+|---|---|
+| `✅` | ACHIEVED — north star confirmed |
+| `🔄 [label]` | Active — shows which PPE step and iteration |
+| `🔴` | Blocked by a dependency |
+| `⏳` | Ready — not blocked, not yet started |
+| `○` | Not yet reached |
+| `~` | Built but no spec written (reverse-engineered story) |
+
+`✅` in v6 means the evaluator confirmed the north star — not just that a format checklist passed. Spec ✅ means a machine-validated spec. Build ✅ means code that passed both the quality dimension rubric and the code north star.
+
+---
+
+### What /spec-gantry Handles
+
+**Starting a new project** — name and vision, then quick-start (3 questions, smart defaults) or full ideation (9 topics). For simple projects, quick-start activates automatically.
+
+**Analysing an existing codebase** — source files detected without a project → scan and generate architecture, story backlog, and anchor tags.
+
+**Full story lifecycle** — ideation → spec (with north-star validation) → code (with PPE loop) → deploy. Phase gates enforced automatically.
+
+**Bug fixes and new work** — `[N] New work` at any point. Investigation agent reads the codebase, confirms findings, build agent fixes, full code PPE loop runs.
+
+---
+
+### Action Bar Commands
+
+| Command | What it does |
+|---|---|
+| `[1]`–`[n]` contextual | Pipeline action for your current state |
+| `[>]` Run to next pause | Enable auto-continue — pipeline runs until a genuine decision point |
+| `[N]` New work | Describe a bug, improvement, new story, or change |
+| `[$]` Cost | Opens the cost dashboard |
+| `[?]` Help | `[A]` Architecture · docs link |
+| `[X]` Exit | Return to normal Claude Code |
+
+---
+
+### The 12 Agents
+
+SpecGantry v6 uses 12 agents — three per PPE phase plus three supporting agents:
+
+**Ideation phase**
+
+| Agent | Role | Model |
+|---|---|---|
+| `ideation-plan-agent` | Determines what topics remain to satisfy the ideation north star | Sonnet 5 |
+| `ideation-produce-agent` | Asks questions, writes all architecture artifacts | Sonnet 5 |
+| `ideation-eval-agent` | Evaluates artifacts against the ideation north star | Sonnet 5 |
+
+**Spec phase**
+
+| Agent | Role | Model |
+|---|---|---|
+| `spec-plan-agent` | Determines what the spec must capture — thinks like a product head | Sonnet 5 |
+| `spec-produce-agent` | Writes `story-spec.md` following the plan | Haiku 4.5 |
+| `spec-eval-agent` | Evaluates spec against the spec north star, emits approval summary | Sonnet 5 |
+
+**Code phase**
+
+| Agent | Role | Model |
+|---|---|---|
+| `code-plan-agent` | Plans the build approach (iteration 1) or repair strategy (iteration 2+) | Sonnet 5 |
+| `code-produce-agent` | Builds the full story end-to-end | Sonnet 5 |
+| `code-eval-agent` | Evaluates code against quality dimensions + code north star; emits GOAL_GAP when spec was insufficient | Sonnet 5 |
+
+**Supporting agents**
+
+| Agent | Role | Model |
+|---|---|---|
+| `investigate-subagent` | Read-only codebase search for bug fixes and enhancements | Haiku 4.5 |
+| `deployment-subagent` | Generates Dockerfiles, docker-compose, deploy.sh | Sonnet 4.6 |
+| `reverse-engineer-subagent` | Synthesises architecture and story backlog from existing code | Haiku 4.5 |
+
+Plan and eval agents use Sonnet 5 — genuine reasoning is required to challenge plan goals and evaluate against north stars. Haiku is only used where the task is bounded and deterministic (spec writing, investigation, reverse engineering).
+
+---
+
+### Quality Review
+
+The code PPE loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before the produce agent writes any code — so async patterns, state management, and experience requirements are decided upfront.
+
+The transition note tells you how it went:
+
+```
+✓ Build complete · STORY-001  ·  quality: pass (1 iter)
+✓ Build complete · STORY-002  ·  quality: pass (2 iters — loading state added to save action)
+✓ Build complete · STORY-003  ·  quality: pass (1 iter after spec update)
+  ↑ this story had a GOAL_GAP — spec was updated mid-build
+```
+
+**Config** (in `project-state.yaml`):
+```yaml
+ppe_loop:
+  max_iterations:
+    ideation: 3
+    spec: 2
+    code: 3
+```
+
+---
+
+## /track-cost {#track-cost}
+
+**See exactly what your AI development is costing — broken down by Plan, Produce, and Eval columns.**
 
 ```
 /track-cost
 ```
 
-Reads `specs/cost-log.ndjson` and renders the Cost Matrix as the default view, with three drill-down options:
+Cost data is captured automatically after every agent run and stored in `specs/cost-log.ndjson`, committed to git.
 
-**Cost Matrix (default — input `1`):**
+---
 
-Two tables — cost in USD first, then token counts. Stories as rows, phases as columns.
+### The Cost Dashboard
+
+**Default view — Cost by Phase and Story:**
+
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v5  |  MyProject
-Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
+SpecGantry v6  |  HireFlow  |  release 1.0.0
+Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
-Cost Matrix  |  release 1.0.0
+Release 1.0.0                        Plan     Produce      Eval     Total
+───────────────────────────────────────────────────────────────────────────
+Ideation                            $0.61      $1.84      $0.43     $2.88
+Investigation                          —       $0.08         —      $0.08
+Deployment                             —       $0.22         —      $0.22
+Reverse engineer                       —          —          —         —
 
-Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
-────────────────────────────────────────────────────────────────────────────────────────────
-PROJECT        $0.82        —            —             —           —          $0.49      $1.31
-STORY-001        —        $0.54        $0.41         $0.04         —            —        $0.99
-STORY-002        —        $0.61        $0.35         $0.03       $0.02          —        $1.01
-STORY-003        —        $0.48        $0.28         $0.03         —            —        $0.79
-STORY-004        —        $0.43        $0.40         $0.04       $0.03          —        $0.90
-────────────────────────────────────────────────────────────────────────────────────────────
-Total          $0.82      $2.06        $1.44         $0.14       $0.05        $0.49      $5.00
+[001] User authentication
+  Spec                               $0.22      $0.11      $0.26     $0.59
+  Code                               $0.34      $2.41      $0.48     $3.23
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.56      $2.52      $0.74     $3.82
 
-Story        ideation   story_spec  development  evaluation  repair_plan  deployment    Total
-────────────────────────────────────────────────────────────────────────────────────────────
-PROJECT       42,340        —            —             —           —         4,890      47,230
-STORY-001        —       12,840        9,610         2,100         —            —       24,550
-STORY-002        —       14,310        8,140         2,050       1,640          —       26,140
-STORY-003        —       11,260        6,540         2,080         —            —       19,880
-STORY-004        —       10,120        9,380         2,130       1,720          —       23,350
-────────────────────────────────────────────────────────────────────────────────────────────
-Total         42,340     48,530       33,670         8,360       3,360        4,890     141,150
+[002] Company posts a job
+  Spec                               $0.18      $0.09      $0.20     $0.47
+  Code                               $0.28      $1.87      $0.39     $2.54
+  ────────────────────────────────────────────────────────────────────────
+  Story total                        $0.46      $1.96      $0.59     $3.01
 
-Stories:
-  STORY-001  User authentication
-  STORY-002  User profile management
-  STORY-003  User submits application
-  STORY-004  Admin reviews submissions
+═══════════════════════════════════════════════════════════════════════════
+Total                               $3.15     $12.06      $3.37    $18.58
 
-──────────────────────────────────────────────────────────
-  [1] Matrix        [2] By release    [3] By model
-                                      [X] Return
-──────────────────────────────────────────────────────────
-Enter option:  >
+  [T] Show tokens   Run /spec-gantry to return to the dashboard.
+```
+</div>
+
+Type `[T]` to switch to token counts. Same layout, numbers in tokens (abbreviated to `12k` format). Type `[C]` to switch back to cost.
+
+**What the Plan/Produce/Eval columns tell you**
+
+The column split exposes where AI spend goes within each story:
+
+- **Plan** — the cost of thinking through what to build (ideation topics, spec criteria, build approach, repair strategy). Low cost, high leverage.
+- **Produce** — the cost of actually generating artifacts and code. Dominates total spend.
+- **Eval** — the cost of evaluating against the north star. For a 4-story project, Plan + Eval together typically represent 30–35% of total cost — the price of quality assurance that would otherwise surface as post-delivery rework.
+
+**Story total rows** let you see the end-to-end cost of each story immediately — no mental arithmetic needed across Spec and Code rows.
+
+---
+
+### How Cost Tracking Works
+
+- The `SubagentStop` hook fires automatically when each agent completes
+- Token counts are read directly from the agent's transcript — exact API values, not estimates
+- All 12 v6 agents are mapped: plan/produce/eval per phase into separate cost entries
+- One entry appended to `specs/cost-log.ndjson` per agent run — never overwritten
+- `claude-sonnet-5` rates included in the rates cache
+
+**Typical cost profile for a 3-story project:**
+
+| Phase group | Relative share |
+|---|---|
+| Ideation (plan + produce + eval) | 10–15% |
+| Spec × N stories (plan + produce + eval) | 10–15% |
+| Code × N stories (plan + produce + eval) | 60–70% |
+| Supporting (investigate + deploy) | 5–10% |
+
+Code produce still dominates. The plan and eval agents across all phases together add roughly 30–35% overhead compared to a produce-only pipeline — but that overhead front-loads quality checks that would otherwise appear as bugs, rework, and extra sessions.
+
+---
+
+## Common Workflows
+
+### Starting a New Project
+
+```
+/spec-gantry → [1] Start new project
+            → Enter name and vision
+            → Quick-start (3 questions) or [F] full ideation
+            → Ideation PPE loop runs (catches gaps automatically)
+            → architecture.md + story backlog written
+            → Commit specs/ to git
+            → Spec PPE loop per story (north-star validated specs)
+            → Code PPE loop per story (with GOAL_GAP routing if needed)
 ```
 
-**By Release (input `2`):**
+### Handling a Production Bug
 
 ```
-Cost by Release
-
-Release       Tokens        Cost
-─────────────────────────────────
-1.0.0        129,430      $12.94
-─────────────────────────────────
-Total        129,430      $12.94
+/spec-gantry → type story ID  (or [N] New work → describe bug)
+            → Investigation agent locates files and root cause
+            → Confirms findings with you
+            → Code PPE loop: plan → build → evaluate
+            → [1] Deploy release (patch version bump)
 ```
 
-**By Model (input `3`):**
+### Using Auto-Continue
 
 ```
-Cost by Model  |  release 1.0.0
-
-Model            Tokens        Cost
-────────────────────────────────────
-sonnet-4-6      117,889      $11.79
-haiku-4-5        11,541       $1.15
-────────────────────────────────────
-Total           129,430      $12.94
+/spec-gantry → [>] Run to next pause
+            → Pipeline runs: ideation → spec (all stories) → code (all stories)
+            → Pauses only at genuine decision points
+            → Resume summary shows what happened, grouped by Spec and Build
 ```
 
-**Cost data is exact** — the SubagentStop hook reads actual `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, and `cache_read_input_tokens` from the API response. Cache reads and writes are tracked separately because they have different cost profiles. Model names strip the `claude-` prefix for display.
+### Reviewing Project Costs
 
----
-
-## Agents
-
-The orchestrator (SKILL.md) decides which agent to invoke. You never call agents directly.
-
-### Ideation {#agent-ideation}
-
-**Model:** claude-sonnet-4-6  
-**Invoked:** at project start, for new stories (`new_story` path), for architectural changes, and in gap mode (P0/P2)
-
-Runs a two-beat conversational session that matures your idea and shapes the system. Acts as a partner and advisor — proposes one direction, asks for confirmation or redirection. Never decides silently.
-
-**Beat 1 (4 topics):** Vision → Problem & Users → Constraints → Risks & Out of Scope  
-**Beat 2 (5 topics):** Tech Stack → Guardrails → Configuration → Story List → UX Model
-
-After Beat 2: seeds all 6 architecture artifacts + Artifact Index + `intent.md` per story. Runs a self-review before setting `arch_seeded:true`.
-
-**Arch gap mode (P0/P2):** when invoked for a missing arch section, reads the Artifact Index, adds the missing entity/actor/contract/pattern/ux section to the appropriate file, and updates the index. Story-level gaps target one section; project-level gaps (P2) check all missing files and write them.
-
-**Amendment mode:** when architecture changes are needed for `new_story` or `project_change`, appends dated amendment blocks — never replaces prior content.
-
----
-
-### Story Spec {#agent-story-spec}
-
-**Model:** claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)  
-**Invoked:** for each story in pipeline order (Phase 2), for stub spec completion (RE projects), in spec gap mode (P1), and at deploy time for gap merges
-
-Produces a slim, precise `story-spec.md` (max 60 lines) and finalizes `intent.md`.
-
-**Steps:**
-1. Load `architecture.md` + all 6 architecture artifacts + `intent.md` + project-state
-2. Detect RE stub (`⚠ Stub spec` marker) — if stub, skips validation; treats `reads:` as a context hint
-3. Finalize `intent.md` (skip if `intent_done:true`)
-4. Validate arch references — signal P0 if any required section is missing
-5. Write `story-spec.md` — 5 sections + `reads:` block
-6. Self-review — 11 items, 60-line hard stop
-7. User confirmation: `[Y] Approve  [E] Edit  [X] Hold`
-8. Set `spec_done:true`
-
-**Spec gap mode (P1):** updates the relevant spec section (reads: block, interfaces, or data) based on what development flagged as missing.
-
-**Gap merge mode (deploy time):** applies `gap.md` changes to `story-spec.md` in place, updates `intent.md` if fundamental purpose changed, appends change history row, deletes `gap.md`.
-
----
-
-### Development {#agent-development}
-
-**Model:** claude-sonnet-4-6  
-**Invoked:** for each story in build order (Phase 3), for bug fixes, and for enhancements
-
-Implements one story end-to-end: data layer → backend → AI integration → frontend.
-
-**Read sequence:**
-1. `intent.md` — functional grounding
-2. `story-spec.md` — extract `reads:` block
-3. `architecture.md` — Artifact Index + Guardrails + Configuration
-4. For each `reads:` entry: load only that specific `##` section from the architecture artifact
-
-Total context: ~130 lines.
-
-**Code anchors written** in every new file:
 ```
-@story STORY-002 | submissions
-@intent allows an applicant to submit their completed draft for admin review
-@entry POST /api/applications/:id/submit | submit draft application
-@contract input: {...} → output: contract:submission-response | errors: ...
-@gap [date] [divergence from spec]  (only when gap.md entry exists)
+/track-cost             → cost by Plan/Produce/Eval, by story
+  → [T]                 → same view in tokens
+  → [C]                 → back to cost
+  → Run /spec-gantry    → return to dashboard
 ```
 
-**P1 gap signal:** if a referenced arch section doesn't exist at read time, writes `pending_spec_gap` to project-state and stops. Does not modify any arch or spec files.
-
-**Produces:** `build-report.yaml` (runtime profile, build command, migration info) + sets `built:true`
-
 ---
 
-### Evaluate {#agent-evaluate}
+## Next Steps
 
-**Model:** claude-haiku-4-5-20251001  
-**Invoked:** after every development or repair build (Step Q2 of the quality loop)
-
-Read-only. Scores the completed build against the active quality rubric. Never writes source files.
-
-**Read sequence:**
-1. `quality-dimensions.md` — builds the active rubric from story signals (`has_ui`, `has_ai`, `has_data_mutations`, `has_external_calls`, `has_auth`)
-2. `intent.md` + `story-spec.md` — functional grounding
-3. `build-report.yaml` — `files_modified` list
-4. Source files listed in `files_modified`
-
-**Returns:** raw JSON — `overall: PASS|FAIL`, `overall_reason`, `active_rubric[]`, `dimensions[]` (each with `name`, `verdict: PASS|FAIL|SKIP`, `reason`), `failing_dimensions[]`, `advisory_notes[]`.
-
-A `PASS` exits the quality loop and marks the story built. A `FAIL` triggers the Plan agent.
-
----
-
-### Plan {#agent-plan}
-
-**Model:** claude-haiku-4-5-20251001  
-**Invoked:** after every `FAIL` from the Evaluate agent (Step Q3 of the quality loop)
-
-Read-only. Receives the evaluation JSON and produces a targeted repair strategy for the Development agent. Never writes source files.
-
-**Returns:** raw JSON — `root_cause`, `fix_steps[]` (max 3, each `"file — what to do (addresses dimension_name)"`), `preserve` (what must not change), `approach_change` (boolean — true when the component's core architecture must be rewritten, not just patched).
-
-`approach_change: true` is reserved for cases where prior iterations attempted targeted fixes and the same dimensions keep failing. The orchestrator uses this to detect cycling and exit the loop if the same dimensions fail again after an `approach_change` repair.
-
----
-
-**Model:** claude-sonnet-4-6  
-**Invoked:** Phase 4, after all stories are built
-
-Generates a versioned `deploy.sh` for all stories. Reads `build-report.yaml` for runtime profiles, infers infrastructure target from tech stack and guardrails.
-
-**Produces:**
-- `specs/deploy.sh` — build + migrations + deploy + health checks per story, `--dry-run` support
-- `specs/deploy-artifact.md` — deployment metadata, environment variable requirements, manual steps
-- Updates `deployed:true` per story, clears `next_release_type`
-
-**Infrastructure detection:** Kubernetes, AWS ECS, GCP Cloud Run, Azure Container Apps, docker-compose, AWS Lambda, Heroku, PM2/systemd, static CDN — inferred from tech stack signals. Ambiguous targets emit `# MANUAL:` blocks.
-
----
-
-### Investigation {#agent-investigate}
-
-**Model:** claude-haiku-4-5-20251001  
-**Invoked:** at the start of every `bug_fix` or `enhancement` in the post-release `classify_and_route` flow
-
-Read-only. Never writes code or modifies files. Searches the codebase using anchor tags and returns a structured findings report.
-
-**Anchor search order:**
-1. `@story` — map files to stories
-2. `@intent` — orient to functional purpose across stories without loading intent.md files
-3. `@entry` — route handlers and action entry points
-4. `@contract` — data shapes at layer boundaries
-5. `@gap` — known divergences already noted in code
-
-**Stub detection:** if the story spec is a RE stub (no `## Criteria`), uses code structure and arch artifacts for spec alignment instead.
-
-**Returns:**
-```
-INVESTIGATION FINDINGS
-status: confirmed
-type: bug_fix | enhancement
-affected_stories: [...]
-root_cause: ...
-spec_alignment: ...
-confidence: high | medium | low
-```
-
-User confirms before findings are passed to the build agent.
-
----
-
-### Reverse Engineer {#agent-reverse-engineer}
-
-**Model:** claude-haiku-4-5-20251001 (v5 — was sonnet-4-6)  
-**Invoked:** when source files exist but no SpecGantry artifacts are found
-
-Analyzes an existing codebase and synthesizes the complete v5 project structure.
-
-**Analysis (silent, no output):** tech stack, project structure, user-facing capabilities (grouped into 3–6 candidate stories), auth model, completion level per story, guardrail candidates, configuration, entry points, dependencies, runtime profile.
-
-**Produces (in order):**
-1. Presents inferred story list for user review and confirmation
-2. Writes `specs/project-state.yaml` Pass 1 — with `arch_seeded:false`, `intent_done:false` per story
-3. Writes `specs/architecture/architecture.md` — narrative + UX Model
-4. Analyzes frontend code for UX patterns
-5. Writes all 6 architecture artifacts + Artifact Index
-6. Writes `intent.md` and stub `story-spec.md` per story
-7. Writes `build-report.yaml` stubs for built stories
-8. Updates project-state Pass 2 — sets `arch_seeded:true`, `intent_done:true`
-9. Asks to tag source files with anchor comments (`[Y] Add tags  [S] Skip  [X] Cancel`)
-
----
-
-### Ideation — Arch Gap Mode {#agent-gap}
-
-The ideation agent runs in a special mode when invoked via P0 or P2. It does not start a conversational session — it targets a specific missing artifact section and fills it.
-
-**P0 (story-level gap):** reads the Artifact Index, reads the relevant architecture artifact, adds the missing section (entity/actor/contract/pattern/ux), updates the index list.
-
-**P2 (project-level gap, `story_id: null`):** checks all architecture artifacts for existence, writes any missing ones, writes `intent.md` for any story where `intent_done:false` and file is absent.
-
-Returns `arch gap resolved — [what was added/changed]`. The orchestrator clears the gap flag and resumes the interrupted phase.
-
----
-
-## Summary Table
-
-| Agent | Model | Phase | Produces |
-|-------|-------|-------|----------|
-| Ideation | Sonnet | Phase 1 | architecture/ · intent.md · story list |
-| Ideation (gap mode) | Sonnet | P0/P2 | missing arch sections · intent.md |
-| Story Spec | Haiku | Phase 2 | story-spec.md (≤60 lines) · intent.md final |
-| Development | Sonnet | Phase 3 | code + anchors · build-report.yaml |
-| Evaluate | Haiku | Quality loop (Q2) | evaluation JSON — PASS/FAIL per dimension |
-| Plan | Haiku | Quality loop (Q3) | repair strategy JSON — root cause + fix steps |
-| Deployment | Sonnet | Phase 4 | deploy.sh · deploy-artifact.md |
-| Investigation | Haiku | Post-release | findings report (read-only) |
-| Reverse Engineer | Haiku | Pre-pipeline | full architecture layer · stubs |
+<div class="next-steps-grid">
+  <a href="/docs/architecture" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
+    <div>
+      <strong>Reference</strong>
+      <span>File structure, state flags, agent ownership, and extension points.</span>
+    </div>
+  </a>
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
+    <div>
+      <strong>FAQ</strong>
+      <span>Common questions on installation, the PPE loop, costs, and troubleshooting.</span>
+    </div>
+  </a>
+</div>

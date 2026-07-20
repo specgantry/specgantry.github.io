@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Getting Started
-description: Install SpecGantry and run your first session in under 5 minutes. Works with new and existing projects.
+description: Install SpecGantry and run your first session in under 5 minutes.
 permalink: /docs/getting-started/
 prev_page: "Overview"
 prev_page_url: "/docs"
@@ -9,44 +9,26 @@ next_page: "How It Works"
 next_page_url: "/docs/how-it-works"
 ---
 
-# Getting Started with SpecGantry v7
+# Getting Started
 
-Everything you need to install SpecGantry and complete your first session.
-
-**Estimated time: 5–10 minutes**
+**Estimated time: 5 minutes**
 
 ---
 
-## Prerequisites
-
-- **Claude Code** installed and authenticated ([Get Claude Code](https://claude.ai/code))
-- A terminal or the Claude Code desktop app
-- (Optional but recommended) A git repository for your project
-
----
-
-## Step 1 — Install the Plugin
-
-You must register the SpecGantry marketplace **before** installing the plugin. Both commands are required, in this order:
+## Install
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v7.0.0`
+Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.1`
 
 <div class="info">
-  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once.
+  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once.
 </div>
 
-<div class="success">
-  <strong>That's the entire installation.</strong> No npm install, no config files, no API keys. SpecGantry runs entirely within Claude Code.
-</div>
-
----
-
-## Updating SpecGantry
+**Update an existing installation:**
 
 ```bash
 claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
@@ -54,59 +36,27 @@ claude plugin marketplace update spec-gantry && claude plugin update spec-gantry
 
 ---
 
-## Step 2 — Start Your First Session
+## Start Your First Session
 
-Open Claude Code in any directory and run:
+Open Claude Code in any project directory and run:
 
 ```
 /spec-gantry
 ```
 
-SpecGantry detects three situations:
+SpecGantry detects what's already in the directory:
 
-<div class="dg-wrap">
-<div class="dg-node-graph">
-
-  <div class="dg-node dg-neutral">
-    <div class="dg-node-num">A</div>
-    <div class="dg-node-name">Empty directory</div>
-    <div class="dg-node-output">→ Start new project — enter name and vision, then ideation begins</div>
-  </div>
-
-  <div class="dg-node dg-neutral">
-    <div class="dg-node-num">B</div>
-    <div class="dg-node-name">Source files, no specs/</div>
-    <div class="dg-node-output">→ Analyse existing codebase — reverse-engineer a north star, architecture, and capability list from your code</div>
-  </div>
-
-  <div class="dg-node dg-neutral">
-    <div class="dg-node-num">C</div>
-    <div class="dg-node-name">specs/ exists</div>
-    <div class="dg-node-output">→ Resume — dashboard shows pipeline state, routes you to the next action</div>
-  </div>
-
-</div>
-</div>
+| Situation | What happens |
+|---|---|
+| Empty directory | Start new project — enter name and vision |
+| Source files, no `specs/` | Reverse-engineer: generates north star, architecture, and capability list from your code |
+| `specs/` exists | Resume — dashboard shows pipeline state and routes you to the next action |
 
 ---
 
-## Step 3 — New Project: Enter Name and Vision
+## New Project: Ideation
 
-SpecGantry asks two things:
-
-```
-Project name (max 60 chars):  > Recipe Manager
-Project vision (2–4 sentences):  > A personal recipe manager where I can save,
-tag, and search recipes by ingredient. Simple CRUD, single user, no login needed.
-```
-
-SpecGantry then enters the **ideation CWJ loop** — an adversarial challenger reads your vision and fires a round of blocking questions.
-
----
-
-## Step 4 — Ideation
-
-The ideation loop surfaces all questions for a round together as a grouped block. You answer them all in one response — the challenger has grouped related questions by theme so the conversation flows naturally.
+SpecGantry asks for a project name and a 2–4 sentence vision. Then the ideation loop begins — an adversarial challenger reads your vision and fires a round of blocking questions, grouped by theme. You answer them all in one response.
 
 ```
 ──────────────────────────────────────────────────────────
@@ -114,22 +64,22 @@ The ideation loop surfaces all questions for a round together as a grouped block
 ──────────────────────────────────────────────────────────
 
 Data ownership
-  Recipes are described as personal — is there any concept of sharing or exporting
-  to another user, or is this strictly single-user with no outbound data flow?
+  Recipes are described as personal — is there any concept of sharing
+  or exporting, or is this strictly single-user?
 
 Tech fit
-  You mentioned "no login needed" alongside SQLite. Single-user with no auth
-  is a valid choice, but does that mean anyone with access to the machine can
-  use it, or should there be at minimum a local password?
+  "No login needed" alongside SQLite: does that mean anyone with
+  machine access can use it, or should there be a local password?
 
 Scale
-  What does "search by ingredient" mean at the edges — partial match, exact
-  match, or something like "find recipes where I have all the ingredients"?
+  What does "search by ingredient" mean at the edges — partial match,
+  exact match, or "find recipes where I have all the ingredients"?
 ```
 
-Answer all questions in one response. The judge then evaluates whether a developer could start writing specs without inventing answers. If yes: SpecGantry writes the artifacts and exits ideation. If not: another round.
-
-When ideation exits:
+When the judge returns CLEAR, the write agent runs once and produces:
+- `specs/north-star.md` — what good looks like for this project
+- `specs/architecture/architecture.md` — all technical decisions
+- `specs/capabilities/[CAP-ID]/intent.md` — one per capability
 
 ```
 ✓ Ideation complete  ·  Recipe management · Tag and organise · Ingredient search
@@ -137,7 +87,6 @@ When ideation exits:
 ```
 
 **Commit your specs now:**
-
 ```bash
 git add specs/
 git commit -m "feat: SpecGantry project init"
@@ -145,29 +94,9 @@ git commit -m "feat: SpecGantry project init"
 
 ---
 
-## Step 5 — Spec and Build
-
-The pipeline processes each capability in order.
-
-**Spec CWJ loop:** the challenge agent reads your north star and capability intent, then asks what a developer would be blocked on building this. The write agent resolves every challenge into `capability-spec.md`. The judge checks whether a developer reading the spec would still be blocked. The loop iterates autonomously — you only see the result when the judge says CLEAR.
-
-You approve a machine-challenged spec:
-
-```
-✓ Spec validated — CAP-001: Recipe management
-  All async states described, empty state covered, error messages specified.
-  North star alignment confirmed.
-
-  [Y] Approve spec   [E] Edit   [X] Hold
-```
-
-**Code CWJ loop:** the plan agent plans the build approach, the build agent implements end-to-end, and the challenge agent traces the user's experience through the actual code. If a user couldn't accomplish what was promised, the loop repairs. Fully automated — you only see the transition note.
-
----
-
 ## The Dashboard
 
-After ideation and during the build phase:
+After ideation, every `/spec-gantry` session starts with the dashboard:
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
@@ -193,25 +122,45 @@ Enter capability ID or action:  >
 ```
 </div>
 
-Type `[>]` to run the full pipeline automatically — spec and build all remaining capabilities, pausing only at genuine decision points like spec gaps or loop caps.
+Type `[>]` to run the full pipeline automatically — spec and build all remaining capabilities, pausing only at genuine decision points.
 
 ---
 
-## Step 6 — Deploy
+## Spec and Code
 
-Once all capabilities are built, SpecGantry prompts to deploy. The deployment agent runs a north-star alignment check first — surfacing any capability that exited CAPPED — then generates deployment artifacts and deploys.
+**Spec loop (autonomous):** The challenge agent asks what a developer would be blocked on. The write agent resolves every challenge into `capability-spec.md`. The judge checks readiness. You see the result once — when the judge returns CLEAR:
+
+```
+✓ Spec validated — CAP-001: Recipe management
+  All async states described, empty state covered, error messages specified.
+
+  [Y] Approve spec   [E] Edit   [X] Hold
+```
+
+**Code loop (fully automated):** Plan → build → user-proxy challenge traces the experience through the actual source files → repair if blocked. You see the transition note:
+
+```
+✓ Build complete · CAP-001  ·  quality: pass (1 cycle)
+✓ Build complete · CAP-002  ·  quality: pass (2 cycles — loading state added)
+```
+
+---
+
+## Deploy
+
+Once all capabilities are built, SpecGantry prompts to deploy. The deployment agent runs a north-star alignment check first, then generates Dockerfiles, docker-compose.yml, .env.example, and a versioned deploy.sh for your target platform.
 
 ---
 
 ## Daily Workflow
 
-| Situation | What to type |
+| Situation | Command |
 |---|---|
-| Resuming any work | `/spec-gantry` — always |
-| Auto-run the pipeline | `/spec-gantry` then `[>]` |
-| Check costs and insights | `/track-cost` |
-| Report a bug | `/spec-gantry` → `[N] New work` → describe the bug |
-| Work on a specific capability | `/spec-gantry` → type the capability ID |
+| Resuming any work | `/spec-gantry` |
+| Auto-run the pipeline | `/spec-gantry` → `[>]` |
+| Check costs | `/track-cost` |
+| Report a bug or new work | `/spec-gantry` → `[N]` |
+| Work on a specific capability | `/spec-gantry` → type capability ID |
 
 ---
 
@@ -221,25 +170,22 @@ Once all capabilities are built, SpecGantry prompts to deploy. The deployment ag
 project-root/
   specs/
     project-state.yaml          pipeline state + capability flags
-    north-star.md               flowing prose cognitive contract
-    changelog.md                append-only release history (created on first update)
+    north-star.md               per-project cognitive contract
+    changelog.md                append-only release history
     architecture/
-      architecture.md           all technical decisions in one file (## section:name anchors)
+      architecture.md           all technical decisions (## section:name anchors)
     capabilities/
       CAP-001/
         intent.md               2-paragraph experience promise
         capability-spec.md      developer contract (machine-challenged)
         build-report.yaml       quality outcome, runtime info, test plan
-    cost-log.ndjson             token usage per agent run (committed)
+    cost-log.ndjson             token usage per agent run
   .claude/
-    settings.json               engagement hooks
-    hooks/spec-gantry-contract.sh  contract injection at session start
-    CONTRACT.md                 binding directive (gitignored)
+    settings.json               SessionStart hook
+    CONTRACT.md                 engagement directive (gitignored)
 ```
 
 ---
-
-## Next Steps
 
 <div class="next-steps-grid">
   <a href="/docs/how-it-works" class="next-step-card">
@@ -253,7 +199,7 @@ project-root/
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
-      <span>All 12 agents, the dashboard in detail, and workflow walkthroughs.</span>
+      <span>The dashboard in detail, all 12 agents, and workflow walkthroughs.</span>
     </div>
   </a>
 </div>

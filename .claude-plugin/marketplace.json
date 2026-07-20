@@ -15,7 +15,7 @@
       },
       "displayName": "SpecGantry",
       "description": "AI-powered SDLC pipeline for Claude Code with adversarial Challenge-Write-Judge quality validation at every phase.",
-      "version": "7.0.1",
+      "version": "7.0.2",
       "author": {
         "name": "Mangesh Pise",
         "email": "mppise@gmail.com",

@@ -1,7 +1,7 @@
 {
     "name": "spec-gantry",
     "displayName": "SpecGantry",
-    "version": "7.0.1",
+    "version": "7.0.2",
     "description": "AI-powered SDLC pipeline for Claude Code with Challenge-Write-Judge loop at every phase — adversarial quality validation from ideation through deployment.",
     "author": {
         "name": "Mangesh Pise",

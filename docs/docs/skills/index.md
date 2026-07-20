@@ -1,7 +1,8 @@
 ---
 layout: docs
-title: Skills Guide
-description: The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.
+title: Skills & Agents
+description: The two skills that power SpecGantry v7 — what they do, all 12 agents, the v7 dashboard, and every workflow covered.
+permalink: /docs/skills/
 prev_page: "How It Works"
 prev_page_url: "/docs/how-it-works"
 next_page: "Reference"
@@ -10,7 +11,7 @@ next_page_url: "/docs/architecture"
 
 # SpecGantry Skills Guide
 
-SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is your real-time cost dashboard.
+SpecGantry has two skills. `/spec-gantry` is the one you use every day — it handles everything. `/track-cost` is your developer intelligence dashboard.
 
 ---
 
@@ -19,7 +20,7 @@ SpecGantry has two skills. `/spec-gantry` is the one you use every day — it ha
 | Skill | Command | Purpose |
 |---|---|---|
 | **spec-gantry** | `/spec-gantry` | Your single entry point — dashboard, pipeline, new projects, changes, everything |
-| **track-cost** | `/track-cost` | Cost breakdown by Plan/Produce/Eval, story, phase, and release |
+| **track-cost** | `/track-cost` | Cost and iteration insights by Challenge/Write/Judge, by capability, by phase, and by release |
 
 ---
 
@@ -37,87 +38,88 @@ Run this at the start of every session. SpecGantry reads your project state, det
 
 ### The Dashboard
 
-**State 1 — No stories yet** (ideation in progress, or no project):
+**State 1 — No capabilities in pipeline** (ideation in progress, or no project):
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v6  |  Recipe Manager
+SpecGantry v7  |  Recipe Manager
 ──────────────────────────────────────────────────────────
-  Ideation in progress  ·  🔄 produce — Topic 6/9
+  Ideation in progress  ·  🔄 challenge — round 2
 
 ──────────────────────────────────────────────────────────
-  [1] Continue ideation               [$] Cost
+  [1] Continue ideation               [$] Cost & insights
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 ```
 </div>
 
-**State 2 — Story pipeline active:**
+**State 2 — Capability pipeline active:**
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v6  |  HireFlow  |  release 1.0.0
+SpecGantry v7  |  HireFlow  |  release 1.0.0
 Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
 ──────────────────────────────────────────────────────────
-  ID      Story                            Spec        Build
-  ────────────────────────────────────────────────────────────────
-  [001]  User authentication                ✅          ✅
-  [002]  Company posts a job                ✅          🔄 eval·2
-  [003]  Admin reviews applications         🔄 eval     ⏳
-  [004]  Candidate browses and applies      ⏳          ○
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                        ○ not deployed
-──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it        [$] Cost
-  [1] Build next — [002]: Company…    [?] Help
+  ID       Capability                         Spec         Build
+  ──────────────────────────────────────────────────────────────────────
+  [001]   User authentication                 ✅           ✅
+  [002]   Job posting                         ✅           🔄 challenge·2
+  [003]   Application review                  🔄 judge     ⏳
+  [004]   Candidate browse and apply          ⏳           ○
+  ──────────────────────────────────────────────────────────────────────
+  Release 1.0.0                                            ○ not deployed
+──────────────────────────────────────────────────────────────────────
+  Type a capability ID to manage it   [$] Cost & insights
+  [1] Build next — [002]: Job…        [?] Help
   [>] Run to next pause               [X] Exit
   [N] New work
-──────────────────────────────────────────────────────────────────
-Enter story ID or action:  >
+──────────────────────────────────────────────────────────────────────
+Enter capability ID or action:  >
 ```
 </div>
 
 **What the in-progress labels mean:**
 
-The Spec and Build columns show exactly where in the PPE loop a story is:
+The Spec and Build columns show exactly where in the CWJ loop a capability is:
 
 | Label | Meaning |
 |---|---|
-| `🔄 plan` | Plan agent running |
-| `🔄 write` | Spec produce agent writing story-spec.md |
-| `🔄 eval` | Eval agent checking north star (iteration 1) |
-| `🔄 eval·2` | Eval agent on iteration 2 — a repair loop is running |
-| `🔄 build` | Code produce agent building |
+| `🔄 challenge` | Challenge agent running |
+| `🔄 write` | Write agent writing capability-spec.md |
+| `🔄 judge` | Judge agent checking readiness |
+| `🔄 plan` | Code plan agent planning build approach |
+| `🔄 build` | Build agent implementing |
+| `🔄 challenge·2` | Code challenge agent on iteration 2 — a repair loop is running |
 
 **Pipeline stage icons:**
 
 | Icon | Meaning |
 |---|---|
-| `✅` | ACHIEVED — north star confirmed |
-| `🔄 [label]` | Active — shows which PPE step and iteration |
+| `✅` | CLEAR — judge confirmed next phase not blocked |
+| `🔄 [label]` | Active — shows which CWJ step and iteration |
 | `🔴` | Blocked by a dependency |
 | `⏳` | Ready — not blocked, not yet started |
 | `○` | Not yet reached |
-| `~` | Built but no spec written (reverse-engineered story) |
+| `~` | Built but no spec written (reverse-engineered capability) |
 
-`✅` in v6 means the evaluator confirmed the north star — not just that a format checklist passed. Spec ✅ means a machine-validated spec. Build ✅ means code that passed both the quality dimension rubric and the code north star.
+`✅` in v7 means the judge confirmed the next phase would not be blocked — not just that a format checklist passed. Spec ✅ means a machine-challenged spec that the user approved. Build ✅ means code where the user-proxy challenge agent confirmed a user can accomplish what was promised.
 
 ---
 
 ### What /spec-gantry Handles
 
-**Starting a new project** — name and vision, then quick-start (3 questions, smart defaults) or full ideation (9 topics). For simple projects, quick-start activates automatically.
+**Starting a new project** — name and vision, then the ideation CWJ loop begins. An adversarial challenger fires blocking questions; you answer all of them per round; the judge evaluates readiness.
 
-**Analysing an existing codebase** — source files detected without a project → scan and generate architecture, story backlog, and anchor tags.
+**Analysing an existing codebase** — source files detected without a project → scan and generate north-star.md, architecture, capability list, intent files, and anchor tags.
 
-**Full story lifecycle** — ideation → spec (with north-star validation) → code (with PPE loop) → deploy. Phase gates enforced automatically.
+**Full capability lifecycle** — ideation → spec (with adversarial challenge) → code (with user-proxy challenge) → deploy. Phase gates enforced automatically.
 
-**Bug fixes and new work** — `[N] New work` at any point. Investigation agent reads the codebase, confirms findings, build agent fixes, full code PPE loop runs.
+**Bug fixes and new work** — `[N] New work` at any point. The investigate agent classifies the problem and routes to the right repair phase.
 
 ---
 
@@ -127,72 +129,73 @@ The Spec and Build columns show exactly where in the PPE loop a story is:
 |---|---|
 | `[1]`–`[n]` contextual | Pipeline action for your current state |
 | `[>]` Run to next pause | Enable auto-continue — pipeline runs until a genuine decision point |
-| `[N]` New work | Describe a bug, improvement, new story, or change |
-| `[$]` Cost | Opens the cost dashboard |
-| `[?]` Help | `[A]` Architecture · docs link |
+| `[N]` New work | Describe a bug, improvement, new capability, or change |
+| `[$]` Cost & insights | Opens the developer intelligence dashboard |
+| `[A]` Architecture | Display architecture.md in full |
+| `[S]` North star | Display north-star.md in full |
+| `[?]` Help | Docs link and quick-bar expansion |
 | `[X]` Exit | Return to normal Claude Code |
 
 ---
 
 ### The 12 Agents
 
-SpecGantry v6 uses 12 agents — three per PPE phase plus three supporting agents:
+SpecGantry v7 uses 12 agents — three per CWJ phase plus three supporting agents:
 
 **Ideation phase**
 
 | Agent | Role | Model |
 |---|---|---|
-| `ideation-plan-agent` | Determines what topics remain to satisfy the ideation north star | Sonnet 5 |
-| `ideation-produce-agent` | Asks questions, writes all architecture artifacts | Sonnet 5 |
-| `ideation-eval-agent` | Evaluates artifacts against the ideation north star | Sonnet 5 |
+| `ideation-challenge-agent` | Adversarial challenger — reads vision + prior answers, fires blocking questions specific to this project | Haiku |
+| `ideation-judge-agent` | Unblock checker — "could a developer start writing specs without inventing answers?" | Haiku |
+| `ideation-write-agent` | Consolidation — runs once on CLEAR; writes north-star.md, architecture.md, intent.md per capability | Sonnet |
 
 **Spec phase**
 
 | Agent | Role | Model |
 |---|---|---|
-| `spec-plan-agent` | Determines what the spec must capture — thinks like a product head | Sonnet 5 |
-| `spec-produce-agent` | Writes `story-spec.md` following the plan | Haiku 4.5 |
-| `spec-eval-agent` | Evaluates spec against the spec north star, emits approval summary | Sonnet 5 |
+| `spec-challenge-agent` | Developer-proxy challenger — reads north star + intent, asks what a developer would be blocked on building | Haiku |
+| `spec-write-agent` | Writes capability-spec.md resolving the challenge list; extends north-star.md if new requirements surface | Sonnet |
+| `spec-judge-agent` | Unblock checker — "could a developer build this without inventing any answer?" | Haiku |
 
 **Code phase**
 
 | Agent | Role | Model |
 |---|---|---|
-| `code-plan-agent` | Plans the build approach (iteration 1) or repair strategy (iteration 2+) | Sonnet 5 |
-| `code-produce-agent` | Builds the full story end-to-end | Sonnet 5 |
-| `code-eval-agent` | Evaluates code against quality dimensions + code north star; emits GOAL_GAP when spec was insufficient | Sonnet 5 |
+| `code-plan-agent` | Plans build approach (iteration 1) or repair strategy (iteration 2+); classifies failures as code/spec/design | Sonnet |
+| `code-build-agent` | Builds the full capability end-to-end; writes build-report.yaml with source_root and language | Sonnet |
+| `code-challenge-agent` | User-proxy challenger — reads north star + intent + source files; traces user flow; classifies each gap as code or spec | Haiku |
 
 **Supporting agents**
 
 | Agent | Role | Model |
 |---|---|---|
-| `investigate-subagent` | Read-only codebase search for bug fixes and enhancements | Haiku 4.5 |
-| `deployment-subagent` | Generates Dockerfiles, docker-compose, deploy.sh | Sonnet 4.6 |
-| `reverse-engineer-subagent` | Synthesises architecture and story backlog from existing code | Haiku 4.5 |
+| `investigate-subagent` | Classifies problems as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY before routing | Haiku |
+| `deployment-subagent` | North-star alignment check, then Dockerfiles, docker-compose, deploy.sh | Sonnet |
+| `reverse-engineer-subagent` | Synthesises north-star.md, architecture, capability list, and stubs from existing code | Haiku |
 
-Plan and eval agents use Sonnet 5 — genuine reasoning is required to challenge plan goals and evaluate against north stars. Haiku is only used where the task is bounded and deterministic (spec writing, investigation, reverse engineering).
+Haiku for challenge, judge, investigation, and reverse-engineering — bounded, deterministic tasks where reasoning overhead doesn't earn its cost. Sonnet for write, build, plan, and deployment — tasks that require synthesising complex context into artifacts or code.
 
 ---
 
 ### Quality Review
 
-The code PPE loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before the produce agent writes any code — so async patterns, state management, and experience requirements are decided upfront.
+The code CWJ loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before any code is written — async patterns, state management, and experience requirements are decided upfront.
 
 The transition note tells you how it went:
 
 ```
-✓ Build complete · STORY-001  ·  quality: pass (1 iter)
-✓ Build complete · STORY-002  ·  quality: pass (2 iters — loading state added to save action)
-✓ Build complete · STORY-003  ·  quality: pass (1 iter after spec update)
-  ↑ this story had a GOAL_GAP — spec was updated mid-build
+✓ Build complete · CAP-001  ·  quality: pass (1 cycle)
+✓ Build complete · CAP-002  ·  quality: pass (2 cycles — loading state added to save action)
+✓ Build complete · CAP-003  ·  quality: capped (3 cycles, empty state gap remains)
 ```
 
 **Config** (in `project-state.yaml`):
 ```yaml
-ppe_loop:
+cwj_loop:
   max_iterations:
-    ideation: 3
-    spec: 2
+    ideation: 5
+    spec: 3
     code: 3
 ```
 
@@ -200,7 +203,7 @@ ppe_loop:
 
 ## /track-cost {#track-cost}
 
-**See exactly what your AI development is costing — broken down by Plan, Produce, and Eval columns.**
+**See what your AI development is costing — and where the cycles went.**
 
 ```
 /track-cost
@@ -212,53 +215,84 @@ Cost data is captured automatically after every agent run and stored in `specs/c
 
 ### The Cost Dashboard
 
-**Default view — Cost by Phase and Story:**
+**Default view — Cost by Phase and Capability:**
 
 <div class="docs-terminal" markdown="1">
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
 ```
-SpecGantry v6  |  HireFlow  |  release 1.0.0
+SpecGantry v7  |  HireFlow  |  release 1.0.0
 Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
-Release 1.0.0                        Plan     Produce      Eval     Total
+Release 1.0.0                          Challenge    Write    Judge    Total
 ───────────────────────────────────────────────────────────────────────────
-Ideation                            $0.61      $1.84      $0.43     $2.88
-Investigation                          —       $0.08         —      $0.08
-Deployment                             —       $0.22         —      $0.22
-Reverse engineer                       —          —          —         —
+Ideation                                  $0.22    $0.81    $0.14    $1.17
+Investigation                                —     $0.04       —     $0.04
+Deployment                                   —     $0.21       —     $0.21
 
 [001] User authentication
-  Spec                               $0.22      $0.11      $0.26     $0.59
-  Code                               $0.34      $2.41      $0.48     $3.23
+  Spec                                    $0.09    $0.11    $0.07    $0.27
+  Code                                    $0.18    $1.94    $0.12    $2.24
   ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.56      $2.52      $0.74     $3.82
+  Capability total                        $0.27    $2.05    $0.19    $2.51
 
-[002] Company posts a job
-  Spec                               $0.18      $0.09      $0.20     $0.47
-  Code                               $0.28      $1.87      $0.39     $2.54
+[002] Job posting
+  Spec                                    $0.11    $0.14    $0.09    $0.34
+  Code                                    $0.31    $3.47    $0.28    $4.06  ◀ outlier
   ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.46      $1.96      $0.59     $3.01
+  Capability total                        $0.42    $3.61    $0.37    $4.40
 
 ═══════════════════════════════════════════════════════════════════════════
-Total                               $3.15     $12.06      $3.37    $18.58
+Total                                     $1.02    $6.72    $0.70    $8.44
 
-  [T] Show tokens   Run /spec-gantry to return to the dashboard.
+  [T] Show tokens   [I] Insights   Run /spec-gantry to return.
 ```
 </div>
 
-Type `[T]` to switch to token counts. Same layout, numbers in tokens (abbreviated to `12k` format). Type `[C]` to switch back to cost.
+`◀ outlier` marks any capability where the code phase ran more than one cycle.
 
-**What the Plan/Produce/Eval columns tell you**
+---
 
-The column split exposes where AI spend goes within each story:
+### Developer Intelligence
 
-- **Plan** — the cost of thinking through what to build (ideation topics, spec criteria, build approach, repair strategy). Low cost, high leverage.
-- **Produce** — the cost of actually generating artifacts and code. Dominates total spend.
-- **Eval** — the cost of evaluating against the north star. For a 4-story project, Plan + Eval together typically represent 30–35% of total cost — the price of quality assurance that would otherwise surface as post-delivery rework.
+Type `[I]` for insights — iteration counts, challenge density, outlier breakdown, and cost efficiency:
 
-**Story total rows** let you see the end-to-end cost of each story immediately — no mental arithmetic needed across Spec and Code rows.
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost insights</span></div>
+
+```
+── Insights ────────────────────────────────────────────────────────────────
+
+Iteration summary
+  CAP-001  Spec: 1 cycle · Code: 1 cycle
+  CAP-002  Spec: 2 cycles · Code: 3 cycles  ◀ most cycles
+
+Challenge density (avg questions per cycle)
+  Ideation   4.2 questions/round
+  CAP-001    Spec: 3 · Code: 2
+  CAP-002    Spec: 5 · Code: 6  ◀ most challenged
+
+Outliers
+  CAP-002: Job posting — code phase ran 3 cycles ($4.06 total)
+    Cycle 2 challenge: "User sees no progress during file upload — static screen"
+    Cycle 3 challenge: "Error shows raw exception, not which field failed validation"
+    Exit: achieved after cycle 3
+
+Cost efficiency
+  Avg cost per spec cycle:  $0.18
+  Avg cost per code cycle:  $1.05
+  Most expensive capability: CAP-002 ($4.40 — 52% of total build cost)
+
+  [C] Show cost table   Run /spec-gantry to return.
+```
+</div>
+
+**What the Challenge/Write/Judge columns tell you:**
+
+- **Challenge** — the cost of adversarial questioning. Low individual cost; a high challenge cost relative to write signals the capability was genuinely complex or poorly understood going in.
+- **Write** — the cost of producing artifacts and code. Dominates total spend.
+- **Judge** — the cost of the unblock check. Consistent across capabilities; a high judge cost relative to challenge signals the judge is rejecting more than the challenger predicted.
 
 ---
 
@@ -266,20 +300,9 @@ The column split exposes where AI spend goes within each story:
 
 - The `SubagentStop` hook fires automatically when each agent completes
 - Token counts are read directly from the agent's transcript — exact API values, not estimates
-- All 12 v6 agents are mapped: plan/produce/eval per phase into separate cost entries
+- All 12 v7 agents are mapped: challenge/write/judge per phase into separate cost entries
 - One entry appended to `specs/cost-log.ndjson` per agent run — never overwritten
-- `claude-sonnet-5` rates included in the rates cache
-
-**Typical cost profile for a 3-story project:**
-
-| Phase group | Relative share |
-|---|---|
-| Ideation (plan + produce + eval) | 10–15% |
-| Spec × N stories (plan + produce + eval) | 10–15% |
-| Code × N stories (plan + produce + eval) | 60–70% |
-| Supporting (investigate + deploy) | 5–10% |
-
-Code produce still dominates. The plan and eval agents across all phases together add roughly 30–35% overhead compared to a produce-only pipeline — but that overhead front-loads quality checks that would otherwise appear as bugs, rework, and extra sessions.
+- Iteration counts and exit status per capability read from `project-state.yaml` for the insights view
 
 ---
 
@@ -290,21 +313,19 @@ Code produce still dominates. The plan and eval agents across all phases togethe
 ```
 /spec-gantry → [1] Start new project
             → Enter name and vision
-            → Quick-start (3 questions) or [F] full ideation
-            → Ideation PPE loop runs (catches gaps automatically)
-            → architecture.md + story backlog written
+            → Ideation CWJ loop (adversarial challenge rounds + judge)
+            → north-star.md + architecture.md + intent.md written on CLEAR
             → Commit specs/ to git
-            → Spec PPE loop per story (north-star validated specs)
-            → Code PPE loop per story (with GOAL_GAP routing if needed)
+            → Spec CWJ loop per capability (autonomous — you approve once)
+            → Code CWJ loop per capability (fully automated)
 ```
 
 ### Handling a Production Bug
 
 ```
-/spec-gantry → type story ID  (or [N] New work → describe bug)
-            → Investigation agent locates files and root cause
-            → Confirms findings with you
-            → Code PPE loop: plan → build → evaluate
+/spec-gantry → [N] New work → describe bug
+            → Investigate agent classifies: CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT
+            → Routes to the right repair phase automatically
             → [1] Deploy release (patch version bump)
 ```
 
@@ -312,17 +333,18 @@ Code produce still dominates. The plan and eval agents across all phases togethe
 
 ```
 /spec-gantry → [>] Run to next pause
-            → Pipeline runs: ideation → spec (all stories) → code (all stories)
-            → Pauses only at genuine decision points
-            → Resume summary shows what happened, grouped by Spec and Build
+            → Pipeline runs: spec all capabilities → build all capabilities
+            → Pauses only at spec approval, spec gaps, arch gaps, loop caps
+            → Re-render dashboard on resume
 ```
 
 ### Reviewing Project Costs
 
 ```
-/track-cost             → cost by Plan/Produce/Eval, by story
+/track-cost             → cost by Challenge/Write/Judge, by capability
   → [T]                 → same view in tokens
-  → [C]                 → back to cost
+  → [I]                 → iteration summary, challenge density, outliers
+  → [C]                 → back to cost table
   → Run /spec-gantry    → return to dashboard
 ```
 
@@ -342,7 +364,7 @@ Code produce still dominates. The plan and eval agents across all phases togethe
     <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <strong>FAQ</strong>
-      <span>Common questions on installation, the PPE loop, costs, and troubleshooting.</span>
+      <span>Common questions on installation, the CWJ loop, costs, and troubleshooting.</span>
     </div>
   </a>
 </div>

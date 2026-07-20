@@ -9,7 +9,7 @@ next_page: "How It Works"
 next_page_url: "/docs/how-it-works"
 ---
 
-# Getting Started with SpecGantry v6
+# Getting Started with SpecGantry v7
 
 Everything you need to install SpecGantry and complete your first session.
 
@@ -34,7 +34,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v6.0.0`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v7.0.0`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once.
@@ -76,7 +76,7 @@ SpecGantry detects three situations:
   <div class="dg-node dg-neutral">
     <div class="dg-node-num">B</div>
     <div class="dg-node-name">Source files, no specs/</div>
-    <div class="dg-node-output">→ Analyse existing codebase — reverse-engineer an architecture and story backlog from your code</div>
+    <div class="dg-node-output">→ Analyse existing codebase — reverse-engineer a north star, architecture, and capability list from your code</div>
   </div>
 
   <div class="dg-node dg-neutral">
@@ -100,34 +100,39 @@ Project vision (2–4 sentences):  > A personal recipe manager where I can save,
 tag, and search recipes by ingredient. Simple CRUD, single user, no login needed.
 ```
 
-For simple projects (no auth, no AI, single actor, ≤3 capabilities), quick-start activates automatically:
-
-```
-This looks like a simple single-user app. I'll apply these defaults and ask only 3 questions:
-
-  Defaults applied:  Node.js · SQLite · Bootstrap 5 · Docker Hub · single-user · no auth
-  Questions:         tech stack confirm · Docker Hub username · story list
-
-  [>] Quick start
-  [F] Full ideation  (10 topics, shape every decision yourself)
-```
-
-Quick-start asks three focused questions and produces a complete architecture. Full ideation is always available via `[F]`.
-
-For complex projects (multi-actor, auth, AI), full ideation starts automatically — no banner.
+SpecGantry then enters the **ideation CWJ loop** — an adversarial challenger reads your vision and fires a round of blocking questions.
 
 ---
 
 ## Step 4 — Ideation
 
-SpecGantry acts as a thinking partner. The opening turn shows a topic roadmap so you know what the conversation covers, then works through each topic — proposing decisions for you to confirm or redirect.
+The ideation loop surfaces all questions for a round together as a grouped block. You answer them all in one response — the challenger has grouped related questions by theme so the conversation flows naturally.
 
-After the produce agent completes, the **ideation evaluator** checks all 8 north star criteria against the written artifacts. If anything is missing (deployment target not decided, story list too broad), the loop iterates automatically.
+```
+──────────────────────────────────────────────────────────
+  Ideation · Round 1 of 5
+──────────────────────────────────────────────────────────
+
+Data ownership
+  Recipes are described as personal — is there any concept of sharing or exporting
+  to another user, or is this strictly single-user with no outbound data flow?
+
+Tech fit
+  You mentioned "no login needed" alongside SQLite. Single-user with no auth
+  is a valid choice, but does that mean anyone with access to the machine can
+  use it, or should there be at minimum a local password?
+
+Scale
+  What does "search by ingredient" mean at the edges — partial match, exact
+  match, or something like "find recipes where I have all the ingredients"?
+```
+
+Answer all questions in one response. The judge then evaluates whether a developer could start writing specs without inventing answers. If yes: SpecGantry writes the artifacts and exits ideation. If not: another round.
 
 When ideation exits:
 
 ```
-✓ Ideation complete  ·  Manage recipes · Tag and organise · Search by ingredient
+✓ Ideation complete  ·  Recipe management · Tag and organise · Ingredient search
 💡 Good moment to /compact — ideation context is large, all decisions are on disk.
 ```
 
@@ -142,22 +147,21 @@ git commit -m "feat: SpecGantry project init"
 
 ## Step 5 — Spec and Build
 
-The pipeline interleaves spec and build per story. For each story:
+The pipeline processes each capability in order.
 
-**Spec PPE loop:** the spec-plan-agent reads `intent.md` and the architecture, plans what the spec must capture, and the spec-produce-agent writes it. The spec-eval-agent validates it against the spec north star — 9 criteria covering async states, output format, error handling, and flow completeness. The loop iterates until all criteria are met.
+**Spec CWJ loop:** the challenge agent reads your north star and capability intent, then asks what a developer would be blocked on building this. The write agent resolves every challenge into `capability-spec.md`. The judge checks whether a developer reading the spec would still be blocked. The loop iterates autonomously — you only see the result when the judge says CLEAR.
 
-You approve a machine-validated spec:
+You approve a machine-challenged spec:
 
 ```
-✓ Story spec validated — STORY-001: Manage recipes
-
-  North star:  all 9 criteria confirmed
-  Loop:        1 iteration — passed first pass
+✓ Spec validated — CAP-001: Recipe management
+  All async states described, empty state covered, error messages specified.
+  North star alignment confirmed.
 
   [Y] Approve spec   [E] Edit   [X] Hold
 ```
 
-**Code PPE loop:** the code-plan-agent plans the build approach, the produce agent builds, and the code-eval-agent evaluates against both the quality dimension rubric and the code north star. If the spec was insufficient for the north star (GOAL_GAP), the spec is updated automatically before rebuilding.
+**Code CWJ loop:** the plan agent plans the build approach, the build agent implements end-to-end, and the challenge agent traces the user's experience through the actual code. If a user couldn't accomplish what was promised, the loop repairs. Fully automated — you only see the transition note.
 
 ---
 
@@ -169,32 +173,33 @@ After ideation and during the build phase:
 <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
 ```
-SpecGantry v6  |  Recipe Manager  |  release 1.0.0
-Ideation ✅  ·  Spec [██░] 2/3  ·  Build [█░░] 1/3  ·  Deploy [░░░] –
+SpecGantry v7  |  Recipe Manager  |  release 1.0.0
+Ideation ✅  ·  Spec [██░] 2/3  ·  Build [█░░] 1/3  ·  Deploy [░░░░] –
 ──────────────────────────────────────────────────────────
-  ID      Story                            Spec        Build
-  ────────────────────────────────────────────────────────────────
-  [001]  Manage recipes                    ✅          ✅
-  [002]  Tag and organise recipes          ✅          🔄 eval
-  [003]  Search recipes by ingredient      ⏳          ○
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                        ○ not deployed
+  ID       Capability                         Spec         Build
+  ──────────────────────────────────────────────────────────────────
+  [001]   Recipe management                   ✅           ✅
+  [002]   Tag and organise                    ✅           🔄 challenge·2
+  [003]   Ingredient search                   🔄 judge     ⏳
+  ──────────────────────────────────────────────────────────────────
+  Release 1.0.0                                            ○ not deployed
 ──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it        [$] Cost
+  Type a capability ID to manage it   [$] Cost & insights
   [1] Build next — [002]: Tag…        [?] Help
   [>] Run to next pause               [X] Exit
   [N] New work
 ──────────────────────────────────────────────────────────────────
+Enter capability ID or action:  >
 ```
 </div>
 
-Type `[>]` to run the full pipeline automatically — spec and build all remaining stories, pausing only at genuine decision points like GOAL_GAP routing or loop caps.
+Type `[>]` to run the full pipeline automatically — spec and build all remaining capabilities, pausing only at genuine decision points like spec gaps or loop caps.
 
 ---
 
 ## Step 6 — Deploy
 
-Once all stories are built, SpecGantry prompts to deploy. Gap specs (if any) are reviewed and merged first, then the deployment agent generates `specs/deploy.sh` and deploys.
+Once all capabilities are built, SpecGantry prompts to deploy. The deployment agent runs a north-star alignment check first — surfacing any capability that exited CAPPED — then generates deployment artifacts and deploys.
 
 ---
 
@@ -204,9 +209,9 @@ Once all stories are built, SpecGantry prompts to deploy. Gap specs (if any) are
 |---|---|
 | Resuming any work | `/spec-gantry` — always |
 | Auto-run the pipeline | `/spec-gantry` then `[>]` |
-| Check costs | `/track-cost` |
+| Check costs and insights | `/track-cost` |
 | Report a bug | `/spec-gantry` → `[N] New work` → describe the bug |
-| Work on a specific story | `/spec-gantry` → type the story ID |
+| Work on a specific capability | `/spec-gantry` → type the capability ID |
 
 ---
 
@@ -215,21 +220,16 @@ Once all stories are built, SpecGantry prompts to deploy. Gap specs (if any) are
 ```
 project-root/
   specs/
-    project-state.yaml          pipeline state + story flags
+    project-state.yaml          pipeline state + capability flags
+    north-star.md               flowing prose cognitive contract
+    changelog.md                append-only release history (created on first update)
     architecture/
-      architecture.md           vision, guardrails, UX model, Artifact Index
-      data-model.md             entities, fields, state machines
-      actors.md                 roles, permissions
-      contracts.md              API response shapes
-      patterns.md               backend interaction patterns
-      ux.md                     navigation, visual system, screen template
-      deployment.md             cloud platform, registry, CI/CD
-    stories/
-      STORY-001/
-        intent.md               2-paragraph purpose + outcome
-        story-spec.md           ≤60-line spec (machine-validated)
-        build-report.yaml       quality outcome, test plan
-        gap.md                  divergences (if any, deleted at deploy)
+      architecture.md           all technical decisions in one file (## section:name anchors)
+    capabilities/
+      CAP-001/
+        intent.md               2-paragraph experience promise
+        capability-spec.md      developer contract (machine-challenged)
+        build-report.yaml       quality outcome, runtime info, test plan
     cost-log.ndjson             token usage per agent run (committed)
   .claude/
     settings.json               engagement hooks
@@ -246,7 +246,7 @@ project-root/
     <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How It Works</strong>
-      <span>Deep dive into the PPE loop, north stars, and GOAL_GAP routing.</span>
+      <span>Deep dive into the CWJ loop, the north star, and diagnostic routing.</span>
     </div>
   </a>
   <a href="/docs/skills" class="next-step-card">

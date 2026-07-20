@@ -1,24 +1,16 @@
 # SpecGantry
 
-AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.
+AI-powered SDLC pipeline for Claude Code with a Challenge-Write-Judge loop at every phase — adversarial quality validation from ideation through deployment.
 
-## What's new in v5
+## What's new in v7
 
-**v5.2.0**
-- **Cross-story impact revalidation** — on every enhancement, the orchestrator auto-invokes story-spec in a read-only `dependency_recheck` mode for each dependent story. If any dependent has drift (missing `reads:` ref, contract overlap, entity field drift), you decide: continue and accept the risk (logged), fix dependent specs first, or cancel the enhancement. Bug fixes skip this — they reconcile code with spec, they don't change the contract.
-- **Machine-readable contracts** — every `## contract:[name]` section in `contracts.md` now carries a fenced ` ```yaml ``` ` block alongside the prose: OpenAPI 3.1 for HTTP contracts, JSON Schema (draft 2020-12) for events and shared shapes. Story-spec's self-review flags any referenced contract that lacks a machine-readable block as an arch gap. Enables downstream mock servers, client generation, and contract testing without rewriting specs.
-
-**v5.1.0**
-- **Auto-continue mode** — `[>] Run to next pause` action queues the pipeline to auto-approve specs (that raise no concern) and roll straight into build. Auto-continue clears on any concern, gap, deploy point, or error.
-- **Haiku for eligible phases** — story-spec (all modes), reverse-engineer, evaluate, and plan now run on Haiku. Ideation, development, and deployment stay on Sonnet where complex reasoning genuinely earns its cost. Cost tracking updated accordingly.
-- **Concern history** — `[!] Concerns` quick-bar action renders the `specs/concerns-log.ndjson` log so you can see which push-backs you accepted vs ignored.
-
-**v5.0.0**
-- **Evaluate + Plan agents replace the Governor** — the quality review loop is now split into two separate agents: `evaluate` (scores the built code across quality dimensions, returns structured JSON) and `plan` (receives the evaluation and produces targeted fix steps). The dev agent then applies the fixes in repair mode. This separation ensures the same agent is never both judge and defendant. Outcome recorded in `build-report.yaml → quality` block.
-- **Batched-by-topic ideation** — each topic asks its full set of related sub-questions in one form; new-project ideation lands in ~9 turns (was ~20). Amendment mode targets ≤ 3 turns.
-- **Bounded raise-a-concern** — story-spec and development subagents may flag one high-impact concern per invocation (untestable criterion, missing owner, spec/code drift, reuse opportunity) with a proposed alternative. Every concern is logged to `specs/concerns-log.ndjson`.
-- **Cache-first context ordering** — every subagent reads `agents/_shared/preamble.md` first, then `architecture.md`, then per-story files. Stable-first ordering maximizes prompt-cache reuse across a session.
-- **Shared preamble** — path handling, Artifact Index parsing, anchor comment schema, and concern-raising protocol centralized in one file. Reduces drift across the six subagents.
+**v7.0.0**
+- **Challenge-Write-Judge (CWJ) replaces Plan-Produce-Evaluate** — every phase now uses an adversarial challenger agent that asks what a developer (or user) would be blocked on before anything is written or built. The judge asks "would the next phase be blocked?" not "did this pass a checklist."
+- **Per-project north star** — a single flowing prose document written during ideation from the actual idea, extended by the spec phase as new requirements surface. Replaces three fixed north star documents shipped with the plugin.
+- **Capabilities replace stories** — work units are now capabilities (`CAP-001`, `CAP-002`, etc.) under `specs/capabilities/`. Each has `intent.md` and `capability-spec.md`.
+- **Diagnostic investigate agent** — classifies problems as `CODE_BUG`, `SPEC_GAP`, `REQUIREMENT_DRIFT`, or `NEW_CAPABILITY` before routing to the right repair phase. Fixes the right thing instead of always re-running code.
+- **Changelog for release safety** — `specs/changelog.md` tracks dropped and deprecated fields across releases. Spec and code agents read it before referencing any interface — prevents using removed APIs in new releases.
+- **Developer intelligence in `/track-cost`** — iteration counts per capability per phase, challenge density, outlier detection, release comparison. Not just a cost ledger.
 
 ## Installation
 
@@ -45,22 +37,12 @@ If you already have SpecGantry installed, update to the latest version:
 
 **Option 1 — Terminal:**
 ```bash
-claude plugin marketplace update spec-gantry
+claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
 ```
 
 **Option 2 — From within Claude Code:**
 ```
-/plugin marketplace update spec-gantry
-```
-
-**Option 3 — Direct plugin update (alternative):**
-```bash
-claude plugin update spec-gantry@spec-gantry
-```
-
-Or from within Claude Code:
-```
-/plugin update spec-gantry@spec-gantry
+/plugin marketplace update spec-gantry && /plugin update spec-gantry@spec-gantry
 ```
 
 ## Documentation

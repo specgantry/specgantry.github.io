@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: FAQ
-description: Common questions about SpecGantry v6 — installation, the PPE loop, costs, and troubleshooting.
+description: Common questions about SpecGantry v7 — installation, the CWJ loop, developer intelligence, and troubleshooting.
 permalink: /docs/faq/
 prev_page: "Reference"
 prev_page_url: "/docs/architecture"
@@ -47,101 +47,103 @@ No, but it's strongly recommended. All specs are plain-text YAML and Markdown de
 
 ---
 
-## The PPE Loop
+## The CWJ Loop
 
-**What is the PPE loop?**
+**What is the CWJ loop?**
 
-Plan-Produce-Evaluate. Every phase in SpecGantry runs the same loop: a plan agent determines what to produce and how, a produce agent executes the plan, and an eval agent checks both whether produce executed the plan and whether the plan itself covered the north star. This loop runs at ideation, spec, and code.
+Challenge-Write-Judge. Every phase in SpecGantry runs the same loop: a challenge agent asks what would block the next phase, a write (or build) agent resolves the challenges, and a judge agent asks "would the next phase still be blocked?" If yes: another cycle. If no: the loop exits CLEAR.
 
-**What are the three north stars?**
+The challenger's identity differs by phase:
+- **Ideation:** senior developer pre-build — finds what would stop a developer agreeing to start
+- **Spec:** developer-proxy — finds what would block a developer trying to build from this document
+- **Code:** user-proxy — finds whether a user can actually accomplish what was promised
 
-Each phase has a canonical quality bar the evaluator holds every output against — independently of what any plan says:
+**What is the north star in v7?**
 
-- **Ideation:** "Can every architecture artifact be written without invented assumptions?" (8 criteria)
-- **Spec:** "If built exactly as written, does the user get everything the intent promises?" (9 criteria)
-- **Code:** "Does the running software deliver the full experience the intent describes?" (7 criteria)
+A single `specs/north-star.md` per project — flowing prose written during ideation from the actual idea. No headings, no sections. Paragraphs describing what good looks like for this system specifically. It ends with a flat list of the challenge questions that shaped it.
 
-**What is EXECUTION_GAP vs GOAL_GAP?**
+It grows across the lifecycle: the spec write agent appends paragraphs when new requirements surface. It is read whole by every challenger and judge at every phase.
 
-- **EXECUTION_GAP** — the plan was right, but produce didn't fully execute it. The evaluator loops with the same goal.
-- **GOAL_GAP** — produce executed the plan, but the plan itself missed a north star criterion. The evaluator upgrades the goal and the plan agent reruns with a richer target.
+**What happened to EXECUTION_GAP and GOAL_GAP?**
 
-**Can both occur at the same time?**
-
-Yes. When both occur, the evaluator emits `GOAL_GAP` as the routing verdict (goal upgrade takes precedence) but also populates `execution_gaps` so the next plan agent addresses both in one pass.
-
-**What happens when GOAL_GAP occurs during code?**
-
-The orchestrator routes back to the spec phase with the upgraded goal. The spec PPE loop reruns, the spec is updated, then code is rebuilt from scratch. This is capped at one spec→code re-entry per story.
-
-**How many iterations does each phase run?**
-
-Default maximums: ideation 3, spec 2, code 3. Configurable in `project-state.yaml → ppe_loop.max_iterations`.
+These v6 concepts are replaced in v7 by the CWJ loop. The judge returns CLEAR or BLOCKED — no verdict taxonomy. When something is wrong post-deploy, the investigate agent classifies the root cause as CODE_BUG, SPEC_GAP, REQUIREMENT_DRIFT, or NEW_CAPABILITY and routes to the right repair phase automatically.
 
 **What happens when the loop caps?**
 
-The unresolved gaps are surfaced to you: `[Y] Accept and continue · [E] Address manually · [X] Stop`. Accepting continues the pipeline with the partial output documented.
+The unresolved gaps are surfaced to you: `[Y] Accept and continue · [E] Address manually · [X] Stop`. Accepting continues the pipeline with the partial output and marks the capability as built with known gaps noted.
 
 **What is CYCLING?**
 
-If the same northstar_gaps appear across two consecutive iterations after a GOAL_GAP upgrade was attempted, the loop is stuck. The orchestrator detects this and exits with the same CAPPED banner.
+If the judge finds the same blocking gaps across two consecutive iterations, the loop is stuck. The orchestrator detects this and exits with the same CAPPED banner — same user options, same outcome.
+
+**How many iterations does each phase run?**
+
+Default maximums: ideation 5, spec 3, code 3. Configurable in `project-state.yaml` under `cwj_loop.max_iterations`.
+
+---
+
+## Ideation Phase
+
+**How does the ideation challenge loop work?**
+
+The challenge agent fires up to 7 blocking questions per round, grouped by theme. All questions surface at once — the user answers all of them in a single response. The judge then evaluates whether a developer could start writing specs without inventing answers. If BLOCKED, another round with the answers as additional context.
+
+**Why do all questions surface at once instead of one at a time?**
+
+Batching questions per round is faster (one pause vs. seven), and it lets the user see the full scope of what's unresolved before answering. Answers to related questions often inform each other.
+
+**What does the ideation write agent produce?**
+
+`specs/north-star.md` — the per-project cognitive contract, flowing prose.  
+`specs/architecture/architecture.md` — pure technical decisions with `## section:name` anchors.  
+`specs/capabilities/[CAP-ID]/intent.md` — one per capability.  
+`specs/project-state.yaml` — with capability list, iteration counts per phase, and pipeline flags.
+
+The write agent runs only once, after the judge returns CLEAR — not per cycle.
 
 ---
 
 ## Spec Phase
 
-**What does the spec-eval-agent actually check?**
+**What does the spec challenge agent actually check?**
 
-9 criteria from the spec north star, including:
-- Whether every async operation has loading, partial/streaming, completion, and failure states described
-- Whether output format and layout are specified (not left to developer interpretation)
-- Whether every criterion is testable by two developers independently implementing the same thing
-- Whether error states name a user-readable message and a recovery path
-- Whether the full user flow has no dead ends
+It simulates a developer who has just been handed the intent file and asks "wait, but what about...?" Specifically: loading and async states, empty states, error states with message text and recovery, output format and layout, navigation flow (where the user comes from and goes to), data operations, and whether the intent delivers what the north star promises.
 
-**What does "machine-validated" mean on the approval prompt?**
+**What does "machine-challenged" mean on the approval prompt?**
 
-It means the spec-eval-agent confirmed all 9 spec north star criteria before surfacing the spec to you. You're reviewing a spec that has already been challenged by a product-head-level evaluator — not a first draft. The `Loop:` line in the approval prompt tells you what was caught and fixed.
+It means the spec judge confirmed a developer could build this capability without inventing any answer before surfacing the spec to you. You're reviewing a spec that has already been challenged by a developer-proxy — not a first draft.
 
-**Can I edit the spec after approval?**
+**Can I edit the spec after the judge approves?**
 
-Yes. Type `[E]` instead of `[Y]` at the approval prompt to enter edit instructions. The spec-produce-agent applies the changes and the spec-eval-agent re-validates before re-surfacing for approval.
+Yes. Type `[E]` instead of `[Y]` at the approval prompt. Your edit text is prepended as a new challenge and the write agent resolves it before re-surfacing for approval.
 
-**What is the 60-line limit on story specs?**
+**What is the 80-line limit on capability specs?**
 
-Story specs are navigation maps, not knowledge dumps. Everything reusable lives in architecture artifacts and is referenced via the `reads:` block. If a spec exceeds 60 lines, it's duplicating something that belongs in an architecture artifact. The limit is enforced before `spec_done:true` can be set.
+Capability specs are developer contracts, not documentation dumps. The architecture provides shared context; the spec references it. If a spec exceeds 80 lines substantially, it is flagged as potentially oversized — the orchestrator notes it but does not block.
 
 ---
 
 ## Code Phase
 
-**Why does the code-plan-agent run on iteration 1?**
+**Why doesn't the code challenge run on iteration 1?**
 
-Because the spec doesn't tell the developer *how* to build — only *what* to build. The plan agent on iteration 1 produces a build approach: which layer to build first, which async patterns to apply upfront, which experience requirements from the goal demand implementation choices the spec doesn't prescribe. Without this, the produce agent makes all those judgment calls itself.
+On iteration 1, nothing has been built yet — there are no source files or build reports to evaluate. The challenge agent would have nothing to read and would return vacuously CLEAR. The loop skips directly to plan+build on iteration 1, then the challenge fires after the first build.
 
 **What does the quality block in build-report.yaml contain?**
 
 ```yaml
 quality:
-  overall: pass | partial | capped | build_failed | unknown
+  overall: pass
   iterations: 2
-  exit_reason: "evaluator confirmed ACHIEVED"
-  active_rubric: [spec_adherence, contract_fidelity, element_visibility, ...]
-  dimensions:
-    spec_adherence: PASS
-    contract_fidelity: PASS
-    # one entry per active dimension
-  advisory_notes: []
-  northstar_gaps: []  # any blocking gaps that remain if capped
 ```
-
-**What does `quality: partial` mean?**
-
-The same dimensions were still failing after an `approach_change` repair — usually indicating a spec ambiguity that needs clarification rather than a code fix. The story is still marked built; the report documents what remains.
 
 **What does `quality: capped` mean?**
 
-The maximum iteration count was reached with unresolved dimensions. The story is built; you decide whether to accept, manually fix, or stop.
+The maximum iteration count was reached with unresolved gaps. The capability is still marked built; the report documents what remains. The deployment agent will surface a non-blocking warning.
+
+**What is a spec-classified gap?**
+
+When the code challenge agent finds that the north star requires something the spec never captured, it routes to the spec phase before any code repair — fixing the spec first, then rebuilding. This is why the same code repair iteration on a spec-level gap never converges: the spec must be corrected first.
 
 ---
 
@@ -149,41 +151,37 @@ The maximum iteration count was reached with unresolved dimensions. The story is
 
 **How does session resume work?**
 
-All progress is saved after every answer and every phase transition. On resume, the orchestrator reads `project-state.yaml → active_phase` and `active_story`, finds `.ppe-loop.yaml` for the active story (if any), and re-derives the current goal from canonical artifacts on disk. The loop re-enters at the plan step with `iteration_N` and `must_not_miss` restored from the checkpoint. No work is lost.
+All progress is saved after every answer and every phase transition. On resume, SpecGantry reads `project-state.yaml` to determine exactly where to pick up — which capability was active, which phase it was in — and continues from that point. No work is lost.
 
 **How does auto-continue work?**
 
-Type `[>]` to enable. The pipeline runs without pausing at spec approval prompts — a validated spec is auto-approved. Auto-continue stops at genuine decision points: concerns, arch/spec gaps, loop caps, all-stories-built. When it stops, you see a grouped log of everything that happened (spec events then build events, by story ID order).
+Type `[>]` to enable. The pipeline runs without pausing at spec approval prompts — a judge-validated spec is auto-approved. Auto-continue stops at: spec gaps, arch gaps, loop caps, all capabilities built, subagent errors. When it stops, the full dashboard re-renders.
 
-**Phase transitions (e.g. all specs done → start builds) do not pause auto-continue.** Only genuine decision points stop it.
+**Can I hold a capability mid-spec?**
 
-**Can I hold a story mid-spec?**
-
-Yes. Type `[X]` at the spec approval prompt. The story is marked `spec_done:false` and saved. Type the story ID to resume it — the held spec is shown for review.
+Yes. Type `[X]` at the spec approval prompt. The capability is left with `spec_done:false`. Type the capability ID to resume — the held spec is shown for review.
 
 ---
 
-## Costs and Tokens
+## Costs and Developer Intelligence
 
 **How does cost tracking work?**
 
-The `SubagentStop` hook fires automatically when each of the 12 agents completes. Token counts are read directly from the agent transcript — exact API values. One entry is appended to `specs/cost-log.ndjson` per agent run.
+The `SubagentStop` hook fires automatically when each agent completes. Token counts are read directly from the agent transcript — exact API values. One entry is appended to `specs/cost-log.ndjson` per agent run.
 
 **What are the three columns in /track-cost?**
 
-**Plan** — the cost of plan agents determining what to produce. Low individual cost but runs at every iteration.  
-**Produce** — the cost of actually generating artifacts and code. Dominates total spend.  
-**Eval** — the cost of evaluation agents checking against north stars. Runs at every iteration including iteration 1.
+**Challenge** — the cost of adversarial questioning. Low, high leverage.  
+**Write** — the cost of generating artifacts and code. Dominates total spend.  
+**Judge** — the cost of the unblock check. Consistent; a high judge cost relative to challenge signals repeated rejection.
 
-Plan + Eval together typically represent 30–35% of total project cost — the price of quality assurance that would otherwise surface as post-delivery rework.
+**What is an outlier in the insights view?**
 
-**What does `[T]` do in /track-cost?**
+Any capability where the code phase ran more than one cycle is marked `◀ outlier`. The insights view shows which challenge triggered each repair cycle and what the exit was.
 
-Switches the display from dollar costs to token counts. Same layout, same rows. `[C]` switches back.
+**What does challenge density measure?**
 
-**What does the `Story total` row show?**
-
-It sums Spec + Code across all Plan/Produce/Eval columns for that story — the end-to-end cost of that story from spec writing to a passing code eval.
+The average number of questions the challenge agent fired per cycle, per phase. High density in spec (5–6 questions/cycle) signals a capability that wasn't well-understood going in. High density in code signals a mismatch between the north star's promises and what was built.
 
 **Why are costs not being recorded?**
 
@@ -207,19 +205,15 @@ Check `~/.claude/logs/spec-gantry-hooks.log` for errors.
 
 **What are engagement hooks?**
 
-When SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs `SessionStart` and `PostCompact` hooks into `.claude/settings.json`. On every session start and after every `/compact`, the hooks inject `CONTRACT.md` — a binding directive telling Claude to always route development through `/spec-gantry` — as system context before the first message. This runs in Node.js and cannot be skipped.
+When SpecGantry detects a project (`specs/project-state.yaml` exists), it automatically installs a `SessionStart` hook into `.claude/settings.json`. On every session start, the hook injects `CONTRACT.md` — a binding directive telling Claude to always route development through `/spec-gantry` — as system context before the first message.
 
 **What is CONTRACT.md?**
 
-A short file (gitignored) containing instructions for Claude: route all development through `/spec-gantry`, never make code changes directly. It is re-generated on every project setup and re-injected after every `/compact`.
+A short file (gitignored) containing instructions for Claude: route all development through `/spec-gantry`, never make code changes directly. It is re-generated on every project setup.
 
 **Are the hook files safe to commit?**
 
 `settings.json` and the hook script are safe to commit. `CONTRACT.md` is gitignored by default — it's regenerated on setup and adds noise with no benefit if committed.
-
-**When are hooks installed?**
-
-Automatically on the first session start after a project is detected. If you update SpecGantry, hooks are re-checked idempotently — already-installed hooks are not duplicated.
 
 ---
 
@@ -227,16 +221,16 @@ Automatically on the first session start after a project is detected. If you upd
 
 **Can I use SpecGantry with other AI tools?**
 
-Yes. SpecGantry manages the pipeline and specs. The code produce agent writes standard source code — no SpecGantry-specific runtime dependencies. You can run, test, and deploy the output with any tool.
+Yes. SpecGantry manages the pipeline and specs. The build agent writes standard source code — no SpecGantry-specific runtime dependencies. You can run, test, and deploy the output with any tool.
 
-**Can I adjust the story list after ideation?**
+**Can I adjust the capability scope after ideation?**
 
-Yes. Use `[N] New work` → classify as `new_story` or `project_change`. The ideation agent runs in amendment mode — it updates the story list and architecture artifacts without re-running full ideation. Existing story flags are preserved.
+Yes. Use `[N] New work` and describe the change. The investigate agent classifies it — if it's `NEW_CAPABILITY`, ideation re-enters in amendment mode, which extends the north star and architecture without re-running full ideation. Existing capability flags are preserved.
 
-**What is v6 vs v5?**
+**What is v7 vs v6?**
 
-v6 introduces the universal PPE loop — plan, produce, and evaluate at every phase (ideation, spec, and code). v5 had a quality loop only at the code phase. The key improvement: thin specs that would have produced bad code in v5 are now caught at spec time before any code is written. The GOAL_GAP verdict routes spec updates back from code evaluation. All 12 agents use Sonnet 5 for planning and evaluation (upgraded from Haiku 4.5 in v5).
+v7 replaces the Plan-Produce-Evaluate loop with Challenge-Write-Judge. The key shift: PPE asked "did produce follow the plan?" — a compliance check. CWJ asks "would the next phase be blocked?" — a cognitive check. The north star moves from three fixed documents shipped with the plugin to one per-project flowing prose document written from the actual idea. Stories become capabilities. The investigate agent gains diagnostic classification. Developer intelligence replaces the cost ledger.
 
-**How do I migrate a v5 project to v6?**
+**How do I migrate a v6 project to v7?**
 
-Open Claude Code in your v5 project directory and run `/spec-gantry`. SpecGantry detects the existing `specs/` structure and resumes normally. The v6 PPE loop applies to new stories and new work — existing built stories are not re-evaluated unless you initiate new work on them.
+Open Claude Code in your v6 project directory and run `/spec-gantry`. The reverse-engineer agent detects the existing `specs/stories/` structure and synthesises a v7 project structure — north-star.md, architecture.md, and capability stubs — from the existing files. Existing built capabilities are preserved.

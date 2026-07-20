@@ -18,8 +18,8 @@ Perspectives on structured development in the age of AI coding assistants — wh
       <span class="blog-tag">Economics</span>
       <span class="blog-date">June 8, 2026</span>
     </div>
-    <h2 class="blog-listing-title">AI Development Costs Are Visible — If You Track Them at the Right Level</h2>
-    <p class="blog-listing-excerpt">Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself — and why a separate reporting layer always arrives too late.</p>
+    <h2 class="blog-listing-title">AI Development Costs Are Visible — If You Track the Right Things</h2>
+    <p class="blog-listing-excerpt">Cost alone isn't enough. You need iteration counts, challenge density, and outlier detection to understand where spend actually went. Here's why SpecGantry built developer intelligence — not just a cost ledger — into the framework itself.</p>
     <span class="blog-read-more">Read the post →</span>
   </a>
 
@@ -28,8 +28,8 @@ Perspectives on structured development in the age of AI coding assistants — wh
       <span class="blog-tag">Process</span>
       <span class="blog-date">June 4, 2026</span>
     </div>
-    <h2 class="blog-listing-title">Why AI Coding Assistants Need Guardrails — Not Just More Tokens</h2>
-    <p class="blog-listing-excerpt">The problem isn't that AI writes bad code. It's that AI has no idea whether you're solving the right problem. That's a process gap, not a model gap. And more tokens won't fix it.</p>
+    <h2 class="blog-listing-title">Why AI Coding Assistants Need Adversarial Challenge — Not Just More Tokens</h2>
+    <p class="blog-listing-excerpt">The problem isn't that AI writes bad code. It's that AI has no adversary asking whether you're building the right thing. That's a process gap, not a model gap. And more tokens won't fix it.</p>
     <span class="blog-read-more">Read the post →</span>
   </a>
 
@@ -38,8 +38,8 @@ Perspectives on structured development in the age of AI coding assistants — wh
       <span class="blog-tag">Economics</span>
       <span class="blog-date">June 4, 2026</span>
     </div>
-    <h2 class="blog-listing-title">The Hidden Cost of Skipping Specs in Agentic SDLC</h2>
-    <p class="blog-listing-excerpt">Developers skip feature specs because it feels like overhead. It's not. The rework cost of a misaligned implementation dwarfs the 15 minutes it takes to write the spec. Here's the math.</p>
+    <h2 class="blog-listing-title">The Hidden Cost of Skipping the Challenge Phase</h2>
+    <p class="blog-listing-excerpt">Teams skip adversarial challenge because it feels like overhead. It's not. The rework cost of an unchallenged capability dwarfs the time a challenge round takes. Here's the math.</p>
     <span class="blog-read-more">Read the post →</span>
   </a>
 
@@ -48,8 +48,8 @@ Perspectives on structured development in the age of AI coding assistants — wh
       <span class="blog-tag">Architecture</span>
       <span class="blog-date">June 5, 2026</span>
     </div>
-    <h2 class="blog-listing-title">Building Coherent Systems with Story-Based Development</h2>
-    <p class="blog-listing-excerpt">Component decomposition creates incoherence — frontend built without the backend spec, AI integration never wired up. Story-based vertical slices fix this structurally. Here's how SpecGantry enforces coherence from spec to deployment.</p>
+    <h2 class="blog-listing-title">Building Coherent Systems with Capability-Based Development</h2>
+    <p class="blog-listing-excerpt">Component decomposition creates incoherence — frontend built without the backend spec, AI integration never wired up. Capability-based vertical slices fix this structurally. Here's how SpecGantry's challenge-first approach enforces coherence from ideation to deployment.</p>
     <span class="blog-read-more">Read the post →</span>
   </a>
 

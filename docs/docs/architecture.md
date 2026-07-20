@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Reference
-description: SpecGantry v6 reference — file structure, state flags, agent ownership, Artifact Index format, PPE loop objects, and design principles.
+description: SpecGantry v7 reference — file structure, project state, design principles, and extension points.
 permalink: /docs/architecture/
 prev_page: "Skills & Agents"
 prev_page_url: "/docs/skills"
@@ -9,22 +9,25 @@ next_page: "FAQ"
 next_page_url: "/docs/faq"
 ---
 
-# SpecGantry v6 Reference
+# SpecGantry v7 Reference
 
-File structure, state flags, design principles, and extension points.
+File structure, project state, design principles, and extension points.
 
 ---
 
 ## Design Principles
 
-**1. Specs and artifacts are the memory.**  
-All knowledge lives in `specs/`. Agents read from canonical artifacts on disk. Nothing is duplicated in transition files, passed as parameters, or held in temporary state that could be derived from the canonical sources. The `reads:` block in every story spec is the agent's fetch list — nothing else is loaded.
+**1. Challenge before you write.**  
+Nothing is written or built until an adversarial challenger has asked what would block the next phase. This is not a compliance check — it is a genuine adversarial stance. The challenger's job is to find gaps, not to confirm correctness.
 
-**2. Quality at the earliest possible moment.**  
-A thin spec produces bad code regardless of how many code repair iterations you run. The PPE loop catches gaps at ideation (before architecture is decided), at spec (before code is written), and at code (before shipping). Each phase's north star is independent of what any plan says — the evaluator challenges both the output and the goal.
+**2. The right thing gets fixed.**  
+When something is wrong, the investigate agent classifies the root cause before routing. A spec gap sent to the code loop produces another iteration of the wrong repair. Diagnostic classification ensures the right phase is re-entered.
 
-**3. Session safety over throughput.**  
-All progress is written to disk after every answer and every phase transition. A crash mid-loop restores from `.ppe-loop.yaml` — iteration count, prior verdict, and accumulated gaps — and re-enters at the plan step with the goal re-derived from canonical artifacts. No work is lost.
+**3. Quality at the earliest possible moment.**  
+A thin spec produces bad code regardless of how many code repair cycles you run. The CWJ loop catches gaps at ideation (before specs are written), at spec (before code is written), and at code (before shipping). Each phase's challenger is independent of what any write agent produced — it challenges afresh.
+
+**4. Session safety over throughput.**  
+All progress is written to disk after every answer and every phase transition. A crash mid-session loses at most one in-progress answer. Everything confirmed before that is on disk and the pipeline resumes exactly where it left off.
 
 ---
 
@@ -33,29 +36,21 @@ All progress is written to disk after every answer and every phase transition. A
 ```
 project-root/
   specs/
-    project-state.yaml            pipeline state, story flags, PPE loop config
-    concerns-log.ndjson           — removed in v6
+    project-state.yaml            pipeline state and capability flags
+    north-star.md                 per-project flowing prose cognitive contract
+    changelog.md                  append-only release history (created after 1.0.0)
     cost-log.ndjson               token usage per agent run (committed to git)
     architecture/
-      architecture.md             Vision, Problem & Users, Constraints, Risks,
-                                  Tech Stack, Guardrails, Configuration, UX Model,
-                                  + ## Artifact Index (YAML block, last section)
-      data-model.md               ## entity:[name] sections
-      actors.md                   ## actor:[name] sections
-      contracts.md                ## contract:[name] sections (prose + yaml block)
-      patterns.md                 ## pattern:[name] sections
-      ux.md                       ## ux:[name] sections
-      deployment.md               ## deployment:[name] sections
-    stories/
-      STORY-NNN/
-        intent.md                 2 paragraphs: functional purpose + outcome
-        story-spec.md             ≤60 lines: criteria, interfaces, permissions,
-                                  state, data — all as references to arch artifacts
-        build-report.yaml         overall_status, quality block, test_plan, runtime
-        gap.md                    divergences (optional, deleted at deploy)
-    scratchpad/                   gitignored — agent intermediate work only
+      architecture.md             all technical decisions — ## section:name anchors
+                                  (vision, tech-stack, data-model, actors,
+                                   api-interfaces, deployment, guardrails, configuration)
+    capabilities/
+      CAP-001/
+        intent.md                 2 paragraphs: experience promise + done/failure/edges
+        capability-spec.md        developer contract: criteria, interfaces, state, layout, data
+        build-report.yaml         overall_status, quality block, runtime info, test_plan
   .claude/
-    settings.json                 SessionStart + PostCompact hooks
+    settings.json                 SessionStart hook
     hooks/spec-gantry-contract.sh contract injection script
     CONTRACT.md                   binding directive (gitignored)
     CLAUDE.md                     spec-gantry-notice prepended at project init
@@ -63,208 +58,110 @@ project-root/
 
 ---
 
-## State Flags — project-state.yaml
+## Project State — project-state.yaml
+
+SpecGantry tracks pipeline progress in `specs/project-state.yaml`. You can read this file at any time to understand where your project is.
+
+Key fields:
 
 ```yaml
 project:
   name: "My App"
-  created: 2026-07-16
+  created: 2026-07-19
   release: "1.0.0"
-  next_release_type: null          # patch | minor | major — set by classify_and_route
-  active_story: null               # STORY-NNN while a loop is running
-  active_phase: null               # see valid values below
+  next_release_type: null          # patch | minor | major
 
-ideation_complete: false
-arch_seeded: false
-pending_arch_gap: null             # set by spec/code produce agents on missing arch section
-pending_spec_gap: null             # set by code produce agent on missing spec reference
+ideation_complete: false           # true after ideation exits
+auto_continue: false               # true when [>] is active
 
-auto_continue: false               # set to true by [>] — cleared on decision points
-
-ppe_loop:
-  max_iterations:
-    ideation: 3
-    spec: 2
-    code: 3
-
-stories:
-  STORY-001:
-    title: "Manage recipes"
+capabilities:
+  CAP-001:
+    title: "Recipe management"
+    spec_done: false               # true after user approves spec
+    built: false                   # true after code phase exits
+    deployed: false                # true after deploy
     depends_on: []
-    intent_done: false
-    spec_done: false
-    built: false
-    deployed: false
 ```
 
-**Valid `active_phase` values:**
-
-`ideation_plan` · `ideation_produce` · `ideation_eval` · `spec_plan` · `spec_produce` · `spec_eval` · `code_plan` · `code_produce` · `code_eval` · `deployment` · `investigation` · `amendment` · `null`
-
----
-
-## Write Ownership
-
-| Field / file | Writer |
-|---|---|
-| `built:true` | Orchestrator only (after code PPE loop exits ACHIEVED) |
-| `spec_done:true` | Orchestrator only (after spec-eval-agent returns ACHIEVED and user approves) |
-| `deployed:true` | Deployment subagent |
-| `project.release` | Orchestrator only (after deployment subagent returns) |
-| `auto_continue` | Orchestrator only |
-| `intent_done:true` | ideation-produce-agent, spec-produce-agent, reverse-engineer-subagent |
-| `pending_spec_gap` | code-produce-agent · Orchestrator (cross-story drift) |
-| `pending_arch_gap` | spec-produce-agent or code-produce-agent |
-| `.ppe-loop.yaml` | Orchestrator only (written at each eval step, deleted on loop exit) |
-
----
-
-## Session Scratchpad Files (gitignored)
-
-| File | Purpose | Lifetime |
-|---|---|---|
-| `specs/.ideation-turn.md` | Pending ideation question + topic | Deleted when question is answered |
-| `specs/.story-spec-turn.md` | Pending spec interaction state | Deleted on SPEC_COMPLETE or SPEC_HELD |
-| `specs/.investigate-turn.md` | Pending investigation confirmation | Deleted on INVESTIGATION_CONFIRMED/CANCELLED |
-| `specs/.ideation-scratchpad.yaml` | Proposed story list between approval and seed_artifacts | Deleted after seed_artifacts completes |
-| `specs/stories/[ID]/.ppe-loop.yaml` | Loop checkpoint: `iteration_N`, `prior_eval_verdict`, `prior_northstar_gaps`, `must_not_miss`, `spec_reentry_count` | Deleted when loop exits ACHIEVED or CAPPED |
-
-No handoff files exist in v6 — Goal₀ for each phase is derived directly from canonical artifacts on disk. `.spec-handoff.yaml` and `.code-handoff.yaml` from v5 are no longer written.
-
----
-
-## The Artifact Index
-
-The last section of `specs/architecture/architecture.md` is a machine-parseable YAML block that maps artifact types to their files and named sections:
+**CWJ loop configuration** — adjustable per project:
 
 ```yaml
-## Artifact Index
-
-```yaml
-data-model:
-  file: specs/architecture/data-model.md
-  entities: [application, submission, review, user]
-actors:
-  file: specs/architecture/actors.md
-  roles: [applicant, admin, reviewer]
-contracts:
-  file: specs/architecture/contracts.md
-  shapes: [submission-response, review-response, error-envelope]
-patterns:
-  file: specs/architecture/patterns.md
-  patterns: [rest-crud, optimistic-update]
-ux:
-  file: specs/architecture/ux.md
-  sections: [navigation-model, visual-system, component-conventions, screen-template]
-deployment:
-  file: specs/architecture/deployment.md
-  sections: [target, services, secrets, ingress, cicd]
-```
+cwj_loop:
+  max_iterations:
+    ideation: 5
+    spec: 3
+    code: 3
 ```
 
-Agents read the Artifact Index once to build a lookup map, then use it to resolve `reads:` entries to exact file paths and section anchors — without reading the full architecture file.
+Raise or lower these to control how many challenge cycles run before the pipeline surfaces unresolved gaps to you.
 
 ---
 
-## Contract Sections
+## The Architecture File
 
-Every `## contract:[name]` section in `contracts.md` must contain both prose and a machine-readable YAML block:
+`specs/architecture/architecture.md` contains all technical decisions in a single file. Each section uses a `## section:name` anchor so agents and developers can navigate directly to what they need:
 
-````markdown
-## contract:submission-response
-The response shape returned by POST /api/submissions and GET /api/submissions/:id.
+```markdown
+# Architecture
 
-```yaml
-$schema: "https://json-schema.org/draft/2020-12/schema"
-type: object
-required: [id, status, created_at]
-properties:
-  id: { type: string, format: uuid }
-  status: { type: string, enum: [draft, submitted, approved, rejected] }
-  title: { type: string }
-  created_at: { type: string, format: date-time }
-additionalProperties: false
+## section:vision
+One sentence. What the system is.
+
+## section:tech-stack
+Every layer decided: language, runtime, framework, database, libraries.
+
+## section:data-model
+Every entity: name, key fields, owner, lifecycle.
+
+## section:actors
+Every user type and system actor: name, capabilities, data ownership.
+
+## section:api-interfaces
+Every endpoint: method + path, auth, request shape, response shape, error codes.
+
+## section:deployment
+Platform, container registry, scaling, secrets strategy, CI/CD.
+
+## section:guardrails
+Source layout, config location, secrets handling, build output, runtime storage.
+
+## section:configuration
+Every environment variable: name, description, example value.
 ```
-````
 
-The code produce agent validates every `required:` field is present before writing API endpoints. If the yaml block is missing, it signals a spec gap and stops.
+The architecture file is written once at ideation exit and extended via amendment when requirements drift. Spec write and build agents read only the sections relevant to the capability they're working on — not the full file.
 
 ---
 
 ## Code Anchor Schema
 
-Every source file touched by the code produce or reverse-engineer agent gets one-line anchor comments:
+Every source file touched by the build or reverse-engineer agent gets one-line anchor comments. These let the investigate agent navigate the codebase without loading full files:
 
 | Anchor | Where | Example |
 |---|---|---|
-| `@story` | Top of file | `// @story STORY-002 \| submissions` |
-| `@intent` | After `@story` | `// @intent allows an applicant to submit their draft` |
-| `@entry` | Above each route handler | `// @entry POST /api/submissions \| create draft submission` |
+| `@capability` | Top of file | `// @capability CAP-002 \| job posting` |
+| `@intent` | After `@capability` | `// @intent allows a company to create and publish a job listing` |
+| `@entry` | Above each route handler | `// @entry POST /api/jobs \| create job listing` |
 | `@contract` | Above cross-layer functions | `// @contract input: {...} → output: {...} \| errors: [422,500]` |
-| `@gap` | At spec divergences | `// @gap 2026-07-16 status enum extended — spec only defines draft\|submitted` |
 
-The investigation agent greps these anchors to locate code without loading full files.
-
----
-
-## The PPE Loop Objects
-
-Three shared data objects travel between plan, produce, and eval agents in each loop iteration. Plan and eval agents return raw JSON.
-
-**Goal** (orchestrator-owned, derived from disk)
-```yaml
-goal:
-  phase: ideation | spec | code
-  iteration: N
-  statement: "what good looks like"
-  must_achieve: [north star criteria for this iteration]
-  must_not_miss: [gaps carried forward from prior iterations]
-  source: initial | upgraded
-```
-
-**Plan** (returned by plan agents)
-```json
-{
-  "approach": "strategy to achieve the goal",
-  "steps": [
-    { "id": 1, "action": "...", "addresses": "...", "produces": "..." }
-  ],
-  "known_risks": ["..."],
-  "scope_boundary": "..."
-}
-```
-
-**Evaluation** (returned by eval agents)
-```json
-{
-  "verdict": "ACHIEVED | EXECUTION_GAP | GOAL_GAP",
-  "plan_compliance": [{ "step_id": 1, "met": true, "evidence": "..." }],
-  "northstar_gaps": [
-    { "gap": "...", "gap_type": "experience_gap", "severity": "blocking", "proposed_goal_addition": "..." }
-  ],
-  "execution_gaps": [{ "step_id": 2, "met": false, "evidence": "..." }],
-  "upgraded_goal": { "statement": "...", "must_achieve": [...], "must_not_miss": [...] }
-}
-```
-
-`execution_gaps` is only present when verdict is `GOAL_GAP` and produce also failed to execute one or more plan steps — both are fed to the next plan agent in one pass.
+These anchors are machine-readable comments — no runtime dependencies, safe to commit.
 
 ---
 
 ## Extension Points
 
-**Custom guardrails** — edit `## Guardrails` in `specs/architecture/architecture.md`. Every subagent reads guardrails before writing code. Changes take effect on the next build.
+**Custom guardrails** — edit `## section:guardrails` in `specs/architecture/architecture.md`. Every build agent reads guardrails before writing code. Changes take effect on the next build.
 
-**PPE loop configuration** — edit `ppe_loop.max_iterations` in `project-state.yaml` to adjust how many iterations each phase runs before capping.
+**CWJ loop configuration** — edit `cwj_loop.max_iterations` in `project-state.yaml` to adjust how many challenge cycles each phase runs before capping and surfacing gaps to you.
 
-**Custom deployment platforms** — the deployment subagent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in `specs/architecture/deployment.md` drives the generated `deploy.sh`.
+**Custom deployment platforms** — the deployment agent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in `## section:deployment` drives the generated `deploy.sh`.
 
 ---
 
 ## Security Model
 
-**Secrets** — never hardcoded. Every secret is an environment variable named in `specs/architecture/architecture.md → ## Configuration`. The code produce agent uses these names exactly. `.env.example` is generated automatically at deploy time with safe placeholder values.
+**Secrets** — never hardcoded. Every secret is an environment variable named in `## section:configuration`. The build agent uses these names exactly. `.env.example` is generated automatically at deploy time with safe placeholder values.
 
-**Source annotations** — `@story`, `@entry`, `@contract`, `@gap` anchors written by the code produce and reverse-engineer agents are machine-readable but contain no runtime secrets. They are safe to commit.
+**Source annotations** — `@capability`, `@intent`, `@entry`, `@contract` anchors written by the build and reverse-engineer agents contain no runtime secrets. They are safe to commit.
 
 **CONTRACT.md** — the engagement directive injected at session start is gitignored by default. It contains no secrets — only instructions for Claude.

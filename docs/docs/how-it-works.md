@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: How It Works
-description: A complete walkthrough of SpecGantry v6 — the universal PPE loop, all three phases, north stars, GOAL_GAP routing, gap flows, and release management.
+description: A complete walkthrough of SpecGantry v7 — the CWJ loop, all three phases, the per-project north star, diagnostic routing, and release management.
 permalink: /docs/how-it-works/
 prev_page: "Getting Started"
 prev_page_url: "/docs/getting-started"
@@ -9,35 +9,25 @@ next_page: "Skills & Agents"
 next_page_url: "/docs/skills"
 ---
 
-# How SpecGantry v6 Works
+# How SpecGantry v7 Works
 
 A complete walkthrough of the pipeline and what happens at each phase.
 
 ---
 
-## The Universal PPE Loop
+## The CWJ Loop
 
-Every phase in SpecGantry runs the same parameterized loop. What varies across phases is not the structure — it's the goal, the agents, and the north star.
+Every phase in SpecGantry runs a Challenge-Write-Judge loop. What varies across phases is not the structure — it's who the challenger represents, what the write step produces, and what question the judge asks.
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The Universal Plan-Produce-Evaluate Loop</div>
+<div class="dg-diagram-title">The Challenge-Write-Judge Loop</div>
 <div class="dg-flow">
 
-  <div class="dg-flow-node dg-neutral">
-    <div class="dg-flow-node-icon"><i class="bi bi-bullseye"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Goal</div>
-      <div class="dg-flow-node-desc">Derived from canonical artifacts on disk — intent.md, story-spec.md, architecture artifacts, north star document. Not passed as a parameter.</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
   <div class="dg-flow-node dg-ideation">
-    <div class="dg-flow-node-icon"><i class="bi bi-list-check"></i></div>
+    <div class="dg-flow-node-icon"><i class="bi bi-shield-exclamation"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Plan</div>
-      <div class="dg-flow-node-desc">Given the goal and prior iteration context, determines exactly what to produce and how. Reads the north star to challenge whether the goal itself is sufficient.</div>
+      <div class="dg-flow-node-title">Challenge</div>
+      <div class="dg-flow-node-desc">An adversarial agent asks what would block the next phase. Questions are specific to this project — not a generic checklist. Grouped by theme. The challenger never writes files.</div>
     </div>
   </div>
 
@@ -46,136 +36,150 @@ Every phase in SpecGantry runs the same parameterized loop. What varies across p
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-pencil-square"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Produce</div>
-      <div class="dg-flow-node-desc">Executes the plan. For ideation: asks questions, writes artifacts. For spec: writes story-spec.md. For code: builds the full story.</div>
+      <div class="dg-flow-node-title">Write / Build</div>
+      <div class="dg-flow-node-desc">Every challenge is resolved. Ideation: user answers the full round in one response. Spec: write agent resolves autonomously into a developer contract. Code: plan agent designs the repair; build agent executes.</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-build">
-    <div class="dg-flow-node-icon"><i class="bi bi-shield-check"></i></div>
+    <div class="dg-flow-node-icon"><i class="bi bi-patch-check"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Evaluate</div>
-      <div class="dg-flow-node-desc">Two simultaneous checks: (1) did produce execute the plan? (2) did the plan cover the north star? Either failure loops back with a richer goal.</div>
+      <div class="dg-flow-node-title">Judge</div>
+      <div class="dg-flow-node-desc">One question only: <em>"Would the next phase be blocked?"</em> Not "did this pass a rubric?" The judge is independent — it challenges the output, not the challenger. CLEAR exits. BLOCKED continues with specific gaps.</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
-  <div class="dg-flow-node dg-neutral" style="display:flex;flex-direction:row;gap:1rem;padding:0.5rem">
-    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--green-50,#f0fdf4);border-radius:6px">
-      <strong style="color:var(--green-700,#15803d)">ACHIEVED</strong><br/>
-      <span style="font-size:.8rem">North star met → exit phase,<br/>hand off to next</span>
+  <div class="dg-flow-node dg-neutral" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;padding:0.75rem">
+    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--green-50,#f0fdf4);border-radius:8px;border:1px solid rgba(34,197,94,.25)">
+      <div style="font-size:1.1rem;margin-bottom:4px">✅</div>
+      <strong style="color:var(--green-700,#15803d);font-size:.8rem">CLEAR</strong>
+      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Loop exits · next phase begins</div>
     </div>
-    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--amber-50,#fffbeb);border-radius:6px">
-      <strong style="color:var(--amber-700,#b45309)">EXECUTION_GAP</strong><br/>
-      <span style="font-size:.8rem">Plan was right, produce missed<br/>→ replan, same goal</span>
+    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--amber-50,#fffbeb);border-radius:8px;border:1px solid rgba(245,158,11,.25)">
+      <div style="font-size:1.1rem;margin-bottom:4px">🔄</div>
+      <strong style="color:var(--amber-700,#b45309);font-size:.8rem">BLOCKED</strong>
+      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Gaps fed back · next cycle</div>
     </div>
-    <div style="flex:1;text-align:center;padding:0.5rem;background:var(--red-50,#fef2f2);border-radius:6px">
-      <strong style="color:var(--red-700,#b91c1c)">GOAL_GAP</strong><br/>
-      <span style="font-size:.8rem">Plan missed north star<br/>→ upgrade goal, replan</span>
+    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--red-50,#fef2f2);border-radius:8px;border:1px solid rgba(239,68,68,.25)">
+      <div style="font-size:1.1rem;margin-bottom:4px">⚠</div>
+      <strong style="color:var(--red-700,#b91c1c);font-size:.8rem">CAPPED</strong>
+      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Max cycles hit · user decides</div>
     </div>
   </div>
 
 </div>
 </div>
 
-### Exit conditions — how the loop stops
+### Three different challengers — one loop
 
-Each phase has a hard cap and an escalation path:
-
-| Exit | Trigger | What happens |
-|---|---|---|
-| **ACHIEVED** | Evaluator confirms north star met | Phase exits, next phase begins |
-| **CAPPED** | `iteration_N >= max_iterations` | Unresolved gaps surfaced to user: `[Y] Accept · [E] Fix · [X] Stop` |
-| **CYCLING** | Identical gaps across two consecutive iterations after a goal upgrade | Same as CAPPED |
-| **Build failure** | Produce agent hard failure | Exit immediately, surface to user |
-
-Max iterations: ideation 3, spec 2, code 3 — configurable in `project-state.yaml → ppe_loop`.
-
----
-
-## The Three North Stars
-
-Each phase has a canonical quality bar that the evaluator holds every output against — independently of what any plan says. No plan can redefine them.
+What makes the CWJ loop powerful is that each phase's challenger has a different adversarial identity:
 
 <div class="dg-wrap">
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">
-    <div class="dg-node-num">NS1</div>
-    <div class="dg-node-name">Ideation North Star</div>
-    <div class="dg-node-output">"Can every architecture artifact be written without invented assumptions?" — 8 criteria covering actors, data entities, UX conventions, tech stack, deployment, story completeness</div>
+    <div class="dg-node-num">01</div>
+    <div class="dg-node-name">Ideation Challenger</div>
+    <div class="dg-node-role">Senior developer pre-build</div>
+    <div class="dg-node-output">"What would stop me agreeing to start? Are the capabilities clear? The data ownership? The tech choices? The UX model?" — fires up to 7 questions per round, user answers all at once</div>
   </div>
 
   <div class="dg-node dg-spec">
-    <div class="dg-node-num">NS2</div>
-    <div class="dg-node-name">Spec North Star</div>
-    <div class="dg-node-output">"If built exactly as written, does the user get everything the intent promises?" — 9 criteria covering async states, output format, error handling, flow completeness, unambiguous criteria</div>
+    <div class="dg-node-num">02</div>
+    <div class="dg-node-name">Spec Challenger</div>
+    <div class="dg-node-role">Developer-proxy</div>
+    <div class="dg-node-output">"I just got assigned this — what would block me building it? Loading state? Empty state? Error messages? Where does the output appear?" — fires up to 6 questions, resolved autonomously</div>
   </div>
 
   <div class="dg-node dg-build">
-    <div class="dg-node-num">NS3</div>
-    <div class="dg-node-name">Code North Star</div>
-    <div class="dg-node-output">"Does the running software deliver the full experience the intent describes?" — 7 criteria covering feedback throughout async ops, output format fitness, error surfaces, flow completeness</div>
+    <div class="dg-node-num">03</div>
+    <div class="dg-node-name">Code Challenger</div>
+    <div class="dg-node-role">User-proxy</div>
+    <div class="dg-node-output">"Can I — as a user — actually accomplish what was promised? Does anything freeze while I wait? Can I get back from a dead end? Does failure tell me what to do next?" — reads source files, not the spec</div>
   </div>
 
 </div>
 </div>
 
-The north stars are the reason SpecGantry catches what code review loops miss. A spec that says "display the result" will pass a compliance check — but fail the spec north star criterion "every async operation communicates state throughout." The evaluator catches the gap before any code is written.
+### Exit conditions
+
+| Exit | Trigger | What happens |
+|---|---|---|
+| **CLEAR** | Judge confirms next phase would not be blocked | Loop exits, next phase begins |
+| **CAPPED** | Maximum cycles reached | Unresolved gaps surfaced to user: `[Y] Accept · [E] Fix · [X] Stop` |
+| **CYCLING** | Identical blocking gaps across two consecutive cycles | Same as CAPPED |
+| **Build failure** | Build agent hard failure | Exit immediately, surface to user |
+
+Max iterations: ideation 5, spec 3, code 3 — configurable in `project-state.yaml`.
+
+---
+
+## The North Star
+
+Each project has one `specs/north-star.md`. It is not a template — it is written from the actual idea during ideation and is specific to this system.
+
+The document is flowing prose. No headings. No sections. Just paragraphs that describe what good looks like: what the user is owed, what design philosophy governs every decision, what the system must handle invisibly, what the user should never have to think about.
+
+The north star grows. When the spec phase surfaces a new requirement, the write agent appends a paragraph. It never gets rewritten from scratch — it accumulates understanding over time.
+
+It ends with a `---` rule and a flat list of the challenge questions that shaped it — the AI's thought process made visible to any reader, and available for future agents to use as context.
+
+The north star is read whole — not section by section. Every challenger and judge at every phase reads the full document before forming any question or verdict.
 
 ---
 
 ## The Pipeline at a Glance
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">Pipeline at a Glance</div>
+<div class="dg-diagram-title">SpecGantry v7 Pipeline</div>
 <div class="dg-flow">
 
   <div class="dg-flow-node dg-ideation">
     <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Ideation PPE Loop</div>
-      <div class="dg-flow-node-desc">plan what to ask → ask questions → evaluate architecture completeness against north star → iterate until ACHIEVED</div>
-      <div class="dg-flow-node-meta">architecture.md · 5 artifact files · intent.md per story · project-state.yaml</div>
+      <div class="dg-flow-node-title">Ideation CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— high human interaction</span></div>
+      <div class="dg-flow-node-desc">Adversarial challenge rounds → user answers all questions per round → judge readiness → write agent runs once on CLEAR</div>
+      <div class="dg-flow-node-meta"><i class="bi bi-file-earmark-text"></i> north-star.md &nbsp;·&nbsp; <i class="bi bi-diagram-3"></i> architecture.md &nbsp;·&nbsp; <i class="bi bi-card-text"></i> intent.md × N</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> ideation_complete · NS1 all 8 criteria met</div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Ideation complete · architecture written · all capabilities have intent.md</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-spec">
-    <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-text"></i></div>
+    <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-check"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Spec PPE Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
-      <div class="dg-flow-node-desc">plan what the spec must capture → write story-spec.md → evaluate spec sufficiency against north star → iterate until ACHIEVED → user approves a machine-validated spec</div>
-      <div class="dg-flow-node-meta">story-spec.md · intent.md (finalised)</div>
+      <div class="dg-flow-node-title">Spec CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per capability · autonomous</span></div>
+      <div class="dg-flow-node-desc">Developer-proxy challenge → write agent resolves into capability-spec.md → judge checks readiness → user approves once on CLEAR</div>
+      <div class="dg-flow-node-meta"><i class="bi bi-file-earmark-richtext"></i> capability-spec.md &nbsp;·&nbsp; <i class="bi bi-person-check"></i> user approves once</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> spec_done per story · NS2 all 9 criteria met</div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Spec done per capability · user approved</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Code PPE Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per story</span></div>
-      <div class="dg-flow-node-desc">plan build approach → build full story → evaluate code + experience against north star → repair if needed → GOAL_GAP triggers spec update before rebuild</div>
-      <div class="dg-flow-node-meta">build-report.yaml (quality block) · gap.md (if any)</div>
+      <div class="dg-flow-node-title">Code CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per capability · fully automated</span></div>
+      <div class="dg-flow-node-desc">Plan build approach → build end-to-end → user-proxy challenge traces the experience through source files → repair and repeat if blocked</div>
+      <div class="dg-flow-node-meta"><i class="bi bi-code-square"></i> source files &nbsp;·&nbsp; <i class="bi bi-clipboard2-check"></i> build-report.yaml</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:520px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> all stories built · NS3 all 7 criteria met</div>
+  <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;All capabilities built · build reports passing</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
@@ -183,8 +187,8 @@ The north stars are the reason SpecGantry catches what code review loops miss. A
     <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Deploy Release</div>
-      <div class="dg-flow-node-desc">Gap specs merged · deployment script generated · whole system deployed · release version bumped</div>
-      <div class="dg-flow-node-meta">deploy.sh · deploy-artifact.md</div>
+      <div class="dg-flow-node-desc">North-star alignment check surfaces any capped capabilities · changelog updated · Dockerfiles, docker-compose, deploy.sh generated · release version bumped</div>
+      <div class="dg-flow-node-meta"><i class="bi bi-file-code"></i> deploy.sh &nbsp;·&nbsp; <i class="bi bi-box"></i> Dockerfiles &nbsp;·&nbsp; <i class="bi bi-tag"></i> release versioned</div>
     </div>
   </div>
 
@@ -193,15 +197,15 @@ The north stars are the reason SpecGantry catches what code review loops miss. A
   <div class="dg-flow-node dg-neutral">
     <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">[N] New work — post-release modifications</div>
-      <div class="dg-flow-node-desc">Bug fix or enhancement: investigate → build → full code PPE loop → re-deploy</div>
+      <div class="dg-flow-node-title">[N] New Work — post-release</div>
+      <div class="dg-flow-node-desc">Investigate → classify as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY → route to the right repair phase automatically</div>
     </div>
   </div>
 
 </div>
 </div>
 
-Stories run in dependency order and the pipeline **interleaves spec and code per story** — a story is fully built before the next is specced.
+Capabilities run in dependency order. The pipeline **interleaves spec and code per capability** — a capability is fully specced and built before the next is started (unless `auto_continue` is on).
 
 ---
 
@@ -209,240 +213,153 @@ Stories run in dependency order and the pipeline **interleaves spec and code per
 
 ### Phase 1 — Ideation {#ideation}
 
-**Output:** `specs/architecture/` (6 artifacts) · story backlog in `specs/project-state.yaml`
+**Output:** `specs/north-star.md` · `specs/architecture/architecture.md` · `specs/capabilities/[CAP-ID]/intent.md` per capability · `specs/project-state.yaml`
 
-**Quick-start mode**
+The ideation loop is the only phase with high human interaction. The challenge agent reads the vision and fires a round of blocking questions — specific to *this* project, not a fixed script. Up to 7 per round, grouped by theme. All questions surface at once. The user answers all of them in a single response.
 
-After entering a project name and vision, SpecGantry checks whether the project is simple — no authentication, no AI integration, single actor, three or fewer capabilities. If so:
+The judge then evaluates whether a developer could start writing capability specs without inventing answers. Six criteria:
+- The capability list is unambiguous
+- The data model is inferable
+- Technology choices leave no open decisions
+- UX intent is clear
+- No answer is "we'll figure it out"
+- A spec agent would not need to invent any answer
 
-```
-This looks like a simple single-user app. I'll apply these defaults and ask only 3 questions:
+If CLEAR, the write agent runs once — consolidating all answers into the north star, architecture, and intent files. If BLOCKED, another round.
 
-  Defaults applied:  Node.js · SQLite · Bootstrap 5 · Docker Hub · single-user · no auth
-  Questions:         tech stack confirm · Docker Hub username · story list
-
-  [>] Quick start
-  [F] Full ideation  (10 topics, shape every decision yourself)
-```
-
-Quick-start sets sensible defaults for all architecture sections and asks three focused questions. The story list proposal includes a one-line scope under each title so you know exactly what each story covers:
-
-```
-Proposed stories — 3 total
-
-  ID        Title                                         Depends on
-  ──────────────────────────────────────────────────────────────────
-  STORY-001  Manage recipes                               —
-             add, view, edit, and delete recipes
-  STORY-002  Tag and organise recipes                     STORY-001
-             create tags and attach them to recipes
-  STORY-003  Search recipes by ingredient                 STORY-001
-             find recipes that contain a given ingredient
-```
-
-If stories share data without a blocking dependency, the proposal also shows `reads ... from:` annotations — surfacing implicit data relationships before spec writing begins.
-
-**Full ideation — Beat 1 and Beat 2**
-
-Full ideation uses a thinking-partner stance — three stances:
-- **"Yes, and…"** — affirms the direction and extends it
-- **"Fine, but…"** — accepts the premise but surfaces a tradeoff
-- **"What about…"** — probes a gap the vision didn't address
-
-The opening turn shows a topic roadmap so you know what the conversation covers:
-
-```
-Topics ahead: vision · users · constraints · risks · tech stack ·
-              auth+config · UX model · deployment · stories  (9 topics, ~9 turns)
-```
-
-Everything is flushed to disk after every answer. A crash mid-session loses at most one exchange.
-
-**Ideation PPE loop**
-
-After the produce agent completes, the ideation evaluator checks all 8 north star criteria against the written artifacts. If the deployment target is `_not yet written_`, if no actor has explicit capabilities defined, if the story list combines two distinct capabilities into one story — these are caught before spec begins. The loop iterates until the north star is fully met.
+The write agent runs **only on exit** — not per cycle. All ideation conversations converge into artifacts once understanding is sufficient.
 
 Transition note after ideation:
 ```
-✓ Ideation complete  ·  Manage recipes · Tag and organise · Search by ingredient
+✓ Ideation complete  ·  Recipe management · Tag and organise · Ingredient search
+💡 Good moment to /compact — ideation context is large, all decisions are on disk.
 ```
 
 ---
 
-### Phase 2 — Story Spec {#spec}
+### Phase 2 — Capability Spec {#spec}
 
-**Output:** `specs/stories/STORY-NNN/story-spec.md` (≤60 lines, machine-validated)
+**Output:** `specs/capabilities/[CAP-ID]/capability-spec.md` (≤80 lines, machine-challenged)
 
-The spec loop runs before any code is written. The spec-plan-agent reads `intent.md`, the architecture, and the spec north star, then derives what the spec must capture — thinking like a product head, not a format checker.
+The spec loop is **fully autonomous** — the user does not interact during cycles. The challenge agent simulates a developer who has just been handed the intent file and asks "wait, but what about...?". The write agent resolves every challenge into a developer contract. The judge checks whether that contract would still leave a developer blocked.
 
-**What the spec north star catches**
+**What the spec challenge agent looks for:**
 
-The spec evaluator checks 9 criteria against the written spec:
-
-| Criterion | What it catches |
+| Dimension | What it surfaces |
 |---|---|
-| Visible triggers | "the user submits" without specifying the button label or location |
-| Async feedback throughout | No loading state described for an async AI call — spec only says "display result" |
-| Output format | "display the AI output" without specifying format or container |
-| Error states with recovery | "show an error message" without specifying message content or recovery action |
-| Flow completeness | Success state not described — user completes action but spec doesn't say what happens |
-| Unambiguous criteria | Any criterion using "graceful", "appropriate", "responsive" without concrete definition |
-| Edge cases from intent | intent.md says "handle when no results found" but spec has no criterion for empty state |
-| Complete interfaces | Missing auth, guard conditions, or error codes on endpoints |
-| Layout decisions | Screen contents described but no layout structure specified |
+| Loading states | "The intent says the system processes a file — synchronous or async? What does the user see during a 30-second wait?" |
+| Empty states | "What does the screen look like when there's no data yet?" |
+| Error states | "What message does the user see? Where does it appear? What can they do next?" |
+| Output format | "Is it a list, a form, a detail view? Where does it appear?" |
+| Navigation | "Where does the user come from? Where do they go after success? After failure?" |
+| North star alignment | "Does the intent deliver on what the north star promises for this project?" |
 
-When gaps are found, the evaluator either re-runs the spec plan (EXECUTION_GAP — plan was right, produce missed something) or upgrades the goal (GOAL_GAP — plan itself didn't cover the criterion). In both cases the spec is updated before the user ever sees it.
+**User checkpoint (once per capability):**
 
-**User approval**
-
-The user sees a machine-validated approval prompt:
+The user sees the spec only when the judge returns CLEAR:
 
 ```
-✓ Story spec validated — STORY-002: AI Text Generator
-
-  North star:  all 9 criteria confirmed
-  Loop:        2 iterations — async loading and streaming display criteria added
+✓ Spec validated — CAP-001: Recipe management
+  All async states described, empty state covered, error messages specified with text and location.
+  North star alignment confirmed: primary action placement specified.
 
   [Y] Approve spec   [E] Edit   [X] Hold
 ```
 
-The user is approving a spec that has already been challenged by a product-head-level evaluator — not a first draft.
+`[E]` → user's edit is prepended as a new challenge and the write agent resolves it before re-surfacing for approval.
 
 ---
 
 ### Phase 3 — Code {#build}
 
-**Output:** Source code · `specs/stories/STORY-NNN/build-report.yaml`
+**Output:** Source files · `specs/capabilities/[CAP-ID]/build-report.yaml`
 
 **Iteration 1 — Plan then build**
 
-The code-plan-agent runs first on every iteration including the first. On iteration 1 it produces a build approach — layer order, async patterns to apply upfront, implementation choices the spec's experience requirements demand. The produce agent builds against this plan, not just against the spec.
+There is no challenge on iteration 1 — nothing has been built yet. The plan agent reads the capability spec, intent, and architecture, then produces a build approach: layer order, async patterns to apply upfront, implementation choices the spec leaves open, what to reuse from existing code. The build agent implements end-to-end from the plan.
 
-**Code PPE loop**
+**Code challenge — user-proxy**
 
-After each build, the code evaluator checks two things simultaneously:
+After the build, the challenge agent traces the user's experience through the actual source code. It reads the north star and intent (not the spec — this is the user's perspective, not the developer's contract) and asks: "As a user, can I actually accomplish what this capability promises?"
 
-1. **Quality dimension rubric** — spec adherence, contract fidelity, input validation, UI completeness, state consistency, and more. Dimensions activated dynamically based on what the story contains.
+It looks for:
+- Whether the entry point is reachable
+- Whether async operations show loading states
+- Whether failure shows a human-readable message, not a raw error
+- Whether there are dead ends after success or failure
+- Design smells: multiple API calls where one would do, hardcoded values that should be configurable, business logic in the wrong layer
 
-2. **Code north star** — 7 criteria evaluated against the experience contract derived from `intent.md` and `story-spec.md`:
+Each gap is classified as a **code gap** (spec implied this, code missed it — targeted repair) or a **spec gap** (north star requires this, spec never captured it — spec must be corrected first, then rebuild).
 
-| Criterion | What it catches |
-|---|---|
-| Async feedback throughout | AI call buffered — user sees nothing until complete, no loading indicator |
-| Output format fits content | AI text rendered as raw JSON string or in an overflow container |
-| Error states readable | `catch(e) { console.error(e) }` with no user-facing message |
-| Full flow completable | Form submits but success state doesn't update the UI |
-| No locked-in rigidity | Core algorithm hard-coded against a single case when intent implies extensibility |
-| State consistent after mutations | Deleted item reappears on next render — list not invalidated |
-
-**GOAL_GAP — spec update mid-build**
-
-If code satisfies all spec dimensions but fails a north star criterion because the spec never required that behaviour, the evaluator returns GOAL_GAP. The orchestrator surfaces a banner and automatically updates the spec before rebuilding:
-
+**Build transition notes:**
 ```
-⚠ Code eval found a spec gap — STORY-006: AI cover letter drafting
-  Gap: AI response is buffered — spec did not require streaming display
-  Updating spec now and rebuilding — no action needed.
-```
-
-After the spec update and rebuild:
-
-```
-✓ Spec updated + rebuilt · STORY-006  ·  quality: pass
-  Gap resolved: streaming display criterion added
-```
-
-**Quality outcomes**
-
-| Status | Meaning |
-|---|---|
-| `pass` | All dimensions and north star criteria cleared |
-| `partial` | Same dimensions still failing after approach-change repair — usually a spec ambiguity |
-| `capped` | Max iterations (default 3) reached with unresolved dimensions |
-| `build_failed` | Produce agent returned a hard failure |
-
-Build transition note:
-```
-✓ Build complete · STORY-001  ·  quality: pass (2 iters — loading state added to save action)
+✓ Build complete · CAP-001  ·  quality: pass (1 cycle)
+✓ Build complete · CAP-002  ·  quality: pass (2 cycles — loading state added to save action)
+✓ Build complete · CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
 ```
 
 ---
 
-## GOAL_GAP Cross-Phase Routing {#goal-gap}
+## Diagnostic Routing {#diagnostic-routing}
 
-When the code evaluator finds that a spec was insufficient for the north star, it routes back to the spec phase — not to a code repair. This is the key difference from a simple evaluate→repair loop:
+When something is wrong post-deploy, the investigate agent classifies the problem before any repair begins. The classification determines which phase gets fixed — and fixes the right thing.
 
-```
-Code eval → GOAL_GAP
-  ↓
-Spec PPE loop re-runs with upgraded goal
-  → ACHIEVED → full code rebuild (iteration 1 fresh)
-  → CAPPED   → surface to user [Y] Accept / [X] Stop
+<div class="dg-wrap">
+<div class="dg-node-graph">
 
-Code PPE loop restarts at iteration 1
-```
+  <div class="dg-node dg-build">
+    <div class="dg-node-num"><i class="bi bi-bug"></i></div>
+    <div class="dg-node-name">CODE_BUG</div>
+    <div class="dg-node-output">Code doesn't match what the spec required. A targeted code edit is sufficient.<br><em>→ Re-enter code loop for the affected capability</em></div>
+  </div>
 
-This is capped at one spec→code re-entry per story. If code eval returns GOAL_GAP a second time after a spec repair, the loop exits CAPPED and surfaces to the user.
+  <div class="dg-node dg-spec">
+    <div class="dg-node-num"><i class="bi bi-file-earmark-x"></i></div>
+    <div class="dg-node-name">SPEC_GAP</div>
+    <div class="dg-node-output">Code did what the spec said, but the spec was insufficient for what the north star requires.<br><em>→ Re-run spec phase, then rebuild</em></div>
+  </div>
 
----
+  <div class="dg-node dg-ideation">
+    <div class="dg-node-num"><i class="bi bi-arrow-left-right"></i></div>
+    <div class="dg-node-name">REQUIREMENT_DRIFT</div>
+    <div class="dg-node-output">A requirement was misunderstood during ideation. Fixing the code or spec alone won't resolve it.<br><em>→ Amend north star + architecture, re-spec, rebuild</em></div>
+  </div>
 
-## Gap Specs {#gap-specs}
+  <div class="dg-node dg-deploy">
+    <div class="dg-node-num"><i class="bi bi-plus-circle"></i></div>
+    <div class="dg-node-name">NEW_CAPABILITY</div>
+    <div class="dg-node-output">Genuinely new work — not a fix to something existing. Scope needs to be defined first.<br><em>→ Re-enter ideation in amendment mode</em></div>
+  </div>
 
-If during development the spec is discovered to be incomplete or has side-effects on other stories, the code produce agent writes to `specs/stories/STORY-NNN/gap.md` rather than editing the spec directly. Multiple discoveries accumulate as additional bullets in the same file — no new files are created.
+</div>
+</div>
 
-### Gap Merge {#gap-merge}
-
-When all stories are built, SpecGantry checks for unmerged gap files and presents any it finds. After confirmation, each gap is merged into the story spec in place. Each `gap.md` is deleted after successful merge.
-
----
-
-## Auto-Continue Mode {#auto-continue}
-
-Type `[>]` to enable auto-continue. The pipeline runs without pausing at spec approval prompts, moving from ideation through spec through build without stopping — until a genuine decision point:
-
-- A concern raised by a subagent
-- An arch/spec gap requiring resolution
-- All stories built (deploy requires explicit confirmation)
-- A CAPPED or CYCLING loop exit
-
-When auto-continue pauses, you see a log of everything that happened while it ran, grouped by phase:
-
-```
-  While running:
-    Spec
-      ✓ [001]: User authentication  (2 loops — post-login redirect per role added)
-      ✓ [002]: Company posts a job  (1 loop — passed first pass)
-      ✓ [003]: Admin reviews applications  (1 loop — passed first pass)
-    Build
-      ✓ [001]: User authentication  · quality: pass (2 iters — login loading state added)
-      ✓ [002]: Company posts a job  · quality: pass (1 iter)
-      ⚠ [003]  · AI response buffered — updating spec
-      ✓ [003]  · spec updated + rebuilt
-
-⏸ Auto-run complete — all stories built. Use [1] Deploy release 1.0.0 to proceed.
-```
+This is why classifying first matters. Sending a spec gap to the code loop produces another iteration of the wrong repair. The right phase gets fixed.
 
 ---
 
-## Reverse Engineering an Existing Codebase {#reverse-engineering}
-
-If `/spec-gantry` is run in a directory that has source files but no `specs/` folder, it offers to scan the existing codebase and generate an architecture, story backlog, and anchor tags. After confirmation, the pipeline picks up from spec for any unbuilt stories.
-
----
-
-## Release Versioning {#versioning}
+## Release Management {#versioning}
 
 | Change type | Bump |
 |---|---|
-| `project_change` | major: `1.0.0` → `2.0.0` |
-| `enhancement` or `new_story` | minor: `1.0.0` → `1.1.0` |
-| `bug_fix` only | patch: `1.0.0` → `1.0.1` |
+| New work across capabilities | major: `1.0.0` → `2.0.0` |
+| New capability or enhancement | minor: `1.0.0` → `1.1.0` |
+| Bug fix only | patch: `1.0.0` → `1.0.1` |
+
+**Changelog** (`specs/changelog.md`) is created on the first release after 1.0.0. It's append-only — one block per release. The spec write agent and code plan agent read it before referencing any field or interface, ensuring no capability in the new release uses something that was dropped or deprecated.
+
+```markdown
+## Release 1.1.0 — 2026-07-19
+- Added: bulk import capability
+- Deprecated: POST /api/recipes/add (use POST /api/recipes)
+- Dropped: recipe.prep_time_string (use prep_time_minutes: integer)
+```
 
 ---
 
 ## Cost Visibility {#cost-tracking}
 
-SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson` and committed to git. Run `[$] Cost` or `/track-cost` for a breakdown by Plan/Produce/Eval columns, by story, and by release.
+SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in `specs/cost-log.ndjson`. Run `[$] Cost & insights` or `/track-cost` for a breakdown by Challenge/Write/Judge columns, by capability, and by release — plus iteration counts, challenge density, and outlier detection.
 
 ---
 
@@ -453,14 +370,14 @@ SpecGantry tracks the real cost of every agent run automatically. Token usage is
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
-      <span>Every skill command in detail — the v6 dashboard, all 12 agents, and workflow walkthroughs.</span>
+      <span>Every skill command in detail — the v7 dashboard, all 12 agents, and workflow walkthroughs.</span>
     </div>
   </a>
   <a href="/docs/architecture" class="next-step-card">
     <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <strong>Reference</strong>
-      <span>File structure, security model, design principles, and extension points.</span>
+      <span>File structure, state flags, design principles, and extension points.</span>
     </div>
   </a>
 </div>

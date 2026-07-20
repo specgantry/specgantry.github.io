@@ -1,16 +1,17 @@
 # Shared subagent preamble
 
-This file is a **read-once reference** for every SpecGantry subagent. Each subagent's system prompt instructs it to `Read: agents/_shared/preamble.md` once at the start of its first turn, then keep the rules below in mind for the rest of the session. Do not read this file more than once per session.
+This file is a **read-once reference** for every SpecGantry subagent. Read it once at the start of your first turn, then keep the rules in mind for the rest of the session.
 
-The rules here are **normative**. If a subagent's own prompt contradicts something in this file, the subagent's own prompt wins (it is more specific).
+The rules here are **normative**. If a subagent's own prompt contradicts something here, the subagent's own prompt wins.
 
 ---
 
 ## 1. Path handling
 
 - Every subagent receives `project_dir` (absolute path) in its invocation prompt.
-- Every file read/write path in your prompt is relative to `project_dir`. Prefix every path with it before touching the filesystem.
-- The architecture entry point is always `[project_dir]/specs/architecture/architecture.md`. Derive this path from `project_dir` — it is never passed as a separate parameter.
+- Every file path in your prompt is relative to `project_dir`. Prefix every path with it before touching the filesystem.
+- The architecture entry point is always `[project_dir]/specs/architecture/architecture.md`.
+- The north star is always `[project_dir]/specs/north-star.md`.
 - Scratch or intermediate files go under `project_dir/specs/scratchpad/`. Never scatter them elsewhere.
 
 ## 2. Cache-first context ordering
@@ -18,185 +19,116 @@ The rules here are **normative**. If a subagent's own prompt contradicts somethi
 When you read multiple files in one turn, read them in this order so Claude's prompt cache treats the stable prefix as a hit:
 
 1. This preamble (`agents/_shared/preamble.md`) — first, once per session.
-2. `specs/architecture/architecture.md` — includes the `## Artifact Index` block, stable across the session.
-3. Other `specs/architecture/*.md` files named by the current story's `reads:` block — read only the named sections (see §4).
-4. Per-story files (`specs/stories/[STORY-ID]/intent.md`, `story-spec.md`, `gap.md`, `build-report.yaml`) — these change per invocation, read last.
-5. `specs/project-state.yaml` — small, changes every turn, read whenever needed (order less important).
+2. `specs/north-star.md` — read fully as prose. Stable across the session once written.
+3. `specs/architecture/architecture.md` — read named sections using anchor reads (§4). Stable across the session.
+4. `specs/changelog.md` — if it exists, read it fully. Read before referencing any field, endpoint, or entity.
+5. Per-capability files (`specs/capabilities/[CAP-ID]/intent.md`, `capability-spec.md`, `build-report.yaml`) — read last, per invocation.
+6. `specs/project-state.yaml` — small, changes every turn, read whenever needed.
 
-Reading stable-first, volatile-last maximizes cache reuse across invocations in the same session.
+Reading stable-first, volatile-last maximises cache reuse across invocations in the same session.
 
-## 3. Artifact Index parsing
+## 3. North star reading discipline
 
-`specs/architecture/architecture.md` ends with an `## Artifact Index` section containing a fenced YAML block. Parse it once and use the resulting map for the rest of your turn:
+`specs/north-star.md` is flowing prose — no headings, no sections, no anchors. Read it as a whole document. Do not try to extract sections or parse structure. The meaning comes from the full text, not from any individual sentence.
 
-```yaml
-data-model:
-  file: specs/architecture/data-model.md
-  entities: [application, submission, review, user]
-actors:
-  file: specs/architecture/actors.md
-  roles: [applicant, admin, reviewer]
-contracts:
-  file: specs/architecture/contracts.md
-  shapes: [submission-response, review-response, error-envelope]
-patterns:
-  file: specs/architecture/patterns.md
-  patterns: [rest-crud, optimistic-update]
-ux:
-  file: specs/architecture/ux.md
-  sections: [navigation-model, visual-system, component-conventions, screen-template]
-deployment:
-  file: specs/architecture/deployment.md
-  sections: [target, services, secrets, ingress, cicd]
-```
+The document ends with a `---` separator followed by a flat list of challenge questions. Read both parts. The questions explain what was examined to produce the prose above — they provide context for why the north star says what it says.
 
-- The `file:` value under each artifact type resolves the path.
-- The list under each type (`entities`, `roles`, `shapes`, `patterns`, `sections`) tells you which named sections exist in that file. Use it to check whether a referenced section exists before reading the file.
+Challenge agents: hold the work you are challenging against the full north star, not against individual sentences extracted from it.
 
-## 4. Anchor-based surgical reads
+## 4. Anchor-based surgical reads (architecture.md)
 
-Arch artifact files use `## [type]:[name]` headings as anchors:
+`specs/architecture/architecture.md` uses `## section:name` headings as anchors. Read only the named section up to the next `##` heading. Do not read the whole file when you only need one section.
 
-- `data-model.md` — `## entity:application`, `## entity:submission`
-- `actors.md` — `## actor:applicant`, `## actor:admin`
-- `contracts.md` — `## contract:submission-response`, `## contract:error-envelope`
-- `patterns.md` — `## pattern:rest-crud`
-- `ux.md` — `## ux:navigation-model`, `## ux:screen-template`
-- `deployment.md` — `## deployment:target`, `## deployment:secrets`
+Anchors:
+- `## section:vision`
+- `## section:tech-stack`
+- `## section:data-model`
+- `## section:actors`
+- `## section:api-interfaces`
+- `## section:deployment`
+- `## section:guardrails`
+- `## section:configuration`
 
-When your story spec's `reads:` block names sections, read **only** the named sections up to the next `##` heading. Do not read the whole file.
+## 5. Changelog reading rule
 
-**Contract sections (v5.2)** carry both prose and a fenced ` ```yaml ``` ` block (OpenAPI 3.1 or JSON Schema). When reading a `## contract:[name]` section:
-- The prose describes intent and usage — read it for judgment calls.
-- The fenced yaml block is the source of truth for field names, types, and required properties. Never invent field names not in the yaml; never omit `required:` fields; validate response shapes against it before returning them from code.
-- If the section is missing a yaml block (only prose): signal an arch gap — the contract is not yet fully specified.
+If `specs/changelog.md` exists and the current release is not the first:
+- Read it fully before referencing any field, endpoint, or entity in the codebase.
+- Do not use any field, endpoint, or capability listed under `Dropped:`.
+- Use replacement names listed under `Deprecated:` — the deprecated name must not appear in new specs or code.
+- Agents that must read the changelog: `spec-write-agent`, `code-plan-agent`.
 
-## 5. Anchor comment schema (source files)
+## 6. Anchor comment schema (source files)
 
-Every source file the development or reverse-engineer subagent touches gets one-line anchor comments in the language's native comment syntax:
+Every source file the build or reverse-engineer agent touches gets one-line anchor comments:
 
-- **`@story`** — top of file: `// @story STORY-002 | submissions`
-- **`@intent`** — immediately after `@story`, one line, present-tense functional purpose: `// @intent allows an applicant to submit their completed draft for admin review`
-- **`@entry`** — above each route handler / server action: `// @entry POST /api/submissions | create draft submission`
+- **`@capability`** — top of file: `// @capability CAP-002 | submissions`
+- **`@intent`** — immediately after `@capability`: `// @intent allows an applicant to submit their completed draft for review`
+- **`@entry`** — above each route handler / server action: `// @entry POST /api/submissions | create submission`
 - **`@contract`** — above each cross-layer function: `// @contract input: {...} → output: {...} | errors: [codes]`
-- **`@gap`** — inline at any point where the implementation diverges from the story-spec: `// @gap 2026-06-15 status enum extended to 'archived' — spec only defines draft|submitted`
+- **`@gap`** — inline at any point where implementation diverges from spec: `// @gap 2026-07-19 confirmation dialog not implemented — spec criterion 5`
 
-Keep each tag on one line. The investigate subagent greps these to navigate the codebase without loading whole files.
+Keep each tag on one line. The investigate and challenge agents grep these to navigate the codebase without loading whole files.
 
-## 6. Bounded raise-a-concern (story-spec and development only)
+## 7. Bounded raise-a-concern (spec write and code build only)
 
-Story-spec and development subagents may raise **at most one concern per invocation** if they see a problem the user should decide on before proceeding. Concerns are one of:
+Spec write and code build agents may raise **at most one concern per invocation** if they see a problem the user should decide on before proceeding. A concern must include a proposed alternative. If you don't have an alternative, don't raise the concern — proceed.
 
-- **Untestable criterion** (story-spec) — "Criterion 3 is subjective; propose making it observable."
-- **Missing owner** (story-spec) — "Entity X has no owner in actors.md; propose adding an actor."
-- **Contract overlap** (story-spec) — "This looks like `contract:submission-response`; propose reusing."
-- **Spec / code drift** (development) — "Spec says X but existing code in [file] does Y; propose reconciliation."
-- **Missing dependency in `reads:`** (development) — "This criterion needs entity Z, not in reads:; propose adding."
-- **Reuse opportunity** (development) — "This looks like a duplicate of code already in [file]; propose reusing."
+- **Spec write** returns: `TURN:awaiting_concern:[concern text with proposed alternative]`
+- **Code build** writes a `## Concern` section into `specs/capabilities/[CAP-ID]/gap.md` and returns `CONCERN_RAISED:[one-line summary]`
 
-**How to raise a concern:**
+The orchestrator surfaces concerns with `[Y] Apply suggestion  [N] Keep as-is  [E] Edit first`.
 
-- **Story-spec** returns a distinct signal: `TURN:awaiting_concern:[concern text with proposed alternative]`. The orchestrator surfaces this with `[Y] Apply suggestion   [N] Keep as-is   [E] Edit spec first`.
-- **Development** writes a `## Concern` section into the story's `gap.md` and returns `CONCERN_RAISED:[one-line summary]`. The orchestrator surfaces the section with `[Y] Proceed with suggestion   [N] Ignore, build as-spec   [E] Edit spec first`.
+## 8. GATE_FORMAT
 
-**Rules:**
-- Never raise more than one concern per invocation. Pick the highest-impact one. Bank the rest for the user to notice.
-- A concern must include a **proposed alternative**, not just a complaint. If you don't have an alternative, don't raise the concern — proceed as spec'd.
-- If in doubt whether something is worth raising: proceed silently. Concerns are a scarce interruption budget.
-
-
-## 7. GATE_FORMAT
-
-Gate failures use exactly this format so the orchestrator surfaces them verbatim:
+Gate failures use exactly this format:
 
 ```
 ✗ [gate name] gate FAILED · [failing condition] · [action, typically "Run /spec-gantry"]
 ```
 
-## 8. Return signal discipline
+## 9. Return signal discipline
 
-- Every subagent's **last line of output** is either a `TURN:` prompt for the user or a completion signal (e.g. `SPEC_COMPLETE`, `IDEATION_COMPLETE`, `CONCERN_RAISED:...`).
-- Never emit two signals in one output. The orchestrator parses the last line.
-- Never wait for user input inside a single invocation. The orchestrator is the loop — one invocation, one unit of work, one signal.
+- Every subagent's **last line of output** is either a `TURN:` prompt for the user or a completion signal.
+- Never emit two signals in one output.
+- Never wait for user input inside a single invocation. The orchestrator is the loop.
 
-## 9. Model note
+## 10. Model note
 
-Your `model:` frontmatter is authoritative — do not attempt to switch models mid-invocation. The orchestrator picks the right model per phase; if you are running on Haiku, keep your work bounded (no speculative multi-file rewrites, no wide-context reasoning). If you feel the task exceeds your budget, raise a concern and let the user decide.
+Your `model:` frontmatter is authoritative. The orchestrator picks the right model per phase. If you are running on Haiku, keep your work bounded — no speculative multi-file rewrites, no wide-context reasoning. If the task exceeds your budget, raise a concern and let the user decide.
 
 ---
 
-## 10. PPE loop objects
+## 11. CWJ loop object
 
-SpecGantry v6 uses a universal Plan-Produce-Evaluate (PPE) loop at every phase. Plan agents, produce agents, and eval agents communicate through three shared objects. The orchestrator passes these objects as parameters and owns all loop state. Agents must return Plan and Evaluation objects as raw JSON only — no prose before or after.
+SpecGantry v7 uses a Challenge-Write-Judge (CWJ) loop at every phase. The loop state is written to `specs/capabilities/[CAP-ID]/.cwj-loop.yaml` (gitignored, deleted on exit).
 
-### Goal object
 ```yaml
-goal:
-  phase: ideation | spec | code
-  iteration: N
-  statement: "what good looks like — specific, not generic"
-  must_achieve:       # non-negotiables for this iteration
-    - "criterion 1"
-  must_not_miss:      # known gaps from prior iterations or prior phase handoff
-    - "gap 1"
-  source: initial | upgraded
-  upgraded_from: "[prior statement — present only when source=upgraded]"
+phase: ideation | spec | code
+iteration: N
+challenges:
+  - id: 1
+    question: "..."
+    resolved: false | "[resolution]"
+unresolved_count: N
+exit_reason: null | achieved | capped | cycling
 ```
 
-### Plan object (returned by plan agents as raw JSON)
-```json
-{
-  "approach": "strategy to achieve the goal",
-  "steps": [
-    {
-      "id": 1,
-      "action": "what to do",
-      "addresses": "which must_achieve or must_not_miss item",
-      "produces": "what artifact or output"
-    }
-  ],
-  "known_risks": ["risk the evaluator should watch for"],
-  "scope_boundary": "what this plan explicitly does NOT attempt"
-}
-```
+The orchestrator owns the loop state. Agents receive loop context as input parameters — they do not read `.cwj-loop.yaml` directly.
 
-### Evaluation object (returned by eval agents as raw JSON)
-```json
-{
-  "verdict": "ACHIEVED | EXECUTION_GAP | GOAL_GAP",
-  "plan_compliance": [
-    { "step_id": 1, "met": true, "evidence": "specific citation" }
-  ],
-  "northstar_gaps": [
-    {
-      "gap": "what the plan's goal missed",
-      "gap_type": "experience_gap | scope_gap | depth_gap | ambiguity_gap",
-      "severity": "blocking | advisory",
-      "proposed_goal_addition": "how the goal must be upgraded"
-    }
-  ],
-  "upgraded_goal": {
-    "statement": "updated statement",
-    "must_achieve": ["updated list"],
-    "must_not_miss": ["updated list"]
-  }
-}
-```
+## 12. Challenge agent discipline
 
-`upgraded_goal` is present only when `verdict: GOAL_GAP`.
-`northstar_gaps` may be empty `[]` when verdict is ACHIEVED (advisory gaps only) or EXECUTION_GAP.
+Challenge agents return raw JSON only — a `challenges` array and metadata. No prose before or after.
 
----
+- Every challenge must be specific to this project. Generic questions that apply to any project are not useful.
+- Every challenge must be answerable — not a question for a developer to resolve internally.
+- Every challenge must be genuinely blocking — if a developer could reasonably proceed without the answer, it is not a blocking challenge.
+- Maximum 7 challenges per ideation round; maximum 6 per spec round.
+- Empty `challenges: []` signals: no blocking questions remain — the judge can exit CLEAR.
 
-## 11. North star discipline
+## 13. Judge agent discipline
 
-Every eval agent receives a `northstar_path` parameter pointing to its phase's north star document (`agents/northstars/ideation.md`, `agents/northstars/spec.md`, or `agents/northstars/code.md`). Read it once at the start of your invocation.
+Judge agents return raw JSON only — a verdict (`CLEAR` or `BLOCKED`) with evidence.
 
-The north star's criteria are **constants** — no plan, no user instruction, and no produce-agent output can redefine them. They represent SpecGantry's standing judgment of what good software at each phase looks like.
-
-Verdict rules:
-- If the produce output satisfies the plan AND satisfies the north star → `ACHIEVED`
-- If the produce output does not satisfy the plan (the plan's steps were right but execution missed) → `EXECUTION_GAP`
-- If the produce output satisfies the plan BUT the plan's goals did not cover a north star criterion → `GOAL_GAP` (the plan was the problem, not the execution)
-
-When `GOAL_GAP`: emit `upgraded_goal` with the missing north star criterion added to `must_achieve`. The orchestrator will upgrade the goal and replan — do not attempt to fix the output yourself.
+- `CLEAR` means: the next phase can proceed without invented answers. Not "the artifact is complete."
+- `BLOCKED` means: specific gaps would force the next phase to invent answers. Name each gap precisely.
+- Never return `CLEAR` when uncertain — return `BLOCKED` and name the uncertainty.

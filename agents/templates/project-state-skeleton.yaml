@@ -3,16 +3,29 @@ project:
   created: [YYYY-MM-DD]
   release: "1.0.0"
   next_release_type: null
-  active_story: null
+  active_capability: null
   active_phase: null
 ideation_complete: false
 arch_seeded: false
 pending_arch_gap: null
 pending_spec_gap: null
 auto_continue: false
-ppe_loop:
+cwj_loop:
   max_iterations:
-    ideation: 3
-    spec: 2
+    ideation: 5
+    spec: 3
     code: 3
-stories: {}
+capabilities:
+  # Example entry — ideation-write-agent fills this from the capability list.
+  # CAP-001:
+  #   title: "Example capability"
+  #   spec_done: false
+  #   built: false
+  #   deployed: false
+  #   depends_on: []
+  #   cwj_iterations:
+  #     spec: 0     # incremented by orchestrator after each full spec CWJ cycle
+  #     code: 0     # incremented by orchestrator after each full code CWJ cycle
+  #   exit_reason:
+  #     spec: null  # achieved | capped | cycling — written by orchestrator on loop exit
+  #     code: null

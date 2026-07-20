@@ -43,26 +43,26 @@ const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
 // ─── Agent type → phase + model mapping ──────────────────────────────────────
 const AGENT_MAP = {
-  // Ideation PPE trio
-  'spec-gantry:ideation:ideation-plan-agent':    { phase: 'ideation_plan',    model: 'claude-sonnet-5' },
-  'spec-gantry:ideation:ideation-produce-agent': { phase: 'ideation_produce', model: 'claude-sonnet-5' },
-  'spec-gantry:ideation:ideation-eval-agent':    { phase: 'ideation_eval',    model: 'claude-sonnet-5' },
-  // Spec PPE trio
-  'spec-gantry:spec:spec-plan-agent':            { phase: 'spec_plan',        model: 'claude-sonnet-5' },
-  'spec-gantry:spec:spec-produce-agent':         { phase: 'spec_produce',     model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:spec:spec-eval-agent':            { phase: 'spec_eval',        model: 'claude-sonnet-5' },
-  // Code PPE trio
-  'spec-gantry:code:code-plan-agent':            { phase: 'code_plan',        model: 'claude-sonnet-5' },
-  'spec-gantry:code:code-produce-agent':         { phase: 'code_produce',     model: 'claude-sonnet-5' },
-  'spec-gantry:code:code-eval-agent':            { phase: 'code_eval',        model: 'claude-sonnet-5' },
-  // Supporting agents (unchanged)
+  // Ideation CWJ trio
+  'spec-gantry:ideation:ideation-challenge-agent': { phase: 'ideation_challenge', model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:ideation:ideation-judge-agent':     { phase: 'ideation_judge',     model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:ideation:ideation-write-agent':     { phase: 'ideation_write',     model: 'claude-sonnet-5' },
+  // Spec CWJ trio
+  'spec-gantry:spec:spec-challenge-agent':         { phase: 'spec_challenge',     model: 'claude-haiku-4-5-20251001' },
+  'spec-gantry:spec:spec-write-agent':             { phase: 'spec_write',         model: 'claude-sonnet-5' },
+  'spec-gantry:spec:spec-judge-agent':             { phase: 'spec_judge',         model: 'claude-haiku-4-5-20251001' },
+  // Code CWJ trio
+  'spec-gantry:code:code-plan-agent':              { phase: 'code_plan',          model: 'claude-sonnet-5' },
+  'spec-gantry:code:code-build-agent':             { phase: 'code_build',         model: 'claude-sonnet-5' },
+  'spec-gantry:code:code-challenge-agent':         { phase: 'code_challenge',     model: 'claude-haiku-4-5-20251001' },
+  // Supporting agents
   'spec-gantry:investigate:investigate-subagent':           { phase: 'investigation',    model: 'claude-haiku-4-5-20251001' },
-  'spec-gantry:deployment:deployment-subagent':             { phase: 'deployment',       model: 'claude-sonnet-4-6' },
+  'spec-gantry:deployment:deployment-subagent':             { phase: 'deployment',       model: 'claude-sonnet-5' },
   'spec-gantry:reverse-engineer:reverse-engineer-subagent': { phase: 'reverse_engineer', model: 'claude-haiku-4-5-20251001' },
 };
 
-// Project-level phases — never associated with a story ID.
-const PROJECT_LEVEL_PHASES = new Set(['ideation_plan', 'ideation_produce', 'ideation_eval', 'reverse_engineer', 'deployment', 'investigation']);
+// Project-level phases — never associated with a capability ID.
+const PROJECT_LEVEL_PHASES = new Set(['ideation_challenge', 'ideation_judge', 'ideation_write', 'reverse_engineer', 'deployment', 'investigation']);
 
 // ─── Fallback pricing ─────────────────────────────────────────────────────────
 const FALLBACK_RATES = {
@@ -253,7 +253,7 @@ function buildCostEntry({ phase, agentType, model, projectDir, tokens }) {
     phase,
     agent: agentType,
     model,
-    story: null,
+    capability: null,
     release: readProjectRelease(projectDir) || 'unknown',
     date: new Date().toISOString().slice(0, 10),
     input_tokens:          tokens.input_tokens,

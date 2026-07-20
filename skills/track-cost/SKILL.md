@@ -1,151 +1,145 @@
 ---
 name: track-cost
 description: >
-  Invoke this skill when the user wants to see AI development costs for a SpecGantry project.
-  Triggers include: asking about cost, spend, or token usage ("how much have we spent?", "what's this costing?",
-  "show me the cost breakdown", "how many tokens have we used?");
-  asking for a breakdown by phase or release.
+  Invoke this skill when the user wants to see AI development costs or insights for a SpecGantry project.
+  Triggers: asking about cost, spend, token usage, iterations, which capability was most expensive,
+  how many challenge cycles ran, where the AI spent the most effort.
   Do NOT invoke for general cost questions unrelated to a SpecGantry project.
 allowed-tools: Read
 ---
 
-# Track Cost
+# Cost & Insights
 
 Render the SpecGantry header:
 ```
-SpecGantry v6  |  [project.name or "New Project"]  |  release [project.release]
+SpecGantry v7  |  [project.name]  |  release [project.release]
 ──────────────────────────────────────────────────────────
 Spec [███░] [n]/[total]  ·  Build [██░░] [n]/[total]
 ──────────────────────────────────────────────────────────
 ```
 
-Read `specs/project-state.yaml` for: project name, release, story titles, spec/build counts.
+Read `specs/project-state.yaml` for: project name, release, capability titles, spec/build counts, `cwj_iterations` and `exit_reason` per capability.
 
 Read `specs/cost-log.ndjson`. If absent or empty: show `No cost data recorded yet.` and return.
 
-Parse each line as JSON. Default view is **cost ($)**. If the user typed `T` to toggle: show **tokens** instead. The toggle persists for this invocation only — re-running the skill always starts in cost view.
+Parse each line as JSON. Default view is **cost ($)**. User may type `[T]` to toggle to **tokens**.
 
 **Total tokens** for any entry = `input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens`.
 
 ---
 
-## Table structure
+## Section 1 — Cost table
 
-The table has four columns: **Plan · Produce · Eval · Total**.
+Same structure as before, with capabilities replacing stories.
 
-Rows are organised in two sections:
+**Project-level phases** (no capability context):
+- `Ideation` — sums `ideation_challenge`, `ideation_judge`, `ideation_write` into Challenge/Write/Judge columns
+- `Investigation` — sums `investigation` into Write column (no challenge or judge agent)
+- `Deployment` — sums `deployment` into Write column
+- `Reverse engineer` — sums `reverse_engineer` into Write column
 
-**Section 1 — Project-level phases** (always shown, no story context):
-- `Ideation` — sums `ideation_plan`, `ideation_produce`, `ideation_eval` entries into Plan/Produce/Eval columns respectively
-- `Investigation` — sums `investigation` entries into Produce column (no plan or eval agent)
-- `Deployment` — sums `deployment` entries into Produce column
-- `Reverse engineer` — sums `reverse_engineer` entries into Produce column
+Column headers: **Challenge · Write · Judge · Total** (replaces Plan/Produce/Eval).
 
-**Section 2 — Per-story rows** (one row per story in `project-state.yaml → stories`, sorted by ID):
-- Story header row: `[ID] Story title`
-- Sub-row `  Spec` — sums `spec_plan`, `spec_produce`, `spec_eval` entries for this story into Plan/Produce/Eval columns
-- Sub-row `  Code` — sums `code_plan`, `code_produce`, `code_eval` entries for this story into Plan/Produce/Eval columns
-- Thin rule + `  Story total` — sums Spec + Code across all columns; always shown even if all cells are `—`
+**Per-capability rows** (one row per capability in project-state, sorted by ID):
+- Capability header row: `[ID] Capability title`
+- Sub-row `  Spec` — sums `spec_challenge`, `spec_write`, `spec_judge`
+- Sub-row `  Code` — sums `code_plan`, `code_build`, `code_challenge`
+- Thin rule + `  Capability total`
 
-Story total separator uses a short thin rule (32 dashes) indented to sub-row level, not the full section separator width.
+```
+Release 1.0.0                          Challenge    Write    Judge    Total
+───────────────────────────────────────────────────────────────────────────
+Ideation                                  $0.22    $0.81    $0.14    $1.17
+Investigation                                —     $0.04       —     $0.04
+Deployment                                   —     $0.21       —     $0.21
 
-For entries that have no plan or eval agent (investigation, deployment, reverse_engineer): show `—` in the Plan and Eval columns.
+[001] Menu item management
+  Spec                                    $0.09    $0.11    $0.07    $0.27
+  Code                                    $0.18    $1.94    $0.12    $2.24
+  ────────────────────────────────────────────────────────────────────────
+  Capability total                        $0.27    $2.05    $0.19    $2.51
+
+[002] Bulk import
+  Spec                                    $0.11    $0.14    $0.09    $0.34
+  Code                                    $0.31    $3.47    $0.28    $4.06  ◀ outlier
+  ────────────────────────────────────────────────────────────────────────
+  Capability total                        $0.42    $3.61    $0.37    $4.40
+
+═══════════════════════════════════════════════════════════════════════════
+Total                                     $1.02    $6.72    $0.70    $8.44
+
+  [T] Show tokens   [I] Insights   Run /spec-gantry to return.
+```
+
+Mark capabilities with `code cwj_iterations > 1` with `◀ outlier` at the end of their Code row.
 
 ---
 
-## Cost view (default)
+## Section 2 — Insights (shown when user types `[I]`, or always if cost data exists)
 
 ```
-SpecGantry v6  |  Scholarship Portal  |  release 1.0.0
-──────────────────────────────────────────────────────────
-Spec [███░] 3/4  ·  Build [██░░] 2/4
-──────────────────────────────────────────────────────────
+── Insights ────────────────────────────────────────────────────────────────
 
-Release 1.0.0                        Plan     Produce      Eval     Total
-───────────────────────────────────────────────────────────────────────────
-Ideation                            $0.37      $0.72      $0.19     $1.28
-Investigation                          —       $0.05         —      $0.05
-Deployment                             —       $0.18         —      $0.18
-Reverse engineer                       —          —          —         —
+Iteration summary
+  CAP-001  Spec: 1 cycle · Code: 1 cycle
+  CAP-002  Spec: 2 cycles · Code: 3 cycles  ◀ most cycles
 
-[001] Student completes profile
-  Spec                               $0.18      $0.09      $0.21     $0.48
-  Code                               $0.25      $2.07      $0.37     $2.69
-  ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.43      $2.16      $0.58     $3.17
+Challenge density (avg questions per cycle)
+  Ideation   4.2 questions/round
+  CAP-001    Spec: 3 · Code: 2
+  CAP-002    Spec: 5 · Code: 6  ◀ most challenged
 
-[002] Student submits application
-  Spec                               $0.20      $0.11      $0.19     $0.50
-  Code                               $0.31      $1.84      $0.42     $2.57
-  ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.51      $1.95      $0.61     $3.07
+Outliers
+  CAP-002: Bulk import — code phase ran 3 cycles ($4.06 total)
+    Cycle 2 challenge: "User sees no progress during a 50k-row import — static screen for 30+ seconds"
+    Cycle 3 challenge: "Import error shows raw exception, not which rows failed"
+    Exit: achieved after cycle 3
 
-[003] Admin reviews applications
-  Spec                               $0.19      $0.10      $0.22     $0.51
-  Code                                  —          —          —         —
-  ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.19      $0.10      $0.22     $0.51
+Cost efficiency
+  Avg cost per spec cycle:  $0.18
+  Avg cost per code cycle:  $1.05
+  Most expensive capability: CAP-002 ($4.40 — 52% of total build cost)
+  Cheapest capability: CAP-001 ($2.51)
 
-[004] Admin manages settings
-  Spec                                  —          —          —         —
-  Code                                  —          —          —         —
-
-═══════════════════════════════════════════════════════════════════════════
-Total                               $1.50      $5.06      $1.60     $8.16
-
-  [T] Show tokens   Run /spec-gantry to return to the dashboard.
+  [C] Show cost table   Run /spec-gantry to return.
 ```
+
+**Insights data sources:**
+- Iteration counts: `project-state.yaml → capabilities.[ID].cwj_iterations`
+- Challenge density: count challenges from `.cwj-loop.yaml` entries in `cost-log.ndjson` (phase `spec_challenge` / `code_challenge`) — total entries ÷ cycles
+- Outlier challenge text: read from `cost-log.ndjson` entries tagged with challenge phase — extract the challenge description if stored, or note "challenge details not recorded"
+- Cost efficiency: computed from `cost-log.ndjson` sums ÷ iteration counts
 
 ---
 
-## Tokens view (after pressing T)
+## Release comparison (when changelog.md exists)
 
-Same layout, same rows — swap every `$X.XX` value for the token count. Format tokens as `123,456` with comma separators. Abbreviate to `123k` when ≥ 10,000 for readability.
+If `specs/changelog.md` exists and `cost-log.ndjson` has entries for multiple releases, show a release comparison after the main table:
 
 ```
-Release 1.0.0                        Plan     Produce      Eval      Total
-───────────────────────────────────────────────────────────────────────────
-Ideation                             12k        24k         6k        42k
-Investigation                          —         3k          —         3k
-Deployment                             —         2k          —         2k
-Reverse engineer                       —          —          —          —
-
-[001] Student completes profile
-  Spec                                 6k         9k         7k        22k
-  Code                                 8k        70k        12k        90k
-  ────────────────────────────────────────────────────────────────────────
-  Story total                         14k        79k        19k       112k
-
-[002] Student submits application
-  Spec                                 7k        11k         6k        24k
-  Code                                10k        61k        14k        85k
-  ────────────────────────────────────────────────────────────────────────
-  Story total                         17k        72k        20k       109k
-...
-═══════════════════════════════════════════════════════════════════════════
-Total                                43k       180k        45k       268k
-
-  [C] Show cost   Run /spec-gantry to return to the dashboard.
+Release comparison
+  Release 1.0.0   $8.44   4 capabilities   8 total cycles
+  Release 1.1.0   $3.21   1 capability added   2 cycles
 ```
+
+Group by `release` field in `cost-log.ndjson` entries. Entries with `release: null` grouped under `unknown`, sorted last.
 
 ---
 
 ## Rendering rules
 
-- Group all entries by `release` first. Render one complete table per release (project-level rows + all story rows), with its own `═══` total row. Releases sorted ascending. Entries with `release: null` or `release: "unknown"` grouped under `unknown`, sorted last.
-- Multiple entries for the same release + story + phase-group (e.g. two `code_eval` entries for STORY-001 in release 1.0.0 — from two repair iterations) are **summed** before display.
-- Show `—` in both the value and column when no entries exist for that cell.
-- Story rows appear for every story in `project-state.yaml`, even if all cells are `—` (shows the user what has not been built yet).
-- Spec and Code sub-rows always appear under every story — never collapse them.
-- `Story total` row always appears after `Code`, separated by a thin rule (────, 72 chars, indented). Sum Spec + Code across all four columns. When Code is all `—`, Story total equals Spec row values.
-- Column widths are fixed: label column 32 chars, each of Plan/Produce/Eval/Total 9 chars right-aligned.
-- No navigation menu — the `[T]` / `[C]` toggle and the `/spec-gantry` return note are the only interactive elements.
+- Multiple entries for the same release + capability + phase-group are **summed** before display.
+- Show `—` when no entries exist for that cell.
+- Capability rows appear for every capability in project-state, even if all cells are `—`.
+- Spec and Code sub-rows always appear under every capability.
+- Column widths: label column 34 chars, each of Challenge/Write/Judge/Total 9 chars right-aligned.
+- `◀ outlier` marker appended to any Code row where `cwj_iterations.code > 1`.
 
 ---
 
 ## Pricing warning
 
-If any entry has `pricing_source: fallback` or `pricing_source: stale`, append after the final total row:
+If any entry has `pricing_source: fallback` or `pricing_source: stale`, append after the final total:
 ```
   ⚠ Pricing note: some entries used outdated or fallback rates — figures may be approximate.
     Update rates-cache.json in the SpecGantry plugin repo to refresh pricing.

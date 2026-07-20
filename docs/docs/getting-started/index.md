@@ -33,7 +33,7 @@ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
 claude plugin install spec-gantry
 ```
 
-Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v6.0.2`
+Claude Code will clone the SpecGantry repository, register its skills and agents, and confirm with: `✓ Plugin installed: SpecGantry v7.0.0`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only — the marketplace must be added first. You only need to add the marketplace once.

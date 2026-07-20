@@ -5,7 +5,7 @@
     "email": "mppise@gmail.com",
     "url": "https://github.com/mppise"
   },
-  "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
+  "description": "AI-powered SDLC pipeline for Claude Code with adversarial Challenge-Write-Judge quality validation at every phase.",
   "plugins": [
     {
       "name": "spec-gantry",
@@ -14,8 +14,8 @@
         "repo": "specgantry/specgantry.github.io"
       },
       "displayName": "SpecGantry",
-      "description": "AI-powered SDLC pipeline for Claude Code with enforced phase gates, from ideation to deployment.",
-      "version": "6.0.2",
+      "description": "AI-powered SDLC pipeline for Claude Code with adversarial Challenge-Write-Judge quality validation at every phase.",
+      "version": "7.0.0",
       "author": {
         "name": "Mangesh Pise",
         "email": "mppise@gmail.com",

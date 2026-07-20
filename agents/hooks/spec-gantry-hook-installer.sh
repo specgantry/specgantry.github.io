@@ -145,7 +145,7 @@ description: Engagement contract — enforces SpecGantry routing for all develop
 ## Rules
 
 1. **Never write or modify code directly.** Always invoke `/spec-gantry` first — it will route to the correct subagent for the current phase.
-2. **Never answer "what does this story do?" from memory.** Read `specs/stories/[STORY-ID]/story-spec.md` and `intent.md`.
+2. **Never answer "what does this capability do?" from memory.** Read `specs/capabilities/[CAP-ID]/capability-spec.md` and `intent.md`.
 3. **After `/compact`, re-read `specs/project-state.yaml`** to restore project context before acting.
 4. **If the user asks for a quick fix, still route through `/spec-gantry`.** A bypass means specs drift from code — that is a critical failure for this project.
 CONTRACTEOF

@@ -1,0 +1,5 @@
+## Release [version] — [YYYY-MM-DD]
+- Added: [capability or feature]
+- Changed: [what changed and what it changed from]
+- Deprecated: [what is deprecated and what to use instead]
+- Dropped: [what was removed — agents must not reference these]

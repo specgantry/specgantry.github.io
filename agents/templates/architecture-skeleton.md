@@ -1,25 +1,28 @@
 # Architecture
 
-## Vision
-[vision from user input]
+## section:vision
+[one sentence — what the system is]
 
-## Problem & Users
-_not yet written_
+## section:tech-stack
+_not yet decided_
 
-## Constraints
-_not yet written_
+## section:data-model
+_not yet decided_
 
-## Risks & Out of Scope
-_not yet written_
+## section:actors
+_not yet decided_
 
-## Tech Stack
-_not yet written_
+## section:api-interfaces
+_not yet decided_
 
-## Guardrails
-_not yet written_
+## section:deployment
+_not yet decided_
 
-## Configuration
-_not yet written_
+## section:guardrails
+Source code under /src/ with subdirectories as needed (db/, api/, lib/, config/).
+Config under /src/config/. Secrets in /src/.env — never hardcoded.
+Build output to /dist/. Runtime writable storage under /data/.
+AI prompts under /src/ai/ if the system uses AI.
 
-## UX Model
-_not yet written_
+## section:configuration
+_not yet decided_

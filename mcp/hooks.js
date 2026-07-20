@@ -159,7 +159,7 @@ description: Engagement contract — enforces SpecGantry routing for all develop
 ## Rules
 
 1. **Never write or modify code directly.** Always invoke \`/spec-gantry\` first — it will route to the correct subagent for the current phase.
-2. **Never answer "what does this story do?" from memory.** Read \`specs/stories/[STORY-ID]/story-spec.md\` and \`intent.md\`.
+2. **Never answer "what does this capability do?" from memory.** Read \`specs/capabilities/[CAP-ID]/capability-spec.md\` and \`intent.md\`.
 3. **After \`/compact\`, re-read \`specs/project-state.yaml\`** to restore project context before acting.
 4. **If the user asks for a quick fix, still route through \`/spec-gantry\`.** A bypass means specs drift from code — that is a critical failure for this project.
 `);
@@ -169,9 +169,9 @@ description: Engagement contract — enforces SpecGantry routing for all develop
     // 4. Prepend CLAUDE.md notice
     const noticeSentinel = 'spec-gantry-notice';
     const notice = `<!-- spec-gantry-notice -->
-## SpecGantry v6 — always use /spec-gantry for development work
+## SpecGantry v7 — always use /spec-gantry for development work
 
-This project is managed by SpecGantry v6. Every story, architecture decision, and spec lives under \`specs/\`. The system validates quality at every phase — ideation, spec, and code — before marking work complete. **Never make changes directly** — always route through \`/spec-gantry\` so the quality pipeline runs and specs stay in sync with the code.
+This project is managed by SpecGantry v7. Every capability, architecture decision, and spec lives under \`specs/\`. The system challenges quality at every phase — ideation, spec, and code — before marking work complete. **Never make changes directly** — always route through \`/spec-gantry\` so the quality pipeline runs and specs stay in sync with the code.
 
 Run \`/spec-gantry\` to get the project dashboard and route your request correctly.
 <!-- /spec-gantry-notice -->`;

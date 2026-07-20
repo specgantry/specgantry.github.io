@@ -136,17 +136,14 @@
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Claude Code Plugin · v7.0.1 · Production Ready
+          Claude Code Plugin · v7.0.2 · Production Ready
         </div>
         <h1 class="hero-headline">
-          Quality at Every Phase.<br>
-          <span class="gradient-text">Not Just When Code Ships.</span>
+          Stop finding out the spec<br>
+          <span class="gradient-text">was wrong at code review.</span>
         </h1>
         <p class="hero-sub">
-          SpecGantry v7 runs an adversarial Challenge-Write-Judge loop at ideation, spec, and code.
-          A challenger asks what would block the next phase before anything is written or built.
-          Loading states omitted, error paths missing, APIs that require three calls where one should do:
-          caught before a line of code is written. 12 agents, per-project north star, one pipeline.
+          SpecGantry is a Claude Code plugin. Install it, run <code style="color:var(--blue-300);background:rgba(37,99,235,.15);padding:2px 7px;border-radius:4px;font-size:.95em">/spec-gantry</code>, and Claude stops guessing — it challenges your idea before speccing, challenges your spec before building, and challenges your code before shipping. One pipeline from idea to deployment.
         </p>
         <div class="hero-actions">
           <a href="/docs/getting-started" class="btn-primary">
@@ -168,7 +165,7 @@
             <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
               https://github.com/specgantry/specgantry.github.io</div>
             <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v7.0.1</div>
+            <div class="terminal-line output">✓ Plugin installed: SpecGantry v7.0.2</div>
             <div class="terminal-line output">✓ 2 skills loaded · 12 agents registered</div>
             <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
             <div class="terminal-line output">──────────────────────────────────────────────────────</div>
@@ -201,33 +198,30 @@
       <div class="section-inner">
         <div class="why-text">
           <div class="section-label">The Problem</div>
-          <h2>AI coding tools are fast.<br>That speed is also the risk.</h2>
-          <p>When your AI can write 500 lines in a minute, it's easy to start building before you've answered the hard
-            questions. Three hours later you're refactoring in code review — or worse, starting over.</p>
-          <p>The team already knows the right process. SpecGantry makes it impossible to skip it.</p>
+          <h2>You write the spec.<br>Claude ignores half of it.</h2>
+          <p>Claude Code moves fast — but it has no memory of what you decided in ideation, no idea what the spec says about error states, and no way to know if the user experience it just built matches what you promised. You find the gaps at code review. Or in production.</p>
+          <p>SpecGantry gives Claude a structured process it can't skip — and enforces it at every phase.</p>
         </div>
         <div class="why-cards">
           <div class="problem-card">
             <div class="problem-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-            <h4>Speed without direction</h4>
-            <p>AI writes code instantly, but it doesn't know if you're solving the right problem until after the spec
-              review.</p>
+            <h4>Building before speccing</h4>
+            <p>Missing loading states, ambiguous error messages, and dead ends after failure — caught at spec time, not code review.</p>
           </div>
           <div class="problem-card">
             <div class="problem-icon"><i class="bi bi-diagram-3"></i></div>
-            <h4>Architecture discovered too late</h4>
-            <p>Violations found in code review cost 10× more to fix than violations caught at spec time.</p>
+            <h4>Architecture drift</h4>
+            <p>Three capabilities in, the data model has three conflicting definitions of the same entity. One architecture file, written once, prevents this.</p>
           </div>
           <div class="problem-card">
             <div class="problem-icon"><i class="bi bi-currency-dollar"></i></div>
-            <h4>Invisible token spend</h4>
-            <p>AI loads hundreds of lines of context per feature with no visibility into what each capability actually cost.
-            </p>
+            <h4>Invisible AI spend</h4>
+            <p>No visibility into what each capability cost, how many cycles it took, or which one ran three code repair loops.</p>
           </div>
           <div class="problem-card">
-            <div class="problem-icon"><i class="bi bi-shuffle"></i></div>
-            <h4>Architecture drift across capabilities</h4>
-            <p>Each capability re-describes entities, permissions, and contracts without challenge. Three capabilities later, the data model has three different definitions of the same entity.</p>
+            <div class="problem-icon"><i class="bi bi-wrench"></i></div>
+            <h4>Fixing the wrong thing</h4>
+            <p>A spec gap sent to the code repair loop will never converge. Classify first — code bug, spec gap, or requirement drift — then fix the right phase.</p>
           </div>
         </div>
       </div>
@@ -236,202 +230,138 @@
     <!-- ─── PIPELINE DIAGRAM ──────────────────────────────────────────── -->
     <section class="section-pipeline">
       <div class="section-inner">
-        <div class="section-label center">The Solution</div>
-        <h2 class="center">One loop. Three phases. Quality challenged before it moves on.</h2>
-        <p class="section-sub center">v7 introduces an adversarial Challenge-Write-Judge loop at every phase. A challenger asks what would block the next phase — specific to this project, not a generic checklist. The judge asks one question: "would the next phase be blocked?" Gaps caught at ideation cost nothing to fix. Gaps caught at spec save a full build cycle. Gaps caught at code are repaired before shipping.</p>
+        <div class="section-label center">How It Works</div>
+        <h2 class="center">Every phase is reviewed before the next one starts.</h2>
+        <p class="section-sub center">Before anything is written or built, an independent agent asks what would block the next phase. A second agent resolves every gap. A third asks: would the next phase still be blocked? Gaps caught at ideation cost nothing to fix. Gaps caught at spec save a full build cycle.</p>
 
-        <div class="pipeline-diagram">
-          <div class="node-graph">
+        <!-- CWJ Loop diagram -->
+        <div class="lp-cwj-wrap">
+          <div class="lp-cwj-row">
 
-            <!-- Node 1: Ideation CWJ Loop -->
-            <div class="ng-node phase-node phase-complete-color">
-              <div class="ng-num">01</div>
-              <div class="ng-name">Ideation CWJ Loop</div>
-              <div class="ng-output">challenge → user answers all questions per round → judge readiness → write all artifacts on CLEAR · north-star.md · architecture.md · intent.md per capability</div>
+            <div class="lp-cwj-node lp-cwj-challenge">
+              <div class="lp-cwj-icon"><i class="bi bi-shield-exclamation"></i></div>
+              <div class="lp-cwj-label">Challenge</div>
+              <div class="lp-cwj-desc">Adversarial agent asks what would block the next phase — specific to this project, not a checklist. Never writes files.</div>
             </div>
 
-            <!-- Connector + Gate -->
-            <div class="ng-connector">
-              <div class="ng-line"></div>
-              <div class="ng-gate" title="Ideation complete · architecture written · all capabilities have intent files">
-                <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
-              </div>
-              <div class="ng-line"></div>
+            <div class="lp-cwj-arrow"><div class="lp-cwj-arrowline"></div><div class="lp-cwj-arrowhead">▶</div></div>
+
+            <div class="lp-cwj-node lp-cwj-write">
+              <div class="lp-cwj-icon"><i class="bi bi-pencil-square"></i></div>
+              <div class="lp-cwj-label">Write / Build</div>
+              <div class="lp-cwj-desc">Every challenge resolved. Ideation: user answers all questions per round. Spec: agent writes developer contract. Code: plan then build.</div>
             </div>
 
-            <!-- Node 2: Spec CWJ Loop (per capability) -->
-            <div class="ng-node phase-node phase-spec-color">
-              <div class="ng-num">02</div>
-              <div class="ng-name">Spec CWJ Loop — per capability</div>
-              <div class="ng-output">developer-proxy challenge → write capability-spec.md → judge → user approves once on CLEAR</div>
-            </div>
+            <div class="lp-cwj-arrow"><div class="lp-cwj-arrowline"></div><div class="lp-cwj-arrowhead">▶</div></div>
 
-            <!-- Connector + Gate -->
-            <div class="ng-connector">
-              <div class="ng-line"></div>
-              <div class="ng-gate" title="Spec done per capability · user approved">
-                <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
-              </div>
-              <div class="ng-line"></div>
-            </div>
-
-            <!-- Node 3: Code CWJ Loop (per capability) -->
-            <div class="ng-node phase-node phase-build-color">
-              <div class="ng-num">03</div>
-              <div class="ng-name">Code CWJ Loop — per capability</div>
-              <div class="ng-output">plan build approach → build end-to-end → user-proxy challenge · gap classified as code or spec → repair route · build-report.yaml</div>
-            </div>
-
-            <!-- Connector + Gate -->
-            <div class="ng-connector">
-              <div class="ng-line"></div>
-              <div class="ng-gate" title="All capabilities built · build reports passing">
-                <span class="ng-gate-icon"><i class="bi bi-lock-fill"></i></span>
-              </div>
-              <div class="ng-line"></div>
-            </div>
-
-            <!-- Node 4: Deploy -->
-            <div class="ng-node phase-node phase-deploy-color">
-              <div class="ng-num">04</div>
-              <div class="ng-name">Deploy Release</div>
-              <div class="ng-output">north-star alignment check · changelog updated · Dockerfiles · deploy.sh · release versioned</div>
-            </div>
-
-            <!-- Connector (no gate) -->
-            <div class="ng-connector">
-              <div class="ng-line"></div>
-              <div class="ng-line"></div>
-            </div>
-
-            <!-- Node 5: Post-release -->
-            <div class="ng-node phase-node" style="border-color:var(--slate-300);background:rgba(100,116,139,.04)">
-              <div class="ng-num" style="color:var(--slate-400)">05</div>
-              <div class="ng-name" style="color:var(--slate-600)">[N] New Work — post-release</div>
-              <div class="ng-output" style="color:var(--slate-400)">Investigate → classify CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY → route to the right phase</div>
+            <div class="lp-cwj-node lp-cwj-judge">
+              <div class="lp-cwj-icon"><i class="bi bi-patch-check"></i></div>
+              <div class="lp-cwj-label">Judge</div>
+              <div class="lp-cwj-desc">One question: "Would the next phase be blocked?" CLEAR → loop exits. BLOCKED → gaps fed back for another cycle.</div>
             </div>
 
           </div>
+          <div class="lp-cwj-badges">
+            <div class="lp-cwj-badge lp-badge-clear"><span>✅</span> CLEAR — phase exits</div>
+            <div class="lp-cwj-badge lp-badge-blocked"><span>🔄</span> BLOCKED — next cycle</div>
+            <div class="lp-cwj-badge lp-badge-capped"><span>⚠</span> CAPPED — max cycles, user decides</div>
+          </div>
         </div>
 
-        <!-- CWJ callout -->
-        <div class="pipeline-note">
-          <strong>Three challenger identities:</strong> ideation ("what would stop a developer agreeing to start?") · spec ("what would a developer be blocked on building from this?") · code ("can a user actually accomplish what was promised?"). Each reads the per-project north star and challenges against it.
+        <!-- Pipeline phases -->
+        <div class="lp-phases-wrap">
+          <div class="lp-phases-row">
+
+            <div class="lp-phase lp-phase-ideation">
+              <div class="lp-phase-num">01</div>
+              <div class="lp-phase-name">Ideation</div>
+              <div class="lp-phase-role">You answer · high interaction</div>
+              <div class="lp-phase-output">north-star.md · architecture.md · intent.md per capability</div>
+            </div>
+
+            <div class="lp-phase-connector">
+              <div class="lp-phase-line"></div>
+              <div class="lp-phase-gate" title="Ideation complete · all capabilities have intent files"><i class="bi bi-lock-fill"></i></div>
+              <div class="lp-phase-line"></div>
+            </div>
+
+            <div class="lp-phase lp-phase-spec">
+              <div class="lp-phase-num">02</div>
+              <div class="lp-phase-name">Spec</div>
+              <div class="lp-phase-role">Autonomous · you approve once</div>
+              <div class="lp-phase-output">capability-spec.md per capability</div>
+            </div>
+
+            <div class="lp-phase-connector">
+              <div class="lp-phase-line"></div>
+              <div class="lp-phase-gate" title="Spec done · user approved"><i class="bi bi-lock-fill"></i></div>
+              <div class="lp-phase-line"></div>
+            </div>
+
+            <div class="lp-phase lp-phase-code">
+              <div class="lp-phase-num">03</div>
+              <div class="lp-phase-name">Code</div>
+              <div class="lp-phase-role">Fully automated</div>
+              <div class="lp-phase-output">source files · build-report.yaml</div>
+            </div>
+
+            <div class="lp-phase-connector">
+              <div class="lp-phase-line"></div>
+              <div class="lp-phase-gate" title="All capabilities built"><i class="bi bi-lock-fill"></i></div>
+              <div class="lp-phase-line"></div>
+            </div>
+
+            <div class="lp-phase lp-phase-deploy">
+              <div class="lp-phase-num">04</div>
+              <div class="lp-phase-name">Deploy</div>
+              <div class="lp-phase-role">North-star alignment check</div>
+              <div class="lp-phase-output">Dockerfiles · deploy.sh · release versioned</div>
+            </div>
+
+          </div>
+          <div class="lp-phases-note">Each phase runs the CWJ loop independently. The challenger identity changes per phase — senior developer pre-build (ideation), developer-proxy (spec), user-proxy (code).</div>
         </div>
 
-        <!-- Architecture layer callout -->
-        <div class="pipeline-note" style="margin-top:0.75rem;">
-          <strong>Specs are the memory:</strong> all knowledge lives in <code>specs/</code>. North star, architecture decisions, capability intent, what was built — all in plain-text YAML and Markdown, committed to git. Agents read from canonical artifacts on disk. Nothing is duplicated in transition parameters.
-        </div>
       </div>
     </section>
 
     <!-- ─── FEATURES ─────────────────────────────────────────────────── -->
     <section class="section-features">
       <div class="section-inner">
-        <div class="section-label center">Key Features</div>
-        <h2 class="center">Everything you need to ship AI-assisted features with confidence</h2>
+        <div class="section-label center">What You Get</div>
+        <h2 class="center">Claude that follows your process,<br>not just your last message</h2>
         <div class="features-grid">
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
-            <h3>Engagement Hooks — Claude Stays On-Process</h3>
-            <p>Project setup writes a <code>SessionStart</code> hook into <code>.claude/settings.json</code>. Claude Code injects the engagement contract automatically on every session start — so Claude never forgets to route through <code>/spec-gantry</code>, even deep into a long conversation.</p>
+            <h3>Claude stays on-process</h3>
+            <p>A <code>SessionStart</code> hook injects an engagement contract on every session — so Claude always routes development through <code>/spec-gantry</code>, even deep into a long conversation.</p>
           </div>
           <div class="feat-card feat-card-large">
             <div class="feat-icon"><i class="bi bi-diagram-3-fill"></i></div>
-            <h3>Single Architecture File — Written Once, Referenced Everywhere</h3>
-            <p>All technical decisions live in one <code>specs/architecture/architecture.md</code> with <code>## section:name</code> anchors. Data model, actors, API interfaces, deployment, guardrails, and configuration — all in one file. Every capability spec reads only the sections it needs. Architecture drift is structurally impossible.</p>
+            <h3>One architecture file, no drift</h3>
+            <p>All technical decisions — data model, actors, API interfaces, deployment — live in one file with named section anchors. Every capability reads only the sections it needs. Three capabilities in, your data model still has one definition of every entity.</p>
             <a href="/docs/how-it-works#ideation" class="feat-link">How the architecture file works →</a>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-lock-fill"></i></div>
-            <h3>Challenge Before Code — Hard Gates</h3>
-            <p>No code is written until a capability spec exists that was challenged by a developer-proxy and approved by a judge. The gate reads the filesystem — not a flag, an artifact.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-file-earmark-richtext"></i></div>
-            <h3>Per-Project North Star — Not a Template</h3>
-            <p>Each project gets one <code>specs/north-star.md</code> written from the actual idea during ideation. Flowing prose, no headings. Every challenger and judge reads it whole. It grows across the lifecycle as new requirements surface.</p>
+            <h3>Hard gates between phases</h3>
+            <p>No code is written until a spec exists that was machine-challenged and user-approved. The gate reads the filesystem — not a flag.</p>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-arrow-repeat"></i></div>
-            <h3>Diagnostic Routing — Fix the Right Thing</h3>
-            <p>When something is wrong, the investigate agent classifies the root cause as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY before routing. A spec gap sent to the code loop produces another iteration of the wrong repair. Classification ensures the right phase gets fixed.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-eye-fill"></i></div>
-            <h3>intent.md — Why Every Capability Exists</h3>
-            <p>Every capability gets a 2-paragraph <code>intent.md</code> — the experience promise. The code challenge agent reads it to trace the user's experience. Every source file gets a <code>@capability</code> and <code>@intent</code> anchor. Investigation never needs to load full specs to understand purpose.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-search"></i></div>
-            <h3>Reverse-Engineer Existing Codebases</h3>
-            <p>SpecGantry analyses your existing code and generates north-star.md, architecture.md, a capability list, intent files, stub specs, stub build reports, and anchor tags. Bring structure to any existing project in one command.</p>
-            <a href="/docs/how-it-works#diagnostic-routing" class="feat-link">See reverse engineering →</a>
+            <h3>Fix the right thing</h3>
+            <p>When something is wrong, the investigate agent classifies the root cause first: code bug, spec gap, requirement drift, or new capability. The right phase gets fixed — not always code.</p>
           </div>
           <div class="feat-card">
             <div class="feat-icon"><i class="bi bi-graph-up-arrow"></i></div>
-            <h3>Developer Intelligence — Not Just Cost</h3>
-            <p>Every agent run logs tokens and cost. The insights view adds iteration counts per capability per phase, challenge density, outlier detection, and release comparison. Know which capabilities were expensive, how many cycles each phase took, and what kept getting challenged.</p>
+            <h3>See what each capability cost</h3>
+            <p>Token usage logged per agent run. The insights view shows iteration counts, challenge density, and which capability ran three repair loops and why.</p>
             <a href="/docs/skills#track-cost" class="feat-link">See developer intelligence →</a>
           </div>
           <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-            <h3>Changelog for Release Safety</h3>
-            <p>An append-only <code>specs/changelog.md</code> tracks dropped and deprecated fields across releases. Spec write and code plan agents read it before referencing any field or interface — preventing new release capabilities from using removed APIs.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
-            <h3>Build Report — What Was Built and How to Test It</h3>
-            <p>The build agent writes a <code>build-report.yaml</code> per capability — overall status, quality block with iteration count and exit reason, runtime info (<code>source_root</code>, <code>language</code>, exposed ports), and a test plan with one observable verification per criterion.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-arrow-left-right"></i></div>
-            <h3>Crash-Safe Resumption</h3>
-            <p>Every phase transition is written to disk immediately. A crash mid-session loses at most one in-progress answer — everything confirmed before that is on disk and the pipeline resumes exactly where it left off.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── WHO IT'S FOR ──────────────────────────────────────────────── -->
-    <section class="section-roles">
-      <div class="section-inner">
-        <div class="section-label center">Who It's For</div>
-        <h2 class="center">Built for solo developers who ship enterprise-grade systems</h2>
-        <div class="roles-grid">
-          <div class="role-card">
-            <div class="role-avatar"><i class="bi bi-person-workspace"></i></div>
-            <h3>New Projects</h3>
-            <ul class="role-list">
-              <li>Ideation challenges the idea before anything is written — you answer, the judge evaluates readiness</li>
-              <li>North star written from the actual idea — specific to this system, this user, this promise</li>
-              <li>Capabilities challenged before specced, specced before built</li>
-              <li>Every decision on disk, resumable across sessions</li>
-            </ul>
-            <a href="/docs/getting-started" class="role-link">Start a new project →</a>
-          </div>
-          <div class="role-card role-card-center">
-            <div class="role-avatar"><i class="bi bi-cpu"></i></div>
-            <h3>Developer Intelligence</h3>
-            <ul class="role-list">
-              <li>Iteration counts per capability per phase — not just total cost</li>
-              <li>Challenge density shows which capabilities were hardest to specify</li>
-              <li>Outlier detection flags capabilities that took more code cycles than the rest</li>
-              <li>Release comparison tracks whether costs are growing as the codebase matures</li>
-            </ul>
-            <a href="/docs/skills#track-cost" class="role-link">See developer intelligence →</a>
-          </div>
-          <div class="role-card">
-            <div class="role-avatar"><i class="bi bi-building"></i></div>
-            <h3>Existing Codebases</h3>
-            <ul class="role-list">
-              <li>Reverse engineering synthesises north-star.md and architecture.md from code</li>
-              <li>Capability list, intent.md, and stub specs generated per capability</li>
-              <li><code>@capability</code>, <code>@intent</code>, <code>@entry</code>, <code>@contract</code> anchors tagged in source</li>
-              <li>Diagnostic routing works immediately — no manual orientation needed</li>
-            </ul>
-            <a href="/docs/how-it-works#diagnostic-routing" class="role-link">See diagnostic routing →</a>
+            <div class="feat-icon"><i class="bi bi-search"></i></div>
+            <h3>Works on existing codebases</h3>
+            <p>Drop SpecGantry into any project. The reverse-engineer agent synthesises a north star, architecture, and capability stubs from existing source files — with anchor tags.</p>
           </div>
         </div>
       </div>
@@ -442,115 +372,43 @@
       <div class="section-inner">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-num">2</div>
-            <div class="stat-label">Skills — /spec-gantry for every workflow, /track-cost for developer intelligence</div>
+            <div class="stat-num">0</div>
+            <div class="stat-label">External dependencies — runs entirely inside Claude Code. No npm install, no API keys, no config files.</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">12</div>
-            <div class="stat-label">Agents — 3 per phase (challenge · write · judge) + investigate · deployment · reverse-engineer</div>
+            <div class="stat-num">90s</div>
+            <div class="stat-label">To install — two commands and you're running <code>/spec-gantry</code> in any project.</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">3</div>
+            <div class="stat-label">Phases where quality is checked — ideation, spec, and code — before anything ships.</div>
           </div>
           <div class="stat-item">
             <div class="stat-num">1</div>
-            <div class="stat-label">North star per project — flowing prose written from the actual idea, not a fixed template</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-num">4</div>
-            <div class="stat-label">Diagnostic classifications — CODE_BUG · SPEC_GAP · REQUIREMENT_DRIFT · NEW_CAPABILITY</div>
+            <div class="stat-label">Command for everything — <code>/spec-gantry</code> handles new projects, daily work, bugs, and new capabilities.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ─── SKILLS + AGENTS ──────────────────────────────────────────── -->
+    <!-- ─── SKILLS ──────────────────────────────────────────────────── -->
     <section class="section-skills">
       <div class="section-inner">
-        <div class="section-label center">2 Skills · 12 Agents</div>
-        <h2 class="center">One command. Three adversarial loops. Every workflow covered.</h2>
+        <div class="section-label center">Two Commands</div>
+        <h2 class="center">One command to run your entire SDLC</h2>
 
-        <!-- Skills -->
         <div class="skills-grid">
           <div class="skill-row">
             <code class="skill-cmd">/spec-gantry</code>
             <div class="skill-desc">
-              <strong>Your Single Entry Point</strong> — New project, existing codebase, daily work, bug fixes,
-              new capabilities. Run this at the start of every session. SpecGantry reads your state, shows the full
-              pipeline dashboard, and routes you to the right agent automatically.
+              <strong>Your single entry point.</strong> New project, existing codebase, daily work, bug fixes, new capabilities. Run this at the start of every session. SpecGantry reads your state, shows the pipeline dashboard, and routes you to the right action.
             </div>
           </div>
           <div class="skill-row">
             <code class="skill-cmd">/track-cost</code>
             <div class="skill-desc">
-              <strong>Developer Intelligence</strong> — Cost by Challenge/Write/Judge columns, by capability, by release. Iteration counts, challenge density, outlier detection. Know exactly what each capability cost and how many cycles it took.
+              <strong>Developer intelligence.</strong> Cost by Challenge/Write/Judge, by capability, by release. Iteration counts, challenge density, outlier detection. Know exactly what each capability cost and why.
             </div>
-          </div>
-        </div>
-
-        <!-- Agents table -->
-        <h3 class="agents-heading">The 12 Agents — 3 per CWJ phase</h3>
-        <div class="agents-table">
-          <!-- Ideation trio -->
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-shield-exclamation"></i> ideation-challenge</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Adversarial challenger. Reads vision and prior answers, then fires up to 7 blocking questions specific to this project — not a fixed script. A recipe manager gets different questions than a multi-tenant SaaS. Never writes files.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-patch-check"></i> ideation-judge</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Unblock checker. Asks one question: "Could a developer start writing capability specs without inventing answers?" Six criteria covering capability list, data model, tech decisions, UX intent, and answer completeness. Returns CLEAR or BLOCKED with specific gaps.</div>
-          </div>
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-lightbulb"></i> ideation-write</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Consolidation agent — runs once on CLEAR, not per cycle. Writes north-star.md (per-project flowing prose), architecture.md (all technical decisions, ## section:name anchors), and intent.md per capability. Crash-safe write order with recovery guards.</div>
-          </div>
-          <!-- Spec trio -->
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-shield-exclamation"></i> spec-challenge</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Developer-proxy challenger. Reads north star and capability intent, then asks: "If I were a developer about to build this, what questions would I have?" Covers loading states, empty states, error states, output format, navigation flow, and north-star alignment.</div>
-          </div>
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-file-earmark-text"></i> spec-write</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Writes capability-spec.md resolving every challenge into observable, bounded, unambiguous criteria. May extend north-star.md if a new requirement surfaces. On iteration 2+ amends rather than rewrites.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-patch-check-fill"></i> spec-judge</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Unblock checker. Traces the user flow through the written spec. Asks whether a developer reading it would hit a wall. Checks triggers, async states, output format, error messages, flow completeness, and north-star alignment. Emits the approval summary the user signs off on.</div>
-          </div>
-          <!-- Code trio -->
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-cpu-fill"></i> code-plan</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">On iteration 1: builds the implementation approach — layer order, async patterns to apply upfront, what to reuse, the riskiest part and how to de-risk it. On iteration 2+: classifies the challenge agent's findings as code/spec/design failures and plans targeted repair.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-code-square"></i> code-build</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">Builds the capability end-to-end from the plan. Writes @capability/@intent/@entry/@contract anchors. Applies contract pre-flight against architecture.md api-interfaces section. Writes build-report.yaml with source_root, language, and test_plan.</div>
-          </div>
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-person-check-fill"></i> code-challenge</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">User-proxy challenger. Reads north star, intent, and source files (NOT the spec). Traces the user's experience through the actual code. Classifies each gap as "code" (spec implied it, code missed it) or "spec" (north star requires it, spec never captured it). Classification drives the repair route.</div>
-          </div>
-          <!-- Supporting agents -->
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-search"></i> investigate</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Diagnostic classifier. For any post-deploy problem, classifies the root cause as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY before routing. Locates files as supporting evidence. Each classification routes to a different repair phase.</div>
-          </div>
-          <div class="agent-row" style="background:var(--slate-50,#f8fafc)">
-            <div class="agent-name"><i class="bi bi-rocket-takeoff-fill"></i> deployment</div>
-            <div class="agent-model">Sonnet</div>
-            <div class="agent-desc">North-star alignment check first — verifies what's shipping delivers what was promised, surfaces non-blocking warnings for capped capabilities. Then generates per-service Dockerfiles, docker-compose.yml, .env.example, and a versioned deploy.sh. Supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose.</div>
-          </div>
-          <div class="agent-row">
-            <div class="agent-name"><i class="bi bi-arrow-counterclockwise"></i> reverse-engineer</div>
-            <div class="agent-model">Haiku</div>
-            <div class="agent-desc">Synthesises a full SpecGantry v7 structure from an existing codebase — north-star.md, architecture.md, capability list, intent.md per capability, stub capability-specs, stub build reports, and @capability/@intent/@entry/@contract anchor tags in source files.</div>
           </div>
         </div>
 
@@ -564,7 +422,7 @@
     <section class="section-blog">
       <div class="section-inner">
         <div class="section-label center">From the Blog</div>
-        <h2 class="center">Why structure matters in agentic development</h2>
+        <h2 class="center">Why your AI build process needs guardrails</h2>
         <div class="blog-cards">
           <a href="/blog/realtime-cost-tracking" class="blog-card">
             <div class="blog-card-meta">
@@ -607,8 +465,8 @@
       <div class="section-inner">
         <div class="install-box">
           <div class="install-text">
-            <h2>Ready to add structure to your AI workflow?</h2>
-            <p>Install SpecGantry v7 in 90 seconds. Works with any Claude Code project — new or existing.</p>
+            <h2>Start building with a process Claude won't skip.</h2>
+            <p>Two commands. Works with any Claude Code project — new or existing. No configuration required.</p>
           </div>
           <div class="install-code-block">
             <div class="code-header">
@@ -655,7 +513,7 @@ claude plugin install spec-gantry</code></pre>
       <div class="footer-brand">
         <img src="/assets/logo/logo.png" alt="SpecGantry" class="logo-icon">
         <span class="logo-text">SpecGantry</span>
-        <p>Adversarial SDLC for Claude Code.<br>Challenge before you write. Diagnose before you repair. Claude that stays on-process.</p>
+        <p>A Claude Code plugin that keeps Claude on your process — from idea to deployment. Challenges your idea before speccing, your spec before building, your code before shipping.</p>
       </div>
       <div class="footer-links">
         <div class="footer-col">

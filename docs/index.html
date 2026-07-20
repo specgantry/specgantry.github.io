@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpecGantry Documentation — SpecGantry Docs</title>
-  <meta name="description" content="Complete documentation for SpecGantry v7 — adversarial Challenge-Write-Judge loop for Claude Code. Cognitive quality validation at ideation, spec, and code — before anything ships.">
+  <meta name="description" content="SpecGantry is a Claude Code plugin that enforces a structured SDLC — ideation through deployment — with an adversarial review loop at every phase.">
   <meta property="og:title" content="SpecGantry Documentation">
-  <meta property="og:description" content="Complete documentation for SpecGantry v7 — adversarial Challenge-Write-Judge loop for Claude Code. Cognitive quality validation at ideation, spec, and code — before anything ships.">
+  <meta property="og:description" content="SpecGantry is a Claude Code plugin that enforces a structured SDLC — ideation through deployment — with an adversarial review loop at every phase.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="SpecGantry Documentation">
-  <meta name="twitter:description" content="Complete documentation for SpecGantry v7 — adversarial Challenge-Write-Judge loop for Claude Code. Cognitive quality validation at ideation, spec, and code — before anything ships.">
+  <meta name="twitter:description" content="SpecGantry is a Claude Code plugin that enforces a structured SDLC — ideation through deployment — with an adversarial review loop at every phase.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -142,7 +142,7 @@
       <article class="docs-article">
         <h1 id="specgantry-documentation">SpecGantry Documentation</h1>
 
-<p><strong>Quality challenged at every phase, not just at the end.</strong> An adversarial challenger asks what would block a developer or user before anything is written or built. A per-project north star captures what good looks like for this specific idea. Capabilities are specced and built with a judge that answers one question: would the next phase be blocked?</p>
+<p>SpecGantry is a Claude Code plugin that keeps Claude on-process from idea to deployment. It challenges what you’re building before code is written, and challenges the code before it ships.</p>
 
 <div class="info">
   <strong>New here?</strong> Start with the <a href="/docs/getting-started">Getting Started guide</a> — install and run your first session in under 5 minutes.
@@ -150,25 +150,93 @@
 
 <hr />
 
-<h2 id="what-is-specgantry">What Is SpecGantry?</h2>
+<h2 id="how-it-works">How It Works</h2>
 
-<p>SpecGantry is a Claude Code plugin that enforces a structured, self-correcting development process using a <strong>Challenge-Write-Judge (CWJ)</strong> loop at every phase. The v7 insight: quality failures come from the wrong thing being built, not just the wrong way. An adversarial challenger at ideation asks what a senior developer would be blocked on before agreeing to start. A challenger at spec asks what a developer would be blocked on building from this document. A challenger at code asks whether a user can actually accomplish what was promised.</p>
-
-<p>Nothing exits a phase until the judge says the next phase would not be blocked.</p>
+<p>Every phase runs a <strong>Challenge-Write-Judge (CWJ)</strong> loop. An adversarial challenger asks what would block the next phase. A write agent resolves every gap. A judge asks one question: would the next phase still be blocked? CLEAR exits. BLOCKED iterates.</p>
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The SpecGantry v7 Pipeline</div>
+<div class="dg-diagram-title">The CWJ Loop — applied at every phase</div>
 <div class="dg-node-graph">
 
   <div class="dg-node dg-ideation">
-    <div class="dg-node-num">01</div>
-    <div class="dg-node-name">Ideation CWJ Loop</div>
-    <div class="dg-node-output">Adversarial challenge rounds · user answers · judge readiness · write artifacts on exit<br /><em>north-star.md · architecture.md · intent.md × N</em></div>
+    <div class="dg-node-num"><i class="bi bi-shield-exclamation"></i></div>
+    <div class="dg-node-name">Challenge</div>
+    <div class="dg-node-role">Adversarial agent</div>
+    <div class="dg-node-output">Asks what would block<br />the next phase</div>
   </div>
 
   <div class="dg-connector">
     <div class="dg-line"></div>
-    <div class="dg-gate" title="Ideation complete · architecture written · all capabilities have intent.md">
+    <div class="dg-line"></div>
+  </div>
+
+  <div class="dg-node dg-spec">
+    <div class="dg-node-num"><i class="bi bi-pencil-square"></i></div>
+    <div class="dg-node-name">Write / Build</div>
+    <div class="dg-node-role">Write or build agent</div>
+    <div class="dg-node-output">Resolves every challenge<br />into an artifact or code</div>
+  </div>
+
+  <div class="dg-connector">
+    <div class="dg-line"></div>
+    <div class="dg-line"></div>
+  </div>
+
+  <div class="dg-node dg-build">
+    <div class="dg-node-num"><i class="bi bi-patch-check"></i></div>
+    <div class="dg-node-name">Judge</div>
+    <div class="dg-node-role">Independent checker</div>
+    <div class="dg-node-output">"Would the next phase<br />be blocked?" CLEAR or BLOCKED</div>
+  </div>
+
+</div>
+</div>
+
+<p>The challenger’s identity changes per phase:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Challenger</th>
+      <th>Question</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ideation</td>
+      <td>Senior developer pre-build</td>
+      <td>“What would stop me agreeing to start?”</td>
+    </tr>
+    <tr>
+      <td>Spec</td>
+      <td>Developer-proxy</td>
+      <td>“What would block me building this?”</td>
+    </tr>
+    <tr>
+      <td>Code</td>
+      <td>User-proxy</td>
+      <td>“Can a user actually accomplish what was promised?”</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="the-pipeline">The Pipeline</h2>
+
+<div class="dg-wrap">
+<div class="dg-node-graph">
+
+  <div class="dg-node dg-ideation">
+    <div class="dg-node-num">01</div>
+    <div class="dg-node-name">Ideation</div>
+    <div class="dg-node-output">north-star.md · architecture.md · intent.md per capability</div>
+  </div>
+
+  <div class="dg-connector">
+    <div class="dg-line"></div>
+    <div class="dg-gate" title="Ideation complete · all capabilities have intent files">
       <span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span>
     </div>
     <div class="dg-line"></div>
@@ -176,8 +244,8 @@
 
   <div class="dg-node dg-spec">
     <div class="dg-node-num">02</div>
-    <div class="dg-node-name">Spec CWJ Loop</div>
-    <div class="dg-node-output">Developer-proxy challenge · write developer contract · judge · user approves once<br /><em>capability-spec.md per capability</em></div>
+    <div class="dg-node-name">Spec</div>
+    <div class="dg-node-output">capability-spec.md per capability · user approves once</div>
   </div>
 
   <div class="dg-connector">
@@ -190,13 +258,13 @@
 
   <div class="dg-node dg-build">
     <div class="dg-node-num">03</div>
-    <div class="dg-node-name">Code CWJ Loop</div>
-    <div class="dg-node-output">Plan · build end-to-end · user-proxy challenge traces the experience · repair if blocked<br /><em>source files · build-report.yaml</em></div>
+    <div class="dg-node-name">Code</div>
+    <div class="dg-node-output">source files · build-report.yaml</div>
   </div>
 
   <div class="dg-connector">
     <div class="dg-line"></div>
-    <div class="dg-gate" title="All capabilities built · build reports passing">
+    <div class="dg-gate" title="All capabilities built">
       <span class="dg-gate-icon"><i class="bi bi-lock-fill"></i></span>
     </div>
     <div class="dg-line"></div>
@@ -204,8 +272,8 @@
 
   <div class="dg-node dg-deploy">
     <div class="dg-node-num">04</div>
-    <div class="dg-node-name">Deploy Release</div>
-    <div class="dg-node-output">North-star alignment check · changelog updated · Dockerfiles · deploy.sh · release versioned</div>
+    <div class="dg-node-name">Deploy</div>
+    <div class="dg-node-output">Dockerfiles · deploy.sh · release versioned</div>
   </div>
 
 </div>
@@ -220,35 +288,35 @@
     <div class="doc-nav-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div>
       <div class="doc-nav-title">Getting Started</div>
-      <div class="doc-nav-desc">Install the plugin and run your first session in under 5 minutes.</div>
+      <div class="doc-nav-desc">Install and run your first session in under 5 minutes.</div>
     </div>
   </a>
   <a href="/docs/how-it-works" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-gear"></i></div>
     <div>
       <div class="doc-nav-title">How It Works</div>
-      <div class="doc-nav-desc">The CWJ loop, all three phases, the north star, diagnostic routing, and release management.</div>
+      <div class="doc-nav-desc">The CWJ loop, all phases, the north star, and diagnostic routing.</div>
     </div>
   </a>
   <a href="/docs/skills" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-tools"></i></div>
     <div>
       <div class="doc-nav-title">Skills &amp; Agents</div>
-      <div class="doc-nav-desc">/spec-gantry and /track-cost — what they do, all 12 agents, the v7 dashboard, and every workflow covered.</div>
+      <div class="doc-nav-desc">The dashboard, all 12 agents, and every workflow covered.</div>
     </div>
   </a>
   <a href="/docs/architecture" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-diagram-3"></i></div>
     <div>
       <div class="doc-nav-title">Reference</div>
-      <div class="doc-nav-desc">File structure, state flags, agent ownership, CWJ loop objects, and how to extend SpecGantry.</div>
+      <div class="doc-nav-desc">File structure, state flags, and extension points.</div>
     </div>
   </a>
   <a href="/docs/faq" class="doc-nav-card">
     <div class="doc-nav-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <div class="doc-nav-title">FAQ</div>
-      <div class="doc-nav-desc">Common questions on installation, the CWJ loop, developer intelligence, and troubleshooting.</div>
+      <div class="doc-nav-desc">Installation, the CWJ loop, costs, and troubleshooting.</div>
     </div>
   </a>
 </div>
@@ -266,120 +334,7 @@ claude plugin <span class="nb">install </span>spec-gantry
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
 </code></pre></div></div>
 
-<p>The dashboard reads your project state and routes you to the right next action automatically.</p>
-
-<h3 id="keep-specgantry-updated">Keep SpecGantry Updated</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>claude plugin marketplace update spec-gantry <span class="o">&amp;&amp;</span> claude plugin update spec-gantry@spec-gantry
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="key-concepts">Key Concepts</h2>
-
-<h3 id="the-cwj-loop">The CWJ Loop</h3>
-
-<p>Every phase in SpecGantry runs a Challenge-Write-Judge loop. Each phase’s challenger has a different adversarial identity:</p>
-
-<div class="dg-wrap">
-<div class="dg-node-graph">
-
-  <div class="dg-node dg-ideation">
-    <div class="dg-node-num"><i class="bi bi-shield-exclamation"></i></div>
-    <div class="dg-node-name">Ideation Challenger</div>
-    <div class="dg-node-role">Senior developer pre-build</div>
-    <div class="dg-node-output">"What would stop me agreeing to start? Capabilities clear? Data ownership decided? Tech stack chosen?" · Up to 7 questions per round · User answers all at once</div>
-  </div>
-
-  <div class="dg-node dg-spec">
-    <div class="dg-node-num"><i class="bi bi-person-gear"></i></div>
-    <div class="dg-node-name">Spec Challenger</div>
-    <div class="dg-node-role">Developer-proxy</div>
-    <div class="dg-node-output">"I just got assigned this — loading state? Empty state? Error messages? Where does output appear?" · Up to 6 questions · Resolved autonomously by write agent</div>
-  </div>
-
-  <div class="dg-node dg-build">
-    <div class="dg-node-num"><i class="bi bi-person-check"></i></div>
-    <div class="dg-node-name">Code Challenger</div>
-    <div class="dg-node-role">User-proxy</div>
-    <div class="dg-node-output">"Can I — as a user — actually accomplish what was promised? Does it freeze while I wait? Can I recover from an error?" · Reads source files, not the spec</div>
-  </div>
-
-</div>
-</div>
-
-<p>If the judge says CLEAR → phase exits. If BLOCKED → another cycle. The loop caps at a configurable maximum and surfaces unresolved gaps to the user.</p>
-
-<h3 id="the-north-star">The North Star</h3>
-
-<p>Each project has a single <code class="language-plaintext highlighter-rouge">specs/north-star.md</code> — flowing prose written during ideation from the actual idea. No headings, no sections. Just paragraphs describing what good looks like for this system specifically: what the user is owed, what design philosophy governs decisions, what the system should handle invisibly.</p>
-
-<p>It ends with a flat list of the challenge questions that shaped it — the AI’s thought process made visible.</p>
-
-<p>The north star grows. When the spec phase surfaces a new requirement, the write agent appends a paragraph. It never gets rewritten from scratch — it accumulates understanding.</p>
-
-<h3 id="capabilities">Capabilities</h3>
-
-<p>Work units are capabilities (<code class="language-plaintext highlighter-rouge">CAP-001</code>, <code class="language-plaintext highlighter-rouge">CAP-002</code>, etc.) — cohesive build units defined by what the system does end-to-end. Each lives under <code class="language-plaintext highlighter-rouge">specs/capabilities/[CAP-ID]/</code> with an <code class="language-plaintext highlighter-rouge">intent.md</code> (the experience promise) and a <code class="language-plaintext highlighter-rouge">capability-spec.md</code> (the developer contract).</p>
-
-<h3 id="changelog">Changelog</h3>
-
-<p><code class="language-plaintext highlighter-rouge">specs/changelog.md</code> is an append-only record of what changed between releases. Spec and code agents read it before referencing any field or interface — preventing the use of dropped or deprecated APIs in new releases.</p>
-
-<h3 id="diagnostic-routing">Diagnostic Routing</h3>
-
-<p>When something is wrong, the investigate agent classifies the problem before routing to repair:</p>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">CODE_BUG</code> → re-enter code loop for the affected capability</li>
-  <li><code class="language-plaintext highlighter-rouge">SPEC_GAP</code> → re-run spec, then rebuild</li>
-  <li><code class="language-plaintext highlighter-rouge">REQUIREMENT_DRIFT</code> → amend north star and architecture, re-spec and rebuild</li>
-  <li><code class="language-plaintext highlighter-rouge">NEW_CAPABILITY</code> → re-enter ideation in amendment mode</li>
-</ul>
-
-<p>The right phase gets fixed. Not always code.</p>
-
-<h3 id="specs-are-the-memory">Specs Are the Memory</h3>
-
-<p>All knowledge lives in <code class="language-plaintext highlighter-rouge">specs/</code>. North star, architecture decisions, capability intent, what was built, why — all in plain-text YAML and Markdown, committed to git. Agents read from disk. Nothing is duplicated in transition files or passed through parameters that could be derived from canonical artifacts.</p>
-
-<h3 id="state-that-survives-anything">State That Survives Anything</h3>
-
-<p>All progress is written after every answer and every phase transition. State flags in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tell the orchestrator exactly where to resume. A crash mid-session loses at most one in-progress answer — everything confirmed before that is on disk and the pipeline resumes exactly where it left off.</p>
-
-<hr />
-
-<h2 id="who-should-use-specgantry">Who Should Use SpecGantry?</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Use Case</th>
-      <th>Why</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>New project from scratch</td>
-      <td>The north star captures the idea before a line of code is written. Capabilities are challenged before they’re specced. Code is challenged from the user’s perspective before it’s shipped.</td>
-    </tr>
-    <tr>
-      <td>Existing codebase</td>
-      <td>Reverse engineering synthesizes north-star.md, architecture.md, and capability stubs from existing code. Anchor tags added automatically.</td>
-    </tr>
-    <tr>
-      <td>Solo developer</td>
-      <td>Forces the hard cognitive questions before building. Prevents fast progress in the wrong direction.</td>
-    </tr>
-    <tr>
-      <td>Any project using Claude Code</td>
-      <td>Developer intelligence: which capabilities were expensive, how many challenge cycles ran, what patterns kept getting challenged, release-over-release comparison.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr />
-
-<p><strong>Ready to begin?</strong> → <a href="/docs/getting-started">Installation &amp; First Steps →</a></p>
+<p><strong><a href="/docs/getting-started">Getting Started →</a></strong></p>
 
       </article>
 

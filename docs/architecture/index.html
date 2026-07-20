@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reference — SpecGantry Docs</title>
-  <meta name="description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
+  <meta name="description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
   <meta property="og:title" content="Reference">
-  <meta property="og:description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
+  <meta property="og:description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/architecture/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Reference">
-  <meta name="twitter:description" content="SpecGantry v6 file structure, state flags, agent ownership, the Artifact Index format, and design principles.">
+  <meta name="twitter:description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -143,22 +143,25 @@
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="specgantry-v6-reference">SpecGantry v6 Reference</h1>
+        <h1 id="specgantry-v7-reference">SpecGantry v7 Reference</h1>
 
-<p>File structure, state flags, design principles, and extension points.</p>
+<p>File structure, project state, design principles, and extension points.</p>
 
 <hr />
 
 <h2 id="design-principles">Design Principles</h2>
 
-<p><strong>1. Specs and artifacts are the memory.</strong><br />
-All knowledge lives in <code class="language-plaintext highlighter-rouge">specs/</code>. Agents read from canonical artifacts on disk. Nothing is duplicated in transition files, passed as parameters, or held in temporary state that could be derived from the canonical sources. The <code class="language-plaintext highlighter-rouge">reads:</code> block in every story spec is the agent’s fetch list — nothing else is loaded.</p>
+<p><strong>1. Challenge before you write.</strong><br />
+Nothing is written or built until an adversarial challenger has asked what would block the next phase. This is not a compliance check — it is a genuine adversarial stance. The challenger’s job is to find gaps, not to confirm correctness.</p>
 
-<p><strong>2. Quality at the earliest possible moment.</strong><br />
-A thin spec produces bad code regardless of how many code repair iterations you run. The PPE loop catches gaps at ideation (before architecture is decided), at spec (before code is written), and at code (before shipping). Each phase’s north star is independent of what any plan says — the evaluator challenges both the output and the goal.</p>
+<p><strong>2. The right thing gets fixed.</strong><br />
+When something is wrong, the investigate agent classifies the root cause before routing. A spec gap sent to the code loop produces another iteration of the wrong repair. Diagnostic classification ensures the right phase is re-entered.</p>
 
-<p><strong>3. Session safety over throughput.</strong><br />
-All progress is written to disk after every answer and every phase transition. A crash mid-loop restores from <code class="language-plaintext highlighter-rouge">.ppe-loop.yaml</code> — iteration count, prior verdict, and accumulated gaps — and re-enters at the plan step with the goal re-derived from canonical artifacts. No work is lost.</p>
+<p><strong>3. Quality at the earliest possible moment.</strong><br />
+A thin spec produces bad code regardless of how many code repair cycles you run. The CWJ loop catches gaps at ideation (before specs are written), at spec (before code is written), and at code (before shipping). Each phase’s challenger is independent of what any write agent produced — it challenges afresh.</p>
+
+<p><strong>4. Session safety over throughput.</strong><br />
+All progress is written to disk after every answer and every phase transition. A crash mid-session loses at most one in-progress answer. Everything confirmed before that is on disk and the pipeline resumes exactly where it left off.</p>
 
 <hr />
 
@@ -166,29 +169,21 @@ All progress is written to disk after every answer and every phase transition. A
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-root/
   specs/
-    project-state.yaml            pipeline state, story flags, PPE loop config
-    concerns-log.ndjson           — removed in v6
+    project-state.yaml            pipeline state and capability flags
+    north-star.md                 per-project flowing prose cognitive contract
+    changelog.md                  append-only release history (created after 1.0.0)
     cost-log.ndjson               token usage per agent run (committed to git)
     architecture/
-      architecture.md             Vision, Problem &amp; Users, Constraints, Risks,
-                                  Tech Stack, Guardrails, Configuration, UX Model,
-                                  + ## Artifact Index (YAML block, last section)
-      data-model.md               ## entity:[name] sections
-      actors.md                   ## actor:[name] sections
-      contracts.md                ## contract:[name] sections (prose + yaml block)
-      patterns.md                 ## pattern:[name] sections
-      ux.md                       ## ux:[name] sections
-      deployment.md               ## deployment:[name] sections
-    stories/
-      STORY-NNN/
-        intent.md                 2 paragraphs: functional purpose + outcome
-        story-spec.md             ≤60 lines: criteria, interfaces, permissions,
-                                  state, data — all as references to arch artifacts
-        build-report.yaml         overall_status, quality block, test_plan, runtime
-        gap.md                    divergences (optional, deleted at deploy)
-    scratchpad/                   gitignored — agent intermediate work only
+      architecture.md             all technical decisions — ## section:name anchors
+                                  (vision, tech-stack, data-model, actors,
+                                   api-interfaces, deployment, guardrails, configuration)
+    capabilities/
+      CAP-001/
+        intent.md                 2 paragraphs: experience promise + done/failure/edges
+        capability-spec.md        developer contract: criteria, interfaces, state, layout, data
+        build-report.yaml         overall_status, quality block, runtime info, test_plan
   .claude/
-    settings.json                 SessionStart + PostCompact hooks
+    settings.json                 SessionStart hook
     hooks/spec-gantry-contract.sh contract injection script
     CONTRACT.md                   binding directive (gitignored)
     CLAUDE.md                     spec-gantry-notice prepended at project init
@@ -196,267 +191,133 @@ All progress is written to disk after every answer and every phase transition. A
 
 <hr />
 
-<h2 id="state-flags--project-stateyaml">State Flags — project-state.yaml</h2>
+<h2 id="project-state--project-stateyaml">Project State — project-state.yaml</h2>
+
+<p>SpecGantry tracks pipeline progress in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code>. You can read this file at any time to understand where your project is.</p>
+
+<p>Key fields:</p>
 
 <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">project</span><span class="pi">:</span>
   <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">My</span><span class="nv"> </span><span class="s">App"</span>
-  <span class="na">created</span><span class="pi">:</span> <span class="s">2026-07-16</span>
+  <span class="na">created</span><span class="pi">:</span> <span class="s">2026-07-19</span>
   <span class="na">release</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1.0.0"</span>
-  <span class="na">next_release_type</span><span class="pi">:</span> <span class="kc">null</span>          <span class="c1"># patch | minor | major — set by classify_and_route</span>
-  <span class="na">active_story</span><span class="pi">:</span> <span class="kc">null</span>               <span class="c1"># STORY-NNN while a loop is running</span>
-  <span class="na">active_phase</span><span class="pi">:</span> <span class="kc">null</span>               <span class="c1"># see valid values below</span>
+  <span class="na">next_release_type</span><span class="pi">:</span> <span class="kc">null</span>          <span class="c1"># patch | minor | major</span>
 
-<span class="na">ideation_complete</span><span class="pi">:</span> <span class="kc">false</span>
-<span class="na">arch_seeded</span><span class="pi">:</span> <span class="kc">false</span>
-<span class="na">pending_arch_gap</span><span class="pi">:</span> <span class="kc">null</span>             <span class="c1"># set by spec/code produce agents on missing arch section</span>
-<span class="na">pending_spec_gap</span><span class="pi">:</span> <span class="kc">null</span>             <span class="c1"># set by code produce agent on missing spec reference</span>
+<span class="na">ideation_complete</span><span class="pi">:</span> <span class="kc">false</span>           <span class="c1"># true after ideation exits</span>
+<span class="na">auto_continue</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># true when [&gt;] is active</span>
 
-<span class="na">auto_continue</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># set to true by [&gt;] — cleared on decision points</span>
-
-<span class="na">ppe_loop</span><span class="pi">:</span>
-  <span class="na">max_iterations</span><span class="pi">:</span>
-    <span class="na">ideation</span><span class="pi">:</span> <span class="m">3</span>
-    <span class="na">spec</span><span class="pi">:</span> <span class="m">2</span>
-    <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
-
-<span class="na">stories</span><span class="pi">:</span>
-  <span class="na">STORY-001</span><span class="pi">:</span>
-    <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Manage</span><span class="nv"> </span><span class="s">recipes"</span>
+<span class="na">capabilities</span><span class="pi">:</span>
+  <span class="na">CAP-001</span><span class="pi">:</span>
+    <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Recipe</span><span class="nv"> </span><span class="s">management"</span>
+    <span class="na">spec_done</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># true after user approves spec</span>
+    <span class="na">built</span><span class="pi">:</span> <span class="kc">false</span>                   <span class="c1"># true after code phase exits</span>
+    <span class="na">deployed</span><span class="pi">:</span> <span class="kc">false</span>                <span class="c1"># true after deploy</span>
     <span class="na">depends_on</span><span class="pi">:</span> <span class="pi">[]</span>
-    <span class="na">intent_done</span><span class="pi">:</span> <span class="kc">false</span>
-    <span class="na">spec_done</span><span class="pi">:</span> <span class="kc">false</span>
-    <span class="na">built</span><span class="pi">:</span> <span class="kc">false</span>
-    <span class="na">deployed</span><span class="pi">:</span> <span class="kc">false</span>
 </code></pre></div></div>
 
-<p><strong>Valid <code class="language-plaintext highlighter-rouge">active_phase</code> values:</strong></p>
+<p><strong>CWJ loop configuration</strong> — adjustable per project:</p>
 
-<p><code class="language-plaintext highlighter-rouge">ideation_plan</code> · <code class="language-plaintext highlighter-rouge">ideation_produce</code> · <code class="language-plaintext highlighter-rouge">ideation_eval</code> · <code class="language-plaintext highlighter-rouge">spec_plan</code> · <code class="language-plaintext highlighter-rouge">spec_produce</code> · <code class="language-plaintext highlighter-rouge">spec_eval</code> · <code class="language-plaintext highlighter-rouge">code_plan</code> · <code class="language-plaintext highlighter-rouge">code_produce</code> · <code class="language-plaintext highlighter-rouge">code_eval</code> · <code class="language-plaintext highlighter-rouge">deployment</code> · <code class="language-plaintext highlighter-rouge">investigation</code> · <code class="language-plaintext highlighter-rouge">amendment</code> · <code class="language-plaintext highlighter-rouge">null</code></p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">cwj_loop</span><span class="pi">:</span>
+  <span class="na">max_iterations</span><span class="pi">:</span>
+    <span class="na">ideation</span><span class="pi">:</span> <span class="m">5</span>
+    <span class="na">spec</span><span class="pi">:</span> <span class="m">3</span>
+    <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
+</code></pre></div></div>
+
+<p>Raise or lower these to control how many challenge cycles run before the pipeline surfaces unresolved gaps to you.</p>
 
 <hr />
 
-<h2 id="write-ownership">Write Ownership</h2>
+<h2 id="the-architecture-file">The Architecture File</h2>
+
+<p><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> contains all technical decisions in a single file. Each section uses a <code class="language-plaintext highlighter-rouge">## section:name</code> anchor so agents and developers can navigate directly to what they need:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># Architecture</span>
+
+<span class="gu">## section:vision</span>
+One sentence. What the system is.
+
+<span class="gu">## section:tech-stack</span>
+Every layer decided: language, runtime, framework, database, libraries.
+
+<span class="gu">## section:data-model</span>
+Every entity: name, key fields, owner, lifecycle.
+
+<span class="gu">## section:actors</span>
+Every user type and system actor: name, capabilities, data ownership.
+
+<span class="gu">## section:api-interfaces</span>
+Every endpoint: method + path, auth, request shape, response shape, error codes.
+
+<span class="gu">## section:deployment</span>
+Platform, container registry, scaling, secrets strategy, CI/CD.
+
+<span class="gu">## section:guardrails</span>
+Source layout, config location, secrets handling, build output, runtime storage.
+
+<span class="gu">## section:configuration</span>
+Every environment variable: name, description, example value.
+</code></pre></div></div>
+
+<p>The architecture file is written once at ideation exit and extended via amendment when requirements drift. Spec write and build agents read only the sections relevant to the capability they’re working on — not the full file.</p>
+
+<hr />
+
+<h2 id="code-anchor-schema">Code Anchor Schema</h2>
+
+<p>Every source file touched by the build or reverse-engineer agent gets one-line anchor comments. These let the investigate agent navigate the codebase without loading full files:</p>
 
 <table>
   <thead>
     <tr>
-      <th>Field / file</th>
-      <th>Writer</th>
+      <th>Anchor</th>
+      <th>Where</th>
+      <th>Example</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">built:true</code></td>
-      <td>Orchestrator only (after code PPE loop exits ACHIEVED)</td>
+      <td><code class="language-plaintext highlighter-rouge">@capability</code></td>
+      <td>Top of file</td>
+      <td><code class="language-plaintext highlighter-rouge">// @capability CAP-002 \| job posting</code></td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec_done:true</code></td>
-      <td>Orchestrator only (after spec-eval-agent returns ACHIEVED and user approves)</td>
+      <td><code class="language-plaintext highlighter-rouge">@intent</code></td>
+      <td>After <code class="language-plaintext highlighter-rouge">@capability</code></td>
+      <td><code class="language-plaintext highlighter-rouge">// @intent allows a company to create and publish a job listing</code></td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">deployed:true</code></td>
-      <td>Deployment subagent</td>
+      <td><code class="language-plaintext highlighter-rouge">@entry</code></td>
+      <td>Above each route handler</td>
+      <td><code class="language-plaintext highlighter-rouge">// @entry POST /api/jobs \| create job listing</code></td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">project.release</code></td>
-      <td>Orchestrator only (after deployment subagent returns)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">auto_continue</code></td>
-      <td>Orchestrator only</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">intent_done:true</code></td>
-      <td>ideation-produce-agent, spec-produce-agent, reverse-engineer-subagent</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">pending_spec_gap</code></td>
-      <td>code-produce-agent · Orchestrator (cross-story drift)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">pending_arch_gap</code></td>
-      <td>spec-produce-agent or code-produce-agent</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">.ppe-loop.yaml</code></td>
-      <td>Orchestrator only (written at each eval step, deleted on loop exit)</td>
+      <td><code class="language-plaintext highlighter-rouge">@contract</code></td>
+      <td>Above cross-layer functions</td>
+      <td><code class="language-plaintext highlighter-rouge">// @contract input: {...} → output: {...} \| errors: [422,500]</code></td>
     </tr>
   </tbody>
 </table>
 
-<hr />
-
-<h2 id="session-scratchpad-files-gitignored">Session Scratchpad Files (gitignored)</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>File</th>
-      <th>Purpose</th>
-      <th>Lifetime</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">specs/.ideation-turn.md</code></td>
-      <td>Pending ideation question + topic</td>
-      <td>Deleted when question is answered</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">specs/.story-spec-turn.md</code></td>
-      <td>Pending spec interaction state</td>
-      <td>Deleted on SPEC_COMPLETE or SPEC_HELD</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">specs/.investigate-turn.md</code></td>
-      <td>Pending investigation confirmation</td>
-      <td>Deleted on INVESTIGATION_CONFIRMED/CANCELLED</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">specs/.ideation-scratchpad.yaml</code></td>
-      <td>Proposed story list between approval and seed_artifacts</td>
-      <td>Deleted after seed_artifacts completes</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">specs/stories/[ID]/.ppe-loop.yaml</code></td>
-      <td>Loop checkpoint: <code class="language-plaintext highlighter-rouge">iteration_N</code>, <code class="language-plaintext highlighter-rouge">prior_eval_verdict</code>, <code class="language-plaintext highlighter-rouge">prior_northstar_gaps</code>, <code class="language-plaintext highlighter-rouge">must_not_miss</code>, <code class="language-plaintext highlighter-rouge">spec_reentry_count</code></td>
-      <td>Deleted when loop exits ACHIEVED or CAPPED</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>No handoff files exist in v6 — Goal₀ for each phase is derived directly from canonical artifacts on disk. <code class="language-plaintext highlighter-rouge">.spec-handoff.yaml</code> and <code class="language-plaintext highlighter-rouge">.code-handoff.yaml</code> from v5 are no longer written.</p>
-
-<hr />
-
-<h2 id="the-artifact-index">The Artifact Index</h2>
-
-<p>The last section of <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> is a machine-parseable YAML block that maps artifact types to their files and named sections:</p>
-
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## Artifact Index</span>
-
-<span class="err">```</span><span class="s">yaml</span>
-<span class="na">data-model</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/data-model.md</span>
-  <span class="na">entities</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">application</span><span class="pi">,</span> <span class="nv">submission</span><span class="pi">,</span> <span class="nv">review</span><span class="pi">,</span> <span class="nv">user</span><span class="pi">]</span>
-<span class="na">actors</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/actors.md</span>
-  <span class="na">roles</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">applicant</span><span class="pi">,</span> <span class="nv">admin</span><span class="pi">,</span> <span class="nv">reviewer</span><span class="pi">]</span>
-<span class="na">contracts</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/contracts.md</span>
-  <span class="na">shapes</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">submission-response</span><span class="pi">,</span> <span class="nv">review-response</span><span class="pi">,</span> <span class="nv">error-envelope</span><span class="pi">]</span>
-<span class="na">patterns</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/patterns.md</span>
-  <span class="na">patterns</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">rest-crud</span><span class="pi">,</span> <span class="nv">optimistic-update</span><span class="pi">]</span>
-<span class="na">ux</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/ux.md</span>
-  <span class="na">sections</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">navigation-model</span><span class="pi">,</span> <span class="nv">visual-system</span><span class="pi">,</span> <span class="nv">component-conventions</span><span class="pi">,</span> <span class="nv">screen-template</span><span class="pi">]</span>
-<span class="na">deployment</span><span class="pi">:</span>
-  <span class="na">file</span><span class="pi">:</span> <span class="s">specs/architecture/deployment.md</span>
-  <span class="na">sections</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">target</span><span class="pi">,</span> <span class="nv">services</span><span class="pi">,</span> <span class="nv">secrets</span><span class="pi">,</span> <span class="nv">ingress</span><span class="pi">,</span> <span class="nv">cicd</span><span class="pi">]</span>
-</code></pre></div></div>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Agents read the Artifact Index once to build a lookup map, then use it to resolve `reads:` entries to exact file paths and section anchors — without reading the full architecture file.
-
----
-
-## Contract Sections
-
-Every `## contract:[name]` section in `contracts.md` must contain both prose and a machine-readable YAML block:
-
-````markdown
-## contract:submission-response
-The response shape returned by POST /api/submissions and GET /api/submissions/:id.
-
-```yaml
-$schema: "https://json-schema.org/draft/2020-12/schema"
-type: object
-required: [id, status, created_at]
-properties:
-  id: { type: string, format: uuid }
-  status: { type: string, enum: [draft, submitted, approved, rejected] }
-  title: { type: string }
-  created_at: { type: string, format: date-time }
-additionalProperties: false
-</code></pre></div></div>
-<pre><code class="language-`">
-The code produce agent validates every `required:` field is present before writing API endpoints. If the yaml block is missing, it signals a spec gap and stops.
-
----
-
-## Code Anchor Schema
-
-Every source file touched by the code produce or reverse-engineer agent gets one-line anchor comments:
-
-| Anchor | Where | Example |
-|---|---|---|
-| `@story` | Top of file | `// @story STORY-002 \| submissions` |
-| `@intent` | After `@story` | `// @intent allows an applicant to submit their draft` |
-| `@entry` | Above each route handler | `// @entry POST /api/submissions \| create draft submission` |
-| `@contract` | Above cross-layer functions | `// @contract input: {...} → output: {...} \| errors: [422,500]` |
-| `@gap` | At spec divergences | `// @gap 2026-07-16 status enum extended — spec only defines draft\|submitted` |
-
-The investigation agent greps these anchors to locate code without loading full files.
-
----
-
-## The PPE Loop Objects
-
-Three shared data objects travel between plan, produce, and eval agents in each loop iteration. Plan and eval agents return raw JSON.
-
-**Goal** (orchestrator-owned, derived from disk)
-```yaml
-goal:
-  phase: ideation | spec | code
-  iteration: N
-  statement: "what good looks like"
-  must_achieve: [north star criteria for this iteration]
-  must_not_miss: [gaps carried forward from prior iterations]
-  source: initial | upgraded
-</code></pre>
-
-<p><strong>Plan</strong> (returned by plan agents)</p>
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-  </span><span class="nl">"approach"</span><span class="p">:</span><span class="w"> </span><span class="s2">"strategy to achieve the goal"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"steps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-    </span><span class="p">{</span><span class="w"> </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nl">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"addresses"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"produces"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span><span class="w">
-  </span><span class="p">],</span><span class="w">
-  </span><span class="nl">"known_risks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"..."</span><span class="p">],</span><span class="w">
-  </span><span class="nl">"scope_boundary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<p><strong>Evaluation</strong> (returned by eval agents)</p>
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-  </span><span class="nl">"verdict"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACHIEVED | EXECUTION_GAP | GOAL_GAP"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"plan_compliance"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nl">"step_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nl">"met"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nl">"evidence"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}],</span><span class="w">
-  </span><span class="nl">"northstar_gaps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-    </span><span class="p">{</span><span class="w"> </span><span class="nl">"gap"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"gap_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"experience_gap"</span><span class="p">,</span><span class="w"> </span><span class="nl">"severity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"blocking"</span><span class="p">,</span><span class="w"> </span><span class="nl">"proposed_goal_addition"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span><span class="w">
-  </span><span class="p">],</span><span class="w">
-  </span><span class="nl">"execution_gaps"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nl">"step_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nl">"met"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nl">"evidence"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}],</span><span class="w">
-  </span><span class="nl">"upgraded_goal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"statement"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nl">"must_achieve"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w"> </span><span class="nl">"must_not_miss"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">execution_gaps</code> is only present when verdict is <code class="language-plaintext highlighter-rouge">GOAL_GAP</code> and produce also failed to execute one or more plan steps — both are fed to the next plan agent in one pass.</p>
+<p>These anchors are machine-readable comments — no runtime dependencies, safe to commit.</p>
 
 <hr />
 
 <h2 id="extension-points">Extension Points</h2>
 
-<p><strong>Custom guardrails</strong> — edit <code class="language-plaintext highlighter-rouge">## Guardrails</code> in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code>. Every subagent reads guardrails before writing code. Changes take effect on the next build.</p>
+<p><strong>Custom guardrails</strong> — edit <code class="language-plaintext highlighter-rouge">## section:guardrails</code> in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code>. Every build agent reads guardrails before writing code. Changes take effect on the next build.</p>
 
-<p><strong>PPE loop configuration</strong> — edit <code class="language-plaintext highlighter-rouge">ppe_loop.max_iterations</code> in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> to adjust how many iterations each phase runs before capping.</p>
+<p><strong>CWJ loop configuration</strong> — edit <code class="language-plaintext highlighter-rouge">cwj_loop.max_iterations</code> in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> to adjust how many challenge cycles each phase runs before capping and surfacing gaps to you.</p>
 
-<p><strong>Custom deployment platforms</strong> — the deployment subagent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in <code class="language-plaintext highlighter-rouge">specs/architecture/deployment.md</code> drives the generated <code class="language-plaintext highlighter-rouge">deploy.sh</code>.</p>
+<p><strong>Custom deployment platforms</strong> — the deployment agent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in <code class="language-plaintext highlighter-rouge">## section:deployment</code> drives the generated <code class="language-plaintext highlighter-rouge">deploy.sh</code>.</p>
 
 <hr />
 
 <h2 id="security-model">Security Model</h2>
 
-<p><strong>Secrets</strong> — never hardcoded. Every secret is an environment variable named in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md → ## Configuration</code>. The code produce agent uses these names exactly. <code class="language-plaintext highlighter-rouge">.env.example</code> is generated automatically at deploy time with safe placeholder values.</p>
+<p><strong>Secrets</strong> — never hardcoded. Every secret is an environment variable named in <code class="language-plaintext highlighter-rouge">## section:configuration</code>. The build agent uses these names exactly. <code class="language-plaintext highlighter-rouge">.env.example</code> is generated automatically at deploy time with safe placeholder values.</p>
 
-<p><strong>Source annotations</strong> — <code class="language-plaintext highlighter-rouge">@story</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, <code class="language-plaintext highlighter-rouge">@contract</code>, <code class="language-plaintext highlighter-rouge">@gap</code> anchors written by the code produce and reverse-engineer agents are machine-readable but contain no runtime secrets. They are safe to commit.</p>
+<p><strong>Source annotations</strong> — <code class="language-plaintext highlighter-rouge">@capability</code>, <code class="language-plaintext highlighter-rouge">@intent</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, <code class="language-plaintext highlighter-rouge">@contract</code> anchors written by the build and reverse-engineer agents contain no runtime secrets. They are safe to commit.</p>
 
 <p><strong>CONTRACT.md</strong> — the engagement directive injected at session start is gitignored by default. It contains no secrets — only instructions for Claude.</p>
 
@@ -468,7 +329,7 @@ goal:
           
             <a href="/docs/skills" class="page-nav-link">
               <span class="page-nav-dir">← Previous</span>
-              <span class="page-nav-label">Skills Guide</span>
+              <span class="page-nav-label">Skills & Agents</span>
             </a>
           
         </div>

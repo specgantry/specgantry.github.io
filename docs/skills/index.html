@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills & Agents — SpecGantry Docs</title>
-  <meta name="description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
+  <meta name="description" content="The two skills that power SpecGantry v7 — what they do, all 12 agents, the v7 dashboard, and every workflow covered.">
   <meta property="og:title" content="Skills & Agents">
-  <meta property="og:description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
+  <meta property="og:description" content="The two skills that power SpecGantry v7 — what they do, all 12 agents, the v7 dashboard, and every workflow covered.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/skills/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Skills & Agents">
-  <meta name="twitter:description" content="The two skills that power SpecGantry v6 — what they do, all 12 agents, the v6 dashboard, and every workflow covered.">
+  <meta name="twitter:description" content="The two skills that power SpecGantry v7 — what they do, all 12 agents, the v7 dashboard, and every workflow covered.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -145,7 +145,7 @@
       <article class="docs-article">
         <h1 id="specgantry-skills-guide">SpecGantry Skills Guide</h1>
 
-<p>SpecGantry has two skills. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is the one you use every day — it handles everything. <code class="language-plaintext highlighter-rouge">/track-cost</code> is your real-time cost dashboard.</p>
+<p>SpecGantry has two skills. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is the one you use every day — it handles everything. <code class="language-plaintext highlighter-rouge">/track-cost</code> is your developer intelligence dashboard.</p>
 
 <hr />
 
@@ -168,7 +168,7 @@
     <tr>
       <td><strong>track-cost</strong></td>
       <td><code class="language-plaintext highlighter-rouge">/track-cost</code></td>
-      <td>Cost breakdown by Plan/Produce/Eval, story, phase, and release</td>
+      <td>Cost and iteration insights by Challenge/Write/Judge, by capability, by phase, and by release</td>
     </tr>
   </tbody>
 </table>
@@ -188,52 +188,52 @@
 
 <h3 id="the-dashboard">The Dashboard</h3>
 
-<p><strong>State 1 — No stories yet</strong> (ideation in progress, or no project):</p>
+<p><strong>State 1 — No capabilities in pipeline</strong> (ideation in progress, or no project):</p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  Recipe Manager
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  Recipe Manager
 ──────────────────────────────────────────────────────────
-  Ideation in progress  ·  🔄 produce — Topic 6/9
+  Ideation in progress  ·  🔄 challenge — round 2
 
 ──────────────────────────────────────────────────────────
-  [1] Continue ideation               [$] Cost
+  [1] Continue ideation               [$] Cost &amp; insights
                                       [?] Help
                                       [X] Exit
 ──────────────────────────────────────────────────────────
 </code></pre></div>  </div>
 </div>
 
-<p><strong>State 2 — Story pipeline active:</strong></p>
+<p><strong>State 2 — Capability pipeline active:</strong></p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  HireFlow  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  HireFlow  |  release 1.0.0
 Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
 ──────────────────────────────────────────────────────────
-  ID      Story                            Spec        Build
-  ────────────────────────────────────────────────────────────────
-  [001]  User authentication                ✅          ✅
-  [002]  Company posts a job                ✅          🔄 eval·2
-  [003]  Admin reviews applications         🔄 eval     ⏳
-  [004]  Candidate browses and applies      ⏳          ○
-  ────────────────────────────────────────────────────────────────
-  Release 1.0.0                                        ○ not deployed
-──────────────────────────────────────────────────────────────────
-  Type a story ID to manage it        [$] Cost
-  [1] Build next — [002]: Company…    [?] Help
+  ID       Capability                         Spec         Build
+  ──────────────────────────────────────────────────────────────────────
+  [001]   User authentication                 ✅           ✅
+  [002]   Job posting                         ✅           🔄 challenge·2
+  [003]   Application review                  🔄 judge     ⏳
+  [004]   Candidate browse and apply          ⏳           ○
+  ──────────────────────────────────────────────────────────────────────
+  Release 1.0.0                                            ○ not deployed
+──────────────────────────────────────────────────────────────────────
+  Type a capability ID to manage it   [$] Cost &amp; insights
+  [1] Build next — [002]: Job…        [?] Help
   [&gt;] Run to next pause               [X] Exit
   [N] New work
-──────────────────────────────────────────────────────────────────
-Enter story ID or action:  &gt;
+──────────────────────────────────────────────────────────────────────
+Enter capability ID or action:  &gt;
 </code></pre></div>  </div>
 </div>
 
 <p><strong>What the in-progress labels mean:</strong></p>
 
-<p>The Spec and Build columns show exactly where in the PPE loop a story is:</p>
+<p>The Spec and Build columns show exactly where in the CWJ loop a capability is:</p>
 
 <table>
   <thead>
@@ -244,24 +244,28 @@ Enter story ID or action:  &gt;
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">🔄 plan</code></td>
-      <td>Plan agent running</td>
+      <td><code class="language-plaintext highlighter-rouge">🔄 challenge</code></td>
+      <td>Challenge agent running</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">🔄 write</code></td>
-      <td>Spec produce agent writing story-spec.md</td>
+      <td>Write agent writing capability-spec.md</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">🔄 eval</code></td>
-      <td>Eval agent checking north star (iteration 1)</td>
+      <td><code class="language-plaintext highlighter-rouge">🔄 judge</code></td>
+      <td>Judge agent checking readiness</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">🔄 eval·2</code></td>
-      <td>Eval agent on iteration 2 — a repair loop is running</td>
+      <td><code class="language-plaintext highlighter-rouge">🔄 plan</code></td>
+      <td>Code plan agent planning build approach</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">🔄 build</code></td>
-      <td>Code produce agent building</td>
+      <td>Build agent implementing</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">🔄 challenge·2</code></td>
+      <td>Code challenge agent on iteration 2 — a repair loop is running</td>
     </tr>
   </tbody>
 </table>
@@ -278,11 +282,11 @@ Enter story ID or action:  &gt;
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">✅</code></td>
-      <td>ACHIEVED — north star confirmed</td>
+      <td>CLEAR — judge confirmed next phase not blocked</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">🔄 [label]</code></td>
-      <td>Active — shows which PPE step and iteration</td>
+      <td>Active — shows which CWJ step and iteration</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">🔴</code></td>
@@ -298,24 +302,24 @@ Enter story ID or action:  &gt;
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">~</code></td>
-      <td>Built but no spec written (reverse-engineered story)</td>
+      <td>Built but no spec written (reverse-engineered capability)</td>
     </tr>
   </tbody>
 </table>
 
-<p><code class="language-plaintext highlighter-rouge">✅</code> in v6 means the evaluator confirmed the north star — not just that a format checklist passed. Spec ✅ means a machine-validated spec. Build ✅ means code that passed both the quality dimension rubric and the code north star.</p>
+<p><code class="language-plaintext highlighter-rouge">✅</code> in v7 means the judge confirmed the next phase would not be blocked — not just that a format checklist passed. Spec ✅ means a machine-challenged spec that the user approved. Build ✅ means code where the user-proxy challenge agent confirmed a user can accomplish what was promised.</p>
 
 <hr />
 
 <h3 id="what-spec-gantry-handles">What /spec-gantry Handles</h3>
 
-<p><strong>Starting a new project</strong> — name and vision, then quick-start (3 questions, smart defaults) or full ideation (9 topics). For simple projects, quick-start activates automatically.</p>
+<p><strong>Starting a new project</strong> — name and vision, then the ideation CWJ loop begins. An adversarial challenger fires blocking questions; you answer all of them per round; the judge evaluates readiness.</p>
 
-<p><strong>Analysing an existing codebase</strong> — source files detected without a project → scan and generate architecture, story backlog, and anchor tags.</p>
+<p><strong>Analysing an existing codebase</strong> — source files detected without a project → scan and generate north-star.md, architecture, capability list, intent files, and anchor tags.</p>
 
-<p><strong>Full story lifecycle</strong> — ideation → spec (with north-star validation) → code (with PPE loop) → deploy. Phase gates enforced automatically.</p>
+<p><strong>Full capability lifecycle</strong> — ideation → spec (with adversarial challenge) → code (with user-proxy challenge) → deploy. Phase gates enforced automatically.</p>
 
-<p><strong>Bug fixes and new work</strong> — <code class="language-plaintext highlighter-rouge">[N] New work</code> at any point. Investigation agent reads the codebase, confirms findings, build agent fixes, full code PPE loop runs.</p>
+<p><strong>Bug fixes and new work</strong> — <code class="language-plaintext highlighter-rouge">[N] New work</code> at any point. The investigate agent classifies the problem and routes to the right repair phase.</p>
 
 <hr />
 
@@ -339,15 +343,23 @@ Enter story ID or action:  &gt;
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[N]</code> New work</td>
-      <td>Describe a bug, improvement, new story, or change</td>
+      <td>Describe a bug, improvement, new capability, or change</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost</td>
-      <td>Opens the cost dashboard</td>
+      <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost &amp; insights</td>
+      <td>Opens the developer intelligence dashboard</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture</td>
+      <td>Display architecture.md in full</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[S]</code> North star</td>
+      <td>Display north-star.md in full</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[?]</code> Help</td>
-      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture · docs link</td>
+      <td>Docs link and quick-bar expansion</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[X]</code> Exit</td>
@@ -360,7 +372,7 @@ Enter story ID or action:  &gt;
 
 <h3 id="the-12-agents">The 12 Agents</h3>
 
-<p>SpecGantry v6 uses 12 agents — three per PPE phase plus three supporting agents:</p>
+<p>SpecGantry v7 uses 12 agents — three per CWJ phase plus three supporting agents:</p>
 
 <p><strong>Ideation phase</strong></p>
 
@@ -374,19 +386,19 @@ Enter story ID or action:  &gt;
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-plan-agent</code></td>
-      <td>Determines what topics remain to satisfy the ideation north star</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-challenge-agent</code></td>
+      <td>Adversarial challenger — reads vision + prior answers, fires blocking questions specific to this project</td>
+      <td>Haiku</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-produce-agent</code></td>
-      <td>Asks questions, writes all architecture artifacts</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-judge-agent</code></td>
+      <td>Unblock checker — “could a developer start writing specs without inventing answers?”</td>
+      <td>Haiku</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-eval-agent</code></td>
-      <td>Evaluates artifacts against the ideation north star</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">ideation-write-agent</code></td>
+      <td>Consolidation — runs once on CLEAR; writes north-star.md, architecture.md, intent.md per capability</td>
+      <td>Sonnet</td>
     </tr>
   </tbody>
 </table>
@@ -403,19 +415,19 @@ Enter story ID or action:  &gt;
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-plan-agent</code></td>
-      <td>Determines what the spec must capture — thinks like a product head</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">spec-challenge-agent</code></td>
+      <td>Developer-proxy challenger — reads north star + intent, asks what a developer would be blocked on building</td>
+      <td>Haiku</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-produce-agent</code></td>
-      <td>Writes <code class="language-plaintext highlighter-rouge">story-spec.md</code> following the plan</td>
-      <td>Haiku 4.5</td>
+      <td><code class="language-plaintext highlighter-rouge">spec-write-agent</code></td>
+      <td>Writes capability-spec.md resolving the challenge list; extends north-star.md if new requirements surface</td>
+      <td>Sonnet</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-eval-agent</code></td>
-      <td>Evaluates spec against the spec north star, emits approval summary</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">spec-judge-agent</code></td>
+      <td>Unblock checker — “could a developer build this without inventing any answer?”</td>
+      <td>Haiku</td>
     </tr>
   </tbody>
 </table>
@@ -433,18 +445,18 @@ Enter story ID or action:  &gt;
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">code-plan-agent</code></td>
-      <td>Plans the build approach (iteration 1) or repair strategy (iteration 2+)</td>
-      <td>Sonnet 5</td>
+      <td>Plans build approach (iteration 1) or repair strategy (iteration 2+); classifies failures as code/spec/design</td>
+      <td>Sonnet</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">code-produce-agent</code></td>
-      <td>Builds the full story end-to-end</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">code-build-agent</code></td>
+      <td>Builds the full capability end-to-end; writes build-report.yaml with source_root and language</td>
+      <td>Sonnet</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">code-eval-agent</code></td>
-      <td>Evaluates code against quality dimensions + code north star; emits GOAL_GAP when spec was insufficient</td>
-      <td>Sonnet 5</td>
+      <td><code class="language-plaintext highlighter-rouge">code-challenge-agent</code></td>
+      <td>User-proxy challenger — reads north star + intent + source files; traces user flow; classifies each gap as code or spec</td>
+      <td>Haiku</td>
     </tr>
   </tbody>
 </table>
@@ -462,43 +474,42 @@ Enter story ID or action:  &gt;
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">investigate-subagent</code></td>
-      <td>Read-only codebase search for bug fixes and enhancements</td>
-      <td>Haiku 4.5</td>
+      <td>Classifies problems as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY before routing</td>
+      <td>Haiku</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">deployment-subagent</code></td>
-      <td>Generates Dockerfiles, docker-compose, deploy.sh</td>
-      <td>Sonnet 4.6</td>
+      <td>North-star alignment check, then Dockerfiles, docker-compose, deploy.sh</td>
+      <td>Sonnet</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">reverse-engineer-subagent</code></td>
-      <td>Synthesises architecture and story backlog from existing code</td>
-      <td>Haiku 4.5</td>
+      <td>Synthesises north-star.md, architecture, capability list, and stubs from existing code</td>
+      <td>Haiku</td>
     </tr>
   </tbody>
 </table>
 
-<p>Plan and eval agents use Sonnet 5 — genuine reasoning is required to challenge plan goals and evaluate against north stars. Haiku is only used where the task is bounded and deterministic (spec writing, investigation, reverse engineering).</p>
+<p>Haiku for challenge, judge, investigation, and reverse-engineering — bounded, deterministic tasks where reasoning overhead doesn’t earn its cost. Sonnet for write, build, plan, and deployment — tasks that require synthesising complex context into artifacts or code.</p>
 
 <hr />
 
 <h3 id="quality-review">Quality Review</h3>
 
-<p>The code PPE loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before the produce agent writes any code — so async patterns, state management, and experience requirements are decided upfront.</p>
+<p>The code CWJ loop runs automatically after every build. On iteration 1, the plan agent produces a build approach before any code is written — async patterns, state management, and experience requirements are decided upfront.</p>
 
 <p>The transition note tells you how it went:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete · STORY-001  ·  quality: pass (1 iter)
-✓ Build complete · STORY-002  ·  quality: pass (2 iters — loading state added to save action)
-✓ Build complete · STORY-003  ·  quality: pass (1 iter after spec update)
-  ↑ this story had a GOAL_GAP — spec was updated mid-build
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete · CAP-001  ·  quality: pass (1 cycle)
+✓ Build complete · CAP-002  ·  quality: pass (2 cycles — loading state added to save action)
+✓ Build complete · CAP-003  ·  quality: capped (3 cycles, empty state gap remains)
 </code></pre></div></div>
 
 <p><strong>Config</strong> (in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>):</p>
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">ppe_loop</span><span class="pi">:</span>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">cwj_loop</span><span class="pi">:</span>
   <span class="na">max_iterations</span><span class="pi">:</span>
-    <span class="na">ideation</span><span class="pi">:</span> <span class="m">3</span>
-    <span class="na">spec</span><span class="pi">:</span> <span class="m">2</span>
+    <span class="na">ideation</span><span class="pi">:</span> <span class="m">5</span>
+    <span class="na">spec</span><span class="pi">:</span> <span class="m">3</span>
     <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
 </code></pre></div></div>
 
@@ -506,7 +517,7 @@ Enter story ID or action:  &gt;
 
 <h2 id="track-cost">/track-cost</h2>
 
-<p><strong>See exactly what your AI development is costing — broken down by Plan, Produce, and Eval columns.</strong></p>
+<p><strong>See what your AI development is costing — and where the cycles went.</strong></p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost
 </code></pre></div></div>
@@ -517,54 +528,84 @@ Enter story ID or action:  &gt;
 
 <h3 id="the-cost-dashboard">The Cost Dashboard</h3>
 
-<p><strong>Default view — Cost by Phase and Story:</strong></p>
+<p><strong>Default view — Cost by Phase and Capability:</strong></p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v6  |  HireFlow  |  release 1.0.0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  HireFlow  |  release 1.0.0
 Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
-Release 1.0.0                        Plan     Produce      Eval     Total
+Release 1.0.0                          Challenge    Write    Judge    Total
 ───────────────────────────────────────────────────────────────────────────
-Ideation                            $0.61      $1.84      $0.43     $2.88
-Investigation                          —       $0.08         —      $0.08
-Deployment                             —       $0.22         —      $0.22
-Reverse engineer                       —          —          —         —
+Ideation                                  $0.22    $0.81    $0.14    $1.17
+Investigation                                —     $0.04       —     $0.04
+Deployment                                   —     $0.21       —     $0.21
 
 [001] User authentication
-  Spec                               $0.22      $0.11      $0.26     $0.59
-  Code                               $0.34      $2.41      $0.48     $3.23
+  Spec                                    $0.09    $0.11    $0.07    $0.27
+  Code                                    $0.18    $1.94    $0.12    $2.24
   ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.56      $2.52      $0.74     $3.82
+  Capability total                        $0.27    $2.05    $0.19    $2.51
 
-[002] Company posts a job
-  Spec                               $0.18      $0.09      $0.20     $0.47
-  Code                               $0.28      $1.87      $0.39     $2.54
+[002] Job posting
+  Spec                                    $0.11    $0.14    $0.09    $0.34
+  Code                                    $0.31    $3.47    $0.28    $4.06  ◀ outlier
   ────────────────────────────────────────────────────────────────────────
-  Story total                        $0.46      $1.96      $0.59     $3.01
+  Capability total                        $0.42    $3.61    $0.37    $4.40
 
 ═══════════════════════════════════════════════════════════════════════════
-Total                               $3.15     $12.06      $3.37    $18.58
+Total                                     $1.02    $6.72    $0.70    $8.44
 
-  [T] Show tokens   Run /spec-gantry to return to the dashboard.
+  [T] Show tokens   [I] Insights   Run /spec-gantry to return.
 </code></pre></div>  </div>
 </div>
 
-<p>Type <code class="language-plaintext highlighter-rouge">[T]</code> to switch to token counts. Same layout, numbers in tokens (abbreviated to <code class="language-plaintext highlighter-rouge">12k</code> format). Type <code class="language-plaintext highlighter-rouge">[C]</code> to switch back to cost.</p>
+<p><code class="language-plaintext highlighter-rouge">◀ outlier</code> marks any capability where the code phase ran more than one cycle.</p>
 
-<p><strong>What the Plan/Produce/Eval columns tell you</strong></p>
+<hr />
 
-<p>The column split exposes where AI spend goes within each story:</p>
+<h3 id="developer-intelligence">Developer Intelligence</h3>
+
+<p>Type <code class="language-plaintext highlighter-rouge">[I]</code> for insights — iteration counts, challenge density, outlier breakdown, and cost efficiency:</p>
+
+<div class="docs-terminal">
+  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost insights</span></div>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>── Insights ────────────────────────────────────────────────────────────────
+
+Iteration summary
+  CAP-001  Spec: 1 cycle · Code: 1 cycle
+  CAP-002  Spec: 2 cycles · Code: 3 cycles  ◀ most cycles
+
+Challenge density (avg questions per cycle)
+  Ideation   4.2 questions/round
+  CAP-001    Spec: 3 · Code: 2
+  CAP-002    Spec: 5 · Code: 6  ◀ most challenged
+
+Outliers
+  CAP-002: Job posting — code phase ran 3 cycles ($4.06 total)
+    Cycle 2 challenge: "User sees no progress during file upload — static screen"
+    Cycle 3 challenge: "Error shows raw exception, not which field failed validation"
+    Exit: achieved after cycle 3
+
+Cost efficiency
+  Avg cost per spec cycle:  $0.18
+  Avg cost per code cycle:  $1.05
+  Most expensive capability: CAP-002 ($4.40 — 52% of total build cost)
+
+  [C] Show cost table   Run /spec-gantry to return.
+</code></pre></div>  </div>
+</div>
+
+<p><strong>What the Challenge/Write/Judge columns tell you:</strong></p>
 
 <ul>
-  <li><strong>Plan</strong> — the cost of thinking through what to build (ideation topics, spec criteria, build approach, repair strategy). Low cost, high leverage.</li>
-  <li><strong>Produce</strong> — the cost of actually generating artifacts and code. Dominates total spend.</li>
-  <li><strong>Eval</strong> — the cost of evaluating against the north star. For a 4-story project, Plan + Eval together typically represent 30–35% of total cost — the price of quality assurance that would otherwise surface as post-delivery rework.</li>
+  <li><strong>Challenge</strong> — the cost of adversarial questioning. Low individual cost; a high challenge cost relative to write signals the capability was genuinely complex or poorly understood going in.</li>
+  <li><strong>Write</strong> — the cost of producing artifacts and code. Dominates total spend.</li>
+  <li><strong>Judge</strong> — the cost of the unblock check. Consistent across capabilities; a high judge cost relative to challenge signals the judge is rejecting more than the challenger predicted.</li>
 </ul>
-
-<p><strong>Story total rows</strong> let you see the end-to-end cost of each story immediately — no mental arithmetic needed across Spec and Code rows.</p>
 
 <hr />
 
@@ -573,41 +614,10 @@ Total                               $3.15     $12.06      $3.37    $18.58
 <ul>
   <li>The <code class="language-plaintext highlighter-rouge">SubagentStop</code> hook fires automatically when each agent completes</li>
   <li>Token counts are read directly from the agent’s transcript — exact API values, not estimates</li>
-  <li>All 12 v6 agents are mapped: plan/produce/eval per phase into separate cost entries</li>
+  <li>All 12 v7 agents are mapped: challenge/write/judge per phase into separate cost entries</li>
   <li>One entry appended to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> per agent run — never overwritten</li>
-  <li><code class="language-plaintext highlighter-rouge">claude-sonnet-5</code> rates included in the rates cache</li>
+  <li>Iteration counts and exit status per capability read from <code class="language-plaintext highlighter-rouge">project-state.yaml</code> for the insights view</li>
 </ul>
-
-<p><strong>Typical cost profile for a 3-story project:</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Phase group</th>
-      <th>Relative share</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Ideation (plan + produce + eval)</td>
-      <td>10–15%</td>
-    </tr>
-    <tr>
-      <td>Spec × N stories (plan + produce + eval)</td>
-      <td>10–15%</td>
-    </tr>
-    <tr>
-      <td>Code × N stories (plan + produce + eval)</td>
-      <td>60–70%</td>
-    </tr>
-    <tr>
-      <td>Supporting (investigate + deploy)</td>
-      <td>5–10%</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Code produce still dominates. The plan and eval agents across all phases together add roughly 30–35% overhead compared to a produce-only pipeline — but that overhead front-loads quality checks that would otherwise appear as bugs, rework, and extra sessions.</p>
 
 <hr />
 
@@ -617,36 +627,35 @@ Total                               $3.15     $12.06      $3.37    $18.58
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [1] Start new project
             → Enter name and vision
-            → Quick-start (3 questions) or [F] full ideation
-            → Ideation PPE loop runs (catches gaps automatically)
-            → architecture.md + story backlog written
+            → Ideation CWJ loop (adversarial challenge rounds + judge)
+            → north-star.md + architecture.md + intent.md written on CLEAR
             → Commit specs/ to git
-            → Spec PPE loop per story (north-star validated specs)
-            → Code PPE loop per story (with GOAL_GAP routing if needed)
+            → Spec CWJ loop per capability (autonomous — you approve once)
+            → Code CWJ loop per capability (fully automated)
 </code></pre></div></div>
 
 <h3 id="handling-a-production-bug">Handling a Production Bug</h3>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → type story ID  (or [N] New work → describe bug)
-            → Investigation agent locates files and root cause
-            → Confirms findings with you
-            → Code PPE loop: plan → build → evaluate
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [N] New work → describe bug
+            → Investigate agent classifies: CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT
+            → Routes to the right repair phase automatically
             → [1] Deploy release (patch version bump)
 </code></pre></div></div>
 
 <h3 id="using-auto-continue">Using Auto-Continue</h3>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [&gt;] Run to next pause
-            → Pipeline runs: ideation → spec (all stories) → code (all stories)
-            → Pauses only at genuine decision points
-            → Resume summary shows what happened, grouped by Spec and Build
+            → Pipeline runs: spec all capabilities → build all capabilities
+            → Pauses only at spec approval, spec gaps, arch gaps, loop caps
+            → Re-render dashboard on resume
 </code></pre></div></div>
 
 <h3 id="reviewing-project-costs">Reviewing Project Costs</h3>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost             → cost by Plan/Produce/Eval, by story
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost             → cost by Challenge/Write/Judge, by capability
   → [T]                 → same view in tokens
-  → [C]                 → back to cost
+  → [I]                 → iteration summary, challenge density, outliers
+  → [C]                 → back to cost table
   → Run /spec-gantry    → return to dashboard
 </code></pre></div></div>
 
@@ -666,7 +675,7 @@ Total                               $3.15     $12.06      $3.37    $18.58
     <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <strong>FAQ</strong>
-      <span>Common questions on installation, the PPE loop, costs, and troubleshooting.</span>
+      <span>Common questions on installation, the CWJ loop, costs, and troubleshooting.</span>
     </div>
   </a>
 </div>

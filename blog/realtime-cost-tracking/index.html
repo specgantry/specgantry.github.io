@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Development Costs Are Visible — If You Track Them at the Right Level — SpecGantry Docs</title>
-  <meta name="description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
-  <meta property="og:title" content="AI Development Costs Are Visible — If You Track Them at the Right Level">
-  <meta property="og:description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
+  <title>AI Development Costs Are Visible — If You Track the Right Things — SpecGantry Docs</title>
+  <meta name="description" content="Real-time cost tracking isn't enough in AI-assisted development. You need iteration counts, challenge density, and outlier detection. Here's why SpecGantry built developer intelligence into the framework itself.">
+  <meta property="og:title" content="AI Development Costs Are Visible — If You Track the Right Things">
+  <meta property="og:description" content="Real-time cost tracking isn't enough in AI-assisted development. You need iteration counts, challenge density, and outlier detection. Here's why SpecGantry built developer intelligence into the framework itself.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/blog/realtime-cost-tracking/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI Development Costs Are Visible — If You Track Them at the Right Level">
-  <meta name="twitter:description" content="Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.">
+  <meta name="twitter:title" content="AI Development Costs Are Visible — If You Track the Right Things">
+  <meta name="twitter:description" content="Real-time cost tracking isn't enough in AI-assisted development. You need iteration counts, challenge density, and outlier detection. Here's why SpecGantry built developer intelligence into the framework itself.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -43,7 +43,7 @@
         <a href="/docs" class="docs-breadcrumb-link">Docs</a>
         
           <span class="docs-breadcrumb-sep">/</span>
-          <span class="docs-breadcrumb-current">AI Development Costs Are Visible — If You Track Them at the Right Level</span>
+          <span class="docs-breadcrumb-current">AI Development Costs Are Visible — If You Track the Right Things</span>
         
       </div>
       <nav class="docs-topnav-right">
@@ -143,7 +143,7 @@
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="ai-development-costs-are-visible--if-you-track-them-at-the-right-level">AI Development Costs Are Visible — If You Track Them at the Right Level</h1>
+        <h1 id="ai-development-costs-are-visible--if-you-track-the-right-things">AI Development Costs Are Visible — If You Track the Right Things</h1>
 
 <p><em>June 2026 · Economics · 8 min read</em></p>
 
@@ -153,7 +153,7 @@
 
 <p>Month one: everything feels fast. Features ship, prototypes materialize, and the productivity gains are real. Month two: someone checks the Anthropic billing dashboard and the number is larger than expected. Month three: a finance conversation that nobody wanted to have.</p>
 
-<p>The problem isn’t that AI development is expensive. For most projects it’s remarkably cost-effective — features that would have taken days of senior engineering time can be implemented for a fraction of that cost in tokens. That’s an extraordinary value proposition.</p>
+<p>The problem isn’t that AI development is expensive. For most projects it’s remarkably cost-effective — capabilities that would have taken days of senior engineering time can be implemented for a fraction of that cost in tokens. That’s an extraordinary value proposition.</p>
 
 <p>The problem is that <strong>cost is invisible until it isn’t.</strong> And by the time it is, the habits are set, the team doesn’t know which phases drove the spend, and there’s no data to inform decisions about where to optimize.</p>
 
@@ -165,165 +165,121 @@
 
 <p>Token costs don’t work that way. They’re:</p>
 
-<p><strong>Invisible in the moment.</strong> When a developer is deep in a complex component spec with an AI assistant, they’re thinking about the spec — not the fact that each turn of a long conversation adds input tokens because the full context is re-sent on every call.</p>
+<p><strong>Invisible in the moment.</strong> When an agent is running a second CWJ cycle on a capability because the judge rejected the first write, the developer isn’t watching it accumulate. The cost is incurred quietly.</p>
 
-<p><strong>Nonlinear.</strong> A well-structured 10-turn session might cost a fraction of what a poorly-structured 40-turn session costs. A developer who restarts an agent session five times while working through a complex architecture decision is spending more than one who completes it in one focused session. Neither developer has any visibility into this.</p>
+<p><strong>Nonlinear.</strong> A capability that clears the spec loop in one cycle costs a fraction of one that takes three. The difference isn’t just the token count — it’s a signal about spec quality and ideation depth that affects future capabilities too.</p>
 
-<p><strong>Distributed.</strong> In a team setting, multiple developers are running agent sessions simultaneously. The cost of a release isn’t just your sessions — it’s every session across every developer working that sprint. Nobody sees the aggregate.</p>
+<p><strong>Distributed across phases.</strong> Challenge, write, and judge agents have different cost profiles. The challenge agent is cheap (Haiku, bounded output). The write and build agents are expensive (Sonnet, long context). Knowing that challenge costs are low but judge costs are high for a specific capability tells you something different than knowing the total.</p>
 
-<p><strong>Invisible by phase.</strong> Ideation costs less than architecture, which costs less than complex feature development. But which features cost the most? Which phases dominate spend? Without instrumentation, you don’t know.</p>
+<p><strong>Invisible by iteration.</strong> Most cost tools tell you what you spent on a capability. They don’t tell you that it took three code cycles — the first two of which were wasted because the spec had a gap the challenge round didn’t catch. The same total cost can represent one efficient cycle or three inefficient ones.</p>
 
-<p><strong>Post-hoc by default.</strong> Virtually every AI cost tracking tool tells you what you spent last month. That’s useful for accounting. It’s useless for project management.</p>
+<p><strong>Post-hoc by default.</strong> Virtually every AI cost tracking tool tells you what you spent last month. That’s useful for accounting. It’s not useful for deciding, mid-capability, whether the current spec is worth continuing or should be re-challenged.</p>
 
 <hr />
 
-<h2 id="the-problem-with-well-check-at-the-end">The Problem With “We’ll Check at the End”</h2>
+<h2 id="the-problem-with-cost-alone">The Problem With Cost Alone</h2>
 
 <p>Here’s the failure mode we see consistently.</p>
 
-<p>A team ships release 1.0.0 of a product. It goes well. The AI-assisted approach worked. They check costs at the end: reasonable for the scope. Good.</p>
+<p>A team ships release 1.0.0. It goes well. They check costs at the end: reasonable for the scope. Good.</p>
 
-<p>They start release 1.1.0. More features, more complexity, bigger codebase. The agents are working against more context per session. A few features require multiple spec revisions. The architecture got expanded during the cycle.</p>
+<p>They start release 1.1.0. More capabilities, more complexity, bigger codebase. A few capabilities required multiple spec revisions. One capability went through three code cycles because a spec gap was found after the second build.</p>
 
 <p>The invoice for release 1.1.0 is nearly double release 1.0.0.</p>
 
-<p>Nobody saw it coming because nobody was watching it as it accumulated. There was no moment where someone could have said “this feature took a lot of tokens to spec — let’s look at whether we’re writing specs efficiently.” Or “we’ve spent a lot on architecture amendments this sprint — are we adding too much scope mid-cycle?”</p>
+<p>Nobody saw it coming because the data they were watching — aggregate cost — didn’t surface the signals that matter: which capabilities took multiple cycles, which cycles were spec-classified repairs (meaning the spec was wrong going in), and where in the CWJ loop the spend is actually concentrated.</p>
 
-<p>The data to have those conversations existed. It just wasn’t surfaced in time to act on it.</p>
+<p>The data to have those conversations existed. It just wasn’t surfaced in the right structure.</p>
 
 <hr />
 
-<h2 id="cost-tracking-as-a-development-discipline">Cost Tracking as a Development Discipline</h2>
+<h2 id="developer-intelligence-vs-cost-ledger">Developer Intelligence vs Cost Ledger</h2>
 
-<p>The teams that handle this well treat AI cost tracking the same way they treat time tracking or CI metrics: as a first-class signal in the development process, not an afterthought.</p>
+<p>The teams that handle this well don’t just track what they spent. They track:</p>
 
-<p>Concretely, that means:</p>
+<p><strong>Iteration counts per phase.</strong> A capability with <code class="language-plaintext highlighter-rouge">spec: 1 cycle · code: 1 cycle</code> is straightforward. A capability with <code class="language-plaintext highlighter-rouge">spec: 3 cycles · code: 3 cycles</code> deserves a look — was it genuinely complex, or was ideation underspecified going in?</p>
 
-<p><strong>Knowing cost by phase.</strong> If your architecture sessions are consistently more expensive than your development sessions, that might be fine — architecture is complex. Or it might mean your architecture sessions are running too long because the design questions aren’t resolved before the session starts.</p>
+<p><strong>Challenge density.</strong> How many questions did the challenge agent fire per cycle? High density in spec (5–6 questions/cycle) suggests the capability wasn’t well-understood when ideation ended. High density in code suggests a mismatch between the north star’s promises and what was built.</p>
 
-<p><strong>Knowing cost by story.</strong> A story that cost significantly more to develop than another is a different story. That difference usually reflects something about the spec quality, the implementation complexity, or how many revision cycles it went through. You can’t improve what you can’t measure.</p>
+<p><strong>Outlier detection.</strong> Which capabilities took more code cycles than the rest? The outlier section in <code class="language-plaintext highlighter-rouge">/track-cost</code> shows what challenge triggered each repair cycle. Was it a loading state missed in the spec? An error path that returns a raw exception? A design smell caught late? This tells you where to improve the challenge quality upstream.</p>
 
-<p><strong>Knowing cost by model.</strong> Different SpecGantry agents use different models — investigation uses Haiku (lightweight, read-only search), while ideation, story spec, development, and deployment use Sonnet (capable, more thorough). If your model spend profile looks wrong — too much Sonnet in phases that should be completing quickly — that’s actionable information.</p>
+<p><strong>Release comparison.</strong> As the project matures and the codebase grows, per-capability costs may increase because agents work against more context. Tracking cost and iteration counts per release lets you spot this trend and ask whether ideation depth should increase.</p>
 
-<p><strong>Knowing cost by release.</strong> As your project matures and the codebase grows, per-feature costs may increase because agents are working against more context. Tracking cost per release lets you spot this trend early.</p>
-
-<p>None of this requires a BI tool or a data engineering team. It requires that cost data is captured accurately, stored alongside the project, and surfaced in the same place developers are already working.</p>
+<p>None of this requires a BI tool. It requires that the data is structured correctly from the start — and that the pipeline produces the right signals.</p>
 
 <hr />
 
 <h2 id="what-specgantry-does-differently">What SpecGantry Does Differently</h2>
 
-<p>SpecGantry’s approach to cost tracking starts from a different premise than most tools: <strong>cost visibility belongs in the development framework, not in a separate reporting layer.</strong></p>
+<p>SpecGantry’s approach to developer intelligence starts from a different premise: <strong>the signals that matter are pipeline signals, not just token signals.</strong></p>
 
-<p>The consequence of that premise is that cost data is:</p>
+<p>The consequence of that premise is that the <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> entries are tagged with pipeline structure — phase (ideation challenge, spec write, code challenge, etc.), capability ID, model, and release. And <code class="language-plaintext highlighter-rouge">project-state.yaml</code> tracks iteration counts and exit status per capability per phase.</p>
 
-<p><strong>Automatic.</strong> There’s no step where a developer has to remember to log a session or tag it with a project code. Every time a SpecGantry agent completes, a hook fires, reads the actual token counts from the agent transcript, computes cost at current pricing rates, and appends one entry to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>. The developer does nothing.</p>
+<p>The <code class="language-plaintext highlighter-rouge">/track-cost</code> dashboard combines both sources:</p>
 
-<p><strong>Real token counts.</strong> The cost log uses the actual <code class="language-plaintext highlighter-rouge">input_tokens</code>, <code class="language-plaintext highlighter-rouge">output_tokens</code>, <code class="language-plaintext highlighter-rouge">cache_creation_input_tokens</code>, and <code class="language-plaintext highlighter-rouge">cache_read_input_tokens</code> values from the API response — not estimates, not approximations. Cache writes and cache reads are tracked separately because they have different cost profiles, and conflating them obscures where spend is actually coming from.</p>
+<p><strong>Cost table</strong> — Challenge/Write/Judge columns per capability, per phase. Tells you where token spend goes within each capability.</p>
 
-<p><strong>Structured by the pipeline.</strong> Because every agent invocation goes through the SpecGantry pipeline, every cost entry is tagged with its phase (<code class="language-plaintext highlighter-rouge">ideation</code>, <code class="language-plaintext highlighter-rouge">story_spec</code>, <code class="language-plaintext highlighter-rouge">development</code>, <code class="language-plaintext highlighter-rouge">deployment</code>), its story ID where applicable, its model, and the current release version. The structure that makes the pipeline work is the same structure that makes cost reporting meaningful.</p>
+<p><strong>Iteration summary</strong> — iteration counts from project-state. Tells you how many cycles each phase took, and which capability was most expensive in cycles, not just dollars.</p>
 
-<p><strong>In git.</strong> <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code> is committed alongside your architecture and story specs. Cost history survives machine changes and project handoffs.</p>
+<p><strong>Challenge density</strong> — computed from cost-log entries tagged with challenge phase. Tells you how hard each challenge agent had to work per cycle.</p>
 
-<p><strong>Priced at current rates.</strong> The MCP server fetches live pricing from Anthropic’s pricing page on startup and caches it. If the fetch fails, it falls back to known rates. Cost entries show whether live or fallback pricing was used.</p>
+<p><strong>Outliers</strong> — capabilities where code phase ran more than one cycle, with the challenge text that triggered repair. Tells you what specifically was caught late.</p>
+
+<p><strong>Release comparison</strong> — cost and iteration counts split across releases. Tells you whether the project is getting more expensive per capability as it matures.</p>
+
+<p>Everything automatic. No developer action required. Every agent run captured via the SubagentStop hook using exact API token counts — not estimates.</p>
 
 <hr />
 
 <h2 id="the-track-cost-dashboard">The /track-cost Dashboard</h2>
 
-<p>Running <code class="language-plaintext highlighter-rouge">/track-cost</code> from anywhere in Claude Code opens a dedicated cost dashboard. The default view is the Cost Matrix — stories as rows, phases as columns — giving you cost and token counts for every story and phase combination in one view:</p>
+<p>Running <code class="language-plaintext highlighter-rouge">/track-cost</code> opens the developer intelligence dashboard:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v5  |  MyProject  |  release 1.1.0
-Spec [█████] 4/4  ·  Build [█████] 4/4  ·  Deploy [█████] deployed
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  HireFlow  |  release 1.1.0
+Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
-Cost Matrix  |  release 1.1.0
+Release 1.1.0                          Challenge    Write    Judge    Total
+───────────────────────────────────────────────────────────────────────────
+Ideation                                  $0.22    $0.81    $0.14    $1.17
+Investigation                                —     $0.04       —     $0.04
+Deployment                                   —     $0.21       —     $0.21
 
-Story        ideation   story_spec  development  deployment    Total
-────────────────────────────────────────────────────────────────────
-PROJECT        $0.82        —            —          $0.49      $1.31
-STORY-001        —        $0.54        $0.41          —        $0.95
-STORY-002        —        $0.61        $0.35          —        $0.96
-STORY-003        —        $0.48        $0.28          —        $0.76
-STORY-004        —        $0.43        $0.40          —        $0.83
-────────────────────────────────────────────────────────────────────
-Total          $0.82      $2.06        $1.44        $0.49      $4.81
+[001] User authentication
+  Spec                                    $0.09    $0.11    $0.07    $0.27
+  Code                                    $0.18    $1.94    $0.12    $2.24
+  ────────────────────────────────────────────────────────────────────────
+  Capability total                        $0.27    $2.05    $0.19    $2.51
 
-──────────────────────────────────────────────────────────
-  [1] Matrix        [2] By release    [3] By model
-                                      [X] Return
-──────────────────────────────────────────────────────────
-Enter option:  &gt;
+[002] Job posting
+  Spec                                    $0.11    $0.14    $0.09    $0.34
+  Code                                    $0.31    $3.47    $0.28    $4.06  ◀ outlier
+  ────────────────────────────────────────────────────────────────────────
+  Capability total                        $0.42    $3.61    $0.37    $4.40
+
+═══════════════════════════════════════════════════════════════════════════
+Total                                     $1.02    $6.72    $0.70    $8.44
+
+  [T] Show tokens   [I] Insights   Run /spec-gantry to return.
 </code></pre></div></div>
 
-<p>From there, three drill-down views are one keypress away:</p>
+<p>Type <code class="language-plaintext highlighter-rouge">[I]</code> for the insights view — iteration counts, challenge density, outlier breakdown, cost efficiency ratios.</p>
 
-<p><strong>[2] By Release</strong> — how costs have evolved across the project lifetime:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Release
-
-Release       Tokens        Cost
-─────────────────────────────────
-1.0.0         80,601       $7.79
-1.1.0         42,340       $4.12
-─────────────────────────────────
-Total        122,941      $11.91
-</code></pre></div></div>
-
-<p><strong>[3] By Model</strong> — where spend is concentrated across model tiers:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Cost by Model  |  release 1.1.0
-
-Model            Tokens        Cost
-────────────────────────────────────
-sonnet-4-6       62,301       $6.23
-haiku-4-5        18,300       $0.92
-────────────────────────────────────
-Total            80,601       $7.79
-</code></pre></div></div>
-
-<p>All three views are accessible from within the same dashboard — no separate tool, no browser tab, no export required.</p>
-
-<hr />
-
-<h2 id="specgantry-as-the-full-stack">SpecGantry as the Full Stack</h2>
-
-<p>Most AI development tools solve one problem. Code generation tools help you write code faster. Project management tools help you track what needs to be done. Cost monitoring tools tell you what you spent.</p>
-
-<p>SpecGantry is intentionally all three, because they can’t actually be separated cleanly in AI-assisted development.</p>
-
-<p><strong>Cost tracking only makes sense with pipeline structure.</strong> A cost entry that says “you spent X tokens on development” is marginally useful. A cost entry that says “you spent X tokens on <code class="language-plaintext highlighter-rouge">development</code> phase for <code class="language-plaintext highlighter-rouge">STORY-007</code> in <code class="language-plaintext highlighter-rouge">release 1.1.0</code> using <code class="language-plaintext highlighter-rouge">claude-sonnet-4-6</code>” is actionable. That specificity comes directly from the pipeline structure — phases, stories, releases — that SpecGantry enforces.</p>
-
-<p><strong>Project management only works if the pipeline is real.</strong> Knowing that STORY-007 is “in development” means nothing if “in development” just means someone is editing files. SpecGantry’s pipeline gates — spec before build, spec reviewed before development — mean the status is trustworthy.</p>
-
-<p><strong>Development quality requires cost awareness.</strong> When developers know that their spec revision cycles are visible in the cost log, there’s a natural incentive to get specs right the first time. When you can see that a particular story cost three times more than comparable stories to build, that’s a conversation worth having — was the story genuinely harder, or did the development cycle include a lot of rework?</p>
-
-<hr />
-
-<h2 id="for-solo-developers">For Solo Developers</h2>
-
-<p>The cost tracking argument applies as much to solo developers as to teams — arguably more, because there’s no one else to catch a runaway spend before it hits the invoice.</p>
-
-<p>For a solo developer building an enterprise application, SpecGantry’s cost visibility answers questions like:</p>
-
-<ul>
-  <li>Is my architecture too complex for what I’m actually building? (Compare architecture cost vs. total project cost.)</li>
-  <li>Am I spending too many tokens on story spec revisions? (Story cost per phase.)</li>
-  <li>Did this new release cost more than the initial build? (By release view.)</li>
-  <li>Am I using the right model for each phase? (By model view.)</li>
-</ul>
-
-<p>These are questions that experienced developers ask themselves implicitly. SpecGantry just gives you the data to answer them explicitly.</p>
+<p>Type <code class="language-plaintext highlighter-rouge">[T]</code> to switch to token counts. Same layout.</p>
 
 <hr />
 
 <h2 id="the-broader-point">The Broader Point</h2>
 
-<p>AI-assisted development is still young as a discipline. Teams are still figuring out the right processes, the right habits, and the right instrumentation. Cost visibility is one of those things that looks like a nice-to-have until you’ve worked on a few AI-assisted projects and seen how spend accumulates invisibly.</p>
+<p>AI-assisted development is still young as a discipline. Teams are still figuring out the right processes, the right habits, and the right instrumentation.</p>
 
-<p>Building it into the framework — so it’s automatic, structured, and co-located with the project itself — is the right answer. The alternative is discovering, three months into a project, that you’ve spent more than expected and you have no data to understand why.</p>
+<p>Cost visibility is one of those things that looks like a nice-to-have until you’ve worked on a few AI-assisted projects and seen how spend accumulates invisibly. But cost alone is insufficient — you need the pipeline signals that explain the cost.</p>
 
-<p>SpecGantry exists because structure matters in AI-assisted development. Cost transparency is part of that structure.</p>
+<p>A capability that cost $4.06 in code says nothing by itself. A capability that cost $4.06 in code, took 3 cycles, where the second cycle was triggered by a challenge that caught a missing loading state and the third by a design smell that should have been caught in spec challenge — that’s actionable.</p>
+
+<p>Building developer intelligence into the framework — automatic, structured, co-located with the project — is the right answer. The alternative is discovering, three months in, that you’ve spent more than expected and you have no data to understand why.</p>
+
+<p>SpecGantry exists because structure matters in AI-assisted development. Developer intelligence is part of that structure.</p>
 
 <hr />
 
@@ -336,14 +292,14 @@ Total            80,601       $7.79
     <div class="next-step-icon"><i class="bi bi-graph-up-arrow"></i></div>
     <div>
       <strong>/track-cost Reference</strong>
-      <span>All four cost dashboard views explained with examples.</span>
+      <span>The cost table, insights view, and release comparison explained with examples.</span>
     </div>
   </a>
   <a href="/docs/how-it-works#cost-tracking" class="next-step-card">
     <div class="next-step-icon"><i class="bi bi-gear"></i></div>
     <div>
       <strong>How Cost Tracking Works</strong>
-      <span>The hook architecture, token counting, and pricing resolution explained.</span>
+      <span>The hook architecture, token counting, and pipeline signal structure explained.</span>
     </div>
   </a>
 </div>

@@ -263,9 +263,16 @@ Rendering templates are in `skills/spec-gantry/ui/dashboard.md`. Use verbatim.
 
 Render full dashboard when:
 - Session starts or resumes (first response)
-- A phase completes (ideation done, spec CLEAR + approved, build CLEAR)
+- **Before starting spec for any capability** — even in auto-continue
+- **Spec CLEAR + approved** (or auto-approved) for any capability
+- **Before starting code build for any capability** — even in auto-continue
+- **Build CLEAR** (code loop exits) for any capability
+- Ideation complete
 - A ⏸ pause point that is NOT mid-Q&A
+- A gate failure
 - User types a command rather than answering a question
+
+The pattern at every capability boundary is always: **render dashboard → emit transition note → continue**. Never emit a transition note without first rendering the dashboard. Never move to the next capability without rendering first.
 
 After every subagent returns, re-read all state files before rendering.
 
@@ -400,7 +407,7 @@ On CLEAR from judge: invoke `ideation-write-agent` with all collected answers. T
 
 If any check fails: set `pending_arch_gap` with reason and re-route to P0.
 
-Re-render dashboard · emit transition note:
+**Re-render dashboard** · emit transition note:
 ```
 ✓ Ideation complete  ·  [title-1] · [title-2] · [title-3]
 💡 Good moment to /compact — ideation context is large, all decisions are on disk.
@@ -430,6 +437,11 @@ Find next capability: lowest-numbered in topological order where `spec_done:fals
 
 Set `project.active_capability: [cap_id]` and `project.active_phase: spec_challenge` in project-state.
 
+**Re-render dashboard** (shows capability as `🔄 challenge`) · emit:
+```
+⟳ Spec — [CAP-ID]: [title]
+```
+
 Run CWJ loop for spec:
 ```
 run_cwj_loop("spec", cap_id)
@@ -437,21 +449,21 @@ run_cwj_loop("spec", cap_id)
 
 The spec loop is autonomous — challenge and write agents run without user interaction. User sees the finished spec only when the judge returns CLEAR.
 
-**On judge CLEAR:** surface `judge.approval_summary` to user:
+**On judge CLEAR:** re-render dashboard · surface `judge.approval_summary` to user:
 ```
 ✓ Spec validated — [CAP-ID]: [title]
   [approval_summary from judge]
 
   [Y] Approve spec   [E] Edit   [X] Hold
 ```
-- `Y` → write `spec_done: true` · delete `.cwj-loop.yaml` · clear active_capability/phase · re-render · route to next unblocked capability
+- `Y` → write `spec_done: true` · delete `.cwj-loop.yaml` · clear active_capability/phase · **re-render dashboard** · route to next unblocked capability
 - `E` → read user's edit text as a new challenge; prepend it to the challenge list as `{ id: 0, theme: "user correction", question: "[user's edit text]", gap: "user-directed revision" }`; re-enter spec CWJ loop at iteration 1 with this prepended challenge — the write agent resolves it first before addressing any others
 - `X` → `SPEC_HELD` — clear active_capability/phase · re-render · ⏸ pause
 
-On CAPPED or CYCLING: surface banner, offer `[Y] Accept / [E] Address manually / [X] Stop`. On `Y`: write `spec_done: true`, proceed.
+On CAPPED or CYCLING: surface banner, offer `[Y] Accept / [E] Address manually / [X] Stop`. On `Y`: write `spec_done: true`, **re-render dashboard**, proceed.
 
 When all capabilities have `spec_done:true`:
-- Re-render dashboard · route to `build_next_capability`
+- **Re-render dashboard** · route to `build_next_capability`
 
 ---
 
@@ -463,6 +475,11 @@ When all capabilities have `spec_done:true`:
 Find next capability: lowest-numbered in topological order where `built:false` and all `depends_on` have `built:true`.
 
 Set `project.active_capability: [cap_id]` and `project.active_phase: code_plan` in project-state.
+
+**Re-render dashboard** (shows capability as `🔄 plan`) · emit:
+```
+⟳ Build — [CAP-ID]: [title]
+```
 
 Run CWJ loop for code:
 ```
@@ -480,19 +497,19 @@ The code loop is fully automated — plan, build, challenge, repeat without user
      iterations: N
      exit_reason: "challenge agent confirmed CLEAR"
    ```
-3. Set `built: true` · clear active_capability/phase · re-render · route to next unblocked capability
+3. Set `built: true` · clear active_capability/phase
+4. **Re-render dashboard** · emit transition note:
+   - Pass (1 cycle): `✓ Build complete · [CAP-ID]: [title]  ·  quality: pass (1 cycle)`
+   - Pass (2+ cycles): `✓ Build complete · [CAP-ID]: [title]  ·  quality: pass ([N] cycles — [repair summary])`
+   - Capped: `✓ Build complete · [CAP-ID]: [title]  ·  quality: capped ([N] cycles, [exit_reason])`
+5. Route to next unblocked capability
 
-**Transition note:**
-- Pass (1 cycle): `✓ Build complete · [CAP-ID]: [title]  ·  quality: pass (1 cycle)`
-- Pass (2+ cycles): `✓ Build complete · [CAP-ID]: [title]  ·  quality: pass ([N] cycles — [repair summary])`
-- Capped: `✓ Build complete · [CAP-ID]: [title]  ·  quality: capped ([N] cycles, [exit_reason])`
+**On CAPPED or CYCLING:** re-render dashboard · surface banner to user.
 
-On CAPPED or CYCLING: surface banner to user.
-
-On spec gap (`pending_spec_gap` set by code-plan agent): clear active_capability/phase · re-route to P1. After P1 resolves: restore active_capability · re-enter code loop at iteration 1 fresh.
+On spec gap (`pending_spec_gap` set by code-plan agent): clear active_capability/phase · **re-render dashboard** · re-route to P1. After P1 resolves: restore active_capability · **re-render dashboard** · re-enter code loop at iteration 1 fresh.
 
 When all capabilities have `built:true`:
-- Re-render full dashboard (action bar shows `[1] Deploy release [version]`)
+- **Re-render full dashboard** (action bar shows `[1] Deploy release [version]`)
 - Route to `confirm_and_deploy`
 
 ---

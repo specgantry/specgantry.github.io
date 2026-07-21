@@ -1,91 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpecGantry — AI-Assisted SDLC Pipeline for Claude Code</title>
+  <title>SpecGantry — Structured AI Development for Claude Code</title>
   <meta name="google-site-verification" content="0rLKkEIQvHRi4lPU6COp8BOn_GnyYbFJIV-d0n3NhhQ" />
-  <meta name="description"
-    content="SpecGantry v7 runs an adversarial Challenge-Write-Judge loop at every phase — ideation, spec, and code. A challenger asks what would block the next phase before anything is written or built. 12 agents, 3 phases, one pipeline.">
-  <meta property="og:title" content="SpecGantry — AI-Assisted SDLC Pipeline for Claude Code">
-  <meta property="og:description"
-    content="Adversarial CWJ loop at every phase. Quality challenged at ideation, spec, and code — before anything ships. 12 agents, per-project north star, one pipeline.">
+  <meta name="description" content="A Claude Code plugin that enforces a structured process at every phase — challenge before you spec, challenge before you build, challenge before you ship.">
+  <meta property="og:title" content="SpecGantry — Structured AI Development for Claude Code">
+  <meta property="og:description" content="Challenge before you spec. Challenge before you build. Challenge before you ship. SpecGantry is the process layer Claude is missing.">
   <meta property="og:type" content="website">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
   <link rel="icon" href="{{ '/assets/logo/favicon.ico' | relative_url }}">
-  <style>
-    /* ── v4 agents table ─────────────────────────────────────── */
-    .agents-heading {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--slate-700, #334155);
-      margin: 2.5rem 0 1rem;
-      letter-spacing: -0.01em;
-    }
-    .agents-table {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      border: 1px solid var(--slate-200, #e2e8f0);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .agent-row {
-      display: grid;
-      grid-template-columns: 200px 80px 1fr;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--slate-100, #f1f5f9);
-      align-items: start;
-      background: #fff;
-      transition: background 0.15s;
-    }
-    .agent-row:last-child { border-bottom: none; }
-    .agent-row:hover { background: var(--slate-50, #f8fafc); }
-    .agent-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--slate-800, #1e293b);
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-    .agent-name i { color: var(--brand, #6366f1); font-size: 0.85rem; }
-    .agent-model {
-      font-size: 0.75rem;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--slate-500, #64748b);
-      background: var(--slate-100, #f1f5f9);
-      border-radius: 4px;
-      padding: 0.15rem 0.45rem;
-      text-align: center;
-      align-self: start;
-      margin-top: 1px;
-      white-space: nowrap;
-    }
-    .agent-desc {
-      font-size: 0.875rem;
-      color: var(--slate-600, #475569);
-      line-height: 1.55;
-    }
-    @media (max-width: 700px) {
-      .agent-row { grid-template-columns: 1fr; gap: 0.35rem; }
-      .agent-model { width: fit-content; }
-    }
-  </style>
 </head>
-
 <body class="landing-body">
 
-  <!-- ─── SEARCH MODAL ────────────────────────────────────────────── -->
+  <!-- Search Modal -->
   <div class="search-modal-overlay" id="searchOverlay">
     <div class="search-modal">
       <div class="search-modal-header">
-        <svg class="search-modal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg class="search-modal-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input class="search-modal-input" id="searchInput" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false">
         <button class="search-modal-close" id="searchClose">Esc</button>
       </div>
@@ -93,7 +28,7 @@
     </div>
   </div>
 
-  <!-- ─── NAV ──────────────────────────────────────────────────────── -->
+  <!-- Nav -->
   <header class="landing-nav">
     <div class="nav-inner">
       <a href="{{ '/' | relative_url }}" class="nav-logo">
@@ -103,417 +38,340 @@
       <nav class="nav-links">
         <a href="{{ '/docs' | relative_url }}">Docs</a>
         <a href="{{ '/docs/how-it-works' | relative_url }}">How It Works</a>
-        <a href="{{ '/docs/skills' | relative_url }}">Skills</a>
         <a href="{{ '/blog' | relative_url }}">Blog</a>
         <a href="{{ '/docs/faq' | relative_url }}">FAQ</a>
         <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="nav-github">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
           GitHub
         </a>
         <a href="{{ '/docs/getting-started' | relative_url }}" class="nav-cta">Get Started</a>
-        <button class="search-trigger search-trigger-dark" id="searchTrigger" aria-label="Search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <button class="search-trigger" id="searchTrigger" aria-label="Search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
       </nav>
-      <button class="nav-hamburger" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+      <button class="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </header>
 
   <main>
 
-    <!-- ─── HERO ─────────────────────────────────────────────────────── -->
+    <!-- Hero -->
     <section class="hero">
       <div class="hero-bg">
-        <div class="hero-grid"></div>
+        <div class="hero-noise"></div>
         <div class="hero-glow hero-glow-1"></div>
         <div class="hero-glow hero-glow-2"></div>
       </div>
       <div class="hero-inner">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          Claude Code Plugin · v7.0.3 · Production Ready
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-dot"></span>
+          Claude Code Plugin &nbsp;·&nbsp; v7.0.5 &nbsp;·&nbsp; Apache 2.0
         </div>
         <h1 class="hero-headline">
-          Stop finding out the spec<br>
-          <span class="gradient-text">was wrong at code review.</span>
+          AI builds fast.<br>
+          <em>SpecGantry makes sure<br>it's building the right thing.</em>
         </h1>
         <p class="hero-sub">
-          SpecGantry is a Claude Code plugin. Install it, run <code style="color:var(--blue-300);background:rgba(37,99,235,.15);padding:2px 7px;border-radius:4px;font-size:.95em">/spec-gantry</code>, and Claude stops guessing — it challenges your idea before speccing, challenges your spec before building, and challenges your code before shipping. One pipeline from idea to deployment.
+          A Claude Code plugin that enforces a structured process at every phase — challenge before you spec, challenge before you build, challenge before you ship.
         </p>
+        <div class="hero-install">
+          <div class="hero-install-header">
+            <span class="hero-install-title">install</span>
+            <span class="hero-install-meta">two commands · no config · works on any project</span>
+          </div>
+          <div class="hero-install-body">
+            <div class="hero-install-line">
+              <span class="hero-install-prompt">$</span>
+              <code class="hero-install-cmd">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+              <button class="hero-copy-btn" data-copy="claude plugin marketplace add https://github.com/specgantry/specgantry.github.io" aria-label="Copy"><i class="bi bi-clipboard"></i></button>
+            </div>
+            <div class="hero-install-line">
+              <span class="hero-install-prompt">$</span>
+              <code class="hero-install-cmd">claude plugin install spec-gantry@spec-gantry</code>
+              <button class="hero-copy-btn" data-copy="claude plugin install spec-gantry@spec-gantry" aria-label="Copy"><i class="bi bi-clipboard"></i></button>
+            </div>
+            <div class="hero-install-divider"></div>
+            <div class="hero-install-line hero-install-line-run">
+              <span class="hero-install-prompt hero-install-prompt-slash">/</span>
+              <code class="hero-install-cmd hero-install-cmd-run">spec-gantry</code>
+              <span class="hero-install-note">in any project</span>
+            </div>
+          </div>
+        </div>
         <div class="hero-actions">
           <a href="{{ '/docs/getting-started' | relative_url }}" class="btn-primary">
-            Install in 90 Seconds
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+            Get Started
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
-          <a href="{{ '/docs/how-it-works' | relative_url }}" class="btn-secondary">See How It Works</a>
+          <a href="{{ '/docs/how-it-works' | relative_url }}" class="btn-ghost-light">How It Works</a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="btn-ghost-light">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
         </div>
-        <div class="hero-terminal">
+      </div>
+    </section>
+
+    <!-- The Problem -->
+    <section class="lp-section lp-section-light">
+      <div class="lp-inner">
+        <span class="lp-label">The Problem</span>
+        <h2>Speed-first AI development has a predictable failure mode.</h2>
+        <p class="lp-lead">You describe what you want. The AI builds something fast. Then someone asks why the error state isn't handled, why the data model contradicts itself, or why the build doesn't match what you agreed on. The code is fine. The problem is everything that wasn't decided before it ran.</p>
+        <div class="lp-problems">
+          <div class="lp-problem">
+            <div class="lp-problem-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+              <strong>Ambiguity baked in at the start</strong>
+              <p>Missing loading states, undefined error messages, unresolved scope edges. These aren't bugs the AI introduces — they're decisions nobody made before the build started.</p>
+            </div>
+          </div>
+          <div class="lp-problem">
+            <div class="lp-problem-icon"><i class="bi bi-diagram-3"></i></div>
+            <div>
+              <strong>Architecture drift across capabilities</strong>
+              <p>Without one authoritative architecture file, each capability invents its own interpretation. Three capabilities in, you have three conflicting definitions of the same entity.</p>
+            </div>
+          </div>
+          <div class="lp-problem">
+            <div class="lp-problem-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <div>
+              <strong>Rework routed to the wrong phase</strong>
+              <p>A spec gap sent to the code repair loop will never converge — the spec must be fixed first. Without root cause classification, you keep re-running the wrong loop.</p>
+            </div>
+          </div>
+          <div class="lp-problem">
+            <div class="lp-problem-icon"><i class="bi bi-currency-dollar"></i></div>
+            <div>
+              <strong>Invisible AI spend</strong>
+              <p>Token spend per capability, per phase, per repair cycle — invisible unless you build the instrumentation yourself. You can't manage what you can't see.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="lp-section lp-section-dark">
+      <div class="lp-inner">
+        <span class="lp-label">How It Works</span>
+        <h2>Four phases. An adversary at every gate.</h2>
+        <p class="lp-lead">Before each phase produces anything, an independent agent challenges it — asking what would block the next phase if work started now. Gaps caught at ideation cost nothing to fix. Gaps caught in production cost the most.</p>
+        <div class="lp-pipeline">
+
+          <div class="lp-pipe-phase lp-pipe-ideation">
+            <div class="lp-pipe-num">01</div>
+            <div class="lp-pipe-name">Ideation</div>
+            <div class="lp-pipe-mode">You answer · high interaction</div>
+            <p class="lp-pipe-desc">Claude challenges your idea before anything is written. You answer; it commits a north star and architecture every later phase reads.</p>
+          </div>
+
+          <div class="lp-pipe-gate">
+            <div class="lp-pipe-gate-line"></div>
+            <div class="lp-pipe-gate-diamond"><i class="bi bi-lock-fill"></i></div>
+            <div class="lp-pipe-gate-line"></div>
+          </div>
+
+          <div class="lp-pipe-phase lp-pipe-spec">
+            <div class="lp-pipe-num">02</div>
+            <div class="lp-pipe-name">Spec</div>
+            <div class="lp-pipe-mode">Autonomous · you approve once</div>
+            <p class="lp-pipe-desc">A developer-proxy finds what would block building this. You approve once — after a judge confirms nothing is missing.</p>
+          </div>
+
+          <div class="lp-pipe-gate">
+            <div class="lp-pipe-gate-line"></div>
+            <div class="lp-pipe-gate-diamond"><i class="bi bi-lock-fill"></i></div>
+            <div class="lp-pipe-gate-line"></div>
+          </div>
+
+          <div class="lp-pipe-phase lp-pipe-code">
+            <div class="lp-pipe-num">03</div>
+            <div class="lp-pipe-name">Code</div>
+            <div class="lp-pipe-mode">Fully automated</div>
+            <p class="lp-pipe-desc">Build agent implements end-to-end. A user-proxy reads the actual source files: can a user do what was promised? Gaps repaired before exit.</p>
+          </div>
+
+          <div class="lp-pipe-gate">
+            <div class="lp-pipe-gate-line"></div>
+            <div class="lp-pipe-gate-diamond"><i class="bi bi-lock-fill"></i></div>
+            <div class="lp-pipe-gate-line"></div>
+          </div>
+
+          <div class="lp-pipe-phase lp-pipe-deploy">
+            <div class="lp-pipe-num">04</div>
+            <div class="lp-pipe-name">Deploy</div>
+            <div class="lp-pipe-mode">North-star alignment check</div>
+            <p class="lp-pipe-desc">Checks what was built matches what was promised. Then Dockerfiles, docker-compose, and a versioned deploy script for your platform.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- What You Get -->
+    <section class="lp-section lp-section-mid">
+      <div class="lp-inner">
+        <span class="lp-label">What You Get</span>
+        <h2>The process layer Claude is missing.</h2>
+        <div class="lp-features">
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-shield-check"></i></div>
+            <h3>Claude stays on-process</h3>
+            <p>A <code>SessionStart</code> hook injects an engagement contract every session — so Claude always routes through <code>/spec-gantry</code>, even deep into a long conversation.</p>
+          </div>
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-file-earmark-text"></i></div>
+            <h3>One architecture, no drift</h3>
+            <p>All technical decisions live in one file with named section anchors. Every agent reads only the sections it needs. Your data model stays consistent across capabilities.</p>
+          </div>
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-signpost-split"></i></div>
+            <h3>Fix the right thing</h3>
+            <p>When something breaks, an investigate agent classifies root cause first — code bug, spec gap, or requirement drift. The right phase gets fixed, not just re-run.</p>
+          </div>
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-graph-up"></i></div>
+            <h3>Cost per capability</h3>
+            <p><code>/track-cost</code> shows cost by capability, by phase, by CWJ step — with outlier flags on capabilities that ran repair cycles.</p>
+          </div>
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-search"></i></div>
+            <h3>Works on existing codebases</h3>
+            <p>The reverse-engineer agent synthesises a north star, architecture, and capability stubs from your existing source files. Drop it into any project.</p>
+          </div>
+          <div class="lp-feature">
+            <div class="lp-feature-icon"><i class="bi bi-box"></i></div>
+            <h3>Zero dependencies</h3>
+            <p>Runs entirely inside Claude Code. No npm install, no API keys, no services. Two commands and you're running <code>/spec-gantry</code> in any project.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section class="lp-section lp-section-dark">
+      <div class="lp-inner lp-inner-split">
+        <div class="lp-split-text">
+          <span class="lp-label">The Dashboard</span>
+          <h2>One command for the entire pipeline.</h2>
+          <p>Run <code>/spec-gantry</code> at the start of every session. It reads your project state, shows where every capability stands, and routes you to the next action.</p>
+          <p>Type <code>[&gt;]</code> to auto-run — spec and build all remaining capabilities, pausing only at genuine decision points.</p>
+          <ul class="lp-dash-list">
+            <li><i class="bi bi-check2"></i> New project, existing codebase, daily work, bugs — same command</li>
+            <li><i class="bi bi-check2"></i> Auto-continue runs until a real decision, not a fake pause</li>
+            <li><i class="bi bi-check2"></i> All progress on disk — resume any session from exactly where you left off</li>
+          </ul>
+        </div>
+        <div class="lp-split-terminal">
           <div class="terminal-header">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-            <span class="terminal-title">claude — specgantry</span>
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude — spec-gantry</span>
           </div>
           <div class="terminal-body">
-            <div class="terminal-line"><span class="prompt">$</span> claude plugin marketplace add
-              https://github.com/specgantry/specgantry.github.io</div>
-            <div class="terminal-line"><span class="prompt">$</span> claude plugin install spec-gantry</div>
-            <div class="terminal-line output">✓ Plugin installed: SpecGantry v7.0.3</div>
-            <div class="terminal-line output">✓ 2 skills loaded · 12 agents registered</div>
-            <div class="terminal-line"><span class="prompt">/</span>spec-gantry</div>
-            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
             <div class="terminal-line output">  <span class="hl-blue">SpecGantry v7</span>  |  HireFlow  |  release 1.0.0</div>
-            <div class="terminal-line output">  Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –</div>
-            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  ID      Capability                    Spec       Build</div>
-            <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  [001]  User authentication             ✅         ✅</div>
-            <div class="terminal-line output">  [002]  Company posts a job             ✅         🔄 challenge·2</div>
-            <div class="terminal-line output">  [003]  Admin reviews applications      🔄 judge   ⏳</div>
-            <div class="terminal-line output">  [004]  Candidate browse and apply      ⏳         ○</div>
-            <div class="terminal-line output">  ────────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  Release 1.0.0                                    ○ not deployed</div>
-            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  Type a capability ID to manage it  [$] Cost & insights</div>
-            <div class="terminal-line output">  [1] Build next — CAP-002           [?] Help</div>
-            <div class="terminal-line output">  [>] Run to next pause              [X] Exit</div>
-            <div class="terminal-line output">  [N] New work</div>
-            <div class="terminal-line output">──────────────────────────────────────────────────────</div>
-            <div class="terminal-line output">  Enter capability ID or action:  ></div>
-            <div class="terminal-line cursor-line"><span class="cursor">▌</span></div>
+            <div class="terminal-line output">  Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4</div>
+            <div class="terminal-line output">  ─────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  ID    Capability                  Spec     Build</div>
+            <div class="terminal-line output">  ─────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  001   User authentication         ✅       ✅</div>
+            <div class="terminal-line output">  002   Company posts a job         ✅       🔄 challenge·2</div>
+            <div class="terminal-line output">  003   Admin reviews applications  🔄 judge ⏳</div>
+            <div class="terminal-line output">  004   Candidate browse and apply  ⏳       ○</div>
+            <div class="terminal-line output">  ─────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  [1] Build next  [>] Run to next pause</div>
+            <div class="terminal-line output">  [N] New work    [$] Cost & insights</div>
+            <div class="terminal-line output">  ─────────────────────────────────────────────────</div>
+            <div class="terminal-line output">  > <span class="cursor">▌</span></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ─── PROBLEM / WHY ─────────────────────────────────────────────── -->
-    <section class="section-why">
-      <div class="section-inner">
-        <div class="why-text">
-          <div class="section-label">The Problem</div>
-          <h2>You write the spec.<br>Claude ignores half of it.</h2>
-          <p>Claude Code moves fast — but it has no memory of what you decided in ideation, no idea what the spec says about error states, and no way to know if the user experience it just built matches what you promised. You find the gaps at code review. Or in production.</p>
-          <p>SpecGantry gives Claude a structured process it can't skip — and enforces it at every phase.</p>
-        </div>
-        <div class="why-cards">
-          <div class="problem-card">
-            <div class="problem-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-            <h4>Building before speccing</h4>
-            <p>Missing loading states, ambiguous error messages, and dead ends after failure — caught at spec time, not code review.</p>
-          </div>
-          <div class="problem-card">
-            <div class="problem-icon"><i class="bi bi-diagram-3"></i></div>
-            <h4>Architecture drift</h4>
-            <p>Three capabilities in, the data model has three conflicting definitions of the same entity. One architecture file, written once, prevents this.</p>
-          </div>
-          <div class="problem-card">
-            <div class="problem-icon"><i class="bi bi-currency-dollar"></i></div>
-            <h4>Invisible AI spend</h4>
-            <p>No visibility into what each capability cost, how many cycles it took, or which one ran three code repair loops.</p>
-          </div>
-          <div class="problem-card">
-            <div class="problem-icon"><i class="bi bi-wrench"></i></div>
-            <h4>Fixing the wrong thing</h4>
-            <p>A spec gap sent to the code repair loop will never converge. Classify first — code bug, spec gap, or requirement drift — then fix the right phase.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── PIPELINE DIAGRAM ──────────────────────────────────────────── -->
-    <section class="section-pipeline">
-      <div class="section-inner">
-        <div class="section-label center">How It Works</div>
-        <h2 class="center">Every phase is reviewed before the next one starts.</h2>
-        <p class="section-sub center">Before anything is written or built, an independent agent asks what would block the next phase. A second agent resolves every gap. A third asks: would the next phase still be blocked? Gaps caught at ideation cost nothing to fix. Gaps caught at spec save a full build cycle.</p>
-
-        <!-- CWJ Loop diagram -->
-        <div class="lp-cwj-wrap">
-          <div class="lp-cwj-row">
-
-            <div class="lp-cwj-node lp-cwj-challenge">
-              <div class="lp-cwj-icon"><i class="bi bi-shield-exclamation"></i></div>
-              <div class="lp-cwj-label">Challenge</div>
-              <div class="lp-cwj-desc">Adversarial agent asks what would block the next phase — specific to this project, not a checklist. Never writes files.</div>
-            </div>
-
-            <div class="lp-cwj-arrow"><div class="lp-cwj-arrowline"></div><div class="lp-cwj-arrowhead">▶</div></div>
-
-            <div class="lp-cwj-node lp-cwj-write">
-              <div class="lp-cwj-icon"><i class="bi bi-pencil-square"></i></div>
-              <div class="lp-cwj-label">Write / Build</div>
-              <div class="lp-cwj-desc">Every challenge resolved. Ideation: user answers all questions per round. Spec: agent writes developer contract. Code: plan then build.</div>
-            </div>
-
-            <div class="lp-cwj-arrow"><div class="lp-cwj-arrowline"></div><div class="lp-cwj-arrowhead">▶</div></div>
-
-            <div class="lp-cwj-node lp-cwj-judge">
-              <div class="lp-cwj-icon"><i class="bi bi-patch-check"></i></div>
-              <div class="lp-cwj-label">Judge</div>
-              <div class="lp-cwj-desc">One question: "Would the next phase be blocked?" CLEAR → loop exits. BLOCKED → gaps fed back for another cycle.</div>
-            </div>
-
-          </div>
-          <div class="lp-cwj-badges">
-            <div class="lp-cwj-badge lp-badge-clear"><span>✅</span> CLEAR — phase exits</div>
-            <div class="lp-cwj-badge lp-badge-blocked"><span>🔄</span> BLOCKED — next cycle</div>
-            <div class="lp-cwj-badge lp-badge-capped"><span>⚠</span> CAPPED — max cycles, user decides</div>
-          </div>
-        </div>
-
-        <!-- Pipeline phases -->
-        <div class="lp-phases-wrap">
-          <div class="lp-phases-row">
-
-            <div class="lp-phase lp-phase-ideation">
-              <div class="lp-phase-num">01</div>
-              <div class="lp-phase-name">Ideation</div>
-              <div class="lp-phase-role">You answer · high interaction</div>
-              <div class="lp-phase-output">north-star.md · architecture.md · intent.md per capability</div>
-            </div>
-
-            <div class="lp-phase-connector">
-              <div class="lp-phase-line"></div>
-              <div class="lp-phase-gate" title="Ideation complete · all capabilities have intent files"><i class="bi bi-lock-fill"></i></div>
-              <div class="lp-phase-line"></div>
-            </div>
-
-            <div class="lp-phase lp-phase-spec">
-              <div class="lp-phase-num">02</div>
-              <div class="lp-phase-name">Spec</div>
-              <div class="lp-phase-role">Autonomous · you approve once</div>
-              <div class="lp-phase-output">capability-spec.md per capability</div>
-            </div>
-
-            <div class="lp-phase-connector">
-              <div class="lp-phase-line"></div>
-              <div class="lp-phase-gate" title="Spec done · user approved"><i class="bi bi-lock-fill"></i></div>
-              <div class="lp-phase-line"></div>
-            </div>
-
-            <div class="lp-phase lp-phase-code">
-              <div class="lp-phase-num">03</div>
-              <div class="lp-phase-name">Code</div>
-              <div class="lp-phase-role">Fully automated</div>
-              <div class="lp-phase-output">source files · build-report.yaml</div>
-            </div>
-
-            <div class="lp-phase-connector">
-              <div class="lp-phase-line"></div>
-              <div class="lp-phase-gate" title="All capabilities built"><i class="bi bi-lock-fill"></i></div>
-              <div class="lp-phase-line"></div>
-            </div>
-
-            <div class="lp-phase lp-phase-deploy">
-              <div class="lp-phase-num">04</div>
-              <div class="lp-phase-name">Deploy</div>
-              <div class="lp-phase-role">North-star alignment check</div>
-              <div class="lp-phase-output">Dockerfiles · deploy.sh · release versioned</div>
-            </div>
-
-          </div>
-          <div class="lp-phases-note">Each phase runs the CWJ loop independently. The challenger identity changes per phase — senior developer pre-build (ideation), developer-proxy (spec), user-proxy (code).</div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ─── FEATURES ─────────────────────────────────────────────────── -->
-    <section class="section-features">
-      <div class="section-inner">
-        <div class="section-label center">What You Get</div>
-        <h2 class="center">Claude that follows your process,<br>not just your last message</h2>
-        <div class="features-grid">
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
-            <h3>Claude stays on-process</h3>
-            <p>A <code>SessionStart</code> hook injects an engagement contract on every session — so Claude always routes development through <code>/spec-gantry</code>, even deep into a long conversation.</p>
-          </div>
-          <div class="feat-card feat-card-large">
-            <div class="feat-icon"><i class="bi bi-diagram-3-fill"></i></div>
-            <h3>One architecture file, no drift</h3>
-            <p>All technical decisions — data model, actors, API interfaces, deployment — live in one file with named section anchors. Every capability reads only the sections it needs. Three capabilities in, your data model still has one definition of every entity.</p>
-            <a href="{{ '/docs/how-it-works' | relative_url }}#ideation" class="feat-link">How the architecture file works →</a>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-lock-fill"></i></div>
-            <h3>Hard gates between phases</h3>
-            <p>No code is written until a spec exists that was machine-challenged and user-approved. The gate reads the filesystem — not a flag.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-arrow-repeat"></i></div>
-            <h3>Fix the right thing</h3>
-            <p>When something is wrong, the investigate agent classifies the root cause first: code bug, spec gap, requirement drift, or new capability. The right phase gets fixed — not always code.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-graph-up-arrow"></i></div>
-            <h3>See what each capability cost</h3>
-            <p>Token usage logged per agent run. The insights view shows iteration counts, challenge density, and which capability ran three repair loops and why.</p>
-            <a href="{{ '/docs/skills' | relative_url }}#track-cost" class="feat-link">See developer intelligence →</a>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon"><i class="bi bi-search"></i></div>
-            <h3>Works on existing codebases</h3>
-            <p>Drop SpecGantry into any project. The reverse-engineer agent synthesises a north star, architecture, and capability stubs from existing source files — with anchor tags.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── STATS / PROOF ─────────────────────────────────────────────── -->
-    <section class="section-stats">
-      <div class="section-inner">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-num">0</div>
-            <div class="stat-label">External dependencies — runs entirely inside Claude Code. No npm install, no API keys, no config files.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-num">90s</div>
-            <div class="stat-label">To install — two commands and you're running <code>/spec-gantry</code> in any project.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-num">3</div>
-            <div class="stat-label">Phases where quality is checked — ideation, spec, and code — before anything ships.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-num">1</div>
-            <div class="stat-label">Command for everything — <code>/spec-gantry</code> handles new projects, daily work, bugs, and new capabilities.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── SKILLS ──────────────────────────────────────────────────── -->
-    <section class="section-skills">
-      <div class="section-inner">
-        <div class="section-label center">Two Commands</div>
-        <h2 class="center">One command to run your entire SDLC</h2>
-
-        <div class="skills-grid">
-          <div class="skill-row">
-            <code class="skill-cmd">/spec-gantry</code>
-            <div class="skill-desc">
-              <strong>Your single entry point.</strong> New project, existing codebase, daily work, bug fixes, new capabilities. Run this at the start of every session. SpecGantry reads your state, shows the pipeline dashboard, and routes you to the right action.
-            </div>
-          </div>
-          <div class="skill-row">
-            <code class="skill-cmd">/track-cost</code>
-            <div class="skill-desc">
-              <strong>Developer intelligence.</strong> Cost by Challenge/Write/Judge, by capability, by release. Iteration counts, challenge density, outlier detection. Know exactly what each capability cost and why.
-            </div>
-          </div>
-        </div>
-
-        <div class="skills-cta">
-          <a href="{{ '/docs/skills' | relative_url }}" class="btn-secondary">Full Skills & Agents Reference →</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── BLOG TEASERS ──────────────────────────────────────────────── -->
-    <section class="section-blog">
-      <div class="section-inner">
-        <div class="section-label center">From the Blog</div>
-        <h2 class="center">Why your AI build process needs guardrails</h2>
-        <div class="blog-cards">
-          <a href="{{ '/blog/realtime-cost-tracking' | relative_url }}" class="blog-card">
-            <div class="blog-card-meta">
-              <span class="blog-tag">Economics</span>
-              <span class="blog-date">June 2026</span>
-            </div>
-            <h3>AI Development Costs Are Visible — If You Track Them at the Right Level</h3>
-            <p>Real-time cost tracking isn't a nice-to-have in AI-assisted development. It's a project management discipline. Here's why SpecGantry built it into the framework itself.</p>
-            <span class="blog-read-more">Read the post →</span>
-          </a>
-          <a href="{{ '/blog/why-ai-needs-guardrails' | relative_url }}" class="blog-card">
-            <div class="blog-card-meta">
-              <span class="blog-tag">Process</span>
-              <span class="blog-date">June 2026</span>
-            </div>
+    <!-- Blog -->
+    <section class="lp-section lp-section-light">
+      <div class="lp-inner">
+        <span class="lp-label">From the Blog</span>
+        <h2>Why process matters in AI-assisted development.</h2>
+        <div class="lp-blog-grid">
+          <a href="{{ '/blog/why-ai-needs-guardrails' | relative_url }}" class="lp-blog-card">
+            <span class="lp-blog-tag">Process</span>
             <h3>Why AI Coding Assistants Need Guardrails — Not Just More Tokens</h3>
-            <p>The problem isn't that AI writes bad code. It's that AI has no idea whether the code is solving the right
-              problem. That's a process gap, not a model gap.</p>
-            <span class="blog-read-more">Read the post →</span>
+            <p>The problem isn't bad code — it's that AI has no idea whether the code solves the right problem. That's a process gap, not a model gap.</p>
+            <span class="lp-blog-link">Read →</span>
           </a>
-          <a href="{{ '/blog/hidden-cost-of-skipping-specs' | relative_url }}" class="blog-card">
-            <div class="blog-card-meta">
-              <span class="blog-tag">Economics</span>
-              <span class="blog-date">June 2026</span>
-            </div>
-            <h3>The Hidden Cost of Skipping Specs in Agentic SDLC</h3>
-            <p>Developers skip specs because it feels like overhead. But the rework cost of a misaligned feature
-              implementation dwarfs the 15 minutes it would have taken to write the spec.</p>
-            <span class="blog-read-more">Read the post →</span>
+          <a href="{{ '/blog/hidden-cost-of-skipping-specs' | relative_url }}" class="lp-blog-card">
+            <span class="lp-blog-tag">Economics</span>
+            <h3>The Hidden Cost of Skipping Specs in Agentic Development</h3>
+            <p>The rework cost of a misaligned feature dwarfs the time it would have taken to spec it. Here's the math.</p>
+            <span class="lp-blog-link">Read →</span>
+          </a>
+          <a href="{{ '/blog/session-safe-sdlc' | relative_url }}" class="lp-blog-card">
+            <span class="lp-blog-tag">Reliability</span>
+            <h3>Session-Safe SDLC: Why Every Phase Writes to Disk Before Moving On</h3>
+            <p>A mid-session crash shouldn't lose three rounds of ideation. SpecGantry treats persistent state as a core invariant.</p>
+            <span class="lp-blog-link">Read →</span>
           </a>
         </div>
-        <div class="blog-cta">
-          <a href="{{ '/blog' | relative_url }}" class="btn-secondary">View All Posts →</a>
+        <div style="text-align:center;margin-top:28px">
+          <a href="{{ '/blog' | relative_url }}" class="btn-secondary">All Posts →</a>
         </div>
       </div>
     </section>
 
-    <!-- ─── INSTALL CTA ────────────────────────────────────────────────── -->
-    <section class="section-install">
-      <div class="section-inner">
-        <div class="install-box">
-          <div class="install-text">
-            <h2>Start building with a process Claude won't skip.</h2>
-            <p>Two commands. Works with any Claude Code project — new or existing. No configuration required.</p>
-          </div>
-          <div class="install-code-block">
-            <div class="code-header">
-              <span>Install command</span>
-              <button class="copy-btn"
-                data-copy="claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry">Copy</button>
+    <!-- Install CTA -->
+    <section class="lp-section lp-section-cta">
+      <div class="lp-inner lp-inner-cta">
+        <span class="lp-label">Install</span>
+        <h2>Two commands. Any Claude Code project.</h2>
+        <p>New project or existing codebase. No configuration. Apache 2.0.</p>
+        <div class="lp-cta-install">
+          <div class="hero-install">
+            <div class="hero-install-header">
+              <span class="hero-install-title">install specgantry</span>
+              <button class="hero-copy-btn"
+                data-copy="claude plugin marketplace add https://github.com/specgantry/specgantry.github.io&#10;claude plugin install spec-gantry@spec-gantry"
+                style="font-size:0.68rem;padding:3px 8px;border:1px solid var(--c-border);border-radius:4px">Copy all</button>
             </div>
-            <pre class="install-pre"><code>claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry</code></pre>
+            <div class="hero-install-body">
+              <div class="hero-install-line">
+                <span class="hero-install-prompt">$</span>
+                <code class="hero-install-cmd">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
+                <button class="hero-copy-btn" data-copy="claude plugin marketplace add https://github.com/specgantry/specgantry.github.io" aria-label="Copy"><i class="bi bi-clipboard"></i></button>
+              </div>
+              <div class="hero-install-line">
+                <span class="hero-install-prompt">$</span>
+                <code class="hero-install-cmd">claude plugin install spec-gantry@spec-gantry</code>
+                <button class="hero-copy-btn" data-copy="claude plugin install spec-gantry@spec-gantry" aria-label="Copy"><i class="bi bi-clipboard"></i></button>
+              </div>
+            </div>
           </div>
-          <div class="install-update">
-            <span class="update-label">Already installed? Update to v7:</span>
-            <code
-              class="update-cmd">claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry</code>
-            <a href="{{ '/docs/faq' | relative_url }}#how-do-i-update-specgantry" class="update-link">More update
-              options →</a>
-          </div>
-          <div class="install-actions">
-            <a href="{{ '/docs/getting-started' | relative_url }}" class="btn-primary btn-large">
-              Full Installation Guide
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-            <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener"
-              class="btn-ghost">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-              </svg>
-              View on GitHub
-            </a>
-          </div>
-          <p class="install-meta">Apache 2.0 · Open Source · Zero external dependencies</p>
         </div>
+        <div class="lp-cta-actions">
+          <a href="{{ '/docs/getting-started' | relative_url }}" class="btn-primary btn-large">
+            Installation Guide
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="https://github.com/specgantry/specgantry.github.io" target="_blank" rel="noopener" class="btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+        <p class="lp-cta-update">Already installed? <code>claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry</code></p>
       </div>
     </section>
 
   </main>
 
-  <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+  <!-- Footer -->
   <footer class="landing-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="{{ '/assets/logo/logo.png' | relative_url }}" alt="SpecGantry" class="logo-icon">
-        <span class="logo-text">SpecGantry</span>
-        <p>A Claude Code plugin that keeps Claude on your process — from idea to deployment. Challenges your idea before speccing, your spec before building, your code before shipping.</p>
+        <a href="{{ '/' | relative_url }}" class="nav-logo">
+          <img src="{{ '/assets/logo/logo.png' | relative_url }}" alt="SpecGantry" class="logo-icon">
+          <span class="logo-text">SpecGantry</span>
+        </a>
+        <p>A Claude Code plugin that keeps Claude on your process — from idea to deployment.</p>
       </div>
       <div class="footer-links">
         <div class="footer-col">
@@ -522,23 +380,22 @@ claude plugin install spec-gantry</code></pre>
           <a href="{{ '/docs/getting-started' | relative_url }}">Getting Started</a>
           <a href="{{ '/docs/how-it-works' | relative_url }}">How It Works</a>
           <a href="{{ '/docs/skills' | relative_url }}">Skills Guide</a>
-          <a href="{{ '/docs/architecture' | relative_url }}">Architecture</a>
+          <a href="{{ '/docs/architecture' | relative_url }}">Reference</a>
           <a href="{{ '/docs/faq' | relative_url }}">FAQ</a>
         </div>
         <div class="footer-col">
-          <div class="footer-col-title">Content</div>
-          <a href="{{ '/blog' | relative_url }}">Blog</a>
-          <a href="{{ '/blog/realtime-cost-tracking' | relative_url }}">Real-Time Cost Tracking</a>
+          <div class="footer-col-title">Blog</div>
+          <a href="{{ '/blog' | relative_url }}">All Posts</a>
           <a href="{{ '/blog/why-ai-needs-guardrails' | relative_url }}">Why AI Needs Guardrails</a>
           <a href="{{ '/blog/hidden-cost-of-skipping-specs' | relative_url }}">Cost of Skipping Specs</a>
+          <a href="{{ '/blog/session-safe-sdlc' | relative_url }}">Session-Safe SDLC</a>
         </div>
         <div class="footer-col">
           <div class="footer-col-title">Project</div>
           <a href="https://github.com/specgantry/specgantry.github.io" target="_blank">GitHub</a>
           <a href="https://github.com/specgantry/specgantry.github.io/issues" target="_blank">Issues</a>
           <a href="https://github.com/specgantry/specgantry.github.io/blob/main/LICENSE" target="_blank">License</a>
-          <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md"
-            target="_blank">Contributing</a>
+          <a href="https://github.com/specgantry/specgantry.github.io/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a>
         </div>
       </div>
     </div>
@@ -549,134 +406,60 @@ claude plugin install spec-gantry</code></pre>
   </footer>
 
   <script>
-    // ── Search using Pagefind raw API ─────────────────────────────────
+    // Search
     let pagefind;
     async function initPagefind() {
       if (pagefind) return;
       pagefind = await import('/pagefind/pagefind.js');
       await pagefind.init();
     }
-
     const overlay  = document.getElementById('searchOverlay');
     const trigger  = document.getElementById('searchTrigger');
     const closeBtn = document.getElementById('searchClose');
     const input    = document.getElementById('searchInput');
     const results  = document.getElementById('searchResults');
-
-    function openSearch() {
-      overlay.classList.add('search-modal-open');
-      input.focus();
-      initPagefind();
-    }
-    function closeSearch() {
-      overlay.classList.remove('search-modal-open');
-      input.value = '';
-      results.innerHTML = '';
-    }
-
+    function openSearch()  { overlay.classList.add('search-modal-open'); input.focus(); initPagefind(); }
+    function closeSearch() { overlay.classList.remove('search-modal-open'); input.value = ''; results.innerHTML = ''; }
     trigger.addEventListener('click', openSearch);
     closeBtn.addEventListener('click', closeSearch);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
-
     let debounce;
-    input.addEventListener('input', () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(() => runSearch(input.value.trim()), 150);
-    });
-
+    input.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(() => runSearch(input.value.trim()), 150); });
     async function runSearch(query) {
       results.innerHTML = '';
       if (!query) return;
       await initPagefind();
       const search = await pagefind.debouncedSearch(query);
       if (!search) return;
-      const top = search.results.slice(0, 8);
-      const data = await Promise.all(top.map(r => r.data()));
-      renderResults(data, query);
-    }
-
-    function highlight(text, query) {
-      if (!text) return '';
-      const words = query.split(/\s+/).filter(Boolean);
-      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
-      return text.replace(re, '<mark>$1</mark>');
-    }
-
-    function renderResults(data, query) {
-      if (!data.length) {
-        results.innerHTML = '<p class="search-no-results">No results found.</p>';
-        return;
-      }
-      const count = document.createElement('div');
-      count.className = 'search-count';
-      count.textContent = `${data.length} result${data.length !== 1 ? 's' : ''} for "${query}"`;
-      results.appendChild(count);
-
+      const data = await Promise.all(search.results.slice(0,8).map(r => r.data()));
+      if (!data.length) { results.innerHTML = '<p class="search-no-results">No results found.</p>'; return; }
+      const hl = (t,q) => { if(!t) return ''; const re=new RegExp(`(${q.split(/\s+/).filter(Boolean).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`, 'gi'); return t.replace(re,'<mark>$1</mark>'); };
+      const cnt = document.createElement('div'); cnt.className='search-count'; cnt.textContent=`${data.length} result${data.length!==1?'s':''} for "${query}"`; results.appendChild(cnt);
       data.forEach(item => {
-        const group = document.createElement('div');
-        group.className = 'search-group';
-
-        const title = document.createElement('div');
-        title.className = 'search-group-title';
-        title.textContent = item.meta?.title || 'Untitled';
-        group.appendChild(title);
-
-        const subs = item.sub_results?.length ? item.sub_results.slice(0, 3) : [{
-          title: item.meta?.title || '',
-          url: item.url,
-          excerpt: item.excerpt
-        }];
-
-        subs.forEach(sub => {
-          const row = document.createElement('a');
-          row.className = 'search-result-row';
-          row.href = sub.url;
-          row.addEventListener('click', closeSearch);
-          row.innerHTML = `
-            <div class="search-result-title">${highlight(sub.title, query)}</div>
-            <div class="search-result-excerpt">${highlight(sub.excerpt, query)}</div>
-          `;
-          group.appendChild(row);
-        });
-
-        results.appendChild(group);
+        const g = document.createElement('div'); g.className='search-group';
+        const t = document.createElement('div'); t.className='search-group-title'; t.textContent=item.meta?.title||'Untitled'; g.appendChild(t);
+        const subs = item.sub_results?.length ? item.sub_results.slice(0,3) : [{title:item.meta?.title||'',url:item.url,excerpt:item.excerpt}];
+        subs.forEach(sub => { const r=document.createElement('a'); r.className='search-result-row'; r.href=sub.url; r.addEventListener('click',closeSearch); r.innerHTML=`<div class="search-result-title">${hl(sub.title,query)}</div><div class="search-result-excerpt">${hl(sub.excerpt,query)}</div>`; g.appendChild(r); });
+        results.appendChild(g);
       });
     }
 
-    // Copy button
-    document.querySelectorAll('.copy-btn').forEach(btn => {
+    // Copy
+    document.querySelectorAll('.hero-copy-btn, .copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         navigator.clipboard.writeText(btn.dataset.copy).then(() => {
-          btn.textContent = 'Copied!';
-          setTimeout(() => btn.textContent = 'Copy', 2000);
+          const orig = btn.innerHTML;
+          btn.innerHTML = btn.classList.contains('hero-copy-btn') ? '<i class="bi bi-check2"></i>' : 'Copied!';
+          setTimeout(() => btn.innerHTML = orig, 1800);
         });
       });
     });
 
-    // Mobile nav toggle
+    // Mobile nav
     const hamburger = document.querySelector('.nav-hamburger');
-    const navLinks = document.querySelector('.nav-links');
-    if (hamburger) {
-      hamburger.addEventListener('click', () => {
-        navLinks.classList.toggle('nav-links-open');
-        hamburger.classList.toggle('active');
-      });
-    }
-
-    // Animate pipeline phases on scroll
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.15 });
-
-    document.querySelectorAll('.ng-node, .feat-card, .role-card, .blog-card, .agent-row').forEach(el => {
-      observer.observe(el);
-    });
+    const navLinks  = document.querySelector('.nav-links');
+    if (hamburger) hamburger.addEventListener('click', () => { navLinks.classList.toggle('nav-links-open'); hamburger.classList.toggle('active'); });
   </script>
 </body>
-
 </html>

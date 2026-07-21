@@ -17,18 +17,22 @@ next_page_url: "/docs/how-it-works"
 
 ## Install
 
+<div class="docs-terminal" markdown="1">
+<div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">terminal</span></div>
+
 ```bash
-claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry
+$ claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
+$ claude plugin install spec-gantry@spec-gantry
 ```
-
-Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.1`
-
-<div class="info">
-  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once.
 </div>
 
-**Update an existing installation:**
+Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.5`
+
+<div class="info">
+  <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once — every subsequent project just needs the second command.
+</div>
+
+**Already installed? Update:**
 
 ```bash
 claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
@@ -156,34 +160,10 @@ Once all capabilities are built, SpecGantry prompts to deploy. The deployment ag
 
 | Situation | Command |
 |---|---|
-| Resuming any work | `/spec-gantry` |
-| Auto-run the pipeline | `/spec-gantry` → `[>]` |
+| Start or resume any work | `/spec-gantry` |
+| Auto-run the full pipeline | `/spec-gantry` → `[>]` |
+| Report a bug or new capability | `/spec-gantry` → `[N]` |
 | Check costs | `/track-cost` |
-| Report a bug or new work | `/spec-gantry` → `[N]` |
-| Work on a specific capability | `/spec-gantry` → type capability ID |
-
----
-
-## Disk Layout
-
-```
-project-root/
-  specs/
-    project-state.yaml          pipeline state + capability flags
-    north-star.md               per-project cognitive contract
-    changelog.md                append-only release history
-    architecture/
-      architecture.md           all technical decisions (## section:name anchors)
-    capabilities/
-      CAP-001/
-        intent.md               2-paragraph experience promise
-        capability-spec.md      developer contract (machine-challenged)
-        build-report.yaml       quality outcome, runtime info, test plan
-    cost-log.ndjson             token usage per agent run
-  .claude/
-    settings.json               SessionStart hook
-    CONTRACT.md                 engagement directive (gitignored)
-```
 
 ---
 
@@ -199,7 +179,7 @@ project-root/
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
-      <span>The dashboard in detail, all 12 agents, and workflow walkthroughs.</span>
+      <span>The dashboard, commands, and workflow walkthroughs.</span>
     </div>
   </a>
 </div>

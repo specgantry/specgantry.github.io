@@ -29,9 +29,9 @@ NC='\033[0m'
 MANIFEST_FILE=".claude-plugin/plugin.json"
 MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 LANDING_PAGE="docs/_layouts/landing.html"
-GETTING_STARTED="docs/docs/getting-started/index.md"
+GETTING_STARTED="docs/docs/getting-started.md"
 SKILL_FILE="skills/spec-gantry/SKILL.md"
-SKILLS_GUIDE="docs/docs/skills/index.md"
+SKILLS_GUIDE="docs/docs/skills.md"
 VERSION_FILE="VERSION"
 
 # Logging helpers

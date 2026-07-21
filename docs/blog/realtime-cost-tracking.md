@@ -146,7 +146,7 @@ SpecGantry exists because structure matters in AI-assisted development. Develope
 
 ---
 
-*SpecGantry is open source under Apache 2.0. Install it in 90 seconds: `claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry`*
+*SpecGantry is open source under Apache 2.0. Install it in 90 seconds: `claude plugin marketplace add https://github.com/specgantry/specgantry.github.io && claude plugin install spec-gantry@spec-gantry`*
 
 ---
 

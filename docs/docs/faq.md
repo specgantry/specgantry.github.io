@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: FAQ
-description: Common questions about SpecGantry — installation, the CWJ loop, costs, and troubleshooting.
+description: Common questions about SpecGantry — installation, the CWJ loop, costs, and how it fits into an AI-assisted workflow.
 permalink: /docs/faq/
 prev_page: "Reference"
 prev_page_url: "/docs/architecture"
@@ -17,10 +17,10 @@ prev_page_url: "/docs/architecture"
 
 ```bash
 claude plugin marketplace add https://github.com/specgantry/specgantry.github.io
-claude plugin install spec-gantry
+claude plugin install spec-gantry@spec-gantry
 ```
 
-Both commands are required in order. You only need to add the marketplace once.
+Both commands are required. You only need to add the marketplace once.
 
 **How do I update?**
 
@@ -28,77 +28,33 @@ Both commands are required in order. You only need to add the marketplace once.
 claude plugin marketplace update spec-gantry && claude plugin update spec-gantry@spec-gantry
 ```
 
-**Does it require git?**
+**Does it require any external services?**
 
-No, but it's strongly recommended. All specs are plain-text YAML and Markdown designed to be committed.
+No. SpecGantry runs entirely inside Claude Code. No npm install, no API keys beyond your existing Anthropic API access, no configuration files. The only network calls are to the Anthropic API and the plugin marketplace on explicit update.
 
-**Does it work offline?**
+**Does it work on existing codebases?**
 
-Yes. All agents run locally within Claude Code. The only network calls are to the Anthropic API and the plugin marketplace (only on explicit update).
-
----
-
-## The CWJ Loop
-
-**What is the CWJ loop?**
-
-Challenge-Write-Judge. Every phase runs: a challenge agent asks what would block the next phase → a write/build agent resolves the challenges → a judge agent asks "would the next phase still be blocked?" CLEAR exits. BLOCKED continues.
-
-**What happens when the loop caps?**
-
-Unresolved gaps are surfaced to you: `[Y] Accept and continue · [E] Fix manually · [X] Stop`. Accepting continues the pipeline with known gaps noted in the build report.
-
-**What is CYCLING?**
-
-If the judge finds identical blocking gaps across two consecutive cycles, the orchestrator exits with the same options as CAPPED.
-
-**How many iterations does each phase run?**
-
-Default: ideation 5, spec 3, code 3. Configurable in `project-state.yaml` under `cwj_loop.max_iterations`.
+Yes. Run `/spec-gantry` in any project directory. If there are source files but no `specs/` folder, a reverse-engineer agent synthesises a north star, architecture, and capability list from the existing code — then you continue from there.
 
 ---
 
-## Spec Phase
+## How It Works
 
-**What does "machine-challenged" mean?**
+**Why challenge before writing? Why not just build and iterate?**
 
-The spec judge confirmed a developer could build this without inventing any answer before surfacing the spec for your approval. You're reviewing a challenged spec — not a first draft.
+Iteration is expensive when you're iterating on the wrong thing. A missing loading state, an undefined error message, a UX dead end — these aren't bugs you find in the code. They're decisions that were never made. An adversarial challenger surfaces them before anything is written, when they cost nothing to fix.
 
-**Can I edit the spec after the judge approves?**
+**What's the difference between this and writing a spec myself and pasting it in?**
 
-Yes. Type `[E]` at the approval prompt. Your edit is prepended as a new challenge and the write agent resolves it before re-surfacing.
+A spec you write yourself is unchallenged. SpecGantry's spec phase runs a developer-proxy challenger against the spec before a single line of code is written — asking what a developer would be blocked on building from it. You see the result after a judge has confirmed no blocking gaps remain. You're reviewing a challenged spec, not a first draft.
 
-**Why is there an 80-line limit on specs?**
+**Does SpecGantry slow things down?**
 
-Specs are developer contracts, not documentation. The architecture file provides shared context. If a spec substantially exceeds 80 lines, it's flagged — not blocked.
+The ideation phase has interaction — you answer challenge questions before specs are written. After that, the pipeline is autonomous. You approve each spec once. The code phase is fully automated. Type `[>]` and SpecGantry specs and builds every remaining capability without pausing, stopping only at genuine decision points.
 
----
+**What happens when something goes wrong mid-build?**
 
-## Code Phase
-
-**Why doesn't the code challenge run on iteration 1?**
-
-Nothing has been built yet. The loop skips directly to plan + build on iteration 1, then the challenge fires after the first build.
-
-**What is a spec-classified gap?**
-
-When the code challenge agent finds that the north star requires something the spec never captured, it routes to the spec phase first — fixing the spec, then rebuilding. Running code repairs on a spec-level gap never converges.
-
-**What does `quality: capped` in build-report.yaml mean?**
-
-Maximum iterations reached with unresolved gaps. The capability is marked built; the deployment agent surfaces a non-blocking warning.
-
----
-
-## State and Progress
-
-**How does session resume work?**
-
-All progress is saved after every answer and every phase transition. On resume, SpecGantry reads `project-state.yaml` and continues from exactly where it left off.
-
-**How does auto-continue work?**
-
-Type `[>]`. The pipeline runs without pausing at spec approvals — a judge-validated spec is auto-approved. Stops at: spec gaps, arch gaps, loop caps, all capabilities built, subagent errors.
+A bug report or new requirement goes through an investigate agent first. It classifies the root cause — code bug, spec gap, requirement drift, or new work — and routes to the right phase. A spec gap sent to the code repair loop will never converge; the spec has to be fixed first. Classification prevents that.
 
 ---
 
@@ -106,11 +62,11 @@ Type `[>]`. The pipeline runs without pausing at spec approvals — a judge-vali
 
 **How does cost tracking work?**
 
-The `SubagentStop` hook fires when each agent completes. Token counts are read from the agent transcript — exact API values. One entry appended to `specs/cost-log.ndjson` per agent run.
+Token counts are read from each agent's transcript after it completes — exact API values, not estimates. One entry is appended to `specs/cost-log.ndjson` per agent run. Run `/track-cost` to see cost by capability, by phase, and by CWJ step, with outlier flags on capabilities that ran repair cycles.
 
 **Why are costs not recording?**
 
-Cost tracking requires Node.js. Check: `node --version`. If Node.js is installed but costs still aren't recording:
+Cost tracking requires Node.js. Run `node --version` to check. If Node.js is installed but costs still aren't recording:
 
 ```bash
 SPEC_GANTRY_LOG_LEVEL=debug /spec-gantry
@@ -120,16 +76,12 @@ Check `~/.claude/logs/spec-gantry-hooks.log` for errors.
 
 ---
 
-## Advanced
+## General
 
-**What is v7 vs v6?**
+**Can I use the output with other tools?**
 
-v7 replaces the Plan-Produce-Evaluate loop with Challenge-Write-Judge. The key shift: PPE asked "did produce follow the plan?" — a compliance check. CWJ asks "would the next phase be blocked?" — a cognitive check. The north star moves from a fixed template to one per-project document written from the actual idea.
+Yes. The build agent writes standard source code with no SpecGantry runtime dependencies. Run, test, and deploy the output with any tool.
 
-**How do I migrate a v6 project?**
+**Does SpecGantry work if I start a new Claude Code session mid-project?**
 
-Run `/spec-gantry` in your v6 project directory. The reverse-engineer agent detects the existing `specs/stories/` structure and synthesises a v7 project structure from the existing files.
-
-**Can I use SpecGantry with other tools?**
-
-Yes. SpecGantry manages the pipeline and specs. The build agent writes standard source code with no SpecGantry runtime dependencies — run, test, and deploy the output with any tool.
+Yes. All progress is written to disk after every answer and phase transition. Run `/spec-gantry` in any new session and it resumes from exactly where you left off.

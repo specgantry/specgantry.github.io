@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How It Works — SpecGantry Docs</title>
-  <meta name="description" content="A complete walkthrough of SpecGantry v7 — the CWJ loop, all three phases, the per-project north star, diagnostic routing, and release management.">
+  <meta name="description" content="The Challenge-Write-Judge loop — why adversarial challenge at every phase produces better outcomes than speed-first AI development.">
   <meta property="og:title" content="How It Works">
-  <meta property="og:description" content="A complete walkthrough of SpecGantry v7 — the CWJ loop, all three phases, the per-project north star, diagnostic routing, and release management.">
+  <meta property="og:description" content="The Challenge-Write-Judge loop — why adversarial challenge at every phase produces better outcomes than speed-first AI development.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/how-it-works/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="How It Works">
-  <meta name="twitter:description" content="A complete walkthrough of SpecGantry v7 — the CWJ loop, all three phases, the per-project north star, diagnostic routing, and release management.">
+  <meta name="twitter:description" content="The Challenge-Write-Judge loop — why adversarial challenge at every phase produces better outcomes than speed-first AI development.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -136,32 +136,32 @@
       <div class="sidebar-install">
         <div class="sidebar-install-title">Quick Install</div>
         <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
-        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry@spec-gantry</code>
       </div>
     </aside>
 
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="how-specgantry-v7-works">How SpecGantry v7 Works</h1>
+        <h1 id="how-specgantry-works">How SpecGantry Works</h1>
 
-<p>A complete walkthrough of the pipeline and what happens at each phase.</p>
+<p>The core idea is simple: <strong>challenge before you write, at every phase.</strong> An independent adversarial agent asks what would block the next phase before anything is written or built. Only when it can’t find a blocker does the work proceed.</p>
+
+<p>This runs three times — at ideation, at spec, and at code — with a different adversary each time.</p>
 
 <hr />
 
-<h2 id="the-cwj-loop">The CWJ Loop</h2>
-
-<p>Every phase in SpecGantry runs a Challenge-Write-Judge loop. What varies across phases is not the structure — it’s who the challenger represents, what the write step produces, and what question the judge asks.</p>
+<h2 id="the-challenge-write-judge-loop">The Challenge-Write-Judge Loop</h2>
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">The Challenge-Write-Judge Loop</div>
+<div class="dg-diagram-title">The same loop at every phase</div>
 <div class="dg-flow">
 
   <div class="dg-flow-node dg-ideation">
     <div class="dg-flow-node-icon"><i class="bi bi-shield-exclamation"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Challenge</div>
-      <div class="dg-flow-node-desc">An adversarial agent asks what would block the next phase. Questions are specific to this project — not a generic checklist. Grouped by theme. The challenger never writes files.</div>
+      <div class="dg-flow-node-desc">An adversarial agent asks what would block the next phase — specific to this project, not a checklist. Never writes files.</div>
     </div>
   </div>
 
@@ -171,7 +171,7 @@
     <div class="dg-flow-node-icon"><i class="bi bi-pencil-square"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Write / Build</div>
-      <div class="dg-flow-node-desc">Every challenge is resolved. Ideation: user answers the full round in one response. Spec: write agent resolves autonomously into a developer contract. Code: plan agent designs the repair; build agent executes.</div>
+      <div class="dg-flow-node-desc">Every challenge resolved. At ideation you answer; at spec and code, agents resolve autonomously.</div>
     </div>
   </div>
 
@@ -181,387 +181,143 @@
     <div class="dg-flow-node-icon"><i class="bi bi-patch-check"></i></div>
     <div class="dg-flow-node-body">
       <div class="dg-flow-node-title">Judge</div>
-      <div class="dg-flow-node-desc">One question only: <em>"Would the next phase be blocked?"</em> Not "did this pass a rubric?" The judge is independent — it challenges the output, not the challenger. CLEAR exits. BLOCKED continues with specific gaps.</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-neutral" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;padding:0.75rem">
-    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--green-50,#f0fdf4);border-radius:8px;border:1px solid rgba(34,197,94,.25)">
-      <div style="font-size:1.1rem;margin-bottom:4px">✅</div>
-      <strong style="color:var(--green-700,#15803d);font-size:.8rem">CLEAR</strong>
-      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Loop exits · next phase begins</div>
-    </div>
-    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--amber-50,#fffbeb);border-radius:8px;border:1px solid rgba(245,158,11,.25)">
-      <div style="font-size:1.1rem;margin-bottom:4px">🔄</div>
-      <strong style="color:var(--amber-700,#b45309);font-size:.8rem">BLOCKED</strong>
-      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Gaps fed back · next cycle</div>
-    </div>
-    <div style="text-align:center;padding:0.6rem 0.5rem;background:var(--red-50,#fef2f2);border-radius:8px;border:1px solid rgba(239,68,68,.25)">
-      <div style="font-size:1.1rem;margin-bottom:4px">⚠</div>
-      <strong style="color:var(--red-700,#b91c1c);font-size:.8rem">CAPPED</strong>
-      <div style="font-size:.72rem;color:var(--slate-500);margin-top:3px">Max cycles hit · user decides</div>
+      <div class="dg-flow-node-desc"><em>"Would the next phase be blocked?"</em> CLEAR exits. BLOCKED continues with specific gaps. Independent — never the same agent that wrote.</div>
     </div>
   </div>
 
 </div>
 </div>
 
-<h3 id="three-different-challengers--one-loop">Three different challengers — one loop</h3>
-
-<p>What makes the CWJ loop powerful is that each phase’s challenger has a different adversarial identity:</p>
-
-<div class="dg-wrap">
-<div class="dg-node-graph">
-
-  <div class="dg-node dg-ideation">
-    <div class="dg-node-num">01</div>
-    <div class="dg-node-name">Ideation Challenger</div>
-    <div class="dg-node-role">Senior developer pre-build</div>
-    <div class="dg-node-output">"What would stop me agreeing to start? Are the capabilities clear? The data ownership? The tech choices? The UX model?" — fires up to 7 questions per round, user answers all at once</div>
-  </div>
-
-  <div class="dg-node dg-spec">
-    <div class="dg-node-num">02</div>
-    <div class="dg-node-name">Spec Challenger</div>
-    <div class="dg-node-role">Developer-proxy</div>
-    <div class="dg-node-output">"I just got assigned this — what would block me building it? Loading state? Empty state? Error messages? Where does the output appear?" — fires up to 6 questions, resolved autonomously</div>
-  </div>
-
-  <div class="dg-node dg-build">
-    <div class="dg-node-num">03</div>
-    <div class="dg-node-name">Code Challenger</div>
-    <div class="dg-node-role">User-proxy</div>
-    <div class="dg-node-output">"Can I — as a user — actually accomplish what was promised? Does anything freeze while I wait? Can I get back from a dead end? Does failure tell me what to do next?" — reads source files, not the spec</div>
-  </div>
-
-</div>
-</div>
-
-<h3 id="exit-conditions">Exit conditions</h3>
+<p>The challenger identity changes per phase:</p>
 
 <table>
   <thead>
     <tr>
-      <th>Exit</th>
-      <th>Trigger</th>
-      <th>What happens</th>
+      <th>Phase</th>
+      <th>Who the challenger represents</th>
+      <th>What they ask</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>CLEAR</strong></td>
-      <td>Judge confirms next phase would not be blocked</td>
-      <td>Loop exits, next phase begins</td>
+      <td>Ideation</td>
+      <td>Senior developer pre-build</td>
+      <td>“What would stop me agreeing to start?”</td>
     </tr>
     <tr>
-      <td><strong>CAPPED</strong></td>
-      <td>Maximum cycles reached</td>
-      <td>Unresolved gaps surfaced to user: <code class="language-plaintext highlighter-rouge">[Y] Accept · [E] Fix · [X] Stop</code></td>
+      <td>Spec</td>
+      <td>Developer about to build</td>
+      <td>“What would block me building from this?”</td>
     </tr>
     <tr>
-      <td><strong>CYCLING</strong></td>
-      <td>Identical blocking gaps across two consecutive cycles</td>
-      <td>Same as CAPPED</td>
-    </tr>
-    <tr>
-      <td><strong>Build failure</strong></td>
-      <td>Build agent hard failure</td>
-      <td>Exit immediately, surface to user</td>
+      <td>Code</td>
+      <td>User trying to accomplish the task</td>
+      <td>“Can I actually do what was promised?”</td>
     </tr>
   </tbody>
 </table>
 
-<p>Max iterations: ideation 5, spec 3, code 3 — configurable in <code class="language-plaintext highlighter-rouge">project-state.yaml</code>.</p>
+<p>Gaps caught at ideation cost nothing to fix. Gaps caught at spec save a full build cycle. Gaps caught at code are far cheaper than gaps caught in production.</p>
 
 <hr />
 
-<h2 id="the-north-star">The North Star</h2>
+<h2 id="the-pipeline">The Pipeline</h2>
 
-<p>Each project has one <code class="language-plaintext highlighter-rouge">specs/north-star.md</code>. It is not a template — it is written from the actual idea during ideation and is specific to this system.</p>
-
-<p>The document is flowing prose. No headings. No sections. Just paragraphs that describe what good looks like: what the user is owed, what design philosophy governs every decision, what the system must handle invisibly, what the user should never have to think about.</p>
-
-<p>The north star grows. When the spec phase surfaces a new requirement, the write agent appends a paragraph. It never gets rewritten from scratch — it accumulates understanding over time.</p>
-
-<p>It ends with a <code class="language-plaintext highlighter-rouge">---</code> rule and a flat list of the challenge questions that shaped it — the AI’s thought process made visible to any reader, and available for future agents to use as context.</p>
-
-<p>The north star is read whole — not section by section. Every challenger and judge at every phase reads the full document before forming any question or verdict.</p>
-
-<hr />
-
-<h2 id="the-pipeline-at-a-glance">The Pipeline at a Glance</h2>
+<p>Four phases. Hard gates between each. No phase starts until the previous one clears.</p>
 
 <div class="dg-wrap">
-<div class="dg-diagram-title">SpecGantry v7 Pipeline</div>
 <div class="dg-flow">
 
   <div class="dg-flow-node dg-ideation">
     <div class="dg-flow-node-icon"><i class="bi bi-lightbulb"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Ideation CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— high human interaction</span></div>
-      <div class="dg-flow-node-desc">Adversarial challenge rounds → user answers all questions per round → judge readiness → write agent runs once on CLEAR</div>
-      <div class="dg-flow-node-meta"><i class="bi bi-file-earmark-text"></i> north-star.md &nbsp;·&nbsp; <i class="bi bi-diagram-3"></i> architecture.md &nbsp;·&nbsp; <i class="bi bi-card-text"></i> intent.md × N</div>
+      <div class="dg-flow-node-title">Ideation — you answer, agent challenges</div>
+      <div class="dg-flow-node-desc">The only phase with high human interaction. Challenge rounds surface ambiguity before anything is committed to spec. Produces a north star, architecture file, and an experience promise per capability.</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Ideation complete · architecture written · all capabilities have intent.md</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Gate: every capability has a committed experience promise</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-spec">
     <div class="dg-flow-node-icon"><i class="bi bi-file-earmark-check"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Spec CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per capability · autonomous</span></div>
-      <div class="dg-flow-node-desc">Developer-proxy challenge → write agent resolves into capability-spec.md → judge checks readiness → user approves once on CLEAR</div>
-      <div class="dg-flow-node-meta"><i class="bi bi-file-earmark-richtext"></i> capability-spec.md &nbsp;·&nbsp; <i class="bi bi-person-check"></i> user approves once</div>
+      <div class="dg-flow-node-title">Spec — autonomous, you approve once</div>
+      <div class="dg-flow-node-desc">A developer-proxy challenger asks what would block building this. A write agent resolves every gap. You see the spec once — when a judge has confirmed a developer wouldn't be blocked.</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Spec done per capability · user approved</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Gate: machine-challenged spec, user-approved</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-build">
     <div class="dg-flow-node-icon"><i class="bi bi-hammer"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Code CWJ Loop <span style="font-weight:400;font-size:.75rem;color:var(--slate-400)">— per capability · fully automated</span></div>
-      <div class="dg-flow-node-desc">Plan build approach → build end-to-end → user-proxy challenge traces the experience through source files → repair and repeat if blocked</div>
-      <div class="dg-flow-node-meta"><i class="bi bi-code-square"></i> source files &nbsp;·&nbsp; <i class="bi bi-clipboard2-check"></i> build-report.yaml</div>
+      <div class="dg-flow-node-title">Code — fully automated</div>
+      <div class="dg-flow-node-desc">Build agent implements end-to-end. A user-proxy then reads the actual source files and asks if a user can accomplish what was promised. Gaps are repaired before the capability exits.</div>
     </div>
   </div>
 
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
   <div class="dg-flow-gate-row" style="justify-content:center;width:100%;max-width:560px">
-    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;All capabilities built · build reports passing</div>
+    <div class="dg-flow-gate-badge"><i class="bi bi-lock-fill" style="font-size:.6rem"></i> &nbsp;Gate: all capabilities built and challenge-cleared</div>
   </div>
   <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
 
   <div class="dg-flow-node dg-deploy">
     <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Deploy Release</div>
-      <div class="dg-flow-node-desc">North-star alignment check surfaces any capped capabilities · changelog updated · Dockerfiles, docker-compose, deploy.sh generated · release version bumped</div>
-      <div class="dg-flow-node-meta"><i class="bi bi-file-code"></i> deploy.sh &nbsp;·&nbsp; <i class="bi bi-box"></i> Dockerfiles &nbsp;·&nbsp; <i class="bi bi-tag"></i> release versioned</div>
-    </div>
-  </div>
-
-  <div class="dg-flow-arrow"><div class="dg-flow-arrow-line"></div><div class="dg-flow-arrow-head">▼</div></div>
-
-  <div class="dg-flow-node dg-neutral">
-    <div class="dg-flow-node-icon"><i class="bi bi-arrow-repeat"></i></div>
-    <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">[N] New Work — post-release</div>
-      <div class="dg-flow-node-desc">Investigate → classify as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY → route to the right repair phase automatically</div>
+      <div class="dg-flow-node-title">Deploy</div>
+      <div class="dg-flow-node-desc">North-star alignment check first. Then Dockerfiles, docker-compose, and a versioned deploy script for your target platform.</div>
     </div>
   </div>
 
 </div>
 </div>
 
-<p>Capabilities run in dependency order. The pipeline <strong>interleaves spec and code per capability</strong> — a capability is fully specced and built before the next is started (unless <code class="language-plaintext highlighter-rouge">auto_continue</code> is on).</p>
-
 <hr />
 
-<h2 id="phases">The Phases</h2>
+<h2 id="when-something-goes-wrong">When Something Goes Wrong</h2>
 
-<h3 id="ideation">Phase 1 — Ideation</h3>
-
-<p><strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/north-star.md</code> · <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> · <code class="language-plaintext highlighter-rouge">specs/capabilities/[CAP-ID]/intent.md</code> per capability · <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code></p>
-
-<p>The ideation loop is the only phase with high human interaction. The challenge agent reads the vision and fires a round of blocking questions — specific to <em>this</em> project, not a fixed script. Up to 7 per round, grouped by theme. All questions surface at once. The user answers all of them in a single response.</p>
-
-<p>The judge then evaluates whether a developer could start writing capability specs without inventing answers. Six criteria:</p>
-<ul>
-  <li>The capability list is unambiguous</li>
-  <li>The data model is inferable</li>
-  <li>Technology choices leave no open decisions</li>
-  <li>UX intent is clear</li>
-  <li>No answer is “we’ll figure it out”</li>
-  <li>A spec agent would not need to invent any answer</li>
-</ul>
-
-<p>If CLEAR, the write agent runs once — consolidating all answers into the north star, architecture, and intent files. If BLOCKED, another round.</p>
-
-<p>The write agent runs <strong>only on exit</strong> — not per cycle. All ideation conversations converge into artifacts once understanding is sufficient.</p>
-
-<p>Transition note after ideation:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Ideation complete  ·  Recipe management · Tag and organise · Ingredient search
-💡 Good moment to /compact — ideation context is large, all decisions are on disk.
-</code></pre></div></div>
-
-<hr />
-
-<h3 id="spec">Phase 2 — Capability Spec</h3>
-
-<p><strong>Output:</strong> <code class="language-plaintext highlighter-rouge">specs/capabilities/[CAP-ID]/capability-spec.md</code> (≤80 lines, machine-challenged)</p>
-
-<p>The spec loop is <strong>fully autonomous</strong> — the user does not interact during cycles. The challenge agent simulates a developer who has just been handed the intent file and asks “wait, but what about…?”. The write agent resolves every challenge into a developer contract. The judge checks whether that contract would still leave a developer blocked.</p>
-
-<p><strong>What the spec challenge agent looks for:</strong></p>
+<p>When a bug or gap surfaces post-build, an investigate agent classifies the root cause before routing to a repair loop. The classification matters: a spec gap sent to the code repair loop will never converge — the spec must be fixed first.</p>
 
 <table>
   <thead>
     <tr>
-      <th>Dimension</th>
-      <th>What it surfaces</th>
+      <th>Classification</th>
+      <th>What it means</th>
+      <th>Where the fix goes</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Loading states</td>
-      <td>“The intent says the system processes a file — synchronous or async? What does the user see during a 30-second wait?”</td>
+      <td>Code bug</td>
+      <td>Code doesn’t match the spec</td>
+      <td>Re-enter code loop</td>
     </tr>
     <tr>
-      <td>Empty states</td>
-      <td>“What does the screen look like when there’s no data yet?”</td>
+      <td>Spec gap</td>
+      <td>Code did what spec said; spec was insufficient</td>
+      <td>Re-run spec, then rebuild</td>
     </tr>
     <tr>
-      <td>Error states</td>
-      <td>“What message does the user see? Where does it appear? What can they do next?”</td>
+      <td>Requirement drift</td>
+      <td>Misunderstood at ideation</td>
+      <td>Amend the north star, re-spec, rebuild</td>
     </tr>
     <tr>
-      <td>Output format</td>
-      <td>“Is it a list, a form, a detail view? Where does it appear?”</td>
-    </tr>
-    <tr>
-      <td>Navigation</td>
-      <td>“Where does the user come from? Where do they go after success? After failure?”</td>
-    </tr>
-    <tr>
-      <td>North star alignment</td>
-      <td>“Does the intent deliver on what the north star promises for this project?”</td>
+      <td>New capability</td>
+      <td>Genuinely new work</td>
+      <td>Ideation in amendment mode</td>
     </tr>
   </tbody>
 </table>
-
-<p><strong>User checkpoint (once per capability):</strong></p>
-
-<p>The user sees the spec only when the judge returns CLEAR:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Spec validated — CAP-001: Recipe management
-  All async states described, empty state covered, error messages specified with text and location.
-  North star alignment confirmed: primary action placement specified.
-
-  [Y] Approve spec   [E] Edit   [X] Hold
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">[E]</code> → user’s edit is prepended as a new challenge and the write agent resolves it before re-surfacing for approval.</p>
-
-<hr />
-
-<h3 id="build">Phase 3 — Code</h3>
-
-<p><strong>Output:</strong> Source files · <code class="language-plaintext highlighter-rouge">specs/capabilities/[CAP-ID]/build-report.yaml</code></p>
-
-<p><strong>Iteration 1 — Plan then build</strong></p>
-
-<p>There is no challenge on iteration 1 — nothing has been built yet. The plan agent reads the capability spec, intent, and architecture, then produces a build approach: layer order, async patterns to apply upfront, implementation choices the spec leaves open, what to reuse from existing code. The build agent implements end-to-end from the plan.</p>
-
-<p><strong>Code challenge — user-proxy</strong></p>
-
-<p>After the build, the challenge agent traces the user’s experience through the actual source code. It reads the north star and intent (not the spec — this is the user’s perspective, not the developer’s contract) and asks: “As a user, can I actually accomplish what this capability promises?”</p>
-
-<p>It looks for:</p>
-<ul>
-  <li>Whether the entry point is reachable</li>
-  <li>Whether async operations show loading states</li>
-  <li>Whether failure shows a human-readable message, not a raw error</li>
-  <li>Whether there are dead ends after success or failure</li>
-  <li>Design smells: multiple API calls where one would do, hardcoded values that should be configurable, business logic in the wrong layer</li>
-</ul>
-
-<p>Each gap is classified as a <strong>code gap</strong> (spec implied this, code missed it — targeted repair) or a <strong>spec gap</strong> (north star requires this, spec never captured it — spec must be corrected first, then rebuild).</p>
-
-<p><strong>Build transition notes:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>✓ Build complete · CAP-001  ·  quality: pass (1 cycle)
-✓ Build complete · CAP-002  ·  quality: pass (2 cycles — loading state added to save action)
-✓ Build complete · CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="diagnostic-routing">Diagnostic Routing</h2>
-
-<p>When something is wrong post-deploy, the investigate agent classifies the problem before any repair begins. The classification determines which phase gets fixed — and fixes the right thing.</p>
-
-<div class="dg-wrap">
-<div class="dg-node-graph">
-
-  <div class="dg-node dg-build">
-    <div class="dg-node-num"><i class="bi bi-bug"></i></div>
-    <div class="dg-node-name">CODE_BUG</div>
-    <div class="dg-node-output">Code doesn't match what the spec required. A targeted code edit is sufficient.<br /><em>→ Re-enter code loop for the affected capability</em></div>
-  </div>
-
-  <div class="dg-node dg-spec">
-    <div class="dg-node-num"><i class="bi bi-file-earmark-x"></i></div>
-    <div class="dg-node-name">SPEC_GAP</div>
-    <div class="dg-node-output">Code did what the spec said, but the spec was insufficient for what the north star requires.<br /><em>→ Re-run spec phase, then rebuild</em></div>
-  </div>
-
-  <div class="dg-node dg-ideation">
-    <div class="dg-node-num"><i class="bi bi-arrow-left-right"></i></div>
-    <div class="dg-node-name">REQUIREMENT_DRIFT</div>
-    <div class="dg-node-output">A requirement was misunderstood during ideation. Fixing the code or spec alone won't resolve it.<br /><em>→ Amend north star + architecture, re-spec, rebuild</em></div>
-  </div>
-
-  <div class="dg-node dg-deploy">
-    <div class="dg-node-num"><i class="bi bi-plus-circle"></i></div>
-    <div class="dg-node-name">NEW_CAPABILITY</div>
-    <div class="dg-node-output">Genuinely new work — not a fix to something existing. Scope needs to be defined first.<br /><em>→ Re-enter ideation in amendment mode</em></div>
-  </div>
-
-</div>
-</div>
-
-<p>This is why classifying first matters. Sending a spec gap to the code loop produces another iteration of the wrong repair. The right phase gets fixed.</p>
-
-<hr />
-
-<h2 id="versioning">Release Management</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Change type</th>
-      <th>Bump</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>New work across capabilities</td>
-      <td>major: <code class="language-plaintext highlighter-rouge">1.0.0</code> → <code class="language-plaintext highlighter-rouge">2.0.0</code></td>
-    </tr>
-    <tr>
-      <td>New capability or enhancement</td>
-      <td>minor: <code class="language-plaintext highlighter-rouge">1.0.0</code> → <code class="language-plaintext highlighter-rouge">1.1.0</code></td>
-    </tr>
-    <tr>
-      <td>Bug fix only</td>
-      <td>patch: <code class="language-plaintext highlighter-rouge">1.0.0</code> → <code class="language-plaintext highlighter-rouge">1.0.1</code></td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>Changelog</strong> (<code class="language-plaintext highlighter-rouge">specs/changelog.md</code>) is created on the first release after 1.0.0. It’s append-only — one block per release. The spec write agent and code plan agent read it before referencing any field or interface, ensuring no capability in the new release uses something that was dropped or deprecated.</p>
-
-<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gu">## Release 1.1.0 — 2026-07-19</span>
-<span class="p">-</span> Added: bulk import capability
-<span class="p">-</span> Deprecated: POST /api/recipes/add (use POST /api/recipes)
-<span class="p">-</span> Dropped: recipe.prep_time_string (use prep_time_minutes: integer)
-</code></pre></div></div>
-
-<hr />
-
-<h2 id="cost-tracking">Cost Visibility</h2>
-
-<p>SpecGantry tracks the real cost of every agent run automatically. Token usage is stored in <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>. Run <code class="language-plaintext highlighter-rouge">[$] Cost &amp; insights</code> or <code class="language-plaintext highlighter-rouge">/track-cost</code> for a breakdown by Challenge/Write/Judge columns, by capability, and by release — plus iteration counts, challenge density, and outlier detection.</p>
 
 <hr />
 
@@ -572,14 +328,14 @@
     <div class="next-step-icon"><i class="bi bi-tools"></i></div>
     <div>
       <strong>Skills Guide</strong>
-      <span>Every skill command in detail — the v7 dashboard, all 12 agents, and workflow walkthroughs.</span>
+      <span>The dashboard, commands, and workflow walkthroughs.</span>
     </div>
   </a>
-  <a href="/docs/architecture" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
+  <a href="/docs/faq" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
-      <strong>Reference</strong>
-      <span>File structure, state flags, design principles, and extension points.</span>
+      <strong>FAQ</strong>
+      <span>Common questions on installation, costs, and troubleshooting.</span>
     </div>
   </a>
 </div>

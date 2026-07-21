@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reference — SpecGantry Docs</title>
-  <meta name="description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
+  <meta name="description" content="SpecGantry v7 reference — file structure and project state.">
   <meta property="og:title" content="Reference">
-  <meta property="og:description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
+  <meta property="og:description" content="SpecGantry v7 reference — file structure and project state.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/architecture/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Reference">
-  <meta name="twitter:description" content="SpecGantry v7 reference — file structure, project state, design principles, and extension points.">
+  <meta name="twitter:description" content="SpecGantry v7 reference — file structure and project state.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -136,32 +136,14 @@
       <div class="sidebar-install">
         <div class="sidebar-install-title">Quick Install</div>
         <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
-        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry@spec-gantry</code>
       </div>
     </aside>
 
     <!-- Main Content -->
     <main class="docs-main">
       <article class="docs-article">
-        <h1 id="specgantry-v7-reference">SpecGantry v7 Reference</h1>
-
-<p>File structure, project state, design principles, and extension points.</p>
-
-<hr />
-
-<h2 id="design-principles">Design Principles</h2>
-
-<p><strong>1. Challenge before you write.</strong><br />
-Nothing is written or built until an adversarial challenger has asked what would block the next phase. This is not a compliance check — it is a genuine adversarial stance. The challenger’s job is to find gaps, not to confirm correctness.</p>
-
-<p><strong>2. The right thing gets fixed.</strong><br />
-When something is wrong, the investigate agent classifies the root cause before routing. A spec gap sent to the code loop produces another iteration of the wrong repair. Diagnostic classification ensures the right phase is re-entered.</p>
-
-<p><strong>3. Quality at the earliest possible moment.</strong><br />
-A thin spec produces bad code regardless of how many code repair cycles you run. The CWJ loop catches gaps at ideation (before specs are written), at spec (before code is written), and at code (before shipping). Each phase’s challenger is independent of what any write agent produced — it challenges afresh.</p>
-
-<p><strong>4. Session safety over throughput.</strong><br />
-All progress is written to disk after every answer and every phase transition. A crash mid-session loses at most one in-progress answer. Everything confirmed before that is on disk and the pipeline resumes exactly where it left off.</p>
+        <h1 id="reference">Reference</h1>
 
 <hr />
 
@@ -170,156 +152,59 @@ All progress is written to disk after every answer and every phase transition. A
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-root/
   specs/
     project-state.yaml            pipeline state and capability flags
-    north-star.md                 per-project flowing prose cognitive contract
-    changelog.md                  append-only release history (created after 1.0.0)
-    cost-log.ndjson               token usage per agent run (committed to git)
+    north-star.md                 per-project flowing prose — what good looks like
+    changelog.md                  append-only release history
+    cost-log.ndjson               token usage per agent run
     architecture/
       architecture.md             all technical decisions — ## section:name anchors
-                                  (vision, tech-stack, data-model, actors,
-                                   api-interfaces, deployment, guardrails, configuration)
     capabilities/
       CAP-001/
-        intent.md                 2 paragraphs: experience promise + done/failure/edges
-        capability-spec.md        developer contract: criteria, interfaces, state, layout, data
-        build-report.yaml         overall_status, quality block, runtime info, test_plan
+        intent.md                 experience promise per capability
+        capability-spec.md        developer contract (machine-challenged, user-approved)
+        build-report.yaml         quality outcome and test plan
   .claude/
     settings.json                 SessionStart hook
-    hooks/spec-gantry-contract.sh contract injection script
-    CONTRACT.md                   binding directive (gitignored)
-    CLAUDE.md                     spec-gantry-notice prepended at project init
+    CONTRACT.md                   engagement directive (gitignored)
 </code></pre></div></div>
+
+<p>All spec files are plain-text Markdown and YAML — designed to be committed to git.</p>
 
 <hr />
 
-<h2 id="project-state--project-stateyaml">Project State — project-state.yaml</h2>
-
-<p>SpecGantry tracks pipeline progress in <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code>. You can read this file at any time to understand where your project is.</p>
-
-<p>Key fields:</p>
+<h2 id="project-stateyaml">project-state.yaml</h2>
 
 <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">project</span><span class="pi">:</span>
   <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">My</span><span class="nv"> </span><span class="s">App"</span>
   <span class="na">created</span><span class="pi">:</span> <span class="s">2026-07-19</span>
   <span class="na">release</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1.0.0"</span>
-  <span class="na">next_release_type</span><span class="pi">:</span> <span class="kc">null</span>          <span class="c1"># patch | minor | major</span>
 
-<span class="na">ideation_complete</span><span class="pi">:</span> <span class="kc">false</span>           <span class="c1"># true after ideation exits</span>
-<span class="na">auto_continue</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># true when [&gt;] is active</span>
+<span class="na">ideation_complete</span><span class="pi">:</span> <span class="kc">false</span>
+<span class="na">auto_continue</span><span class="pi">:</span> <span class="kc">false</span>
 
 <span class="na">capabilities</span><span class="pi">:</span>
   <span class="na">CAP-001</span><span class="pi">:</span>
     <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Recipe</span><span class="nv"> </span><span class="s">management"</span>
-    <span class="na">spec_done</span><span class="pi">:</span> <span class="kc">false</span>               <span class="c1"># true after user approves spec</span>
-    <span class="na">built</span><span class="pi">:</span> <span class="kc">false</span>                   <span class="c1"># true after code phase exits</span>
-    <span class="na">deployed</span><span class="pi">:</span> <span class="kc">false</span>                <span class="c1"># true after deploy</span>
+    <span class="na">spec_done</span><span class="pi">:</span> <span class="kc">false</span>
+    <span class="na">built</span><span class="pi">:</span> <span class="kc">false</span>
+    <span class="na">deployed</span><span class="pi">:</span> <span class="kc">false</span>
     <span class="na">depends_on</span><span class="pi">:</span> <span class="pi">[]</span>
-</code></pre></div></div>
 
-<p><strong>CWJ loop configuration</strong> — adjustable per project:</p>
-
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">cwj_loop</span><span class="pi">:</span>
+<span class="na">cwj_loop</span><span class="pi">:</span>
   <span class="na">max_iterations</span><span class="pi">:</span>
     <span class="na">ideation</span><span class="pi">:</span> <span class="m">5</span>
     <span class="na">spec</span><span class="pi">:</span> <span class="m">3</span>
     <span class="na">code</span><span class="pi">:</span> <span class="m">3</span>
 </code></pre></div></div>
 
-<p>Raise or lower these to control how many challenge cycles run before the pipeline surfaces unresolved gaps to you.</p>
-
 <hr />
 
 <h2 id="the-architecture-file">The Architecture File</h2>
 
-<p><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> contains all technical decisions in a single file. Each section uses a <code class="language-plaintext highlighter-rouge">## section:name</code> anchor so agents and developers can navigate directly to what they need:</p>
+<p><code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code> — all technical decisions in one place. Each section uses a <code class="language-plaintext highlighter-rouge">## section:name</code> anchor. Agents read only the sections relevant to their task; no capability can silently drift from what was decided.</p>
 
-<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># Architecture</span>
+<p>Standard sections: <code class="language-plaintext highlighter-rouge">vision</code>, <code class="language-plaintext highlighter-rouge">tech-stack</code>, <code class="language-plaintext highlighter-rouge">data-model</code>, <code class="language-plaintext highlighter-rouge">actors</code>, <code class="language-plaintext highlighter-rouge">api-interfaces</code>, <code class="language-plaintext highlighter-rouge">deployment</code>, <code class="language-plaintext highlighter-rouge">guardrails</code>, <code class="language-plaintext highlighter-rouge">configuration</code>.</p>
 
-<span class="gu">## section:vision</span>
-One sentence. What the system is.
-
-<span class="gu">## section:tech-stack</span>
-Every layer decided: language, runtime, framework, database, libraries.
-
-<span class="gu">## section:data-model</span>
-Every entity: name, key fields, owner, lifecycle.
-
-<span class="gu">## section:actors</span>
-Every user type and system actor: name, capabilities, data ownership.
-
-<span class="gu">## section:api-interfaces</span>
-Every endpoint: method + path, auth, request shape, response shape, error codes.
-
-<span class="gu">## section:deployment</span>
-Platform, container registry, scaling, secrets strategy, CI/CD.
-
-<span class="gu">## section:guardrails</span>
-Source layout, config location, secrets handling, build output, runtime storage.
-
-<span class="gu">## section:configuration</span>
-Every environment variable: name, description, example value.
-</code></pre></div></div>
-
-<p>The architecture file is written once at ideation exit and extended via amendment when requirements drift. Spec write and build agents read only the sections relevant to the capability they’re working on — not the full file.</p>
-
-<hr />
-
-<h2 id="code-anchor-schema">Code Anchor Schema</h2>
-
-<p>Every source file touched by the build or reverse-engineer agent gets one-line anchor comments. These let the investigate agent navigate the codebase without loading full files:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Anchor</th>
-      <th>Where</th>
-      <th>Example</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">@capability</code></td>
-      <td>Top of file</td>
-      <td><code class="language-plaintext highlighter-rouge">// @capability CAP-002 \| job posting</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">@intent</code></td>
-      <td>After <code class="language-plaintext highlighter-rouge">@capability</code></td>
-      <td><code class="language-plaintext highlighter-rouge">// @intent allows a company to create and publish a job listing</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">@entry</code></td>
-      <td>Above each route handler</td>
-      <td><code class="language-plaintext highlighter-rouge">// @entry POST /api/jobs \| create job listing</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">@contract</code></td>
-      <td>Above cross-layer functions</td>
-      <td><code class="language-plaintext highlighter-rouge">// @contract input: {...} → output: {...} \| errors: [422,500]</code></td>
-    </tr>
-  </tbody>
-</table>
-
-<p>These anchors are machine-readable comments — no runtime dependencies, safe to commit.</p>
-
-<hr />
-
-<h2 id="extension-points">Extension Points</h2>
-
-<p><strong>Custom guardrails</strong> — edit <code class="language-plaintext highlighter-rouge">## section:guardrails</code> in <code class="language-plaintext highlighter-rouge">specs/architecture/architecture.md</code>. Every build agent reads guardrails before writing code. Changes take effect on the next build.</p>
-
-<p><strong>CWJ loop configuration</strong> — edit <code class="language-plaintext highlighter-rouge">cwj_loop.max_iterations</code> in <code class="language-plaintext highlighter-rouge">project-state.yaml</code> to adjust how many challenge cycles each phase runs before capping and surfacing gaps to you.</p>
-
-<p><strong>Custom deployment platforms</strong> — the deployment agent supports GCP Cloud Run, AWS ECS/Fargate, Azure Container Apps, and Docker Compose. The deployment configuration in <code class="language-plaintext highlighter-rouge">## section:deployment</code> drives the generated <code class="language-plaintext highlighter-rouge">deploy.sh</code>.</p>
-
-<hr />
-
-<h2 id="security-model">Security Model</h2>
-
-<p><strong>Secrets</strong> — never hardcoded. Every secret is an environment variable named in <code class="language-plaintext highlighter-rouge">## section:configuration</code>. The build agent uses these names exactly. <code class="language-plaintext highlighter-rouge">.env.example</code> is generated automatically at deploy time with safe placeholder values.</p>
-
-<p><strong>Source annotations</strong> — <code class="language-plaintext highlighter-rouge">@capability</code>, <code class="language-plaintext highlighter-rouge">@intent</code>, <code class="language-plaintext highlighter-rouge">@entry</code>, <code class="language-plaintext highlighter-rouge">@contract</code> anchors written by the build and reverse-engineer agents contain no runtime secrets. They are safe to commit.</p>
-
-<p><strong>CONTRACT.md</strong> — the engagement directive injected at session start is gitignored by default. It contains no secrets — only instructions for Claude.</p>
+<p>Written once at ideation exit. Extended via amendment when requirements change — never rewritten wholesale.</p>
 
       </article>
 

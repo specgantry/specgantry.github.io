@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills & Agents — SpecGantry Docs</title>
-  <meta name="description" content="The two skills that power SpecGantry — the dashboard, all 12 agents, and every workflow covered.">
+  <meta name="description" content="Two commands that run your entire SDLC — the pipeline dashboard and developer cost intelligence.">
   <meta property="og:title" content="Skills & Agents">
-  <meta property="og:description" content="The two skills that power SpecGantry — the dashboard, all 12 agents, and every workflow covered.">
+  <meta property="og:description" content="Two commands that run your entire SDLC — the pipeline dashboard and developer cost intelligence.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://specgantry.github.io/docs/skills/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Skills & Agents">
-  <meta name="twitter:description" content="The two skills that power SpecGantry — the dashboard, all 12 agents, and every workflow covered.">
+  <meta name="twitter:description" content="Two commands that run your entire SDLC — the pipeline dashboard and developer cost intelligence.">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/style.css">
@@ -136,7 +136,7 @@
       <div class="sidebar-install">
         <div class="sidebar-install-title">Quick Install</div>
         <code class="sidebar-install-code">claude plugin marketplace add https://github.com/specgantry/specgantry.github.io</code>
-        <code class="sidebar-install-code">claude plugin install spec-gantry</code>
+        <code class="sidebar-install-code">claude plugin install spec-gantry@spec-gantry</code>
       </div>
     </aside>
 
@@ -145,41 +145,45 @@
       <article class="docs-article">
         <h1 id="skills--agents">Skills &amp; Agents</h1>
 
-<p>SpecGantry has two skills. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> is the one you use every day. <code class="language-plaintext highlighter-rouge">/track-cost</code> is your developer intelligence dashboard.</p>
+<p>Two commands. <code class="language-plaintext highlighter-rouge">/spec-gantry</code> runs everything. <code class="language-plaintext highlighter-rouge">/track-cost</code> shows you what it cost and why.</p>
 
 <hr />
 
 <h2 id="spec-gantry">/spec-gantry</h2>
 
-<p><strong>The only command you need to know.</strong> Run this at the start of every session.</p>
+<p>Run this at the start of every session. SpecGantry reads your project state, shows the pipeline dashboard, and routes you to the right action.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry
 </code></pre></div></div>
 
-<p>SpecGantry reads your project state, shows the pipeline dashboard, and routes you to the right action automatically.</p>
+<p>What happens depends on what’s in the directory:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Situation</th>
+      <th>What SpecGantry does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Empty directory</td>
+      <td>Start new project — enter name and vision</td>
+    </tr>
+    <tr>
+      <td>Source files, no <code class="language-plaintext highlighter-rouge">specs/</code></td>
+      <td>Reverse-engineer: synthesises a north star, architecture, and capability list from your code</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">specs/</code> exists</td>
+      <td>Resume — dashboard shows pipeline state and routes to the next action</td>
+    </tr>
+  </tbody>
+</table>
 
 <hr />
 
 <h3 id="the-dashboard">The Dashboard</h3>
-
-<p><strong>During ideation:</strong></p>
-
-<div class="docs-terminal">
-  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
-
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  Recipe Manager
-──────────────────────────────────────────────────────────
-  Ideation in progress  ·  🔄 challenge — round 2
-
-──────────────────────────────────────────────────────────
-  [1] Continue ideation               [$] Cost &amp; insights
-                                      [?] Help
-                                      [X] Exit
-──────────────────────────────────────────────────────────
-</code></pre></div>  </div>
-</div>
-
-<p><strong>During spec and build:</strong></p>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — spec-gantry</span></div>
@@ -238,9 +242,7 @@ Enter capability ID or action:  &gt;
   </tbody>
 </table>
 
-<hr />
-
-<h3 id="action-bar">Action Bar</h3>
+<p><strong>Key actions:</strong></p>
 
 <table>
   <thead>
@@ -252,149 +254,19 @@ Enter capability ID or action:  &gt;
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[&gt;]</code> Run to next pause</td>
-      <td>Auto-continue — runs until a genuine decision point</td>
+      <td>Auto-continue — runs the full pipeline until a genuine decision point</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[N]</code> New work</td>
-      <td>Describe a bug, improvement, or new capability</td>
+      <td>Describe a bug, improvement, or new capability — routes to the right phase</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">[$]</code> Cost &amp; insights</td>
       <td>Opens <code class="language-plaintext highlighter-rouge">/track-cost</code></td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">[A]</code> Architecture</td>
-      <td>Display <code class="language-plaintext highlighter-rouge">architecture.md</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">[S]</code> North star</td>
-      <td>Display <code class="language-plaintext highlighter-rouge">north-star.md</code></td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">[X]</code> Exit</td>
-      <td>Return to normal Claude Code</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr />
-
-<h3 id="the-12-agents">The 12 Agents</h3>
-
-<p>Three agents per CWJ phase, plus three supporting agents.</p>
-
-<p><strong>Ideation</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Agent</th>
-      <th>Model</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-challenge</code></td>
-      <td>Haiku</td>
-      <td>Fires up to 7 blocking questions per round. Specific to this project — not a checklist.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-judge</code></td>
-      <td>Haiku</td>
-      <td>“Could a developer start writing specs without inventing answers?” CLEAR or BLOCKED.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">ideation-write</code></td>
-      <td>Sonnet</td>
-      <td>Runs once on CLEAR. Writes north-star.md, architecture.md, and intent.md per capability.</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>Spec</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Agent</th>
-      <th>Model</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-challenge</code></td>
-      <td>Haiku</td>
-      <td>Developer-proxy. Asks what a developer would be blocked on building from the intent file.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-write</code></td>
-      <td>Sonnet</td>
-      <td>Writes capability-spec.md resolving every challenge. Extends north-star.md if new requirements surface.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">spec-judge</code></td>
-      <td>Haiku</td>
-      <td>“Could a developer build this without inventing any answer?” Emits the approval summary.</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>Code</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Agent</th>
-      <th>Model</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">code-plan</code></td>
-      <td>Sonnet</td>
-      <td>Iteration 1: plans build approach. Iteration 2+: classifies failures and plans targeted repair.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">code-build</code></td>
-      <td>Sonnet</td>
-      <td>Builds end-to-end. Writes anchor comments and <code class="language-plaintext highlighter-rouge">build-report.yaml</code>.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">code-challenge</code></td>
-      <td>Haiku</td>
-      <td>User-proxy. Reads source files (not the spec). Classifies each gap as code or spec.</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><strong>Supporting</strong></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Agent</th>
-      <th>Model</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">investigate</code></td>
-      <td>Haiku</td>
-      <td>Classifies problems as CODE_BUG / SPEC_GAP / REQUIREMENT_DRIFT / NEW_CAPABILITY before routing.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">deployment</code></td>
-      <td>Sonnet</td>
-      <td>North-star alignment check, then Dockerfiles, docker-compose, .env.example, deploy.sh.</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">reverse-engineer</code></td>
-      <td>Haiku</td>
-      <td>Synthesises north-star, architecture, capability stubs, and anchor tags from existing code.</td>
+      <td>Capability ID</td>
+      <td>Jump directly to a specific capability</td>
     </tr>
   </tbody>
 </table>
@@ -403,126 +275,73 @@ Enter capability ID or action:  &gt;
 
 <h2 id="track-cost">/track-cost</h2>
 
+<p>Cost is logged automatically after every agent run. <code class="language-plaintext highlighter-rouge">/track-cost</code> shows you what each capability cost, how many cycles it took, and which ones ran repair loops.</p>
+
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost
 </code></pre></div></div>
-
-<p>Cost data is logged automatically after every agent run to <code class="language-plaintext highlighter-rouge">specs/cost-log.ndjson</code>.</p>
-
-<hr />
-
-<h3 id="cost-dashboard">Cost Dashboard</h3>
 
 <div class="docs-terminal">
   <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost</span></div>
 
   <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SpecGantry v7  |  HireFlow  |  release 1.0.0
-Spec [████] 4/4  ·  Build [████] 4/4
 ──────────────────────────────────────────────────────────
 
 Release 1.0.0                          Challenge    Write    Judge    Total
 ───────────────────────────────────────────────────────────────────────────
 Ideation                                  $0.22    $0.81    $0.14    $1.17
-Investigation                                —     $0.04       —     $0.04
-Deployment                                   —     $0.21       —     $0.21
 
 [001] User authentication
   Spec                                    $0.09    $0.11    $0.07    $0.27
   Code                                    $0.18    $1.94    $0.12    $2.24
-  ────────────────────────────────────────────────────────────────────────
-  Capability total                        $0.27    $2.05    $0.19    $2.51
 
 [002] Job posting
   Spec                                    $0.11    $0.14    $0.09    $0.34
   Code                                    $0.31    $3.47    $0.28    $4.06  ◀ outlier
-  ────────────────────────────────────────────────────────────────────────
-  Capability total                        $0.42    $3.61    $0.37    $4.40
 
 ═══════════════════════════════════════════════════════════════════════════
 Total                                     $1.02    $6.72    $0.70    $8.44
 
-  [T] Show tokens   [I] Insights   Run /spec-gantry to return.
+  [I] Insights   [T] Show tokens   Run /spec-gantry to return.
 </code></pre></div>  </div>
 </div>
 
-<p><code class="language-plaintext highlighter-rouge">◀ outlier</code> marks any capability where the code phase ran more than one cycle.</p>
-
-<hr />
-
-<h3 id="insights-view">Insights View</h3>
-
-<p>Type <code class="language-plaintext highlighter-rouge">[I]</code> for iteration counts, challenge density, and outlier breakdown:</p>
-
-<div class="docs-terminal">
-  <div class="terminal-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="terminal-title">claude — track-cost insights</span></div>
-
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>── Insights ────────────────────────────────────────────────────────────────
-
-Iteration summary
-  CAP-001  Spec: 1 cycle · Code: 1 cycle
-  CAP-002  Spec: 2 cycles · Code: 3 cycles  ◀ most cycles
-
-Challenge density (avg questions per cycle)
-  Ideation   4.2 questions/round
-  CAP-001    Spec: 3 · Code: 2
-  CAP-002    Spec: 5 · Code: 6  ◀ most challenged
-
-Outliers
-  CAP-002: Job posting — code phase ran 3 cycles ($4.06 total)
-    Cycle 2 challenge: "User sees no progress during file upload"
-    Cycle 3 challenge: "Error shows raw exception, not which field failed"
-    Exit: achieved after cycle 3
-
-Cost efficiency
-  Avg cost per spec cycle:  $0.18
-  Avg cost per code cycle:  $1.05
-  Most expensive capability: CAP-002 ($4.40 — 52% of total build cost)
-
-  [C] Show cost table   Run /spec-gantry to return.
-</code></pre></div>  </div>
-</div>
-
-<p><strong>What the columns mean:</strong></p>
-<ul>
-  <li><strong>Challenge</strong> — cost of adversarial questioning. Low; high challenge cost relative to write signals genuine complexity.</li>
-  <li><strong>Write</strong> — cost of producing artifacts and code. Dominates total spend.</li>
-  <li><strong>Judge</strong> — cost of the unblock check. Consistent; high judge cost relative to challenge signals repeated rejection.</li>
-</ul>
+<p><code class="language-plaintext highlighter-rouge">◀ outlier</code> marks any capability where the code phase ran more than one cycle. Type <code class="language-plaintext highlighter-rouge">[I]</code> for a breakdown of iteration counts, challenge density, and what each repair cycle was fixing.</p>
 
 <hr />
 
 <h2 id="common-workflows">Common Workflows</h2>
 
 <p><strong>New project:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → enter name and vision → ideation loop → commit specs/ → [&gt;] run to completion
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → enter name and vision → ideation loop → [&gt;] run to completion
 </code></pre></div></div>
 
-<p><strong>Production bug:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [N] New work → describe bug → investigate classifies → routes to right phase → deploy patch
+<p><strong>Auto-run the full pipeline:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [&gt;] → specs all capabilities, builds all capabilities, pauses at decision points only
 </code></pre></div></div>
 
-<p><strong>Auto-continue:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [&gt;] → pipeline runs: spec all → build all → pauses at decision points only
+<p><strong>Production bug or new work:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [N] → describe the problem → investigate classifies → routes to the right phase
 </code></pre></div></div>
 
-<p><strong>Review costs:</strong></p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost → [I] insights → [C] back to cost table
+<p><strong>Check costs:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/track-cost → [I] insights
 </code></pre></div></div>
 
 <hr />
 
 <div class="next-steps-grid">
-  <a href="/docs/architecture" class="next-step-card">
-    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
-    <div>
-      <strong>Reference</strong>
-      <span>File structure, state flags, and extension points.</span>
-    </div>
-  </a>
   <a href="/docs/faq" class="next-step-card">
     <div class="next-step-icon"><i class="bi bi-question-circle"></i></div>
     <div>
       <strong>FAQ</strong>
       <span>Common questions on installation, costs, and troubleshooting.</span>
+    </div>
+  </a>
+  <a href="/docs/architecture" class="next-step-card">
+    <div class="next-step-icon"><i class="bi bi-diagram-3"></i></div>
+    <div>
+      <strong>Reference</strong>
+      <span>File structure and project state.</span>
     </div>
   </a>
 </div>

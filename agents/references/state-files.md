@@ -42,6 +42,9 @@ capabilities:
     exit_reason:
       spec: null     # achieved | capped | cycling
       code: null
+    narrative: null  # synthesized journey paragraph — rewritten after each judge/challenger verdict
+
+narrative: null      # project-level narrative — written at ideation exit, rewritten on REQUIREMENT_DRIFT
 ```
 
 **Valid `active_phase` values:**
@@ -59,6 +62,8 @@ capabilities:
 - `exit_reason` — orchestrator only (records how the loop exited)
 - `pending_spec_gap` — code-build agent or orchestrator
 - `pending_arch_gap` — spec-write agent or code-build agent
+- `narrative` (project-level) — ideation-write-agent (normal + amendment mode), reverse-engineer-subagent
+- `capabilities.[CAP-ID].narrative` — spec-write-agent (spec phase), code-build-agent (code phase)
 
 ---
 

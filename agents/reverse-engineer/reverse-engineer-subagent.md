@@ -166,6 +166,8 @@ capabilities:
     exit_reason:
       spec: null
       code: null
+    narrative: null  # populated by spec-write and code-build agents when spec/code phases run
+narrative: null      # project-level narrative — written by reverse-engineer in Pass 2
 ```
 
 Status mapping: `built` → `built:true · deployed:true` · `partial` or `missing` → `built:false · deployed:false`
@@ -174,6 +176,7 @@ Status mapping: `built` → `built:true · deployed:true` · `partial` or `missi
 
 **Pass 2 — after all intent.md and capability-spec.md files written:**
 - Set `arch_seeded: true`
+- Set `narrative` (project-level) — write one paragraph in past tense synthesizing what the codebase is, who it serves, the key technical decisions inferred, and what was unclear or left for the spec phase to resolve. 3–5 sentences. This gives RE-bootstrapped projects the same session-start context as ideation projects.
 
 ### `specs/capabilities/[CAP-ID]/intent.md` per capability
 

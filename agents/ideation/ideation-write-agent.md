@@ -135,6 +135,19 @@ Write from the template at `agents/templates/project-state-skeleton.yaml`. Subst
 
 Set `ideation_complete: true` and `arch_seeded: true` after all files are written.
 
+### 5. Project-level narrative in `specs/project-state.yaml`
+
+After writing all artifacts, write a single paragraph to the `narrative` field in `specs/project-state.yaml`. This is the project-level narrative — it does not belong to any single capability.
+
+Write one paragraph in prose, past tense, covering:
+- What problem this project solves and for whom
+- The key architectural bets made during ideation (technology choices, data model decisions, design principles that shaped the answers)
+- What was seriously challenged and either accepted or rejected, and why
+
+Keep it to 3–5 sentences. This is not a summary of north-star.md — it is the story of how the project came to be what it is.
+
+**In amendment mode:** rewrite the project-level narrative to incorporate the drift. Acknowledge what changed and why, building on the existing paragraph rather than discarding it.
+
 ---
 
 ## Write order (crash safety)
@@ -143,9 +156,16 @@ Set `ideation_complete: true` and `arch_seeded: true` after all files are writte
 2. Write `specs/architecture/architecture.md`
 3. Write each `specs/capabilities/[CAP-ID]/intent.md`
 4. Write `specs/project-state.yaml` with `ideation_complete: false` initially
-5. Update `specs/project-state.yaml`: set `ideation_complete: true`, `arch_seeded: true`
+5. Update `specs/project-state.yaml`: set `narrative` (project-level paragraph)
+6. Update `specs/project-state.yaml`: set `ideation_complete: true`, `arch_seeded: true`
 
-If you crash between steps 4 and 5, the orchestrator's P2 recovery route will detect `arch_seeded: false` and re-enter.
+Step 6 is last deliberately — if the agent crashes after step 5, `ideation_complete` is still false and the orchestrator will re-enter ideation cleanly. The narrative write (step 5) is idempotent and safe to repeat.
+
+**Amendment mode write order:**
+1. Update `specs/north-star.md` (append paragraph + appendix question)
+2. Update `specs/architecture/architecture.md` (edit affected sections only)
+3. Update `specs/capabilities/[CAP-ID]/intent.md` if named in findings
+4. Update `specs/project-state.yaml`: rewrite `narrative` (project-level paragraph)
 
 ---
 
@@ -182,7 +202,7 @@ Invoked when `mode: amendment`. The orchestrator passes `investigation_findings`
 1. `agents/_shared/preamble.md` — once, first.
 2. `specs/north-star.md` — read fully. This is what you are amending.
 3. `specs/architecture/architecture.md` — read sections relevant to the drift.
-4. `specs/project-state.yaml` — read capability list.
+4. `specs/project-state.yaml` — read capability list and existing `narrative` field.
 
 **What to change:**
 
@@ -219,7 +239,7 @@ Fill only the section(s) named in `gap_reason`. Use Edit to replace `_not yet de
 - Design decisions captured in north-star.md
 - The capability list in project-state.yaml (for data model and API interface completeness)
 
-Do not touch any section that is already filled. Do not modify north-star.md.
+Do not touch any section that is already filled. Do not modify north-star.md. Do not touch the `narrative` field in project-state.yaml.
 
 **Return signal:**
 ```

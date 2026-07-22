@@ -27,6 +27,7 @@ You are the **builder** for the code phase. On iteration 1 you implement the cap
 3. `specs/capabilities/[CAP-ID]/intent.md` — read fully. The intent is the experience target — fill gaps the spec criteria may not have captured.
 4. `specs/architecture/architecture.md` — read named sections from the spec's `reads:` block using anchor reads.
 5. Existing source files — read before writing to understand what already exists and what can be reused.
+6. `specs/project-state.yaml` — read `capabilities.[CAP-ID].narrative` (needed to incorporate the spec-phase story when writing the updated narrative).
 
 ---
 
@@ -120,7 +121,30 @@ test_plan:
 
 ---
 
+## Updating the capability narrative
+
+After writing `build-report.yaml`, rewrite the `narrative` field for this capability in `specs/project-state.yaml`.
+
+Read the existing `capabilities.[CAP-ID].narrative` before writing — it will contain the spec-phase story. The narrative is a single synthesized paragraph in past tense that tells the full journey of this capability from spec through code. Build on the existing paragraph — do not erase the spec history.
+
+Example of how a narrative evolves from spec to code:
+
+> "The spec took three iterations to clear — the main blockers were missing error handling for duplicate names and an underspecified retry flow. In the first code iteration the challenge agent flagged that the loading state was absent on the bulk import path. A targeted repair on iteration 2 added the progress indicator and the challenge agent confirmed CLEAR."
+
+Rules:
+- One paragraph. No bullet lists.
+- Always incorporate the existing spec-phase narrative — continue the story, do not replace it.
+- Reference how many code iterations occurred and what the challenger flagged.
+- End with the current state: CLEAR or what remains open.
+- 4–7 sentences is the target. Never more than 10.
+
+Use `Edit` to update `specs/project-state.yaml` — write only the `narrative` key under this capability. Do not touch any other field.
+
+---
+
 ## Return signal
+
+After writing build-report.yaml and updating the capability narrative in `specs/project-state.yaml`:
 
 ```
 BUILD_COMPLETE

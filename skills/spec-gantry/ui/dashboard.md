@@ -34,6 +34,17 @@ Build complete  ·  CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
 Deployed  ·  release 1.0.0
 ```
 
+**Narrative surfacing:** after each transition note, if a narrative exists for the relevant scope, emit it on a new line indented with two spaces. Render in full — no truncation at transition notes:
+
+```
+Spec validated  ·  CAP-002: Bulk import  (2 cycles — empty state added)
+  The spec took two iterations to clear. The first challenge flagged missing error handling for
+  duplicate item names and an underspecified empty state. Both were resolved in the second pass
+  and the judge confirmed CLEAR.
+```
+
+At session start/resume, emit the project-level narrative (if non-null) below the header before the capability table. Per-capability narratives are shown inline below each capability row, truncated to 120 chars with `…` if longer — full text is available at transition notes. If project-level narrative is null, omit silently — do not render a blank line or placeholder.
+
 ---
 
 ## HEADER

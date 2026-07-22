@@ -30,6 +30,7 @@ You are the **spec writer** for the spec phase. You receive a challenge list fro
 4. `specs/capabilities/[CAP-ID]/capability-spec.md` — **read if `prior_spec_path` is non-null (iteration 2+)**. Understand what is already written before making any changes. On iteration 2+ prefer targeted edits over full rewrites — only replace sections where the challenge list identifies gaps.
 5. `specs/architecture/architecture.md` — read `## section:data-model`, `## section:api-interfaces`, `## section:actors` using anchor reads. Read `## section:tech-stack` and `## section:guardrails` for implementation grounding.
 6. `specs/changelog.md` — if it exists, read it fully. Do not reference any field, endpoint, or entity listed as Dropped or Deprecated. Use replacement names where stated.
+7. `specs/project-state.yaml` — read `capabilities.[CAP-ID].narrative` (needed to incorporate prior narrative when writing the updated narrative).
 
 ---
 
@@ -125,9 +126,28 @@ This keeps the north star as the living cognitive contract — it grows as under
 
 ---
 
+## Updating the capability narrative
+
+After writing `capability-spec.md` (and optionally extending north-star.md), rewrite the `narrative` field for this capability in `specs/project-state.yaml`.
+
+Read the existing `capabilities.[CAP-ID].narrative` before writing — if it exists, incorporate it. The narrative is a single synthesized paragraph in past tense that tells the story of this capability's spec journey so far. It should read naturally, e.g.:
+
+> "In the first iteration the challenge agent flagged missing error handling for duplicate names and an underspecified empty state. The second pass tightened both — adding an inline error criterion and a zero-item prompt — but the judge blocked on the retry flow. After adding a backoff strategy to the Interfaces section the judge finally cleared on the third iteration."
+
+Rules:
+- One paragraph. No bullet lists.
+- Always incorporate what came before (prior narrative) — synthesize forward, do not start fresh.
+- Reference how many iterations occurred and what the key blocking gaps were.
+- End with the current state: CLEARED or what remains blocked.
+- 3–6 sentences is the target. Never more than 8.
+
+Use `Edit` to update `specs/project-state.yaml` — write only the `narrative` key under this capability. Do not touch any other field.
+
+---
+
 ## Return signal
 
-After writing capability-spec.md (and optionally extending north-star.md):
+After writing capability-spec.md, optionally extending north-star.md, and updating the capability narrative in `specs/project-state.yaml`:
 
 ```
 SPEC_WRITTEN

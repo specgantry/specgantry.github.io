@@ -179,6 +179,15 @@ function readProjectRelease(projectDir) {
   } catch { return null; }
 }
 
+function readActiveCapability(projectDir) {
+  try {
+    const yaml = fs.readFileSync(path.join(projectDir, 'specs', 'project-state.yaml'), 'utf8');
+    const m = yaml.match(/^\s+active_capability:\s+(?:"?([^"\n]+)"?|null)/m);
+    if (!m || m[1] === undefined || m[0].includes(': null')) return null;
+    return m[1].trim() || null;
+  } catch { return null; }
+}
+
 // ─── Session / transcript path resolution ─────────────────────────────────────
 function projectSlug(dir) {
   return path.normalize(dir).replace(/[/\\]/g, '-').replace(/:/g, '-');
@@ -249,11 +258,14 @@ function buildCostEntry({ phase, agentType, model, projectDir, tokens }) {
   const cache_write_cost_usd = +(tokens.cache_creation_tokens / M * rates.cache_write_per_1m).toFixed(8);
   const cache_read_cost_usd  = +(tokens.cache_read_tokens     / M * rates.cache_read_per_1m ).toFixed(8);
   const total_cost_usd       = +(input_cost_usd + output_cost_usd + cache_write_cost_usd + cache_read_cost_usd).toFixed(8);
+  const capability = PROJECT_LEVEL_PHASES.has(phase)
+    ? null
+    : readActiveCapability(projectDir);
   return {
     phase,
     agent: agentType,
     model,
-    capability: null,
+    capability,
     release: readProjectRelease(projectDir) || 'unknown',
     date: new Date().toISOString().slice(0, 10),
     input_tokens:          tokens.input_tokens,
@@ -285,7 +297,7 @@ module.exports = {
   CLAUDE_HOME, PLUGIN_DIR, RATES_CACHE, PROJECT_DIR,
   AGENT_MAP, PROJECT_LEVEL_PHASES, FALLBACK_RATES,
   loadCachedRates, getRatesForModel, atomicWriteJson,
-  appendCostLog, readProjectRelease,
+  appendCostLog, readProjectRelease, readActiveCapability,
   sumTokensFromSlice,
   resolveTranscriptPath,
   stampPath, writeStamp, readStamp, deleteStamp,

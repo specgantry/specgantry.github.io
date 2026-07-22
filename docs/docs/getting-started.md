@@ -26,7 +26,7 @@ $ claude plugin install spec-gantry@spec-gantry
 ```
 </div>
 
-Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.5`
+Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.6`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once — every subsequent project just needs the second command.

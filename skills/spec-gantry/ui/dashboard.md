@@ -9,32 +9,29 @@ Reference for the SpecGantry v7 orchestrator. Use these templates verbatim when 
 Used whenever surfacing a challenge question during ideation turns (no dashboard, no header):
 
 ```
-──────────────────────────────────────────────────────────
   [Phase · Round label]   (e.g. "Ideation · Round 2 of 5")
-──────────────────────────────────────────────────────────
 
 [question text, rendered as-is from the challenge agent]
 ```
 
-Omit the label line for spec approval and investigation confirmation turns — use only the separator.
+Omit the label line for spec approval and investigation confirmation turns.
 
 ---
 
 ## Transition note format
 
 ```
-✓ [phase] complete  ·  [capability or project level]
-──────────────────────────────────────────────────────────
+[phase] complete  ·  [capability or project level]
 ```
 
 Examples:
 ```
-✓ Ideation complete  ·  Menu management · Bulk import · Analytics dashboard
-✓ Spec validated  ·  CAP-002: Bulk import  (2 cycles — empty state added)
-✓ All specs validated  ·  ready to build
-✓ Build complete  ·  CAP-002  ·  quality: pass (1 cycle)
-✓ Build complete  ·  CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
-✓ Deployed  ·  release 1.0.0
+Ideation complete  ·  Menu management · Bulk import · Analytics dashboard
+Spec validated  ·  CAP-002: Bulk import  (2 cycles — empty state added)
+All specs validated  ·  ready to build
+Build complete  ·  CAP-002  ·  quality: pass (1 cycle)
+Build complete  ·  CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
+Deployed  ·  release 1.0.0
 ```
 
 ---
@@ -45,28 +42,25 @@ Always rendered first, same in all states:
 
 ```
 SpecGantry v7  |  [project.name or "New Project"]  |  release [project.release]
-──────────────────────────────────────────────────────────
 ```
 
-**Update check:** before rendering the header, read `.claude/spec-gantry-update-check.txt`. If it exists and contains `UPDATE_AVAILABLE`, append one line after the separator:
+**Update check:** before rendering the header, read `.claude/spec-gantry-update-check.txt`. If it exists and contains `UPDATE_AVAILABLE`, append one line after the header:
 
 ```
-🎉 SpecGantry [remote] is out!  You're on [local] — run: claude plugin update spec-gantry
-──────────────────────────────────────────────────────────
+SpecGantry [remote] is out!  You're on [local] — run: claude plugin update spec-gantry
 ```
 
-**In STATE 2 (pipeline active)**, append a progress line below the separator:
+**In STATE 2 (pipeline active)**, append a progress line below the header:
 
 ```
-Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
-──────────────────────────────────────────────────────────
+Ideation [done]  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
 ```
 
 Progress bars: 4 chars — `█` filled, `░` remaining.
-- **Ideation** — `✅` when `ideation_complete:true`, otherwise `🔄 [sub-phase]`
+- **Ideation** — `[done]` when `ideation_complete:true`, otherwise `~ [sub-phase]`
 - **Spec** counts capabilities where `spec_done:true`
 - **Build** counts capabilities where `built:true`
-- **Deploy** — `[████] ✅` when all `deployed:true`; `[░░░░] –` otherwise
+- **Deploy** — `[████] done` when all `deployed:true`; `[░░░░] –` otherwise
 
 ---
 
@@ -76,13 +70,13 @@ Derive from `project.active_phase`:
 
 | active_phase | Spec column label | Build column label |
 |---|---|---|
-| `spec_challenge` | `🔄 challenge` | — |
-| `spec_write` | `🔄 write` | — |
-| `spec_judge` | `🔄 judge` | — |
-| `code_plan` | — | `🔄 plan` |
-| `code_build` | — | `🔄 build` |
-| `code_challenge` | — | `🔄 challenge` |
-| `code_challenge` cycle 2+ | — | `🔄 challenge·N` |
+| `spec_challenge` | `~ challenge` | — |
+| `spec_write` | `~ write` | — |
+| `spec_judge` | `~ judge` | — |
+| `code_plan` | — | `~ plan` |
+| `code_build` | — | `~ build` |
+| `code_challenge` | — | `~ challenge` |
+| `code_challenge` cycle 2+ | — | `~ challenge·N` |
 
 Cycle number from `.cwj-loop.yaml → iteration` for the active capability. Show `·N` only when N ≥ 2.
 
@@ -94,7 +88,6 @@ Used when: no project exists, or ideation still in progress.
 
 ```
 SpecGantry v7  |  [project.name or "New Project"]
-──────────────────────────────────────────────────────────
   [phase indicator]
 ```
 
@@ -103,10 +96,10 @@ Phase indicator examples:
   No project found in this directory.
 ```
 ```
-  Ideation in progress  ·  🔄 challenge — round 2
+  Ideation in progress  ·  ~ challenge — round 2
 ```
 ```
-  Ideation in progress  ·  🔄 judge — checking completeness
+  Ideation in progress  ·  ~ judge — checking completeness
 ```
 
 ---
@@ -120,12 +113,12 @@ Capability table:
 ```
   ID       Capability                         Spec         Build
   ──────────────────────────────────────────────────────────────────────
-  [001]   Menu item management                 ✅           ✅
-  [002]   Bulk import                          ✅           🔄 challenge·2
-  [003]   Analytics dashboard                  🔄 judge     ⏳
-  [004]   Export to CSV                        ⏳           ○           depends on 003
-  ──────────────────────────────────────────────────────────────────────
-  Release 1.0.0                                             ○ not deployed
+  [001]   Menu item management                 done         done
+  [002]   Bulk import                          done         ~ challenge·2
+  [003]   Analytics dashboard                  ~ judge      ready
+  [004]   Export to CSV                        ready        -           depends on 003
+
+  Release 1.0.0                                             not deployed
 ```
 
 Rules:
@@ -135,24 +128,24 @@ Rules:
 - Blocked capabilities show `depends on NNN[,NNN]` inline at end of row
 
 **Spec column icon:**
-- `✅` — `spec_done:true`
-- `🔄 [label]` — active capability in spec phase
-- `🔴` — blocked (a `depends_on` capability has `spec_done:false`)
-- `⏳` — ready (all dependencies met, `spec_done:false`, not active)
-- `○` — not reached
+- `done` — `spec_done:true`
+- `~ [label]` — active capability in spec phase
+- `blocked` — blocked (a `depends_on` capability has `spec_done:false`)
+- `ready` — ready (all dependencies met, `spec_done:false`, not active)
+- `-` — not reached
 - `~` — stub (RE capability: `built:true · spec_done:false`)
 
 **Build column icon:**
-- `✅` — `built:true`
-- `🔄 [label]` — active capability in code phase
-- `🔴` — blocked
-- `⏳` — ready (`spec_done:true · built:false`, not blocked, not active)
-- `○` — not reached (`spec_done:false`)
+- `done` — `built:true`
+- `~ [label]` — active capability in code phase
+- `blocked` — blocked
+- `ready` — ready (`spec_done:true · built:false`, not blocked, not active)
+- `-` — not reached (`spec_done:false`)
 
-**Release row** — always last, separated by a thin rule:
-- `○ not deployed` — any capability has `deployed:false`
-- `🔄 deploying` — `active_phase: deployment`
-- `✅ deployed [YYYY-MM-DD]` — all capabilities `deployed:true`
+**Release row** — always last:
+- `not deployed` — any capability has `deployed:false`
+- `~ deploying` — `active_phase: deployment`
+- `deployed [YYYY-MM-DD]` — all capabilities `deployed:true`
 
 ---
 
@@ -161,14 +154,14 @@ Rules:
 Rendered above the dashboard. Used for CAPPED, CYCLING, arch gaps, spec gaps.
 
 ```
-⚠ Spec loop capped  ·  CAP-003 (3 cycles)
+Spec loop capped  ·  CAP-003 (3 cycles)
   Unresolved: output format not specified for AI result
 
   [Y] Accept and continue   [E] Address manually   [X] Stop
 ```
 
 ```
-⚠ Architecture gap  ·  section:data-model missing entity for imported items
+Architecture gap  ·  section:data-model missing entity for imported items
   Recovering now — pipeline resumes at spec for CAP-002 when resolved.
 ```
 
@@ -180,21 +173,18 @@ Always the last element rendered.
 
 State 1 (no pipeline):
 ```
-──────────────────────────────────────────────────────────────────────
   [1] Start new project               [$] Cost & insights
   [2] Analyse existing codebase       [?] Help
                                       [X] Exit
-──────────────────────────────────────────────────────────────────────
 ```
 
 State 2 (pipeline active):
 ```
-──────────────────────────────────────────────────────────────────────
   Type a capability ID to manage it   [$] Cost & insights
   [1] [contextual action]             [?] Help
   [>] Run to next pause               [X] Exit
   [N] New work
-──────────────────────────────────────────────────────────────────────
+
 Enter capability ID or action:  >
 ```
 
@@ -226,7 +216,7 @@ Enter capability ID or action:  >
 - Capability with `built:true · spec_done:false` → stub spec path
 - Capability with `spec_done:true · built:true` → inline prompt:
   ```
-  CAP-[NNN]: [title]  ·  ✅ spec · ✅ built
+  CAP-[NNN]: [title]  ·  spec done · built
   ──────────────────────────────────────────
   What would you like to change?  >
   ```

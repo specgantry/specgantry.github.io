@@ -40,22 +40,21 @@ What happens depends on what's in the directory:
 
 ```
 SpecGantry v7  |  HireFlow  |  release 1.0.0
-Ideation ✅  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
-──────────────────────────────────────────────────────────
+Ideation [done]  ·  Spec [███░] 3/4  ·  Build [██░░] 2/4  ·  Deploy [░░░░] –
   ID       Capability                         Spec         Build
   ──────────────────────────────────────────────────────────────────────
-  [001]   User authentication                 ✅           ✅
-  [002]   Job posting                         ✅           🔄 challenge·2
-  [003]   Application review                  🔄 judge     ⏳
-  [004]   Candidate browse and apply          ⏳           ○
-  ──────────────────────────────────────────────────────────────────────
-  Release 1.0.0                                            ○ not deployed
-──────────────────────────────────────────────────────────────────
+  [001]   User authentication                 done         done
+  [002]   Job posting                         done         ~ challenge·2
+  [003]   Application review                  ~ judge      ready
+  [004]   Candidate browse and apply          ready        -
+
+  Release 1.0.0                                            not deployed
+
   Type a capability ID to manage it   [$] Cost & insights
   [1] Build next — [002]: Job…        [?] Help
   [>] Run to next pause               [X] Exit
   [N] New work
-──────────────────────────────────────────────────────────────────
+
 Enter capability ID or action:  >
 ```
 </div>
@@ -64,11 +63,11 @@ Enter capability ID or action:  >
 
 | Icon | Meaning |
 |---|---|
-| `✅` | CLEAR — judge confirmed next phase not blocked |
-| `🔄 [label]` | Active — shows which CWJ step and iteration |
-| `🔴` | Blocked by a dependency |
-| `⏳` | Ready — not yet started |
-| `○` | Not yet reached |
+| `done` | CLEAR — judge confirmed next phase not blocked |
+| `~ [label]` | Active — shows which CWJ step and iteration |
+| `blocked` | Blocked by a dependency |
+| `ready` | Ready — not yet started |
+| `-` | Not yet reached |
 
 **Key actions:**
 

@@ -26,7 +26,7 @@ $ claude plugin install spec-gantry@spec-gantry
 ```
 </div>
 
-Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.6`
+Claude Code confirms: `✓ Plugin installed: SpecGantry v7.0.7`
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once — every subsequent project just needs the second command.
@@ -107,21 +107,20 @@ After ideation, every `/spec-gantry` session starts with the dashboard:
 
 ```
 SpecGantry v7  |  Recipe Manager  |  release 1.0.0
-Ideation ✅  ·  Spec [██░] 2/3  ·  Build [█░░] 1/3  ·  Deploy [░░░░] –
-──────────────────────────────────────────────────────────
+Ideation [done]  ·  Spec [██░] 2/3  ·  Build [█░░] 1/3  ·  Deploy [░░░░] –
   ID       Capability                         Spec         Build
   ──────────────────────────────────────────────────────────────────
-  [001]   Recipe management                   ✅           ✅
-  [002]   Tag and organise                    ✅           🔄 challenge·2
-  [003]   Ingredient search                   🔄 judge     ⏳
-  ──────────────────────────────────────────────────────────────────
-  Release 1.0.0                                            ○ not deployed
-──────────────────────────────────────────────────────────────────
+  [001]   Recipe management                   done         done
+  [002]   Tag and organise                    done         ~ challenge·2
+  [003]   Ingredient search                   ~ judge      ready
+
+  Release 1.0.0                                            not deployed
+
   Type a capability ID to manage it   [$] Cost & insights
   [1] Build next — [002]: Tag…        [?] Help
   [>] Run to next pause               [X] Exit
   [N] New work
-──────────────────────────────────────────────────────────────────
+
 Enter capability ID or action:  >
 ```
 </div>

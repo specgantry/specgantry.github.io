@@ -76,7 +76,10 @@ Enter capability ID or action:  >
 | `[>]` Run to next pause | Auto-continue — runs the full pipeline until a genuine decision point |
 | `[N]` New work | Describe a bug, improvement, or new capability — routes to the right phase |
 | `[$]` Cost & insights | Opens `/track-cost` |
+| `patch` / `minor` / `major` | Generate a release of that type directly — skips the picker |
 | Capability ID | Jump directly to a specific capability |
+
+When all capabilities are built, `[1]` shows `Generate release [?]`. Selecting it (or typing the release type directly) opens a one-step picker showing the computed version for each option. The deployment agent then generates `deploy.sh` and related artifacts — run `./specs/deploy.sh` to execute the actual deployment.
 
 ---
 
@@ -128,6 +131,16 @@ Total                                     $1.02    $6.72    $0.70    $8.44
 **Auto-run the full pipeline:**
 ```
 /spec-gantry → [>] → specs all capabilities, builds all capabilities, pauses at decision points only
+```
+
+**Generate a patch release:**
+```
+/spec-gantry → type `patch` → deployment agent generates deploy.sh → run ./specs/deploy.sh
+```
+
+**Generate a minor or major release:**
+```
+/spec-gantry → type `minor` or `major` → pick version at prompt → run ./specs/deploy.sh
 ```
 
 **Production bug or new work:**

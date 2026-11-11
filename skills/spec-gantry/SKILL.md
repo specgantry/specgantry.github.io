@@ -284,12 +284,12 @@ After every subagent returns, re-read all state files before rendering.
 | Ideation in progress | `Continue ideation` |
 | `ideation_complete:true` · next unblocked capability has `spec_done:false · built:false` | `Spec next — [CAP-ID]: [title]` |
 | `ideation_complete:true` · next unblocked capability has `spec_done:true · built:false` | `Build next — [CAP-ID]: [title]` |
-| All `built:true` · any `deployed:false` | `Deploy release [version]` |
+| All `built:true` · any `deployed:false` | `Generate release [version]` |
 | `ideation_complete:true` · any `built:true · spec_done:false` | `Complete stub spec — [CAP-ID]: [title]` |
 | `ideation_complete:true` · `auto_continue:false` · at least one capability pending | `> Run to next pause` |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 
-**`[version]` computation:** read `project.release` and `project.next_release_type`. Apply: `null` → unchanged, `patch` → increment patch, `minor` → increment minor + reset patch, `major` → increment major + reset minor + patch.
+**`[version]` computation:** read `project.release` and `project.next_release_type`. Apply: `null` → unchanged, `patch` → increment patch, `minor` → increment minor + reset patch, `major` → increment major + reset minor + patch. When `next_release_type` is null, show `[?]` as the version placeholder in the action label — the user will pick the type at the picker step.
 
 `[N] New work` always appears when `ideation_complete:true`.
 
@@ -303,6 +303,7 @@ After every subagent returns, re-read all state files before rendering.
 - `>` → set `auto_continue: true` · re-enter routing loop
 - `$` → invoke `/track-cost`
 - `[S]` → show `specs/north-star.md` in full, then re-render dashboard
+- **Release phrase** — if all capabilities `built:true` and input matches any of: `patch`, `hotfix`, `minor`, `feature`, `major`, `release patch`, `release minor`, `release major`, `generate release`, `deploy`, `new release` → extract release type (`patch`/`minor`/`major`; treat `hotfix` as `patch`, `feature` as `minor`), set `project.next_release_type` accordingly, route to `confirm_and_deploy` (skipping the picker)
 - Lettered command → execute
 - Invalid → re-render with one-line error above header
 
@@ -509,7 +510,7 @@ The code loop is fully automated — plan, build, challenge, repeat without user
 On spec gap (`pending_spec_gap` set by code-plan agent): clear active_capability/phase · **re-render dashboard** · re-route to P1. After P1 resolves: restore active_capability · **re-render dashboard** · re-enter code loop at iteration 1 fresh.
 
 When all capabilities have `built:true`:
-- **Re-render full dashboard** (action bar shows `[1] Deploy release [version]`)
+- **Re-render full dashboard** (action bar shows `[1] Generate release [?]`)
 - Route to `confirm_and_deploy`
 
 ---
@@ -521,7 +522,7 @@ When all capabilities have `built:true`:
 
 **Pre-gate check:** verify `build-report.yaml` exists with `overall_status: pass` for every capability. If missing or failed:
 ```
-✗ Cannot deploy — build report missing or failed:
+✗ Cannot generate release — build report missing or failed:
   [CAP-ID]: [title] — [missing | overall_status: fail]
   Fix: run /spec-gantry to rebuild.
 ```
@@ -529,20 +530,41 @@ Halt · ⏸
 
 **Quality warning:** if any capability has `quality.overall: partial` or `capped`, surface non-blocking warning before proceeding.
 
-**Step 0 — Deployment readiness check.** Read `## section:deployment` from architecture.md. If `_not yet decided_`:
+**Step 0 — Release type.** If `project.next_release_type` is null (not already set by input handling or classify_and_route), show the release-type picker:
+
+```
+Release type:
+  [1] Patch  — bug fixes only              → [x.y.Z+1]
+  [2] Minor  — new capabilities            → [x.Y+1.0]
+  [3] Major  — breaking changes            → [X+1.0.0]
+  [X] Cancel
+```
+
+Compute and show the concrete version number for each option from `project.release`. On selection, set `project.next_release_type` accordingly and proceed. On `[X]`: re-render dashboard · stop.
+
+If `next_release_type` is already set (set by input handling or a prior `classify_and_route` step), skip this picker and proceed directly.
+
+**Step 1 — Deployment readiness check.** Read `## section:deployment` from architecture.md. If `_not yet decided_`:
 ```
 ⚠ Deployment target not configured.
   Run ideation to complete the deployment section.
   [1] Return to ideation   [X] Cancel
 ```
 
-**Step 1 — Changelog update.** If `project.next_release_type` is non-null (this is not the first release): create or append to `specs/changelog.md` using the template from `agents/templates/changelog-skeleton.md`. The orchestrator writes a skeleton block for this release; the user may fill in the details, or leave it for the deployment agent to derive from build reports.
+**Step 2 — Changelog update.** If `project.next_release_type` is non-null (this is not the first release): create or append to `specs/changelog.md` using the template from `agents/templates/changelog-skeleton.md`. The orchestrator writes a skeleton block for this release; the user may fill in the details, or leave it for the deployment agent to derive from build reports.
 
-**Step 2 — Deploy.** Compute release version. Set `project.active_phase: deployment`.
+**Step 3 — Generate release artifacts.** Compute release version. Set `project.active_phase: deployment`.
 
 Invoke: `spec-gantry:deployment:deployment-subagent` with `project_dir`, `release_version: [computed version]`.
 
-After: if any capability still `deployed:false` → emit deployment incomplete error · re-render · ⏸ pause. Else:
+The deployment agent generates `specs/deploy.sh`, Dockerfiles, `docker-compose.yml`, and `specs/.env.example`. It does **not** execute the deploy. Surface this clearly on completion:
+
+```
+Release [version] ready — artifacts generated in specs/
+  Run ./specs/deploy.sh to deploy.
+```
+
+After: if any capability still `deployed:false` → emit generation incomplete error · re-render · ⏸ pause. Else:
 - Set `project.release: [computed version]`
 - Set `project.next_release_type: null`
 - Clear `project.active_capability` and `project.active_phase`

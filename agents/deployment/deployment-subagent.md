@@ -96,12 +96,14 @@ On `E`: update architecture.md `## section:deployment`, re-show. On `X`: halt.
 
 ## Step 3 — Pre-flight checks
 
-Run platform-specific readiness checks. Show as a pass/fail table with fix hints. Block on failures. User may type `[S] Skip` to proceed anyway (adds `# WARNING: pre-flight skipped` to deploy.sh header).
+Run platform-specific readiness checks. Show as a pass/fail table — every failure must include a human-readable fix hint. Block on failures. All checks must run before any Docker build or registry push. User may type `[S] Skip` to proceed anyway (adds `# WARNING: pre-flight skipped` to deploy.sh header).
 
-**GCP:** gcloud CLI, auth, project set, Artifact Registry API, Cloud Run API, Docker daemon, ADC.
-**AWS:** AWS CLI, credentials, ECR accessible, ECS cluster exists, Docker daemon.
-**Azure:** az CLI, logged in, ACR accessible, container app exists, Docker daemon.
-**Docker Compose:** Docker installed, docker-compose installed, Docker daemon.
+**GCP:** gcloud CLI · fix: `brew install google-cloud-sdk` | auth · fix: `gcloud auth login` | project set · fix: `gcloud config set project PROJECT_ID` | Artifact Registry API · fix: `gcloud services enable artifactregistry.googleapis.com` | Cloud Run API · fix: `gcloud services enable run.googleapis.com` | Docker daemon · fix: `open -a Docker` | ADC · fix: `gcloud auth application-default login`.
+**AWS:** AWS CLI · fix: `brew install awscli` | credentials · fix: `aws configure` | ECR accessible · fix: check IAM permissions | ECS cluster exists · fix: create via console or `aws ecs create-cluster` | Docker daemon · fix: `open -a Docker`.
+**Azure:** az CLI · fix: `brew install azure-cli` | logged in · fix: `az login` | ACR accessible · fix: check RBAC role | container app exists · fix: create via portal | Docker daemon · fix: `open -a Docker`.
+**Docker Compose:** Docker installed · fix: install Docker Desktop | docker-compose installed · fix: `brew install docker-compose` | Docker daemon · fix: `open -a Docker`.
+
+In the generated `deploy.sh` pre-flight block: guard every required env var with `${VAR:?'VAR is required — see .env.example'}` so the script fails immediately with a clear message rather than silently using an empty value.
 
 ---
 
@@ -131,20 +133,39 @@ Write `specs/docker-compose.yml`. One service per capability in dependency order
 
 ## Step 7 — Generate `deploy.sh`
 
-Backup existing `specs/deploy.sh` to `specs/deploy.sh.old` if present.
+**Sentinel guard — read first 10 lines of existing `specs/deploy.sh` before touching it.** If line 5 contains `# <!-- spec-gantry-deploy-custom: DO NOT REGENERATE -->`: do NOT overwrite the file. Instead apply only targeted `sed` patches to update the version stamp and capability-specific image references. Preserve all other logic exactly. Surface: `↺ deploy.sh has custom sentinel — patching version stamp only, not regenerating.`
+
+If no sentinel: backup existing `specs/deploy.sh` to `specs/deploy.sh.old` if present, then generate fresh.
 
 Write `specs/deploy.sh` with:
+- Line 1: `#!/usr/bin/env bash`
+- Line 5: `# <!-- spec-gantry-generated: safe to regenerate -->`  _(omit this line if user later adds the custom sentinel above)_
 - `set -euo pipefail`
 - `--dry-run` flag support (build images + docker-compose up, no registry push or cloud calls)
+- **Runtime version resolution** — read version from `specs/project-state.yaml` at script runtime, not hardcoded at generation time:
+  ```bash
+  RELEASE_VERSION="${IMAGE_TAG:-$(grep '^  release:' "${PROJECT_DIR}/specs/project-state.yaml" 2>/dev/null \
+    | awk '{print $2}' | tr -d "'" | head -1)}"
+  : "${RELEASE_VERSION:?'Could not resolve RELEASE_VERSION from project-state.yaml — set IMAGE_TAG env var to override'}"
+  ```
 - `.env` loader with guard for production mode
 - Docker daemon guard
 - `run_step` helper (name, command, fix_hint) — exits with error + hint on failure
-- Version stamping (method derived from runtime.language and package manager)
-- Per-capability sections in deployment order: Build → Registry push → Migrations (if has_migrations) → Deploy → Health check
+- Per-capability sections in deployment order: Build → Registry push → Migrations (if has_migrations) → Deploy → Health check → Content fingerprint check
 - Runtime storage `mkdir -p data/[subdirs]`
 - Footer with service URLs
 
-Every `$VAR` reference in the production path must appear in the header env vars list. No test commands (`npm test`, `pytest`, etc.). `run_step` wraps every command.
+**Docker build flags by target:**
+- Cloud/registry targets (Cloud Run, ECS, ACA): always emit `--no-cache --platform linux/amd64`
+- Docker Compose (local): emit neither flag — developer experience matters more than build hygiene locally
+
+**Health check — two-stage:**
+1. HTTP 200 check: `curl -sf "${SERVICE_URL}/health"` — confirms process started
+2. Content fingerprint check (non-blocking warn, not exit): check for a known marker from `build-report.yaml → runtime.health_check_marker` if present; otherwise check page size threshold (`curl -sf "${SERVICE_URL}" | wc -c` ≥ 1000). Emit: `⚠ Content check: expected marker not found — possible stale image` if it fails. This catches stale-image scenarios that pass HTTP 200.
+
+**Secrets:** never write secrets to a file on disk. For any platform that accepts secrets as env vars (Cloud Run, ECS, ACA), source them from `.env` and pass via platform CLI flags inline. For Kubernetes-style targets: construct secrets inline with `--dry-run=client -o yaml | kubectl apply -f -` — never write a plaintext `secret.yaml`.
+
+Every `$VAR` reference in the production path must appear in the header env vars list and be guarded with `${VAR:?'message'}`. No test commands (`npm test`, `pytest`, etc.). `run_step` wraps every command.
 
 Platform-specific deploy commands: Cloud Run (`gcloud run deploy`), ECS (`aws ecs update-service --force-new-deployment`), Azure Container Apps (`az containerapp update`), Docker Compose (`docker-compose up -d`).
 

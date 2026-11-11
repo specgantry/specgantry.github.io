@@ -118,8 +118,8 @@ Four phases. Hard gates between each. No phase starts until the previous one cle
   <div class="dg-flow-node dg-deploy">
     <div class="dg-flow-node-icon"><i class="bi bi-rocket-takeoff"></i></div>
     <div class="dg-flow-node-body">
-      <div class="dg-flow-node-title">Deploy</div>
-      <div class="dg-flow-node-desc">North-star alignment check first. Then Dockerfiles, docker-compose, and a versioned deploy script for your target platform.</div>
+      <div class="dg-flow-node-title">Generate Release</div>
+      <div class="dg-flow-node-desc">Pick patch, minor, or major — or type it directly. North-star alignment check first. Then Dockerfiles, docker-compose, .env.example, and a versioned deploy.sh for your target platform. Run the script to deploy.</div>
     </div>
   </div>
 

@@ -149,9 +149,19 @@ Type `[>]` to run the full pipeline automatically — spec and build all remaini
 
 ---
 
-## Deploy
+## Generate Release
 
-Once all capabilities are built, SpecGantry prompts to deploy. The deployment agent runs a north-star alignment check first, then generates Dockerfiles, docker-compose.yml, .env.example, and a versioned deploy.sh for your target platform.
+Once all capabilities are built, SpecGantry shows `[1] Generate release` in the action bar. Selecting it (or typing `patch`, `minor`, or `major` directly) opens a release-type picker, then the deployment agent runs a north-star alignment check and generates Dockerfiles, docker-compose.yml, .env.example, and a versioned `deploy.sh` for your target platform.
+
+```
+Release type:
+  [1] Patch  — bug fixes only              → 1.0.1
+  [2] Minor  — new capabilities            → 1.1.0
+  [3] Major  — breaking changes            → 2.0.0
+  [X] Cancel
+```
+
+The generated `deploy.sh` is the artifact — run `./specs/deploy.sh` to execute the actual deployment. The script reads the release version from `specs/project-state.yaml` at runtime, so it stays valid across re-deployments without regeneration.
 
 ---
 
@@ -161,6 +171,8 @@ Once all capabilities are built, SpecGantry prompts to deploy. The deployment ag
 |---|---|
 | Start or resume any work | `/spec-gantry` |
 | Auto-run the full pipeline | `/spec-gantry` → `[>]` |
+| Generate a patch release | `/spec-gantry` → type `patch` |
+| Generate a minor/major release | `/spec-gantry` → type `minor` or `major` |
 | Report a bug or new capability | `/spec-gantry` → `[N]` |
 | Check costs | `/track-cost` |
 

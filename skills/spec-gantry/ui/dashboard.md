@@ -31,7 +31,7 @@ Spec validated  ·  CAP-002: Bulk import  (2 cycles — empty state added)
 All specs validated  ·  ready to build
 Build complete  ·  CAP-002  ·  quality: pass (1 cycle)
 Build complete  ·  CAP-003  ·  quality: capped (3 cycles, 1 gap remains)
-Deployed  ·  release 1.0.0
+Deployed  ·  release 1.0.0  — run ./specs/deploy.sh to deploy
 ```
 
 **Narrative surfacing:** after each transition note, if a narrative exists for the relevant scope, emit it on a new line indented with two spaces. Render in full — no truncation at transition notes:
@@ -155,7 +155,7 @@ Rules:
 
 **Release row** — always last:
 - `not deployed` — any capability has `deployed:false`
-- `~ deploying` — `active_phase: deployment`
+- `~ generating` — `active_phase: deployment`
 - `deployed [YYYY-MM-DD]` — all capabilities `deployed:true`
 
 ---
@@ -209,7 +209,7 @@ Enter capability ID or action:  >
 | Ideation in progress | `[1] Continue ideation` |
 | Next unblocked capability has `spec_done:false · built:false` | `[1] Spec next — [ID]: [title]` |
 | Next unblocked capability has `spec_done:true · built:false` | `[1] Build next — [ID]: [title]` |
-| All `built:true` · any `deployed:false` | `[1] Deploy release [version]` |
+| All `built:true` · any `deployed:false` | `[1] Generate release [version]` |
 | Any `built:true · spec_done:false` | `[2] Complete stub spec — [ID]: [title]` |
 | All `deployed:true` | _(no contextual action — `[N] New work` is the entry point)_ |
 

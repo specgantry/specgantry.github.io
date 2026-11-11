@@ -159,7 +159,7 @@
 </code></pre></div>  </div>
 </div>
 
-<p>Claude Code confirms: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v7.0.9</code></p>
+<p>Claude Code confirms: <code class="language-plaintext highlighter-rouge">✓ Plugin installed: SpecGantry v7.1.2</code></p>
 
 <div class="info">
   <strong>Why two commands?</strong> <code>claude plugin install</code> resolves names from registered marketplaces only. You only need to add the marketplace once — every subsequent project just needs the second command.
@@ -293,9 +293,18 @@ Enter capability ID or action:  &gt;
 
 <hr />
 
-<h2 id="deploy">Deploy</h2>
+<h2 id="generate-release">Generate Release</h2>
 
-<p>Once all capabilities are built, SpecGantry prompts to deploy. The deployment agent runs a north-star alignment check first, then generates Dockerfiles, docker-compose.yml, .env.example, and a versioned deploy.sh for your target platform.</p>
+<p>Once all capabilities are built, SpecGantry shows <code class="language-plaintext highlighter-rouge">[1] Generate release</code> in the action bar. Selecting it (or typing <code class="language-plaintext highlighter-rouge">patch</code>, <code class="language-plaintext highlighter-rouge">minor</code>, or <code class="language-plaintext highlighter-rouge">major</code> directly) opens a release-type picker, then the deployment agent runs a north-star alignment check and generates Dockerfiles, docker-compose.yml, .env.example, and a versioned <code class="language-plaintext highlighter-rouge">deploy.sh</code> for your target platform.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Release type:
+  [1] Patch  — bug fixes only              → 1.0.1
+  [2] Minor  — new capabilities            → 1.1.0
+  [3] Major  — breaking changes            → 2.0.0
+  [X] Cancel
+</code></pre></div></div>
+
+<p>The generated <code class="language-plaintext highlighter-rouge">deploy.sh</code> is the artifact — run <code class="language-plaintext highlighter-rouge">./specs/deploy.sh</code> to execute the actual deployment. The script reads the release version from <code class="language-plaintext highlighter-rouge">specs/project-state.yaml</code> at runtime, so it stays valid across re-deployments without regeneration.</p>
 
 <hr />
 
@@ -316,6 +325,14 @@ Enter capability ID or action:  &gt;
     <tr>
       <td>Auto-run the full pipeline</td>
       <td><code class="language-plaintext highlighter-rouge">/spec-gantry</code> → <code class="language-plaintext highlighter-rouge">[&gt;]</code></td>
+    </tr>
+    <tr>
+      <td>Generate a patch release</td>
+      <td><code class="language-plaintext highlighter-rouge">/spec-gantry</code> → type <code class="language-plaintext highlighter-rouge">patch</code></td>
+    </tr>
+    <tr>
+      <td>Generate a minor/major release</td>
+      <td><code class="language-plaintext highlighter-rouge">/spec-gantry</code> → type <code class="language-plaintext highlighter-rouge">minor</code> or <code class="language-plaintext highlighter-rouge">major</code></td>
     </tr>
     <tr>
       <td>Report a bug or new capability</td>

@@ -264,11 +264,17 @@ Enter capability ID or action:  &gt;
       <td>Opens <code class="language-plaintext highlighter-rouge">/track-cost</code></td>
     </tr>
     <tr>
+      <td><code class="language-plaintext highlighter-rouge">patch</code> / <code class="language-plaintext highlighter-rouge">minor</code> / <code class="language-plaintext highlighter-rouge">major</code></td>
+      <td>Generate a release of that type directly — skips the picker</td>
+    </tr>
+    <tr>
       <td>Capability ID</td>
       <td>Jump directly to a specific capability</td>
     </tr>
   </tbody>
 </table>
+
+<p>When all capabilities are built, <code class="language-plaintext highlighter-rouge">[1]</code> shows <code class="language-plaintext highlighter-rouge">Generate release [?]</code>. Selecting it (or typing the release type directly) opens a one-step picker showing the computed version for each option. The deployment agent then generates <code class="language-plaintext highlighter-rouge">deploy.sh</code> and related artifacts — run <code class="language-plaintext highlighter-rouge">./specs/deploy.sh</code> to execute the actual deployment.</p>
 
 <hr />
 
@@ -316,6 +322,14 @@ Total                                     $1.02    $6.72    $0.70    $8.44
 
 <p><strong>Auto-run the full pipeline:</strong></p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → [&gt;] → specs all capabilities, builds all capabilities, pauses at decision points only
+</code></pre></div></div>
+
+<p><strong>Generate a patch release:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → type `patch` → deployment agent generates deploy.sh → run ./specs/deploy.sh
+</code></pre></div></div>
+
+<p><strong>Generate a minor or major release:</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/spec-gantry → type `minor` or `major` → pick version at prompt → run ./specs/deploy.sh
 </code></pre></div></div>
 
 <p><strong>Production bug or new work:</strong></p>
